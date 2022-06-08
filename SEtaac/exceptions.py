@@ -7,9 +7,8 @@ class SymbolicError(Exception):
 
 
 class IntractablePath(Exception):
-    def __init__(self, trace=[], remainingpath=[]):
+    def __init__(self, trace):
         self.trace = tuple(trace)
-        self.remainingpath = tuple(remainingpath)
 
 
 class VMException(Exception):

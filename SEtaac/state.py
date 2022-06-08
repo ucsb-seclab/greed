@@ -3,17 +3,17 @@ import logging
 
 import z3
 
-from SeTAC import utils
-from SeTAC.exceptions import ExternalData, SymbolicError, IntractablePath, VMException
-from SeTAC.memory import SymRead
-from SeTAC.utils import concrete, is_true, get_solver
+from SEtaac import utils
+from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException
+from SEtaac.memory import SymRead, SymbolicMemory
+from SEtaac.storage import SymbolicStorage
+from SEtaac.utils import concrete, is_true, get_solver, translate_xid
 
 
 class AbstractEVMState(object):
     def __init__(self, code=None):
         self.code = code or bytearray()
         self.pc = 0
-        self.stack = Stack()
         self.memory = None
         self.trace = list()
         self.gas = None
@@ -36,7 +36,7 @@ class SymbolicEVMState(AbstractEVMState):
         self.gas = z3.BitVec('GAS_%d' % self.xid, 256)
         self.start_balance = z3.BitVec('BALANCE_%d' % self.xid, 256)
         self.balance = self.start_balance
-        self.balance += utils.ctx_or_symbolic('CALLVALUE', ctx, self.xid)
+        self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
         self.ctx = dict()
         self.ctx['CODESIZE-ADDRESS'] = len(code)  # todo: code can be None
@@ -139,8 +139,8 @@ class SymbolicEVMState(AbstractEVMState):
         new_state.storage = self.storage.copy(new_xid)
         new_state.pc = self.pc
         new_state.trace = list(self.trace)
-        new_state.start_balance = translate(self.start_balance, new_xid)
-        new_state.balance = translate(self.balance, new_xid)
+        new_state.start_balance = translate_xid(self.start_balance, new_xid)
+        new_state.balance = translate_xid(self.balance, new_xid)
 
         new_state.constraints = list(self.constraints)
         new_state.sha_constraints = dict(self.sha_constraints)
@@ -159,7 +159,8 @@ class SymbolicEVMState(AbstractEVMState):
         self.gas -= ins.gas
 
         if ins.name in self._handlers:
-            self._handlers[ins.name]()  # todo: need to pass args here (can read ins.inputs to know how many)
+            pass
+            #self._handlers[ins.name]()  # todo: need to pass args here (can read ins.inputs to know how many)
         else:
             pass
 
@@ -345,61 +346,61 @@ class SymbolicEVMState(AbstractEVMState):
                         sha = k
                         break
                 else:
-                    sha = z3.BitVec('SHA3_%x_%d' % (instruction_count, self.xid), 256)
+                    sha = z3.BitVec('SHA3_%x_%d' % (self.instruction_count, self.xid), 256)
                     self.sha_constraints[sha] = sha_data
             else:
                 sha_data = mm
-                sha = z3.BitVec('SHA3_%x_%d' % (instruction_count, self.xid), 256)
+                sha = z3.BitVec('SHA3_%x_%d' % (self.instruction_count, self.xid), 256)
                 self.sha_constraints[sha] = sha_data
             return sha
             # raise SymbolicError('symbolic computation of SHA3 not supported')
 
     def address_handler(self, ):
-        return utils.ctx_or_symbolic('ADDRESS', ctx, self.xid)
+        return utils.ctx_or_symbolic('ADDRESS', self.ctx, self.xid)
 
     def balance_handler(self, s0):
         if concrete(s0):
-            return utils.ctx_or_symbolic('BALANCE-%x' % s0, ctx, self.xid)
-        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('ADDRESS', ctx, self.xid))):
+            return utils.ctx_or_symbolic('BALANCE-%x' % s0, self.ctx, self.xid)
+        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('ADDRESS', self.ctx, self.xid))):
             return self.balance
-        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('ORIGIN', ctx, self.xid))):
-            return utils.ctx_or_symbolic('BALANCE-ORIGIN', ctx, self.xid)
-        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('CALLER', ctx, self.xid))):
-            return utils.ctx_or_symbolic('BALANCE-CALLER', ctx, self.xid)
+        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('ORIGIN', self.ctx, self.xid))):
+            return utils.ctx_or_symbolic('BALANCE-ORIGIN', self.ctx, self.xid)
+        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('CALLER', self.ctx, self.xid))):
+            return utils.ctx_or_symbolic('BALANCE-CALLER', self.ctx, self.xid)
         else:
             raise SymbolicError('balance of symbolic address (%s)' % str(z3.simplify(s0)))
 
     def origin_handler(self, ):
-        return utils.ctx_or_symbolic('ORIGIN', ctx, self.xid)
+        return utils.ctx_or_symbolic('ORIGIN', self.ctx, self.xid)
 
     def caller_handler(self, ):
-        return utils.ctx_or_symbolic('CALLER', ctx, self.xid)
+        return utils.ctx_or_symbolic('CALLER', self.ctx, self.xid)
 
     def callvalue_handler(self, ):
-        return utils.ctx_or_symbolic('CALLVALUE', ctx, self.xid)
+        return utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
     def calldataload_handler(self, s0):
-        self.constraints.append(z3.UGE(calldatasize, s0 + 32))
-        calldata_accesses.append(s0 + 32)
+        self.constraints.append(z3.UGE(self.calldatasize, s0 + 32))
+        self.calldata_accesses.append(s0 + 32)
         if not concrete(s0):
             self.constraints.append(z3.ULT(s0, self.MAX_CALLDATA_SIZE))
-        return z3.Concat([calldata[s0 + i] for i in range(32)])
+        return z3.Concat([self.calldata[s0 + i] for i in range(32)])
 
     def calldatasize_handler(self, ):
-        return calldatasize
+        return self.calldatasize
 
     def calldatacopy_handler(self, mstart, dstart, size):
-        self.constraints.append(z3.UGE(calldatasize, dstart + size))
-        calldata_accesses.append(dstart + size)
+        self.constraints.append(z3.UGE(self.calldatasize, dstart + size))
+        self.calldata_accesses.append(dstart + size)
         if not concrete(dstart):
             self.constraints.append(z3.ULT(dstart, self.MAX_CALLDATA_SIZE))
         if concrete(size):
             for i in range(size):
-                self.memory[mstart + i] = calldata[dstart + i]
+                self.memory[mstart + i] = self.calldata[dstart + i]
         else:
             self.constraints.append(z3.ULT(size, self.MAX_CALLDATA_SIZE))
             for i in range(self.MAX_CALLDATA_SIZE):
-                self.memory[mstart + i] = z3.If(size < i, self.memory[mstart + i], calldata[dstart + i])
+                self.memory[mstart + i] = z3.If(size < i, self.memory[mstart + i], self.calldata[dstart + i])
 
     def codesize_handler(self, ):
         return len(self.code)
@@ -413,7 +414,7 @@ class SymbolicEVMState(AbstractEVMState):
                 else:
                     self.memory[mstart + i] = 0
         else:
-            raise SymbolicError('Symbolic code index @ %s' % ins)
+            raise SymbolicError('Symbolic code index @ %s' % self.pc)
 
     def returndatacopy_handler(self, ):
         raise ExternalData('RETURNDATACOPY')
@@ -422,15 +423,15 @@ class SymbolicEVMState(AbstractEVMState):
         raise ExternalData('RETURNDATASIZE')
 
     def gasprice_handler(self, ):
-        return utils.ctx_or_symbolic('GASPRICE', ctx, self.xid)
+        return utils.ctx_or_symbolic('GASPRICE', self.ctx, self.xid)
 
     def extcodesize_handler(self, s0):
         if concrete(s0):
-            return utils.ctx_or_symbolic('CODESIZE-%x' % s0, ctx, self.xid)
-        elif is_true(s0 == utils.addr(utils.ctx_or_symbolic('ADDRESS', ctx, self.xid))):
-            return utils.ctx_or_symbolic('CODESIZE-ADDRESS', ctx, self.xid)
-        elif is_true(s0 == utils.addr(utils.ctx_or_symbolic('CALLER', ctx, self.xid))):
-            return utils.ctx_or_symbolic('CODESIZE-CALLER', ctx, self.xid)
+            return utils.ctx_or_symbolic('CODESIZE-%x' % s0, self.ctx, self.xid)
+        elif is_true(s0 == utils.addr(utils.ctx_or_symbolic('ADDRESS', self.ctx, self.xid))):
+            return utils.ctx_or_symbolic('CODESIZE-ADDRESS', self.ctx, self.xid)
+        elif is_true(s0 == utils.addr(utils.ctx_or_symbolic('CALLER', self.ctx, self.xid))):
+            return utils.ctx_or_symbolic('CODESIZE-CALLER', self.ctx, self.xid)
         else:
             raise SymbolicError('codesize of symblic address')
 
@@ -441,26 +442,26 @@ class SymbolicEVMState(AbstractEVMState):
     def blockhash_handler(self, s0):
         if not concrete(s0):
             raise SymbolicError('symbolic blockhash index')
-        return utils.ctx_or_symbolic('BLOCKHASH[%d]' % s0, ctx, self.xid)
+        return utils.ctx_or_symbolic('BLOCKHASH[%d]' % s0, self.ctx, self.xid)
 
     def coinbase_handler(self, ):
-        return utils.ctx_or_symbolic('COINBASE', ctx, self.xid)
+        return utils.ctx_or_symbolic('COINBASE', self.ctx, self.xid)
 
     def timestamp_handler(self, ):
-        ts = utils.ctx_or_symbolic('TIMESTAMP', ctx, self.xid)
+        ts = utils.ctx_or_symbolic('TIMESTAMP', self.ctx, self.xid)
         if not concrete(ts):
-            self.constraints.append(z3.UGE(ts, min_timestamp))
-            self.constraints.append(z3.ULE(ts, max_timestamp))
+            self.constraints.append(z3.UGE(ts, self.min_timestamp))
+            self.constraints.append(z3.ULE(ts, self.max_timestamp))
         return ts
 
     def number_handler(self, ):
-        return utils.ctx_or_symbolic('NUMBER', ctx, self.xid)
+        return utils.ctx_or_symbolic('NUMBER', self.ctx, self.xid)
 
     def difficulty_handler(self, ):
-        return utils.ctx_or_symbolic('DIFFICULTY', ctx, self.xid)
+        return utils.ctx_or_symbolic('DIFFICULTY', self.ctx, self.xid)
 
     def gaslimit_handler(self, ):
-        return utils.ctx_or_symbolic('GASLIMIT', ctx, self.xid)
+        return utils.ctx_or_symbolic('GASLIMIT', self.ctx, self.xid)
 
     # VM state manipulations
     def mload_handler(self, s0):
@@ -510,21 +511,21 @@ class SymbolicEVMState(AbstractEVMState):
 
     def jumpi_handler(self, s0, s1):
         # todo: implement jumpi
-        next_target = path[0]
+        next_target = None #path[0]
         if concrete(s1):
             # if the jump condition is concrete, use it to determine the jump target
             if s1:
                 if not concrete(s0):
                     raise SymbolicError('Symbolic jump target')
                 if s0 != next_target and self.pc + 1 == next_target:
-                    raise IntractablePath(self.trace, path)
+                    raise IntractablePath(self.trace)
                 self.pc = s0
                 if self.pc >= len(self.code) or not self.program[self.pc].name == 'JUMPDEST':
                     raise VMException('BAD JUMPDEST')
             else:
                 if concrete(s0):
                     if self.pc + 1 != next_target and s0 == next_target:
-                        raise IntractablePath(self.trace, path)
+                        raise IntractablePath(self.trace)
         else:
             # else, use the target path to determine the jump target (directed symbolic execution)
             if self.pc + 1 == next_target:
@@ -552,7 +553,7 @@ class SymbolicEVMState(AbstractEVMState):
 
                 if sat_true and sat_false:
                     # if yes, raise an exception as we really need to fork
-                    raise IntractablePath(self.trace, path)
+                    raise IntractablePath(self.trace)
                 elif sat_true:
                     # if only the true branch is sat, jump
                     logging.debug(f'sat true, setting pc to {hex(s0)}')
@@ -565,7 +566,7 @@ class SymbolicEVMState(AbstractEVMState):
                 else:
                     # if nothing is sat, something is wrong
                     logging.debug(f'nothing is sat')
-                    raise IntractablePath(self.trace, path)
+                    raise IntractablePath(self.trace)
 
     def pc_handler(self, ):
         return self.pc
@@ -574,7 +575,7 @@ class SymbolicEVMState(AbstractEVMState):
         return len(self.memory)
 
     def gas_handler(self, ):
-        return z3.BitVec('GAS_%x' % instruction_count, 256)
+        return z3.BitVec('GAS_%x' % self.instruction_count, 256)
 
     # Logs (aka "events")
     # todo: implement logs
@@ -601,7 +602,7 @@ class SymbolicEVMState(AbstractEVMState):
     def create_handler(self, s0, s1, s2):
         self.constraints.append(z3.UGE(self.balance, s0))
         self.balance -= s0
-        return utils.addr(z3.BitVec('EXT_CREATE_%d_%d' % (instruction_count, self.xid), 256))
+        return utils.addr(z3.BitVec('EXT_CREATE_%d_%d' % (self.instruction_count, self.xid), 256))
 
     # Calls
     def _call_handler(self, s0, s1, s2, s3, s4, s5, s6):
@@ -619,44 +620,44 @@ class SymbolicEVMState(AbstractEVMState):
                 raise SymbolicError("Precompiled contract %d not implemented" % s1)
         else:
             for i in range(olen):
-                self.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (instruction_count, i, self.xid), 8)
-            logging.info("Calling contract %s (%d_%d)" % (s1, instruction_count, self.xid))
-            return z3.BitVec('CALLRESULT_%d_%d' % (instruction_count, self.xid), 256)
+                self.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (self.instruction_count, i, self.xid), 8)
+            logging.info("Calling contract %s (%d_%d)" % (s1, self.instruction_count, self.xid))
+            return z3.BitVec('CALLRESULT_%d_%d' % (self.instruction_count, self.xid), 256)
 
     def call_handler(self, s0, s1, s2, s3, s4, s5, s6):
         self.constraints.append(z3.UGE(self.balance, s2))
         self.balance -= s2
-        return _call_handler(s0, s1, s2, s3, s4, s5, s6)
+        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
 
     def callcode_handler(self, s0, s1, s2, s3, s4, s5, s6):
-        return _call_handler(s0, s1, s2, s3, s4, s5, s6)
+        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
 
     def delegatecall_handler(self, s0, s1, s3, s4, s5, s6):
-        s2 = utils.ctx_or_symbolic('CALLVALUE', ctx, self.xid)
-        return _call_handler(s0, s1, s2, s3, s4, s5, s6)
+        s2 = utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
 
     def staticcall_handler(self, s0, s1, s3, s4, s5, s6):
         s2 = 0
-        return _call_handler(s0, s1, s2, s3, s4, s5, s6)
+        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
 
     # Terminate
     def return_handler(self, s0, s1):
         if concrete(s0) and concrete(s1):
             self.memory.extend(s0, s1)
-        self.constraints.append(z3.Or(*(z3.ULE(calldatasize, access) for access in calldata_accesses)))
+        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
         self.halt = True
 
     def revert_handler(self, s0, s1):
         if not concrete(s0) or not concrete(s1):
             raise SymbolicError('symbolic memory index')
         self.memory.extend(s0, s1)
-        self.constraints.append(z3.Or(*(z3.ULE(calldatasize, access) for access in calldata_accesses)))
+        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
         self.halt = True
 
     def selfdestruct_handler(self, s0):
-        self.constraints.append(z3.Or(*(z3.ULE(calldatasize, access) for access in calldata_accesses)))
+        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
         self.halt = True
 
     def stop_handler(self, ):
-        self.constraints.append(z3.Or(*(z3.ULE(calldatasize, access) for access in calldata_accesses)))
+        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
         self.halt = True

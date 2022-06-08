@@ -1,5 +1,5 @@
-from SeTAC.cfg import CFG
-from SeTAC.simulation_manager import SimulationManager
+from SEtaac.cfg import CFG
+from SEtaac.simulation_manager import SimulationManager
 
 
 class Project(object):
@@ -7,6 +7,8 @@ class Project(object):
         self.code = code
         self._cfg = None
         self._simgr = None
+
+        # todo: we need the gigahorse analysis folder here
 
     @property
     def cfg(self):

@@ -1,6 +1,8 @@
+import logging
 import os
+import sys
 
-from SeTAC.utils import gen_exec_id
+from SEtaac.utils import gen_exec_id
 
 
 class SimulationManager:
@@ -9,6 +11,9 @@ class SimulationManager:
 
         self.keep_predecessors = keep_predecessors
         self.error = list()
+        self._halt = False
+
+        self.insns_count = 0
 
         # initialize empty stashes
         self._stashes = {
@@ -24,7 +29,7 @@ class SimulationManager:
         #self.active.append(state)
 
     def set_error(self, s):
-        log.error(f'[ERROR] {s}')
+        logging.error(f'[ERROR] {s}')
         self.error += [s]
 
     @property
@@ -112,7 +117,7 @@ class SimulationManager:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
-                    log.exception('Something went wrong during the deobfuscation.')
+                    logging.exception('Something went wrong during the deobfuscation.')
                     self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
                     state.error = e.__class__
 
@@ -137,7 +142,7 @@ class SimulationManager:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
-            log.exception(f'Exception while stepping the Simulation Manager')
+            logging.exception(f'Exception while stepping the Simulation Manager')
             self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
 
     def __str__(self):

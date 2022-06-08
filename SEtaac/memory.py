@@ -1,7 +1,7 @@
 import z3
 
-from SeTAC.exceptions import SymbolicError
-from SeTAC.utils import concrete
+from SEtaac.exceptions import SymbolicError
+from SEtaac.utils import concrete, translate_xid
 
 
 class SymbolicMemory(object):
@@ -100,10 +100,10 @@ class SymRead(object):
             self.size = z3.simplify(self.size)
 
     def translate(self, new_xid):
-        sym_mem_mem = translate(self.memory.memory, new_xid)
+        sym_mem_mem = translate_xid(self.memory.memory, new_xid)
         sym_mem = SymbolicMemory()
         sym_mem.memory = sym_mem_mem
         new_symread = SymRead(sym_mem, 0, 0)
-        new_symread.start = self.start if concrete(self.start) else translate(self.start, new_xid)
-        new_symread.size = self.size if concrete(self.size) else translate(self.size, new_xid)
+        new_symread.start = self.start if concrete(self.start) else translate_xid(self.start, new_xid)
+        new_symread.size = self.size if concrete(self.size) else translate_xid(self.size, new_xid)
         return new_symread

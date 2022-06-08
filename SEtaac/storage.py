@@ -1,6 +1,6 @@
 import z3
 
-from SeTAC.utils import concrete
+from SEtaac.utils import concrete, translate_xid
 
 
 class SymbolicStorage(object):
@@ -31,7 +31,7 @@ class SymbolicStorage(object):
 
     def copy(self, new_xid):
         new_storage = SymbolicStorage(new_xid)
-        new_storage.base = translate(self.base, new_xid)
-        new_storage.storage = translate(self.storage, new_xid)
-        new_storage.accesses = [(t, a if concrete(a) else translate(a, new_xid)) for t, a in self.accesses]
+        new_storage.base = translate_xid(self.base, new_xid)
+        new_storage.storage = translate_xid(self.storage, new_xid)
+        new_storage.accesses = [(t, a if concrete(a) else translate_xid(a, new_xid)) for t, a in self.accesses]
         return new_storage
