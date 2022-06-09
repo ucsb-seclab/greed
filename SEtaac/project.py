@@ -10,15 +10,20 @@ from SEtaac.state import SymbolicEVMState
 from .config import *
 
 class Project(object):
-    def __init__(self, binary, onchain_address=""):
+    def __init__(self, binary, cfg_data, onchain_address=""):
         
         # Load the TAC IR from the file dumped with gigahorse
         with open(binary, "rb") as bin_file:
-            self.TAC_code = dill.load(bin_file)
-        
+            self.TAC_code_raw = dill.load(bin_file)
+
+        # Load the TAC CFG exported by Gigahorse client
+        with open(cfg_data, "rb") as cfgdata_file:
+            self.TAC_cfg_raw = dill.load(cfgdata_file)
+
         # Object that creates other objects
-        self.factory = FactoryObjects(TACparser(self.TAC_code))
-        self.cfg = None
+        self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
+        self.cfg = CFG(self.TAC_cfg_raw)
+
         self.onchain_address = onchain_address
 
         if self.onchain_address != '':
