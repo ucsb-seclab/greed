@@ -2,12 +2,10 @@ import logging
 import os
 import sys
 
-from SEtaac.utils import gen_exec_id
-
 
 class SimulationManager:
-    def __init__(self, keep_predecessors=0):
-        # todo: initialize simgr
+    def __init__(self, entry_state, keep_predecessors=0):
+        self.entry_state = entry_state
 
         self.keep_predecessors = keep_predecessors
         self.error = list()
@@ -24,7 +22,6 @@ class SimulationManager:
         }
 
         # todo: create initial state
-        xid = gen_exec_id()
         #state = SymbolicEVMState(xid, program)
         #self.active.append(state)
 
@@ -103,24 +100,36 @@ class SimulationManager:
                 self._stashes[from_stash].remove(s)
                 self._stashes[to_stash].append(s)
 
-    def step(self, n=1):
-        """
-        Perform n steps (default is 1), after each step move all the halted states to the deadended stash
-        :param n: Number of steps
-        :return: None
-        """
-        for _ in range(n):
-            for state in list(self.active):
-                try:
-                    state.step()
-                except Exception as e:
-                    exc_type, exc_obj, exc_tb = sys.exc_info()
-                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    # def step(self, n=1):
+    #     """
+    #     Perform n steps (default is 1), after each step move all the halted states to the deadended stash
+    #     :param n: Number of steps
+    #     :return: None
+    #     """
+    #     for _ in range(n):
+    #         for state in list(self.active):
+    #             try:
+    #                 state.step()
+    #             except Exception as e:
+    #                 exc_type, exc_obj, exc_tb = sys.exc_info()
+    #                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+    #
+    #                 self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
+    #                 state.error = e.__class__
+    #
+    #         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt or s.error)
 
-                    self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
-                    state.error = e.__class__
 
-            self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt or s.error)
+    def step(self):
+        new_active = list()
+        for state in self.active:
+            successors = self.single_step_state(state)
+            new_active += [successors]
+        self._active = new_active
+
+    def single_step_state(self, state):
+        successors = state.curr_stmt.handle(state)
+        return successors
 
     def run(self, find=lambda s: False):
         """

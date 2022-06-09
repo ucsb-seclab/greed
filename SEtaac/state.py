@@ -3,6 +3,8 @@ import logging
 
 import z3
 
+from collections import defaultdict
+
 from SEtaac import utils
 from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException
 from SEtaac.memory import SymRead, SymbolicMemory
@@ -20,14 +22,14 @@ class AbstractEVMState(object):
 
 
 class SymbolicEVMState(AbstractEVMState):
-    def __init__(self, xid, program, code=None):
+    def __init__(self, xid, program=None, code=None):
         super(SymbolicEVMState, self).__init__(code)
         self.program = program
         self.xid = xid
 
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
-        self.registers = dict()
+        self.registers = defaultdict(None)
 
         self.instruction_count = 0
         self.halt = False
@@ -126,6 +128,20 @@ class SymbolicEVMState(AbstractEVMState):
             h: (True if h not in ['JUMP', 'JUMPI'] else False)
             for h in self._handlers
         }
+
+
+    @property
+    def curr_stmt(self):
+        # todo: pass project to state
+        # todo: pc is the statement id
+        return self.project.tac_parser.get_stmt_at(self.pc)
+
+    @property
+    def set_next_pc(self):
+        # todo: read next statement from dict
+        next_pcs = get_next_pcs(self.curr_stmt)
+        assert len(next_pcs) == 1
+        self.pc = next_pcs[0]
 
     def copy(self, new_xid):
         # todo: implement state copy

@@ -10,7 +10,12 @@ class TAC_Add:
         self.res = res
 
     def parse(self, raw_stmt):
-        pass # todo 
+        pass # todo
+
+    def handle(self, state):
+        state.registers[self.res] = state.registers[self.op1] + state.registers[self.op2]
+        state.pc = state.next_statement()
+        return [state]
 
     def __str__(self):
         return "{} = {} + {}".format(self.res, self.op1, self.op2)

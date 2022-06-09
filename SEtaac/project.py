@@ -60,11 +60,11 @@ class FactoryObjects:
     def __init__(self, TAC_parser):
         self.TAC_parser = TAC_parser
         
-    def simgr(self):
-        return SimulationManager()
+    def simgr(self, entry_state):
+        return SimulationManager(entry_state=entry_state)
     
-    def entry_state(self):
-        return SymbolicEVMState()
+    def entry_state(self, xid):
+        return SymbolicEVMState(xid=xid)
     
     def block(self, block_id):
         return self.TAC_parser.parse(block_id)
