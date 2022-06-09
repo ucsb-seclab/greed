@@ -33,6 +33,8 @@ class Project(object):
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
         self.cfg = CFG(self.TAC_cfg_raw)
 
+        # import the web3 provider just in case (from config)
+        self.web3 = w3 
         self.onchain_address = onchain_address
 
         if self.onchain_address != '':

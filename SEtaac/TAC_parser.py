@@ -19,6 +19,12 @@ class TACparser:
         # Keep here the list of already parsed "raw" TAC_Statement
         self.TAC_code_cache = {}
 
+    def pre_parse_all():
+        # If we want to parse every raw statements immediately, let's just call
+        # this method and fille the TAC_code_cache.
+        # TODO
+        pass
+
     def parse(self, block_id):
         stmts = []
         
