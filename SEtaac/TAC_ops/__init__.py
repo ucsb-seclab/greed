@@ -1,4 +1,10 @@
 
+from .flow_ops import *
+from .gigahorse_ops import *
+from .math_ops import *
+from .mem_ops import *
+from .special_ops import *
+
 # This is the object exported from Gigahorse
 class TAC_Statement:
     def __init__(self, TACblock_ident, ident, opcode, operands=None, defs=None, values=None):
