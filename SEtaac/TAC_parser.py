@@ -50,6 +50,7 @@ class TACparser:
                 l.critical("Could not find a TAC_ops for TAC_Statement {}".format(raw_tac_stmt.opcode))
                 #raise TACparser_NO_OPS()
 
+                #FIXME
                 # This is just for debug, this shouldn't happen when we have all the
                 # operations (we will raise the exception).
                 stmts.append(raw_tac_stmt)
