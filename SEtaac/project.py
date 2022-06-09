@@ -17,7 +17,7 @@ class Project(object):
         
         # Object that creates other objects
         self.factory = FactoryObjects()
-        self.TAC_parser = 
+        self.TAC_parser = TACparser()
         self.cfg = None
         self.onchain_address = onchain_address
 
