@@ -10,7 +10,7 @@ class TAC_Throw:
     def __init__(self, op1, op2, res):
         pass
     def parse(self, raw_stmt):
-        pass # todo 
+        pass # TODO 
     def __str__(self):
         return "THROW"
 
@@ -19,7 +19,7 @@ class TAC_Callprivate:
     def __init__(self, op1, op2, res):
         pass
     def parse(self, raw_stmt):
-        pass # todo 
+        pass # TODO 
     def __str__(self):
         return "CALLPRIVATE"
 
@@ -28,7 +28,7 @@ class TAC_Returnprivate:
     def __init__(self, op1, op2, res):
         pass
     def parse(self, raw_stmt):
-        pass # todo 
+        pass # TODO 
     def __str__(self):
         return "RETURNPRIVATE"
 
@@ -37,7 +37,7 @@ class TAC_Phi:
     def __init__(self, op1, op2, res):
         pass
     def parse(self, raw_stmt):
-        pass # todo 
+        pass # TODO 
     def __str__(self):
         return "PHI"
 
