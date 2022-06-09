@@ -87,8 +87,11 @@ class BB(object):
 
 
 class CFG(object):
-    def __init__(self):
+    def __init__(self, TAC_cfg_raw):
+
         self.graph = nx.DiGraph()
+        # Data from Gigahorse in a dictionary
+        self.TAC_cfg_raw = TAC_cfg_raw
 
         # keep basic block organized in a dictionary
         self._bb_at = dict()
@@ -97,11 +100,13 @@ class CFG(object):
 
         # resolve basic blocks and edges
         self._import_cfg_gigahorse()
+        
+        '''
         self.trim()
-
         self.root = self._bb_at[0]
         self._ins_at = {i.addr: i for bb in self.bbs for i in bb.ins}
         self.shortest_paths = nx.single_source_shortest_path(self.graph, self.root)
+        '''
 
     def filter_ins(self, names, reachable=False):
         if isinstance(names, str):
@@ -112,7 +117,9 @@ class CFG(object):
             return [ins for bb in self.bbs for ins in bb.ins if ins.name in names and 0 in bb.ancestors | {bb.start}]
 
     def _import_cfg_gigahorse(self):
-        # todo
+        # TODO
+        # here parse the TAC_cfg_raw 
+        import ipdb; ipdb.set_trace()
         pass
 
     @property

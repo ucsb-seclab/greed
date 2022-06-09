@@ -1,5 +1,7 @@
+import logging
 import os 
 import dill
+import sys 
 
 from datetime import datetime
 from SEtaac.cfg import CFG
@@ -9,9 +11,16 @@ from SEtaac.state import SymbolicEVMState
 
 from .config import *
 
+l = logging.getLogger("project")
+l.setLevel(logging.INFO)
+
 class Project(object):
-    def __init__(self, binary, cfg_data, onchain_address=""):
+    def __init__(self, binary="", cfg_data="", onchain_address=""):
         
+        if binary == "" or cfg_data == "":
+            l.fatal("Need gigahorse artifacts to create a project (IR_DICT and TAC_CFG)")
+            sys.exit(0)
+
         # Load the TAC IR from the file dumped with gigahorse
         with open(binary, "rb") as bin_file:
             self.TAC_code_raw = dill.load(bin_file)
