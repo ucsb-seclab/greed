@@ -7,6 +7,7 @@ from .special_ops import *
 
 # This is the object exported from Gigahorse
 class TAC_Statement:
+    __internal_name__ = ""
     def __init__(self, TACblock_ident, ident, opcode, operands=None, defs=None, values=None):
         self.tac_block_id = TACblock_ident
         self.ident = ident
@@ -22,3 +23,4 @@ class TAC_Statement:
                                                                                                             self.operands,
                                                                                                             self.defs,
                                                                                                             self.values)
+

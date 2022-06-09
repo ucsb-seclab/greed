@@ -117,7 +117,6 @@ class SimulationManager:
                     exc_type, exc_obj, exc_tb = sys.exc_info()
                     fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
-                    logging.exception('Something went wrong during the deobfuscation.')
                     self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
                     state.error = e.__class__
 

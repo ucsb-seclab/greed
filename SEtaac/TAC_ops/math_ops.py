@@ -1,53 +1,54 @@
 
-from ops import *
+
+__all__ = ['TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div']
 
 class TAC_Add:
-    _name = "ADD"
+    __internal_name__ = "ADD"
     def __init__(self, op1, op2, res):
         self.op1 = op1
         self.op2 = op2
         self.res = res
 
-    def parse(self, TAC_Statement: raw_stmt):
+    def parse(self, raw_stmt):
         pass # todo 
 
     def __str__(self):
         return "{} = {} + {}".format(self.res, self.op1, self.op2)
 
 class TAC_Sub:
-    _name = "SUB"
+    __internal_name__ = "SUB"
     def __init__(self, op1, op2, res):
         self.op1 = op1
         self.op2 = op2
         self.res = res
 
-    def parse(self, TAC_Statement: raw_stmt):
+    def parse(self, raw_stmt):
         pass # todo 
 
     def __str__(self):
         return "{} = {} - {}".format(self.res, self.op1, self.op2)
 
 class TAC_Mul:
-    _name = "MUL"
+    __internal_name__ = "MUL"
     def __init__(self, op1, op2, res):
         self.op1 = op1
         self.op2 = op2
         self.res = res
 
-    def parse(self, TAC_Statement: raw_stmt):
+    def parse(self, raw_stmt):
         pass # todo 
 
     def __str__(self):
         return "{} = {} * {}".format(self.res, self.op1, self.op2)
 
 class TAC_Div:
-    _name = "DIV"
+    __internal_name__ = "DIV"
     def __init__(self, op1, op2, res):
         self.op1 = op1
         self.op2 = op2
         self.res = res
 
-    def parse(self, TAC_Statement: raw_stmt):
+    def parse(self, raw_stmt):
         pass # todo 
 
     def __str__(self):

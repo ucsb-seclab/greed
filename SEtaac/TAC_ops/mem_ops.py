@@ -1,13 +1,13 @@
 
-from . import *
+__all__ = ['TAC_Mstore']
 
 class TAC_Mstore:
-    _name = "MSTORE"
+    __internal_name__ = "MSTORE"
     def __init__(self, val, dest):
         self.val = val
         self.dest = dest
 
-    def parse(self, TAC_Statement: raw_stmt):
+    def parse(self, raw_stmt):
         pass # todo 
 
     def __str__(self):

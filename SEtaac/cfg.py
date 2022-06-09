@@ -3,10 +3,6 @@ import logging
 import networkx as nx
 
 
-class TACStmt(object):
-    pass
-
-
 class BB(object):
     def __init__(self, ins):
         self.ins = ins

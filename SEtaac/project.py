@@ -1,12 +1,13 @@
 import os 
-import datetime
 import dill
 
+from datetime import datetime
 from SEtaac.cfg import CFG
 from SEtaac.simulation_manager import SimulationManager
 from SEtaac.TAC_parser import TACparser
 from SEtaac.state import SymbolicEVMState
-from config import *
+
+from .config import *
 
 class Project(object):
     def __init__(self, binary, onchain_address=""):
@@ -16,8 +17,7 @@ class Project(object):
             self.TAC_code = dill.load(bin_file)
         
         # Object that creates other objects
-        self.factory = FactoryObjects()
-        self.TAC_parser = TACparser(self.TAC_code)
+        self.factory = FactoryObjects(TACparser(self.TAC_code))
         self.cfg = None
         self.onchain_address = onchain_address
 
@@ -33,18 +33,22 @@ class Project(object):
         if not isExist:
             os.makedirs(self._workspace_folder)
 
-    @property
-    def cfg(self):
-        if not self._cfg:
-            self._cfg = CFG()
-        return self._cfg
+    #@property
+    #def cfg(self):
+    #    if not self._cfg:
+    #        self._cfg = CFG()
+    #    return self._cfg
 
 # This class create object like the simgr, entry_state, etc...
 class FactoryObjects:
-    def __init__(self):
-        pass
+    def __init__(self, TAC_parser):
+        self.TAC_parser = TAC_parser
+        
     def simgr(self):
         return SimulationManager()
     
     def entry_state(self):
         return SymbolicEVMState()
+    
+    def block(self, block_id):
+        return self.TAC_parser.parse(block_id)
