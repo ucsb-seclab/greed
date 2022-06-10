@@ -13,9 +13,10 @@ class TAC_Add:
         pass # todo
 
     def handle(self, state):
-        state.registers[self.res] = state.registers[self.op1] + state.registers[self.op2]
-        state.pc = state.next_statement()
-        return [state]
+        succ = state.copy()
+        succ.registers[self.res] = succ.registers[self.op1] + succ.registers[self.op2]
+        succ.pc = succ.next_statement()
+        return [succ]
 
     def __str__(self):
         return "{} = {} + {}".format(self.res, self.op1, self.op2)
