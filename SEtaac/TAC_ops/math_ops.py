@@ -1,9 +1,11 @@
 import z3
 
 from SEtaac import utils
-from SEtaac.TAC_ops import TAC_Unary, TAC_Binary, TAC_Ternary
 from SEtaac.exceptions import SymbolicError
 from SEtaac.utils import concrete
+
+from .base import TAC_Unary, TAC_Binary, TAC_Ternary
+from ..state import SymbolicEVMState
 
 __all__ = [
     'TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv',
@@ -17,7 +19,7 @@ __all__ = [
 class TAC_Add(TAC_Binary):
     __internal_name__ = "ADD"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -31,7 +33,7 @@ class TAC_Add(TAC_Binary):
 class TAC_Sub(TAC_Binary):
     __internal_name__ = "SUB"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -45,7 +47,7 @@ class TAC_Sub(TAC_Binary):
 class TAC_Mul(TAC_Binary):
     __internal_name__ = "MUL"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -59,7 +61,7 @@ class TAC_Mul(TAC_Binary):
 class TAC_Div(TAC_Binary):
     __internal_name__ = "DIV"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -76,7 +78,7 @@ class TAC_Div(TAC_Binary):
 class TAC_Sdiv(TAC_Binary):
     __internal_name__ = "SDIV"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -96,7 +98,7 @@ class TAC_Sdiv(TAC_Binary):
 class TAC_Mod(TAC_Binary):
     __internal_name__ = "MOD"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -113,7 +115,7 @@ class TAC_Mod(TAC_Binary):
 class TAC_Smod(TAC_Binary):
     __internal_name__ = "SMOD"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -134,7 +136,7 @@ class TAC_Addmod(TAC_Ternary):
     __internal_name__ = "ADDMOD"
     __aliases__ = {'denominator_var': 'op3_var', 'denominator_val': 'op3_val'}
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -153,7 +155,7 @@ class TAC_Mulmod(TAC_Ternary):
     __internal_name__ = "MULMOD"
     __aliases__ = {'denominator_var': 'op3_var', 'denominator_val': 'op3_val'}
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -172,7 +174,7 @@ class TAC_Exp(TAC_Binary):
     __internal_name__ = "EXP"
     __aliases__ = {'base_var': 'op1_var', 'base_val': 'op1_val', 'exp_var': 'op2_var', 'exp_val': 'op2_val'}
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         base = succ.registers[self.op1_var]
         exponent = succ.registers[self.op2_var]
@@ -193,7 +195,7 @@ class TAC_Exp(TAC_Binary):
 class TAC_Signextend(TAC_Binary):
     __internal_name__ = "SIGNEXTEND"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -223,7 +225,7 @@ class TAC_Signextend(TAC_Binary):
 class TAC_Lt(TAC_Binary):
     __internal_name__ = "LT"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -240,7 +242,7 @@ class TAC_Lt(TAC_Binary):
 class TAC_Gt(TAC_Binary):
     __internal_name__ = "GT"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -257,7 +259,7 @@ class TAC_Gt(TAC_Binary):
 class TAC_Slt(TAC_Binary):
     __internal_name__ = "SLT"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -275,7 +277,7 @@ class TAC_Slt(TAC_Binary):
 class TAC_Sgt(TAC_Binary):
     __internal_name__ = "SGT"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -293,7 +295,7 @@ class TAC_Sgt(TAC_Binary):
 class TAC_Eq(TAC_Binary):
     __internal_name__ = "EQ"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -310,7 +312,7 @@ class TAC_Eq(TAC_Binary):
 class TAC_Iszero(TAC_Unary):
     __internal_name__ = "ISZERO"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
 
@@ -326,7 +328,7 @@ class TAC_Iszero(TAC_Unary):
 class TAC_And(TAC_Binary):
     __internal_name__ = "AND"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -340,7 +342,7 @@ class TAC_And(TAC_Binary):
 class TAC_Or(TAC_Binary):
     __internal_name__ = "OR"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -354,7 +356,7 @@ class TAC_Or(TAC_Binary):
 class TAC_Xor(TAC_Binary):
     __internal_name__ = "XOR"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -368,7 +370,7 @@ class TAC_Xor(TAC_Binary):
 class TAC_Not(TAC_Unary):
     __internal_name__ = "NOT"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
 
@@ -382,7 +384,7 @@ class TAC_Byte(TAC_Binary):
     __internal_name__ = "BYTE"
     __aliases__ = {'offset_var': 'op1_var', 'offset_val': 'op1_val'}
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -410,7 +412,7 @@ class TAC_Shl(TAC_Binary):
     __internal_name__ = "SHL"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -425,7 +427,7 @@ class TAC_Shr(TAC_Binary):
     __internal_name__ = "SHR"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
@@ -443,7 +445,7 @@ class TAC_Sar(TAC_Binary):
     __internal_name__ = "SAR"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]

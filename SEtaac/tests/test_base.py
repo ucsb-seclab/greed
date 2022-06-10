@@ -1,7 +1,10 @@
 from SEtaac.utils import gen_exec_id
 from SEtaac import Project
 
-p = Project("./IR_DICT.dill", "./TAC_CFG.dill")
+p = Project("/home/degrigis/projects/hackcess/SEtaac/SEtaac/tests/IR_DICT.dill", 
+            "/home/degrigis/projects/hackcess/SEtaac/SEtaac/tests/TAC_CFG.dill")
+
+import ipdb; ipdb.set_trace()
 
 xid = gen_exec_id()
 entry_state = p.factory.entry_state(xid=xid)

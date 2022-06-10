@@ -3,7 +3,9 @@ import z3
 from SEtaac import utils
 from SEtaac.memory import SymRead
 from SEtaac.utils import concrete, is_true
-from SEtaac.TAC_ops import TAC_Binary
+
+from .base import TAC_Binary
+from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Sha3']
 
@@ -11,7 +13,7 @@ __all__ = ['TAC_Sha3']
 class TAC_Sha3(TAC_Binary):
     __internal_name__ = "SHA3"
 
-    def handle(self, state):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
         arg2 = succ.registers[self.op2_var]
