@@ -1,6 +1,12 @@
 
 
-__all__ = ['TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv']
+__all__ = [
+           'TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv',
+           'TAC_Mod', 'TAC_Smod','TAC_Addmod','TAC_Mulmod', 'TAC_Exp',
+           'TAC_Signextend', 'TAC_Lt', 'TAC_Gt', 'TAC_Slt', 'TAC_Sgt', 
+           'TAC_Eq', 'TAC_Iszero', 'TAC_And', 'TAC_Or', 'TAC_Xor',
+           'TAC_Not', 'TAC_Byte', 'TAC_Shl', 'TAC_Shr', 'TAC_Sar'
+           ]
 
 class TAC_Add:
     __internal_name__ = "ADD"
