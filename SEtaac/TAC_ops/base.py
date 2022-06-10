@@ -267,7 +267,45 @@ class TAC_QuaternaryNoRes(Aliased):
         op2 = self.op2_var if not self.op2_val else self.op2_var + '({})'.format(self.op2_val)
         op3 = self.op3_var if not self.op3_val else self.op3_var + '({})'.format(self.op3_val)
         op4 = self.op4_var if not self.op4_val else self.op4_var + '({})'.format(self.op4_val)
-        return "{} = {} ({} {} {} {})".format(self.__internal_name__, op1, op2, op3, op4)
+        return "{} ({} {} {} {})".format(self.__internal_name__, op1, op2, op3, op4)
+
+
+class TAC_QuinaryNoRes(Aliased):
+    __internal_name__ = None
+
+    def __init__(self):
+        self.op1_var = None
+        self.op2_var = None
+        self.op3_var = None
+        self.op4_var = None
+        self.op5_var = None
+
+        self.op1_val = None
+        self.op2_val = None
+        self.op3_val = None
+        self.op4_val = None
+        self.op5_val = None
+
+    def parse(self, raw_stmt:TAC_Statement):
+        self.op1_var = raw_stmt.operands[0]
+        self.op2_var = raw_stmt.operands[1]
+        self.op3_var = raw_stmt.operands[2]
+        self.op4_var = raw_stmt.operands[3]
+        self.op5_var = raw_stmt.operands[3]
+
+        self.op1_val = raw_stmt.values.get(self.op1_var, None)
+        self.op2_val = raw_stmt.values.get(self.op2_var, None)
+        self.op3_val = raw_stmt.values.get(self.op3_var, None)
+        self.op4_val = raw_stmt.values.get(self.op4_var, None)
+        self.op5_val = raw_stmt.values.get(self.op4_var, None)
+
+    def __str__(self):
+        op1 = self.op1_var if not self.op1_val else self.op1_var + '({})'.format(self.op1_val)
+        op2 = self.op2_var if not self.op2_val else self.op2_var + '({})'.format(self.op2_val)
+        op3 = self.op3_var if not self.op3_val else self.op3_var + '({})'.format(self.op3_val)
+        op4 = self.op4_var if not self.op4_val else self.op4_var + '({})'.format(self.op4_val)
+        op5 = self.op5_var if not self.op5_val else self.op5_var + '({})'.format(self.op5_val)
+        return "{} ({} {} {} {} {})".format(self.__internal_name__, op1, op2, op3, op4, op5)
 
 class TAC_Senary(Aliased):
     __internal_name__ = None
@@ -315,6 +353,49 @@ class TAC_Senary(Aliased):
         op6 = self.op6_var if not self.op6_val else self.op6_var + '({})'.format(self.op6_val)
         res = self.res_var if not self.res_val else self.res_var + '({})'.format(self.res_val)
         return "{} = {} {} {} {} {} {} {}".format(res, self.__internal_name__, op1, op2, op3, op4, op5, op6)
+
+
+class TAC_SenaryNoRes(Aliased):
+    __internal_name__ = None
+
+    def __init__(self):
+        self.op1_var = None
+        self.op2_var = None
+        self.op3_var = None
+        self.op4_var = None
+        self.op5_var = None
+        self.op6_var = None
+
+        self.op1_val = None
+        self.op2_val = None
+        self.op3_val = None
+        self.op4_val = None
+        self.op5_val = None
+        self.op6_val = None
+
+    def parse(self, raw_stmt:TAC_Statement):
+        self.op1_var = raw_stmt.operands[0]
+        self.op2_var = raw_stmt.operands[1]
+        self.op3_var = raw_stmt.operands[2]
+        self.op4_var = raw_stmt.operands[3]
+        self.op5_var = raw_stmt.operands[4]
+        self.op6_var = raw_stmt.operands[5]
+
+        self.op1_val = raw_stmt.values.get(self.op1_var, None)
+        self.op2_val = raw_stmt.values.get(self.op2_var, None)
+        self.op3_val = raw_stmt.values.get(self.op3_var, None)
+        self.op4_val = raw_stmt.values.get(self.op4_var, None)
+        self.op5_val = raw_stmt.values.get(self.op5_var, None)
+        self.op6_val = raw_stmt.values.get(self.op6_var, None)
+
+    def __str__(self):
+        op1 = self.op1_var if not self.op1_val else self.op1_var + '({})'.format(self.op1_val)
+        op2 = self.op2_var if not self.op2_val else self.op2_var + '({})'.format(self.op2_val)
+        op3 = self.op3_var if not self.op3_val else self.op3_var + '({})'.format(self.op3_val)
+        op4 = self.op4_var if not self.op4_val else self.op4_var + '({})'.format(self.op4_val)
+        op5 = self.op5_var if not self.op5_val else self.op5_var + '({})'.format(self.op5_val)
+        op6 = self.op6_var if not self.op6_val else self.op6_var + '({})'.format(self.op6_val)
+        return "{} {} {} {} {} {} {}".format(self.__internal_name__, op1, op2, op3, op4, op5, op6)
 
 class TAC_Septenary(Aliased):
     __internal_name__ = None
