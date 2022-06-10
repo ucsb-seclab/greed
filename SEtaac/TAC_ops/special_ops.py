@@ -3,30 +3,13 @@ import z3
 from SEtaac import utils
 from SEtaac.memory import SymRead
 from SEtaac.utils import concrete, is_true
+from SEtaac.TAC_ops import TAC_Binary
 
 __all__ = ['TAC_Sha3']
 
 
-class TAC_Sha3:
+class TAC_Sha3(TAC_Binary):
     __internal_name__ = "SHA3"
-
-    def __init__(self):
-        self.op1_var = None
-        self.op2_var = None
-        self.res_var = None
-
-        self.op1_val = None
-        self.op2_val = None
-        self.res_val = None
-
-    def parse(self, raw_stmt):
-        self.op1_var = raw_stmt.operands[0]
-        self.op2_var = raw_stmt.operands[1]
-        self.res_var = raw_stmt.defs[0]
-
-        self.op1_val = raw_stmt.values.get(self.op1_var, None)
-        self.op2_val = raw_stmt.values.get(self.op2_var, None)
-        self.res_val = raw_stmt.values.get(self.res_var, None)
 
     def handle(self, state):
         succ = state.copy()
@@ -58,9 +41,3 @@ class TAC_Sha3:
 
         succ.pc = succ.next_statement()
         return [succ]
-
-    def __str__(self):
-        op1 = self.op1_var if not self.op1_val else self.op1_var + '({})'.format(self.op1_val)
-        op2 = self.op2_var if not self.op2_val else self.op2_var + '({})'.format(self.op2_val)
-        res = self.res_var if not self.res_val else self.res_var + '({})'.format(self.res_val)
-        return "{} = {} SHA3 {}".format(res, op1, op2)
