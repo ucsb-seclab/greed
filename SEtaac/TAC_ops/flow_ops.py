@@ -44,7 +44,7 @@ class TAC_Jumpi(TAC_BinaryNoRes):
                 succ.pc = dest
                 return [succ]
             else:
-                succ.pc = succ.next_statement()
+                succ.set_next_pc()
                 return [succ]
         else:
             # TODO: fix get_solver
@@ -62,7 +62,7 @@ class TAC_Jumpi(TAC_BinaryNoRes):
                 succ_true.pc = dest
                 succ_true.constraints.append(cond == 1)
 
-                succ_false.pc = succ.next_statement()
+                succ_false.set_next_pc()
                 succ_false.constraints.append(cond == 0)
 
                 return [succ_true, succ_false]
@@ -76,7 +76,7 @@ class TAC_Jumpi(TAC_BinaryNoRes):
                 return [succ]
             elif sat_false:
                 # if only the false branch is sat, step to the fallthrough branch
-                succ.pc = succ.next_statement()
+                succ.set_next_pc()
                 succ.constraints.append(cond == 0)
 
                 return [succ]

@@ -26,7 +26,7 @@ class TAC_Add(TAC_Binary):
 
         succ.registers[self.res_var] = arg1 + arg2
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -40,7 +40,7 @@ class TAC_Sub(TAC_Binary):
 
         succ.registers[self.res_var] = arg1 - arg2
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -54,7 +54,7 @@ class TAC_Mul(TAC_Binary):
 
         succ.registers[self.res_var] = arg1 * arg2
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -71,7 +71,7 @@ class TAC_Div(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), z3.UDiv(arg1, arg2))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -91,7 +91,7 @@ class TAC_Sdiv(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), arg1 / arg2)
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -108,7 +108,7 @@ class TAC_Mod(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), z3.URem(arg1, arg2))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -128,7 +128,7 @@ class TAC_Smod(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), z3.SRem(arg1, arg2))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -147,7 +147,7 @@ class TAC_Addmod(TAC_Ternary):
         else:
             succ.registers[self.res_var] = z3.If(arg3 == 0, z3.BitVecVal(0, 256), z3.URem((arg1 + arg2), arg3))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -166,7 +166,7 @@ class TAC_Mulmod(TAC_Ternary):
         else:
             succ.registers[self.res_var] = z3.If(arg3 == 0, z3.BitVecVal(0, 256), z3.URem((arg1 * arg2), arg3))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -188,7 +188,7 @@ class TAC_Exp(TAC_Binary):
             else:
                 raise SymbolicError('exponentiation with symbolic exponent currently not supported :-/')
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -218,7 +218,7 @@ class TAC_Signextend(TAC_Binary):
         else:
             raise SymbolicError('symbolic bitwidth for signextension is currently not supported')
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -235,7 +235,7 @@ class TAC_Lt(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(z3.ULT(arg1, arg2), z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -252,7 +252,7 @@ class TAC_Gt(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(z3.UGT(arg1, arg2), z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -270,7 +270,7 @@ class TAC_Slt(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(arg1 < arg2, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -288,7 +288,7 @@ class TAC_Sgt(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(arg1 > arg2, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -305,7 +305,7 @@ class TAC_Eq(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.If(arg1 == arg2, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -321,7 +321,7 @@ class TAC_Iszero(TAC_Unary):
         else:
             succ.registers[self.res_var] = z3.If(arg1 == 0, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -335,7 +335,7 @@ class TAC_And(TAC_Binary):
 
         succ.registers[self.res_var] = arg1 & arg2
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -349,7 +349,7 @@ class TAC_Or(TAC_Binary):
 
         succ.registers[self.res_var] = arg1 | arg2
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -363,7 +363,7 @@ class TAC_Xor(TAC_Binary):
 
         succ.registers[self.res_var] = arg1 ^ arg2
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -376,7 +376,7 @@ class TAC_Not(TAC_Unary):
 
         succ.registers[self.res_var] = ~arg1
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -404,7 +404,7 @@ class TAC_Byte(TAC_Binary):
         else:
             raise SymbolicError('symbolic byte-index not supported')
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -419,7 +419,7 @@ class TAC_Shl(TAC_Binary):
 
         succ.registers[self.res_var] = arg2 << arg1
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -437,7 +437,7 @@ class TAC_Shr(TAC_Binary):
         else:
             succ.registers[self.res_var] = z3.LShR(arg2, arg1)
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
 
 
@@ -452,5 +452,5 @@ class TAC_Sar(TAC_Binary):
 
         succ.registers[self.res_var] = utils.to_signed(arg2) >> arg1
 
-        succ.pc = succ.next_statement()
+        succ.set_next_pc()
         return [succ]
