@@ -38,7 +38,7 @@ class Aliased:
             self.__dict[key] = value
 
 
-class TAC_NoOperands(Aliased):
+class TAC_NoOperandsNoRes(Aliased):
     __internal_name__ = None
     def __init__(self):
         pass

@@ -4,7 +4,8 @@ from SEtaac import utils
 from SEtaac.memory import SymRead
 from SEtaac.utils import concrete, is_true
 
-from .base import TAC_Binary, TAC_BinaryNoRes, TAC_NoOperands, TAC_Ternary, TAC_TernaryNoRes, TAC_Quaternary, TAC_QuaternaryNoRes, TAC_Unary, TAC_UnaryNoRes
+from .base import TAC_Binary, TAC_BinaryNoRes, TAC_NoOperands, TAC_Ternary, TAC_TernaryNoRes, \
+                  TAC_Quaternary, TAC_QuaternaryNoRes, TAC_Unary, TAC_UnaryNoRes, TAC_NoOperandsNoRes
 from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
