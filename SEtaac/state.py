@@ -136,15 +136,15 @@ class SymbolicEVMState(AbstractEVMState):
         # todo: pc is the statement id
         return self.project.tac_parser.get_stmt_at(self.pc)
 
-    @property
     def set_next_pc(self):
         # todo: read next statement from dict
         next_pcs = get_next_pcs(self.curr_stmt)
         assert len(next_pcs) == 1
         self.pc = next_pcs[0]
 
-    def copy(self, new_xid):
+    def copy(self, new_xid=None):
         # todo: implement state copy
+        # todo: there shouldn't be any need to set a new xid, in most cases
         new_state = SymbolicEVMState(new_xid, code=self.code)
 
         new_state.pc = self.pc
