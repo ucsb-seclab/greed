@@ -40,6 +40,7 @@ class TAC_Add:
         arg2 = succ.registers[self.op2_var]
 
         succ.registers[self.res_var] = arg1 + arg2
+
         succ.pc = succ.next_statement()
         return [succ]
 
@@ -77,6 +78,7 @@ class TAC_Sub:
         arg2 = succ.registers[self.op2_var]
 
         succ.registers[self.res_var] = arg1 - arg2
+
         succ.pc = succ.next_statement()
         return [succ]
 
@@ -114,6 +116,7 @@ class TAC_Mul:
         arg2 = succ.registers[self.op2_var]
 
         succ.registers[self.res_var] = arg1 * arg2
+
         succ.pc = succ.next_statement()
         return [succ]
 
@@ -155,6 +158,7 @@ class TAC_Div:
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), z3.UDiv(arg1, arg2))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -198,6 +202,7 @@ class TAC_Sdiv:
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), arg1 / arg2)
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -238,6 +243,7 @@ class TAC_Mod:
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), z3.URem(arg1, arg2))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -281,6 +287,7 @@ class TAC_Smod:
         else:
             succ.registers[self.res_var] = z3.If(arg2 == 0, z3.BitVecVal(0, 256), z3.SRem(arg1, arg2))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -326,6 +333,7 @@ class TAC_Addmod:
         else:
             succ.registers[self.res_var] = z3.If(arg3 == 0, z3.BitVecVal(0, 256), z3.URem((arg1 + arg2), arg3))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -373,6 +381,7 @@ class TAC_Mulmod:
         else:
             succ.registers[self.res_var] = z3.If(arg3 == 0, z3.BitVecVal(0, 256), z3.URem((arg1 * arg2), arg3))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -419,6 +428,7 @@ class TAC_Exp:
             else:
                 raise SymbolicError('exponentiation with symbolic exponent currently not supported :-/')
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -472,6 +482,7 @@ class TAC_Signextend:
         else:
             raise SymbolicError('symbolic bitwidth for signextension is currently not supported')
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -512,6 +523,7 @@ class TAC_Lt:
         else:
             succ.registers[self.res_var] = z3.If(z3.ULT(arg1, arg2), z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -552,6 +564,7 @@ class TAC_Gt:
         else:
             succ.registers[self.res_var] = z3.If(z3.UGT(arg1, arg2), z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -593,6 +606,7 @@ class TAC_Slt:
         else:
             succ.registers[self.res_var] = z3.If(arg1 < arg2, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -634,6 +648,7 @@ class TAC_Sgt:
         else:
             succ.registers[self.res_var] = z3.If(arg1 > arg2, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -674,6 +689,7 @@ class TAC_Eq:
         else:
             succ.registers[self.res_var] = z3.If(arg1 == arg2, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -709,6 +725,7 @@ class TAC_Iszero:
         else:
             succ.registers[self.res_var] = z3.If(arg1 == 0, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -745,6 +762,7 @@ class TAC_And:
 
         succ.registers[self.res_var] = arg1 & arg2
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -782,6 +800,7 @@ class TAC_Or:
 
         succ.registers[self.res_var] = arg1 | arg2
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -819,6 +838,7 @@ class TAC_Xor:
 
         succ.registers[self.res_var] = arg1 ^ arg2
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -851,6 +871,7 @@ class TAC_Not:
 
         succ.registers[self.res_var] = ~arg1
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -900,6 +921,7 @@ class TAC_Byte:
         else:
             raise SymbolicError('symbolic byte-index not supported')
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -937,6 +959,7 @@ class TAC_Shl:
 
         succ.registers[self.res_var] = arg2 << arg1
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -977,6 +1000,7 @@ class TAC_Shr:
         else:
             succ.registers[self.res_var] = z3.LShR(arg2, arg1)
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
@@ -1014,6 +1038,7 @@ class TAC_Sar:
 
         succ.registers[self.res_var] = utils.to_signed(arg2) >> arg1
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):

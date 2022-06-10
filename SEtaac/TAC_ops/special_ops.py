@@ -56,6 +56,7 @@ class TAC_Sha3:
                 state.sha_constraints[sha] = sha_data
             succ.registers[self.res_var] = sha
 
+        succ.pc = succ.next_statement()
         return [succ]
 
     def __str__(self):
