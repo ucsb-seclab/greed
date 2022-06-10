@@ -678,7 +678,7 @@ class TAC_Shl:
         shift = self.shift_var if not self.shift_val else self.shift_var + '({})'.format(self.shift_val)
         op2 = self.op2_var if not self.op2_val else self.op2_var + '({})'.format(self.op2_val)
         res = self.res_var if not self.res_val else self.res_var + '({})'.format(self.res_val)
-        return "{} = {} << {}".format(res, shift, op2)
+        return "{} = {} << {}".format(res, op2, shift)
 
 class TAC_Shr:
     __internal_name__ = "SHR"
@@ -707,7 +707,7 @@ class TAC_Shr:
         shift = self.shift_var if not self.shift_val else self.shift_var + '({})'.format(self.shift_val)
         op2 = self.op2_var if not self.op2_val else self.op2_var + '({})'.format(self.op2_val)
         res = self.res_var if not self.res_val else self.res_var + '({})'.format(self.res_val)
-        return "{} = {} >> {}".format(res, shift, op2)
+        return "{} = {} >> {}".format(res, op2, shift)
 
 class TAC_Sar:
     __internal_name__ = "SAR"
