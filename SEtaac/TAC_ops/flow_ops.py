@@ -5,10 +5,10 @@ from SEtaac import utils
 from SEtaac.utils import concrete, is_true, get_solver
 from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException
 
-from .base import TAC_UnaryNoRes, TAC_BinaryNoRes
+from .base import TAC_Septenary, TAC_Senary, TAC_UnaryNoRes, TAC_BinaryNoRes
 from ..state import SymbolicEVMState
 
-__all__ = ['TAC_Jump', 'TAC_Jumpi']
+__all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode', 'TAC_Return', 'TAC_Delegatecall', 'TAC_Staticall']
 
 class TAC_Jump(TAC_UnaryNoRes):
     __internal_name__ = "JUMP"
@@ -26,9 +26,8 @@ class TAC_Jump(TAC_UnaryNoRes):
 
 class TAC_Jumpi(TAC_BinaryNoRes):
     __internal_name__ = "JUMPI"
-    def __init__(self, condition, destination):
-        self.condition = condition
-        self.destination = destination
+    __aliases__ = {'destination_var': 'op1_var', 'destination_val': 'op1_val', 
+                   'condition_var': 'op2_var', 'condition_val': 'op2_val'}
 
     def handler(self, state:SymbolicEVMState):
         # TODO: implement jumpi
@@ -84,3 +83,69 @@ class TAC_Jumpi(TAC_BinaryNoRes):
                 # nothing is sat
                 return []
 
+class TAC_Call(TAC_Septenary):
+    __internal_name__ = "CALL"
+    __aliases__ = {
+                   'gas_var'       : 'op1_var', 'gas_val'       : 'op1_val', 
+                   'address_var'   : 'op2_var', 'address_val'   : 'op2_val',
+                   'value_var'     : 'op3_var', 'value_val'     : 'op3_val',
+                   'argsOffset_var': 'op4_var', 'argsOffset_val': 'op4_val',
+                   'argsSize_var'  : 'op5_var', 'argsSize_val'  : 'op5_val',
+                   'retOffset_var' : 'op6_var', 'retOffset_val' : 'op6_val',
+                   'retSize_var'   : 'op7_var', 'retSize_val'   : 'op7_val',
+                   'success_var'   : 'res_var', 'success_val'   : 'res_val'
+                   }
+    def handler(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Callcode(TAC_Septenary):
+    __internal_name__ = "CALLCODE"
+    __aliases__ = {
+                   'gas_var'       : 'op1_var', 'gas_val'       : 'op1_val', 
+                   'address_var'   : 'op2_var', 'address_val'   : 'op2_val',
+                   'value_var'     : 'op3_var', 'value_val'     : 'op3_val',
+                   'argsOffset_var': 'op4_var', 'argsOffset_val': 'op4_val',
+                   'argsSize_var'  : 'op5_var', 'argsSize_val'  : 'op5_val',
+                   'retOffset_var' : 'op6_var', 'retOffset_val' : 'op6_val',
+                   'retSize_var'   : 'op7_var', 'retSize_val'   : 'op7_val',
+                   'success_var'   : 'res_var', 'success_val'   : 'res_val'
+                   }
+    def handler(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Delegatecall(TAC_Senary):
+    __internal_name__ = "DELEGATECALL"
+    __aliases__ = {
+                   'gas_var'       : 'op1_var', 'gas_val'       : 'op1_val', 
+                   'address_var'   : 'op2_var', 'address_val'   : 'op2_val',
+                   'argsOffset_var': 'op3_var', 'argsOffset_val': 'op3_val',
+                   'argsSize_var'  : 'op4_var', 'argsSize_val'  : 'op4_val',
+                   'retOffset_var' : 'op5_var', 'retOffset_val' : 'op5_val',
+                   'retSize_var'   : 'op6_var', 'retSize_val'   : 'op6_val',
+                   'success_var'   : 'res_var', 'success_val'   : 'res_val'
+                   }
+    def handler(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Staticcall(TAC_Senary):
+    __internal_name__ = "STATICCALL"
+    __aliases__ = {
+                   'gas_var'       : 'op1_var', 'gas_val'       : 'op1_val', 
+                   'address_var'   : 'op2_var', 'address_val'   : 'op2_val',
+                   'argsOffset_var': 'op3_var', 'argsOffset_val': 'op3_val',
+                   'argsSize_var'  : 'op4_var', 'argsSize_val'  : 'op4_val',
+                   'retOffset_var' : 'op5_var', 'retOffset_val' : 'op5_val',
+                   'retSize_var'   : 'op6_var', 'retSize_val'   : 'op6_val',
+                   'success_var'   : 'res_var', 'success_val'   : 'res_val'
+                   }
+    def handler(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Return(TAC_BinaryNoRes):
+    __internal_name__ = "RETURN"
+    __aliases__ = {
+                   'offset_var'    : 'op1_var', 'offset_val'    : 'op1_val', 
+                   'size_var'      : 'op2_var', 'size_val'      : 'op2_val',
+                   }
+    def handler(self, state:SymbolicEVMState):
+        pass
