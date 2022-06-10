@@ -88,5 +88,5 @@ class TAC_Jumpi:
                 return []
 
     def __str__(self):
-        return "JUMPI {} {}".format(self.condition, self.destination)
+        return "JUMPI {} {}".format(self.destination, self.condition)
 
