@@ -1,22 +1,71 @@
 
-__all__ = ['TAC_Mstore']
+import z3
 
-class TAC_Mstore:
+from SEtaac import utils
+from SEtaac.exceptions import SymbolicError
+from SEtaac.utils import concrete
+
+from .base import TAC_BinaryNoRes, TAC_NoOperands, TAC_Unary
+                  
+from ..state import SymbolicEVMState
+
+__all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize']
+
+class TAC_Mstore(TAC_BinaryNoRes):
     __internal_name__ = "MSTORE"
+    __aliases__ = {
+                   'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
+                   'value_var'  : 'op2_var', 'value_val'  : 'op2_val'
+                  }
 
-    def __init__(self):
-        self.offset_var = None
-        self.data_var = None
-        self.offset_val = None
-        self.data_val = None
-        
-    def parse(self, raw_stmt):
-        self.offset_var = raw_stmt.operands[0]
-        self.data_var = raw_stmt.operands[1]
-        self.offset_val = raw_stmt.values.get(self.offset_var, None)
-        self.data_val = raw_stmt.values.get(self.data_var, None) 
+    def handle(self, state:SymbolicEVMState):
+        pass
 
-    def __str__(self):
-        op1 = self.offset_var if not self.offset_val else self.offset_var + '({})'.format(self.offset_val)
-        op2 = self.data_var if not self.data_val else self.data_var + '({})'.format(self.data_val)
-        return "MSTORE {} {}".format(op1,op2)
+class TAC_Mstore8(TAC_BinaryNoRes):
+    __internal_name__ = "MSTORE8"
+    __aliases__ = {
+                   'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
+                   'value_var'  : 'op2_var', 'value_val'  : 'op2_val'
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Mload(TAC_Unary):
+    __internal_name__ = "MLOAD"
+    __aliases__ = {
+                   'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
+                   'value_var'  : 'res_var', 'value_val'  : 'res_val'
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Sload(TAC_Unary):
+    __internal_name__ = "SLOAD"
+    __aliases__ = {
+                   'key_var'    : 'op1_var', 'key_val'    : 'op1_val',
+                   'value_var'  : 'res_var', 'value_val'  : 'res_val'
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Sstore(TAC_BinaryNoRes):
+    __internal_name__ = "SSTORE"
+    __aliases__ = {
+                   'key_var'    : 'op1_var', 'key_val'    : 'op1_val',
+                   'value_var'  : 'op2_var', 'value_val'  : 'op2_val'
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
+class TAC_Msize(TAC_NoOperands):
+    __internal_name__ = "MSIZE"
+    __aliases__ = {
+                   'size_var'  : 'res_var', 'size_val'  : 'res_val'
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass

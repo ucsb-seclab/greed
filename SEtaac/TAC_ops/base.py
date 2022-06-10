@@ -40,6 +40,15 @@ class Aliased:
 
 class TAC_NoOperands(Aliased):
     __internal_name__ = None
+    def __init__(self):
+        pass
+    def parse(self, raw_stmt:TAC_Statement):
+        pass
+    def __str__(self):
+        return "{}".format(self.__internal_name__)
+
+class TAC_NoOperands(Aliased):
+    __internal_name__ = None
 
     def __init__(self):
         self.res_var = None

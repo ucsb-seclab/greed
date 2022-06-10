@@ -4,7 +4,7 @@ from SEtaac import utils
 from SEtaac.memory import SymRead
 from SEtaac.utils import concrete, is_true
 
-from .base import TAC_Binary, TAC_BinaryNoRes, TAC_NoOperands, TAC_Ternary, TAC_TernaryNoRes, TAC_Quaternary, TAC_QuaternaryNoRes, TAC_Unary
+from .base import TAC_Binary, TAC_BinaryNoRes, TAC_NoOperands, TAC_Ternary, TAC_TernaryNoRes, TAC_Quaternary, TAC_QuaternaryNoRes, TAC_Unary, TAC_UnaryNoRes
 from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
@@ -12,7 +12,7 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Codesize', 'TAC_Codecopy', 'TAC_Gasprice', 'TAC_Extcodesize', 'TAC_Extcodecopy',
            'TAC_Returndatasize', 'TAC_Returndatacopy', 'TAC_Extcodehash', 'TAC_Blockhash', 'TAC_Coinbase',
            'TAC_Timestamp', 'TAC_Number', 'TAC_Difficulty', 'TAC_Chainid', 'TAC_Gaslimit', 'TAC_Selfbalance',
-           'TAC_Basefee', 'TAC_Create', 'TAC_Create2' 'TAC_Revert']
+           'TAC_Basefee', 'TAC_Create', 'TAC_Create2' 'TAC_Revert', 'TAC_Pc', 'TAC_Invalid', 'TAC_Selfdestruct']
 
 
 class TAC_Sha3(TAC_Binary):
@@ -320,6 +320,34 @@ class TAC_Create2(TAC_Quaternary):
                    'size_var'       : 'op3_var', 'size_val'    : 'op3_val',
                    'salt_var'       : 'op4_var', 'salt_val'    : 'op4_val',
                    'address_var'    : 'res_var', 'address_val' : 'res_val'
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
+
+
+class TAC_Pc(TAC_NoOperands):
+    __internal_name__ = "PC"
+    __aliases__ = {
+                   'counter_var': 'res_var', 'counter_val': 'res_val',
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
+
+class TAC_Invalid(TAC_NoOperandsNoRes):
+    __internal_name__ = "INVALID"
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
+
+class TAC_Selfdestruct(TAC_UnaryNoRes):
+    __internal_name__ = "SELFDESTRUCT"
+    __aliases__ = {
+                   'address_var': 'op1_var', 'address_val': 'op1_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
