@@ -183,114 +183,6 @@ class SymbolicEVMState(AbstractEVMState):
         if self.handler_should_increment_pc[ins.name]:
             self.pc += 1
 
-    def address_handler(self, ):
-        return utils.ctx_or_symbolic('ADDRESS', self.ctx, self.xid)
-
-    def balance_handler(self, s0):
-        if concrete(s0):
-            return utils.ctx_or_symbolic('BALANCE-%x' % s0, self.ctx, self.xid)
-        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('ADDRESS', self.ctx, self.xid))):
-            return self.balance
-        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('ORIGIN', self.ctx, self.xid))):
-            return utils.ctx_or_symbolic('BALANCE-ORIGIN', self.ctx, self.xid)
-        elif is_true(utils.addr(s0) == utils.addr(utils.ctx_or_symbolic('CALLER', self.ctx, self.xid))):
-            return utils.ctx_or_symbolic('BALANCE-CALLER', self.ctx, self.xid)
-        else:
-            raise SymbolicError('balance of symbolic address (%s)' % str(z3.simplify(s0)))
-
-    def origin_handler(self, ):
-        return utils.ctx_or_symbolic('ORIGIN', self.ctx, self.xid)
-
-    def caller_handler(self, ):
-        return utils.ctx_or_symbolic('CALLER', self.ctx, self.xid)
-
-    def callvalue_handler(self, ):
-        return utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
-
-    def calldataload_handler(self, s0):
-        self.constraints.append(z3.UGE(self.calldatasize, s0 + 32))
-        self.calldata_accesses.append(s0 + 32)
-        if not concrete(s0):
-            self.constraints.append(z3.ULT(s0, self.MAX_CALLDATA_SIZE))
-        return z3.Concat([self.calldata[s0 + i] for i in range(32)])
-
-    def calldatasize_handler(self, ):
-        return self.calldatasize
-
-    def calldatacopy_handler(self, mstart, dstart, size):
-        self.constraints.append(z3.UGE(self.calldatasize, dstart + size))
-        self.calldata_accesses.append(dstart + size)
-        if not concrete(dstart):
-            self.constraints.append(z3.ULT(dstart, self.MAX_CALLDATA_SIZE))
-        if concrete(size):
-            for i in range(size):
-                self.memory[mstart + i] = self.calldata[dstart + i]
-        else:
-            self.constraints.append(z3.ULT(size, self.MAX_CALLDATA_SIZE))
-            for i in range(self.MAX_CALLDATA_SIZE):
-                self.memory[mstart + i] = z3.If(size < i, self.memory[mstart + i], self.calldata[dstart + i])
-
-    def codesize_handler(self, ):
-        return len(self.code)
-
-    def codecopy_handler(self, mstart, dstart, size):
-        if concrete(mstart) and concrete(dstart) and concrete(size):
-            self.memory.extend(mstart, size)
-            for i in range(size):
-                if dstart + i < len(self.code):
-                    self.memory[mstart + i] = self.code[dstart + i]
-                else:
-                    self.memory[mstart + i] = 0
-        else:
-            raise SymbolicError('Symbolic code index @ %s' % self.pc)
-
-    def returndatacopy_handler(self, ):
-        raise ExternalData('RETURNDATACOPY')
-
-    def returndatasize_handler(self, ):
-        raise ExternalData('RETURNDATASIZE')
-
-    def gasprice_handler(self, ):
-        return utils.ctx_or_symbolic('GASPRICE', self.ctx, self.xid)
-
-    def extcodesize_handler(self, s0):
-        if concrete(s0):
-            return utils.ctx_or_symbolic('CODESIZE-%x' % s0, self.ctx, self.xid)
-        elif is_true(s0 == utils.addr(utils.ctx_or_symbolic('ADDRESS', self.ctx, self.xid))):
-            return utils.ctx_or_symbolic('CODESIZE-ADDRESS', self.ctx, self.xid)
-        elif is_true(s0 == utils.addr(utils.ctx_or_symbolic('CALLER', self.ctx, self.xid))):
-            return utils.ctx_or_symbolic('CODESIZE-CALLER', self.ctx, self.xid)
-        else:
-            raise SymbolicError('codesize of symblic address')
-
-    def extcodecopy_handler(self, ):
-        raise ExternalData('EXTCODECOPY')
-
-    # Block info
-    def blockhash_handler(self, s0):
-        if not concrete(s0):
-            raise SymbolicError('symbolic blockhash index')
-        return utils.ctx_or_symbolic('BLOCKHASH[%d]' % s0, self.ctx, self.xid)
-
-    def coinbase_handler(self, ):
-        return utils.ctx_or_symbolic('COINBASE', self.ctx, self.xid)
-
-    def timestamp_handler(self, ):
-        ts = utils.ctx_or_symbolic('TIMESTAMP', self.ctx, self.xid)
-        if not concrete(ts):
-            self.constraints.append(z3.UGE(ts, self.min_timestamp))
-            self.constraints.append(z3.ULE(ts, self.max_timestamp))
-        return ts
-
-    def number_handler(self, ):
-        return utils.ctx_or_symbolic('NUMBER', self.ctx, self.xid)
-
-    def difficulty_handler(self, ):
-        return utils.ctx_or_symbolic('DIFFICULTY', self.ctx, self.xid)
-
-    def gaslimit_handler(self, ):
-        return utils.ctx_or_symbolic('GASLIMIT', self.ctx, self.xid)
-
     # VM state manipulations
     def mload_handler(self, s0):
         self.memory.extend(s0, 32)
@@ -330,9 +222,6 @@ class SymbolicEVMState(AbstractEVMState):
     def sstore_handler(self, s0, s1):
         self.storage[s0] = s1
 
-    def pc_handler(self, ):
-        return self.pc
-
     def msize_handler(self, ):
         return len(self.memory)
 
@@ -359,12 +248,6 @@ class SymbolicEVMState(AbstractEVMState):
     #     topics = [stk.pop() for _ in range(depth)]
     #     self.memory.extend(mstart, msz)
     #     # Ignore external effects...
-
-    # Create a new contract
-    def create_handler(self, s0, s1, s2):
-        self.constraints.append(z3.UGE(self.balance, s0))
-        self.balance -= s0
-        return utils.addr(z3.BitVec('EXT_CREATE_%d_%d' % (self.instruction_count, self.xid), 256))
 
     # Calls
     def _call_handler(self, s0, s1, s2, s3, s4, s5, s6):
@@ -406,17 +289,6 @@ class SymbolicEVMState(AbstractEVMState):
     def return_handler(self, s0, s1):
         if concrete(s0) and concrete(s1):
             self.memory.extend(s0, s1)
-        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
-        self.halt = True
-
-    def revert_handler(self, s0, s1):
-        if not concrete(s0) or not concrete(s1):
-            raise SymbolicError('symbolic memory index')
-        self.memory.extend(s0, s1)
-        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
-        self.halt = True
-
-    def selfdestruct_handler(self, s0):
         self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
         self.halt = True
 
