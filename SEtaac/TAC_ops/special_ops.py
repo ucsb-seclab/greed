@@ -10,7 +10,7 @@ __all__ = ['TAC_Sha3']
 class TAC_Sha3:
     __internal_name__ = "SHA3"
 
-    def __init__(self, op1, res):
+    def __init__(self):
         self.op1_var = None
         self.op2_var = None
         self.res_var = None
