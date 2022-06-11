@@ -122,4 +122,9 @@ class TAC_Const:
         return "{} = {}".format(self.var, self.val)
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+
+        succ.registers[self.var] = self.val
+
+        succ.set_next_pc()
+        return [succ]
