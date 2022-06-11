@@ -39,6 +39,8 @@ class TAC_Callprivate:
         self.destination_val = raw_stmt.values.get(self.destination_var, None)
 
     def handle(self, state:SymbolicEVMState):
+        # todo: use succ.callstack to implement callprivate and returnprivate
+        # in returnprivate assert that we are returning from the last pushed context
         pass
 
     def __str__(self):
