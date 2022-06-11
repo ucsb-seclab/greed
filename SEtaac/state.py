@@ -183,48 +183,6 @@ class SymbolicEVMState(AbstractEVMState):
         if self.handler_should_increment_pc[ins.name]:
             self.pc += 1
 
-    # VM state manipulations
-    def mload_handler(self, s0):
-        self.memory.extend(s0, 32)
-        mm = [self.memory[s0 + i] for i in range(32)]
-        if all(concrete(m) for m in mm):
-            return utils.bytes_to_int(self.memory.read(s0, 32))
-        else:
-            v = z3.simplify(z3.Concat([m if not concrete(m) else z3.BitVecVal(m, 8) for m in mm]))
-            if z3.is_bv_value(v):
-                return v.as_long()
-            else:
-                return v
-
-    def mstore_handler(self, s0, s1):
-        self.memory.extend(s0, 32)
-        if concrete(s1):
-            self.memory.write(s0, 32, utils.encode_int32(s1))
-        else:
-            for i in range(32):
-                m = z3.simplify(z3.Extract((31 - i) * 8 + 7, (31 - i) * 8, s1))
-                if z3.is_bv_value(m):
-                    self.memory[s0 + i] = m.as_long()
-                else:
-                    self.memory[s0 + i] = m
-
-    def mstore8_handler(self, s0, s1):
-        self.memory.extend(s0, 1)
-        self.memory[s0] = s1 % 256
-
-    def sload_handler(self, s0):
-        v = z3.simplify(self.storage[s0])
-        if z3.is_bv_value(v):
-            return v.as_long()
-        else:
-            return v
-
-    def sstore_handler(self, s0, s1):
-        self.storage[s0] = s1
-
-    def msize_handler(self, ):
-        return len(self.memory)
-
     def gas_handler(self, ):
         return z3.BitVec('GAS_%x' % self.instruction_count, 256)
 
@@ -248,49 +206,6 @@ class SymbolicEVMState(AbstractEVMState):
     #     topics = [stk.pop() for _ in range(depth)]
     #     self.memory.extend(mstart, msz)
     #     # Ignore external effects...
-
-    # Calls
-    def _call_handler(self, s0, s1, s2, s3, s4, s5, s6):
-        ostart = s5 if concrete(s5) else z3.simplify(s5)
-        olen = s6 if concrete(s6) else z3.simplify(s6)
-
-        if concrete(s1) and s1 <= 8:
-            if s1 == 4:
-                logging.info("Calling precompiled identity contract")
-                istart = s3 if concrete(s3) else z3.simplify(s3)
-                ilen = s4 if concrete(s4) else z3.simplify(s4)
-                self.memory.copy(istart, ilen, ostart, olen)
-                return 1
-            else:
-                raise SymbolicError("Precompiled contract %d not implemented" % s1)
-        else:
-            for i in range(olen):
-                self.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (self.instruction_count, i, self.xid), 8)
-            logging.info("Calling contract %s (%d_%d)" % (s1, self.instruction_count, self.xid))
-            return z3.BitVec('CALLRESULT_%d_%d' % (self.instruction_count, self.xid), 256)
-
-    def call_handler(self, s0, s1, s2, s3, s4, s5, s6):
-        self.constraints.append(z3.UGE(self.balance, s2))
-        self.balance -= s2
-        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
-
-    def callcode_handler(self, s0, s1, s2, s3, s4, s5, s6):
-        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
-
-    def delegatecall_handler(self, s0, s1, s3, s4, s5, s6):
-        s2 = utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
-        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
-
-    def staticcall_handler(self, s0, s1, s3, s4, s5, s6):
-        s2 = 0
-        return self._call_handler(s0, s1, s2, s3, s4, s5, s6)
-
-    # Terminate
-    def return_handler(self, s0, s1):
-        if concrete(s0) and concrete(s1):
-            self.memory.extend(s0, s1)
-        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
-        self.halt = True
 
     def stop_handler(self, ):
         self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
