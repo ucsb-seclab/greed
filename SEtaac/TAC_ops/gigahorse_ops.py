@@ -91,7 +91,6 @@ class TAC_Phi:
         self.num_args = None
         self.res_var = None
         self.res_val = None 
-        pass
     
     def parse(self, raw_stmt):
         self.args_var = [x for x in raw_stmt.operands]
