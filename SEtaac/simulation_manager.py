@@ -5,7 +5,7 @@ import sys
 
 class SimulationManager:
     def __init__(self, entry_state, keep_predecessors=0):
-        self.entry_state = entry_state
+        self.active.append(entry_state)
 
         self.keep_predecessors = keep_predecessors
         self.error = list()
@@ -20,10 +20,6 @@ class SimulationManager:
             'found': [],
             'pruned': []
         }
-
-        # todo: create initial state
-        #state = SymbolicEVMState(xid, program)
-        #self.active.append(state)
 
     def set_error(self, s):
         logging.error(f'[ERROR] {s}')
