@@ -26,7 +26,10 @@ class TACparser:
         pass
 
     def parse(self, block_id):
+
         stmts = []
+        
+        l.debug("Parsing block at {}".format(block_id))
         
         # If we have already parsed this, no need to parse it again :) 
         if block_id in self.TAC_code_cache.keys():

@@ -68,6 +68,3 @@ class FactoryObjects:
     
     def block(self, block_id):
         return self.TAC_parser.parse(block_id)
-
-    def tacParser(self):
-        return self.TAC_parser

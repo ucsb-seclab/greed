@@ -18,6 +18,7 @@ __all__ = [
 
 class TAC_Add(TAC_Binary):
     __internal_name__ = "ADD"
+    __aliases__ = {}
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
@@ -32,7 +33,8 @@ class TAC_Add(TAC_Binary):
 
 class TAC_Sub(TAC_Binary):
     __internal_name__ = "SUB"
-
+    __aliases__ = {}
+    
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg1 = succ.registers[self.op1_var]
@@ -46,6 +48,7 @@ class TAC_Sub(TAC_Binary):
 
 class TAC_Mul(TAC_Binary):
     __internal_name__ = "MUL"
+    __aliases__ = {}
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
@@ -60,6 +63,7 @@ class TAC_Mul(TAC_Binary):
 
 class TAC_Div(TAC_Binary):
     __internal_name__ = "DIV"
+    __aliases__ = {}
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
@@ -77,6 +81,7 @@ class TAC_Div(TAC_Binary):
 
 class TAC_Sdiv(TAC_Binary):
     __internal_name__ = "SDIV"
+    __aliases__ = {}
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
@@ -97,6 +102,7 @@ class TAC_Sdiv(TAC_Binary):
 
 class TAC_Mod(TAC_Binary):
     __internal_name__ = "MOD"
+    __aliases__ = {}
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()

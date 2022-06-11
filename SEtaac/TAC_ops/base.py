@@ -21,25 +21,29 @@ class TAC_Statement:
                                                                                                             self.values)
 
 class Aliased:
-    __aliases__ = dict()
-
+    
+    def __init__(self):
+        __aliases__ = []
+    
     def __getattr__(self, key):
-        if key in self.__aliases__:
+        if key in object.__getattribute__(self, "__aliases__"):
             aliased_key = self.__aliases__[key]
-            return self.__dict[aliased_key]
+            return object.__getattribute__(self, aliased_key)
         else:
-            return self.__dict[key]
+            return object.__getattribute__(self, key)
 
     def __setattr__(self, key, value):
-        if key in self.__aliases__:
+        if key in object.__getattribute__(self, "__aliases__"):
             aliased_key = self.__aliases__[key]
-            self.__dict[aliased_key] = value
+            object.__setattr__(self, aliased_key, value)
         else:
-            self.__dict[key] = value
+            object.__setattr__(self, key, value)
 
 
 class TAC_NoOperandsNoRes(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
+
     def __init__(self):
         pass
     def parse(self, raw_stmt:TAC_Statement):
@@ -49,6 +53,7 @@ class TAC_NoOperandsNoRes(Aliased):
 
 class TAC_NoOperands(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.res_var = None
@@ -64,6 +69,7 @@ class TAC_NoOperands(Aliased):
 
 class TAC_Unary(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -86,6 +92,7 @@ class TAC_Unary(Aliased):
 
 class TAC_UnaryNoRes(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -101,6 +108,7 @@ class TAC_UnaryNoRes(Aliased):
 
 class TAC_Binary(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -129,6 +137,7 @@ class TAC_Binary(Aliased):
 
 class TAC_BinaryNoRes(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -150,6 +159,7 @@ class TAC_BinaryNoRes(Aliased):
 
 class TAC_Ternary(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -182,6 +192,7 @@ class TAC_Ternary(Aliased):
 
 class TAC_TernaryNoRes(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -209,6 +220,7 @@ class TAC_TernaryNoRes(Aliased):
 
 class TAC_Quaternary(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -248,6 +260,7 @@ class TAC_Quaternary(Aliased):
 
 class TAC_QuaternaryNoRes(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -281,6 +294,7 @@ class TAC_QuaternaryNoRes(Aliased):
 
 class TAC_QuinaryNoRes(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -318,6 +332,7 @@ class TAC_QuinaryNoRes(Aliased):
 
 class TAC_Senary(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -366,6 +381,7 @@ class TAC_Senary(Aliased):
 
 class TAC_SenaryNoRes(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None
@@ -408,6 +424,7 @@ class TAC_SenaryNoRes(Aliased):
 
 class TAC_Septenary(Aliased):
     __internal_name__ = None
+    __aliases__ = {}
 
     def __init__(self):
         self.op1_var = None

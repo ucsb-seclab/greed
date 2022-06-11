@@ -119,7 +119,6 @@ class CFG(object):
     def _import_cfg_gigahorse(self):
         # TODO
         # here parse the TAC_cfg_raw 
-        import ipdb; ipdb.set_trace()
         pass
 
     @property
