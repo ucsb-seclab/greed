@@ -129,6 +129,12 @@ class SimulationManager:
 
     def single_step_state(self, state):
         successors = state.curr_stmt.handle(state)
+
+        # todo: somewhere we should take care of stuff that used to be in state.step()
+        # state.trace.append(state.pc)
+        # state.instruction_count += 1
+        # state.gas -= ins.gas
+
         return successors
 
     def run(self, find=lambda s: False):
