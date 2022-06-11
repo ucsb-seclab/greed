@@ -9,7 +9,7 @@ from .base import TAC_Septenary, TAC_Senary, TAC_UnaryNoRes, TAC_BinaryNoRes
 from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode', 'TAC_Return', 
-           'TAC_Delegatecall', 'TAC_Staticall', ]
+           'TAC_Delegatecall', 'TAC_Staticcall', ]
 
 class TAC_Jump(TAC_UnaryNoRes):
     __internal_name__ = "JUMP"
