@@ -186,27 +186,6 @@ class SymbolicEVMState(AbstractEVMState):
     def gas_handler(self, ):
         return z3.BitVec('GAS_%x' % self.instruction_count, 256)
 
-    # Logs (aka "events")
-    # todo: implement logs
-    # elif op[:3] == 'LOG':
-    #     """
-    #     0xa0 ... 0xa4, 32/64/96/128/160 + len(data) gas
-    #     a. Opcodes LOG0...LOG4 are added, takes 2-6 stack arguments
-    #             MEMSTART MEMSZ (TOPIC1) (TOPIC2) (TOPIC3) (TOPIC4)
-    #     b. Logs are kept track of during tx execution exactly the same way as selfdestructs
-    #        (except as an ordered list, not a set).
-    #        Each log is in the form [address, [topic1, ... ], data] where:
-    #        * address is what the ADDRESS opcode would output
-    #        * data is self.memory[MEMSTART: MEMSTART + MEMSZ]
-    #        * topics are as provided by the opcode
-    #     c. The ordered list of logs in the transaction are expressed as [log0, log1, ..., logN].
-    #     """
-    #     depth = int(op[3:])
-    #     mstart, msz = stk.pop(), stk.pop()
-    #     topics = [stk.pop() for _ in range(depth)]
-    #     self.memory.extend(mstart, msz)
-    #     # Ignore external effects...
-
     def stop_handler(self, ):
         self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
         self.halt = True

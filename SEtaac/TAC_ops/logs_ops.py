@@ -1,9 +1,3 @@
-import z3
-
-from SEtaac import utils
-from SEtaac.exceptions import SymbolicError
-from SEtaac.utils import concrete
-
 from .base import TAC_BinaryNoRes, TAC_TernaryNoRes, TAC_QuaternaryNoRes, TAC_QuinaryNoRes, TAC_SenaryNoRes
                   
 from ..state import SymbolicEVMState
@@ -11,6 +5,21 @@ from ..state import SymbolicEVMState
 __all__ = [
     'TAC_Log0','TAC_Log1','TAC_Log2','TAC_Log3','TAC_Log4'
 ]
+
+
+"""
+aka. "EVENTS"
+0xa0 ... 0xa4, 32/64/96/128/160 + len(data) gas
+a. Opcodes LOG0...LOG4 are added, takes 2-6 stack arguments
+        MEMSTART MEMSZ (TOPIC1) (TOPIC2) (TOPIC3) (TOPIC4)
+b. Logs are kept track of during tx execution exactly the same way as selfdestructs
+   (except as an ordered list, not a set).
+   Each log is in the form [address, [topic1, ... ], data] where:
+   * address is what the ADDRESS opcode would output
+   * data is self.memory[MEMSTART: MEMSTART + MEMSZ]
+   * topics are as provided by the opcode
+c. The ordered list of logs in the transaction are expressed as [log0, log1, ..., logN].
+"""
 
 
 class TAC_Log0(TAC_BinaryNoRes):
@@ -21,7 +30,18 @@ class TAC_Log0(TAC_BinaryNoRes):
                   }
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+        arg1 = succ.registers[self.op1_var]
+        arg2 = succ.registers[self.op2_var]
+
+        mstart, msz = arg1, arg2
+        succ.memory.extend(mstart, msz)
+        # Ignore external effects...
+        # depth = 0
+        # topics = []
+
+        succ.set_next_pc()
+        return [succ]
 
 class TAC_Log1(TAC_TernaryNoRes):
     __internal_name__ = "LOG1"
@@ -32,7 +52,19 @@ class TAC_Log1(TAC_TernaryNoRes):
                    }
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+        arg1 = succ.registers[self.op1_var]
+        arg2 = succ.registers[self.op2_var]
+        arg3 = succ.registers[self.op3_var]
+
+        mstart, msz = arg1, arg2
+        succ.memory.extend(mstart, msz)
+        # Ignore external effects...
+        # depth = 1
+        # topics = [arg3]
+
+        succ.set_next_pc()
+        return [succ]
 
 class TAC_Log2(TAC_QuaternaryNoRes):
     __internal_name__ = "LOG2"
@@ -44,7 +76,20 @@ class TAC_Log2(TAC_QuaternaryNoRes):
                    }
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+        arg1 = succ.registers[self.op1_var]
+        arg2 = succ.registers[self.op2_var]
+        arg3 = succ.registers[self.op3_var]
+        arg4 = succ.registers[self.op4_var]
+
+        mstart, msz = arg1, arg2
+        succ.memory.extend(mstart, msz)
+        # Ignore external effects...
+        # depth = 2
+        # topics = [arg3, arg4]
+
+        succ.set_next_pc()
+        return [succ]
 
 class TAC_Log3(TAC_QuinaryNoRes):
     __internal_name__ = "LOG3"
@@ -57,7 +102,21 @@ class TAC_Log3(TAC_QuinaryNoRes):
                    }
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+        arg1 = succ.registers[self.op1_var]
+        arg2 = succ.registers[self.op2_var]
+        arg3 = succ.registers[self.op3_var]
+        arg4 = succ.registers[self.op4_var]
+        arg5 = succ.registers[self.op5_var]
+
+        mstart, msz = arg1, arg2
+        succ.memory.extend(mstart, msz)
+        # Ignore external effects...
+        # depth = 3
+        # topics = [arg3, arg4, arg5]
+
+        succ.set_next_pc()
+        return [succ]
 
 class TAC_Log4(TAC_SenaryNoRes):
     __internal_name__ = "LOG4"
@@ -71,4 +130,19 @@ class TAC_Log4(TAC_SenaryNoRes):
                    }
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+        arg1 = succ.registers[self.op1_var]
+        arg2 = succ.registers[self.op2_var]
+        arg3 = succ.registers[self.op3_var]
+        arg4 = succ.registers[self.op4_var]
+        arg5 = succ.registers[self.op5_var]
+        arg6 = succ.registers[self.op6_var]
+
+        mstart, msz = arg1, arg2
+        succ.memory.extend(mstart, msz)
+        # Ignore external effects...
+        # depth = 4
+        # topics = [arg3, arg4, arg5, arg6]
+
+        succ.set_next_pc()
+        return [succ]
