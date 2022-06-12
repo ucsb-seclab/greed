@@ -106,8 +106,23 @@ class TAC_Phi(Aliased):
             args_str += "{} ".format(arg)
         return "PHI {}".format(args_str)
 
-    def handle(self, state:SymbolicEVMState):
-        pass
+    def handler(self, state:SymbolicEVMState):
+        successors = []
+        succ = state.copy()
+        # Let's say we have v6 = PHI v1,v2.
+        # If 'v2' has not been defined yet, v6 = v1 for sure.
+        # Otherwise, as of now we can over-approximate and consider both assigment 
+        # possible and forking. 
+        # FIXME: can we do better tho, this might end up exploding and leaf to
+        #        impossible paths.
+        for arg in self.args_var:
+            # is this variable defined already?
+            if state.registers.get(arg, None):
+                succ = state.copy()
+                succ.registers[self.res_var] = state.registers[arg]
+                successors.append(succ)
+        return successors
+        
 
 class TAC_Const(Aliased):
     __internal_name__ = "CONST"
