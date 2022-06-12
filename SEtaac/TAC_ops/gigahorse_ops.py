@@ -5,7 +5,7 @@ from SEtaac import utils
 from SEtaac.utils import concrete, is_true, get_solver
 from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException
 
-from .base import TAC_NoOperandsNoRes, TAC_Septenary, TAC_Senary, TAC_UnaryNoRes, TAC_BinaryNoRes
+from .base import Aliased, TAC_NoOperandsNoRes, TAC_Septenary, TAC_Senary, TAC_UnaryNoRes, TAC_BinaryNoRes
 from ..state import SymbolicEVMState
 
 
@@ -16,7 +16,7 @@ class TAC_Throw(TAC_NoOperandsNoRes):
     def handle(self, state:SymbolicEVMState):
         pass
 
-class TAC_Callprivate:
+class TAC_Callprivate(Aliased):
     __internal_name__ = "CALLPRIVATE"
     
     def __init__(self):
@@ -64,7 +64,7 @@ class TAC_Callprivate:
         
         return "{} = {} {}".format(ress_str, self.__internal_name__, args_str)
 
-class TAC_Returnprivate:
+class TAC_Returnprivate(Aliased):
     __internal_name__ = "RETURNPRIVATE"
     def __init__(self):
         pass
@@ -85,7 +85,7 @@ class TAC_Returnprivate:
         
         return "{} {}".format(self.__internal_name__, args_str)
 
-class TAC_Phi:
+class TAC_Phi(Aliased):
     __internal_name__ = "PHI"
     def __init__(self):
         self.args_var = []
@@ -109,7 +109,7 @@ class TAC_Phi:
     def handle(self, state:SymbolicEVMState):
         pass
 
-class TAC_Const:
+class TAC_Const(Aliased):
     __internal_name__ = "CONST"
 
     def __init__(self):

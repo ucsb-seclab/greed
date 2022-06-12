@@ -1,3 +1,4 @@
+from re import L
 import z3
 
 from SEtaac import utils
@@ -14,7 +15,8 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Codesize', 'TAC_Codecopy', 'TAC_Gasprice', 'TAC_Extcodesize', 'TAC_Extcodecopy',
            'TAC_Returndatasize', 'TAC_Returndatacopy', 'TAC_Extcodehash', 'TAC_Blockhash', 'TAC_Coinbase',
            'TAC_Timestamp', 'TAC_Number', 'TAC_Difficulty', 'TAC_Chainid', 'TAC_Gaslimit', 'TAC_Selfbalance',
-           'TAC_Basefee', 'TAC_Create', 'TAC_Create2', 'TAC_Revert', 'TAC_Pc', 'TAC_Invalid', 'TAC_Selfdestruct']
+           'TAC_Basefee', 'TAC_Create', 'TAC_Create2', 'TAC_Revert', 'TAC_Pc', 'TAC_Invalid', 'TAC_Selfdestruct',
+           'TAC_Stop', 'TAC_Gas']
 
 
 class TAC_Sha3(TAC_Binary):
@@ -53,6 +55,13 @@ class TAC_Sha3(TAC_Binary):
 
         succ.pc = succ.next_statement()
         return [succ]
+
+class TAC_Stop(TAC_NoOperandsNoRes):
+    __internal_name__ = "STOP"
+
+    def handle(self, state:SymbolicEVMState):
+        pass
+
 
 
 class TAC_Address(TAC_NoOperands):
@@ -566,3 +575,13 @@ class TAC_Selfdestruct(TAC_UnaryNoRes):
 
         succ.set_next_pc()
         return [succ]
+
+
+class TAC_Gas(TAC_NoOperands):
+    __internal_name__ = "GAS"
+    __aliases__ = {
+                   'gas_var': 'res_var', 'gas_val': 'res_val'
+                  }
+
+    def handle(self, state:SymbolicEVMState):
+        pass
