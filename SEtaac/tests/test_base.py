@@ -1,12 +1,21 @@
 from SEtaac import Project
 
-p = Project("/home/degrigis/projects/hackcess/SEtaac/SEtaac/tests/IR_DICT.dill", 
-            "/home/degrigis/projects/hackcess/SEtaac/SEtaac/tests/TAC_CFG.dill")
+p = Project("./IR_DICT.dill",
+            "./TAC_CFG.dill")
 
 block = p.factory.block('0x0')
+state = p.factory.entry_state(1)
+
+blocks = list()
 
 for x in p.TAC_code_raw.keys():
-    p.factory.block(x)
+    blocks.append(p.factory.block(x))
+
+# for x in blocks:
+#     for s in x:
+#         if s.__internal_name__ == 'CALLPRIVATE':
+#             if s.res_vars:
+#                 pass
 
 import ipdb; ipdb.set_trace()
 
