@@ -31,7 +31,7 @@ class Project(object):
 
         # Object that creates other objects
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
-        self.cfg = CFG(self.TAC_cfg_raw)
+        self.cfg = CFG()
 
         # import the web3 provider just in case (from config)
         self.web3 = w3 

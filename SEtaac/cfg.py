@@ -1,5 +1,5 @@
 import logging
-from bb import BB
+from SEtaac.bb import BB
 
 import networkx as nx
 
