@@ -33,7 +33,7 @@ class Project(object):
 
         # Object that creates other objects
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
-        self.functions = self._import_functions_gigahorse(self.TAC_cfg_raw)
+        self.functions = self._import_functions_gigahorse()
 
         # import the web3 provider just in case (from config)
         self.web3 = w3 
@@ -51,15 +51,18 @@ class Project(object):
         if not isExist:
             os.makedirs(self._workspace_folder)
     
-    def _import_functions_gigahorse(self, TAC_cfg_raw:dict):
+    def _import_functions_gigahorse(self):
         funcs = {}
-        for _, func_data in TAC_cfg_raw['functions'].items():
+        for _, func_data in self.TAC_cfg_raw['functions'].items():
             # Just to make sure there are no collision on function addresses
             assert(not funcs.get(func_data["addr"], None))
             funcs[func_data["addr"]] = TAC_Function(func_data["addr"]  , func_data["name"], func_data["is_public"], 
                                                     func_data['blocks'], func_data['arguments'])
-        
         return funcs
+    
+    def _generate_func_cfgs(self):
+        pass
+
 
     #@property
     #def cfg(self):
