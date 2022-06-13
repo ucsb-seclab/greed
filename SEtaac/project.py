@@ -9,6 +9,7 @@ from SEtaac.simulation_manager import SimulationManager
 from SEtaac.TAC_parser import TACparser
 from SEtaac.state import SymbolicEVMState
 from SEtaac.function import TAC_Function
+from SEtaac.TAC_parser import TACparser
 
 from .config import *
 
@@ -68,14 +69,14 @@ class Project(object):
 
 # This class create object like the simgr, entry_state, etc...
 class FactoryObjects:
-    def __init__(self, TAC_parser):
+    def __init__(self, TAC_parser:TACparser):
         self.TAC_parser = TAC_parser
         
-    def simgr(self, entry_state):
+    def simgr(self, entry_state:SymbolicEVMState):
         return SimulationManager(entry_state=entry_state)
     
-    def entry_state(self, xid):
+    def entry_state(self, xid:str):
         return SymbolicEVMState(xid=xid)
     
-    def block(self, block_id):
+    def block(self, block_id:str):
         return self.TAC_parser.parse(block_id)
