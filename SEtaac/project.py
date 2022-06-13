@@ -49,10 +49,7 @@ class Project(object):
         isExist = os.path.exists(self._workspace_folder)
         if not isExist:
             os.makedirs(self._workspace_folder)
-        
-        import ipdb; ipdb.set_trace()
-
-
+    
     def _import_functions_gigahorse(self, TAC_cfg_raw:dict):
         funcs = {}
         for _, func_data in TAC_cfg_raw['functions'].items():
