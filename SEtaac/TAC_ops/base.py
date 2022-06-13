@@ -40,6 +40,67 @@ class Aliased:
             object.__setattr__(self, key, value)
 
 
+class TAC_DynamicOps(Aliased):
+    __internal_name__ = None
+    __aliases__ = {}
+
+    def __init__(self):
+        self.arg_vars = []
+        self.arg_vals = {}
+        self.num_args = None
+        self.res_vars = []
+        self.res_vals = {}
+
+    def parse(self, raw_stmt:TAC_Statement):
+        self.arg_vars = [x for x in raw_stmt.operands]
+        self.num_args = len(self.arg_vars)
+        self.arg_vals = {x:raw_stmt.values.get(x, None) for x in raw_stmt.operands}
+        self.res_vars = [x for x in raw_stmt.defs]
+        self.res_vals = {x:raw_stmt.values.get(x, None) for x in raw_stmt.defs}
+        
+    def __str__(self):        
+        args_str = ''
+        for arg in self.arg_vars:
+            if not self.arg_vals.get(arg, None):
+                args_str += "{}({})".format(arg,self.arg_vals[arg])
+            else:
+                args_str += "{}".format(arg)
+            args_str += " "
+        
+        ress_str = ''
+        for res in self.res_vars:
+            if not self.res_vals.get(res, None):
+                ress_str += "{}({})".format(res,self.res_vals[res])
+            else:
+                ress_str += "{}".format(res)
+            args_str += " "
+        
+        return "{} = {} {}".format(ress_str, self.__internal_name__, args_str)
+
+class TAC_DynamicOpsNoRes(Aliased):
+    __internal_name__ = None
+    __aliases__ = {}
+
+    def __init__(self):
+        self.args_var = []
+        self.args_val = {}
+        self.num_args = None
+
+    def parse(self, raw_stmt:TAC_Statement):
+        self.arg_vars = [x for x in raw_stmt.operands]
+        self.num_args = len(self.args_var)
+        self.arg_vals = {x:raw_stmt.values.get(x, None) for x in raw_stmt.operands}
+        
+    def __str__(self):        
+        args_str = ''
+        for arg in self.arg_vars:
+            if not self.arg_vals.get(arg, None):
+                args_str += "{}({})".format(arg,self.arg_vals[arg])
+            else:
+                args_str += "{}".format(arg)
+            args_str += " "
+        return "{} {}".format(self.__internal_name__, args_str)
+
 class TAC_NoOperandsNoRes(Aliased):
     __internal_name__ = None
     __aliases__ = {}

@@ -5,6 +5,9 @@ p = Project("/home/degrigis/projects/hackcess/SEtaac/SEtaac/tests/IR_DICT.dill",
 
 block = p.factory.block('0x0')
 
+for x in p.TAC_code_raw.keys():
+    p.factory.block(x)
+
 import ipdb; ipdb.set_trace()
 
 #xid = gen_exec_id()
