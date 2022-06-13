@@ -21,24 +21,52 @@ class TAC_Callprivate(TAC_DynamicOps):
     __aliases__ = {}
     
     def handle(self, state:SymbolicEVMState):
-        # todo: use succ.callstack to implement callprivate and returnprivate
-        # in returnprivate assert that we are returning from the last pushed context
-        pass
+        succ = state.copy()
+
+        # read target
+        target_pc = succ.registers[self.arg_vars[0]]
+        if not concrete(target_pc):
+            raise SymbolicError("CALLPRIVATE with symbolic target")
+
+        # read arg-alias map
+        args = self.arg_vars[1:]
+        args_alias = succ.project.functions[target_pc]
+        args_alias_map = dict(zip(args_alias, args))
+
+        for alias, arg in args_alias_map:
+            succ.registers['v' + alias.replace('0x', '')] = succ.registers[arg]
+
+        # push stack frame
+        succ.callstack.append((target_pc, self.res_vars))
+
+        return [succ]
+
 
 class TAC_Returnprivate(TAC_DynamicOpsNoRes):
     __internal_name__ = "RETURNPRIVATE"
     __aliases__ = {}
-     
-    def __str__(self):        
-        args_str = ''
-        for arg in self.arg_vars:
-            if not self.arg_vals.get(arg, None):
-                args_str += "{}({})".format(arg,self.arg_vals[arg])
-            else:
-                args_str += "{}".format(arg)
-            args_str += " "
-        
-        return "{} {}".format(self.__internal_name__, args_str)
+
+    def handle(self, state:SymbolicEVMState):
+        succ = state.copy()
+
+        # read target
+        target_pc = succ.registers[self.arg_vars[0]]
+        if not concrete(target_pc):
+            raise SymbolicError("RETURNPRIVATE with symbolic target")
+
+        # pop stack frame
+        saved_target, callprivate_return_vars = succ.callstack.pop()
+
+        if saved_target != target_pc:
+            raise VMException("Return address does not match the callstack")
+
+        # set the return variables to their correct values
+        returnprivate_args = self.arg_vars[1:]
+        for callprivate_return_var, returnprivate_arg in zip(callprivate_return_vars, returnprivate_args):
+            succ.registers[callprivate_return_var] = succ.registers[returnprivate_arg]
+
+        return [succ]
+
 
 class TAC_Phi(TAC_DynamicOps):
     __internal_name__ = "PHI"

@@ -32,8 +32,12 @@ class Project(object):
             self.TAC_cfg_raw = dill.load(cfgdata_file)
 
         # Object that creates other objects
+<<<<<<< HEAD
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
         
+=======
+        self.factory = FactoryObjects(TACparser(self.TAC_code_raw), project=self)
+>>>>>>> 69ef7b4bdcfde09dd130b95936256aa4272fefa5
         self.functions = self._import_functions_gigahorse()
         for func in self.functions:
             make_cfg(func)
@@ -71,14 +75,15 @@ class Project(object):
 
 # This class create object like the simgr, entry_state, etc...
 class FactoryObjects:
-    def __init__(self, TAC_parser:TACparser):
+    def __init__(self, TAC_parser:TACparser, project):
         self.TAC_parser = TAC_parser
+        self.project = project
         
     def simgr(self, entry_state:SymbolicEVMState):
         return SimulationManager(entry_state=entry_state)
     
     def entry_state(self, xid:str):
-        return SymbolicEVMState(xid=xid)
+        return SymbolicEVMState(xid=xid, project=self.project)
     
     def block(self, block_id:str):
         return self.TAC_parser.parse(block_id)
