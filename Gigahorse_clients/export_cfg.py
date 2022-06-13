@@ -96,8 +96,6 @@ def to_dot(cfg_data, blocks, functions):
         cfg_dot.write(s)
 
 
-# FG: the identifier for the basic blocks contains multiple ID, as of now I just keep the first
-#     address as the address of the basic block.
 def main():
     global tac_variable_value
     tac_variable_value = load_csv_map('TAC_Variable_Value.csv')

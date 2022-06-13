@@ -1,14 +1,13 @@
 import logging
 from SEtaac.bb import BB
+from SEtaac.function import TAC_Function
 
 import networkx as nx
 
 
 class CFGNode(object):
     def __init__(self, bb:BB):
-        self.cfg = None
         self.bb = bb
-
         self.succ_addrs = set()
 
         # cached properties
@@ -122,19 +121,15 @@ class CFG(object):
             del self._bb_at[bb.start]
             self.graph.remove_node(bb)
 
-def _import_cfgs_gigahorse(TAC_cfg_raw):
-    # Data from Gigahorse is passed in a dictionary
+def make_cfg(function:TAC_Function):
+    cfg = CFG()
+    cfgnodes = dict()
 
-    cfgs = list()
-    for function in functions:
-        cfg = CFG()
-        cfgnodes = dict()
-        for bb in function.bbs:
-            cfgnode = CFGNode(bb)
-            cfgnodes[bb] = cfgnode
+    for bb in function.blocks:
+        cfgnode = CFGNode(bb)
+        cfg.graph.add_node(cfgnode)
+        cfgnodes[bb] = cfgnode
 
-        for bb in function.bbs:
-            for succ in bb.succ:
-                cfg.graph.add_edge(cfgnodes[bb], cfgnodes[succ])
-
-        cfgs += [cfg]
+    for bb in function.bbs:
+        for succ in bb.succ:
+            cfg.graph.add_edge(cfgnodes[bb], cfgnodes[succ])

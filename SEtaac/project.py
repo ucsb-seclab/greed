@@ -9,7 +9,7 @@ from SEtaac.simulation_manager import SimulationManager
 from SEtaac.TAC_parser import TACparser
 from SEtaac.state import SymbolicEVMState
 from SEtaac.function import TAC_Function
-from SEtaac.TAC_parser import TACparser
+from SEtaac.cfg import make_cfg
 
 from .config import *
 
@@ -33,7 +33,10 @@ class Project(object):
 
         # Object that creates other objects
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
+        
         self.functions = self._import_functions_gigahorse()
+        for func in self.functions:
+            make_cfg(func)
 
         # import the web3 provider just in case (from config)
         self.web3 = w3 
@@ -60,10 +63,6 @@ class Project(object):
                                                     func_data['blocks'], func_data['arguments'])
         return funcs
     
-    def _generate_func_cfgs(self):
-        pass
-
-
     #@property
     #def cfg(self):
     #    if not self._cfg:
