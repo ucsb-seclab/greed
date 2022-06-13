@@ -156,8 +156,47 @@ class TAC_Delegatecall(TAC_BaseCall):
 
         return self._handler(succ, arg3=arg3)
 
-class TAC_Staticcall(TAC_BaseCall):
+class TAC_Staticcall(TAC_Senary):
     __internal_name__ = "STATICCALL"
+    __aliases__ = {
+        'gas_var': 'op1_var', 'gas_val': 'op1_val',
+        'address_var': 'op2_var', 'address_val': 'op2_val',
+        'argsOffset_var': 'op3_var', 'argsOffset_val': 'op3_val',
+        'argsSize_var': 'op4_var', 'argsSize_val': 'op4_val',
+        'retOffset_var': 'op5_var', 'retOffset_val': 'op5_val',
+        'retSize_var': 'op6_var', 'retSize_val': 'op6_val',
+        'success_var': 'res_var', 'success_val': 'res_val'
+    }
+
+    def _handler(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
+        arg1 = arg1 or succ.registers[self.op1_var]
+        arg2 = arg2 or succ.registers[self.op2_var]
+        arg3 = 0 # it sucks but opcodes are shifted here
+        arg4 = arg4 or succ.registers[self.op3_var]
+        arg5 = arg5 or succ.registers[self.op4_var]
+        arg6 = arg6 or succ.registers[self.op5_var]
+        arg7 = arg7 or succ.registers[self.op6_var]
+
+        ostart = arg6 if concrete(arg6) else z3.simplify(arg6)
+        olen = arg7 if concrete(arg7) else z3.simplify(arg7)
+
+        if concrete(arg2) and arg2 <= 8:
+            if arg2 == 4:
+                logging.info("Calling precompiled identity contract")
+                istart = arg4 if concrete(arg4) else z3.simplify(arg4)
+                ilen = arg5 if concrete(arg5) else z3.simplify(arg5)
+                succ.memory.copy(istart, ilen, ostart, olen)
+                succ.registers[self.res_var] = 1
+            else:
+                raise SymbolicError("Precompiled contract %d not implemented" % arg2)
+        else:
+            for i in range(olen):
+                succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
+            logging.info("Calling contract %s (%d_%d)" % (arg2, succ.instruction_count, succ.xid))
+            succ.registers[self.res_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
+
+        succ.set_next_pc()
+        return [succ]
 
     def handler(self, state:SymbolicEVMState):
         succ = state.copy()
