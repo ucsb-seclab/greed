@@ -101,7 +101,8 @@ def to_dot(cfg_data, blocks, functions):
 def main():
     global tac_variable_value
     tac_variable_value = load_csv_map('TAC_Variable_Value.csv')
-    
+    tac_functions_blocks = load_csv_map('InFunction.csv')
+
     blocks, functions = construct_cfg()
 
     cfg_data = {}
@@ -119,11 +120,19 @@ def main():
 
     for f_addr, f_data in functions.items():
         # WARNING the ident for the function is in the TAC representation, might not correspond to the block addr in the 
-        #         stack based representation 
+        #         stack based representation
+        func_blocks = []
+        
+        for block_id,f_id in tac_functions_blocks.items():
+            if f_id == f_data.head_block.ident:
+                func_blocks.append(block_id)
+        
         cfg_data['functions'][f_addr] = dict({
                                               'addr': f_data.head_block.ident, 
                                               'is_public': f_data.is_public, 
-                                              'name': f_data.name
+                                              'name': f_data.name,
+                                              'arguments': f_data.formals,
+                                              'blocks': func_blocks
                                              })
     
     if DUMP_CFG_DOT_FILE:
