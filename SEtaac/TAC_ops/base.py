@@ -82,13 +82,13 @@ class TAC_DynamicOpsNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
-        self.args_var = []
-        self.args_val = {}
+        self.arg_vars = []
+        self.arg_vals = {}
         self.num_args = None
 
     def parse(self, raw_stmt:TAC_Statement):
         self.arg_vars = [x for x in raw_stmt.operands]
-        self.num_args = len(self.args_var)
+        self.num_args = len(self.arg_vars)
         self.arg_vals = {x:raw_stmt.values.get(x, None) for x in raw_stmt.operands}
         
     def __str__(self):        
