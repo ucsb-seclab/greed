@@ -4,10 +4,11 @@ import dill
 import sys 
 
 from datetime import datetime
-from SEtaac.cfg import CFG
+from SEtaac.cfg import CFG, _import_cfgs_gigahorse
 from SEtaac.simulation_manager import SimulationManager
 from SEtaac.TAC_parser import TACparser
 from SEtaac.state import SymbolicEVMState
+from SEtaac.function import TAC_Function
 
 from .config import *
 
@@ -15,7 +16,7 @@ l = logging.getLogger("project")
 l.setLevel(logging.INFO)
 
 class Project(object):
-    def __init__(self, binary="", cfg_data="", onchain_address=""):
+    def __init__(self, binary:str="", cfg_data:str="", onchain_address:str=""):
         
         if binary == "" or cfg_data == "":
             l.fatal("Need gigahorse artifacts to create a project (IR_DICT and TAC_CFG)")
@@ -31,7 +32,7 @@ class Project(object):
 
         # Object that creates other objects
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
-        self.cfg = CFG()
+        self.functions = self._import_functions_gigahorse(self.TAC_cfg_raw)
 
         # import the web3 provider just in case (from config)
         self.web3 = w3 
@@ -48,6 +49,19 @@ class Project(object):
         isExist = os.path.exists(self._workspace_folder)
         if not isExist:
             os.makedirs(self._workspace_folder)
+        
+        import ipdb; ipdb.set_trace()
+
+
+    def _import_functions_gigahorse(self, TAC_cfg_raw:dict):
+        funcs = {}
+        for _, func_data in TAC_cfg_raw['functions'].items():
+            # Just to make sure there are no collision on function addresses
+            assert(not funcs.get(func_data["addr"], None))
+            funcs[func_data["addr"]] = TAC_Function(func_data["addr"]  , func_data["name"], func_data["is_public"], 
+                                                    func_data['blocks'], func_data['arguments'])
+        
+        return funcs
 
     #@property
     #def cfg(self):
