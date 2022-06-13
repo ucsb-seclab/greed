@@ -22,14 +22,18 @@ class AbstractEVMState(object):
 
 
 class SymbolicEVMState(AbstractEVMState):
-    def __init__(self, xid, program=None, code=None):
+    def __init__(self, xid, project, program=None, code=None):
         super(SymbolicEVMState, self).__init__(code)
         self.program = program
         self.xid = xid
+        self.project = project
 
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
         self.registers = defaultdict(None)
+        self.ctx = dict()
+
+        self.callstack = list()
 
         self.instruction_count = 0
         self.halt = False
@@ -40,8 +44,7 @@ class SymbolicEVMState(AbstractEVMState):
         self.balance = self.start_balance
         self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
-        self.ctx = dict()
-        self.ctx['CODESIZE-ADDRESS'] = len(code)  # todo: code can be None
+        self.ctx['CODESIZE-ADDRESS'] = len(code) if code else 0  # todo: code can be None
 
         self.constraints = list()
         self.sha_constraints = dict()
@@ -70,24 +73,24 @@ class SymbolicEVMState(AbstractEVMState):
     def copy(self, new_xid=None):
         # todo: implement state copy
         # todo: there shouldn't be any need to set a new xid, in most cases
-        new_state = SymbolicEVMState(new_xid, code=self.code)
+        # new_state = SymbolicEVMState(new_xid or self.xid, code=self.code)
+        #
+        # new_state.pc = self.pc
+        # self.memory = None
+        # self.trace = list()
+        # self.gas = None
+        #
+        # new_state.storage = self.storage.copy(new_xid)
+        # new_state.pc = self.pc
+        # new_state.trace = list(self.trace)
+        # new_state.start_balance = translate_xid(self.start_balance, new_xid)
+        # new_state.balance = translate_xid(self.balance, new_xid)
+        #
+        # new_state.constraints = list(self.constraints)
+        # new_state.sha_constraints = dict(self.sha_constraints)
+        # new_state.ctx = dict(self.ctx)
 
-        new_state.pc = self.pc
-        self.memory = None
-        self.trace = list()
-        self.gas = None
-
-        new_state.storage = self.storage.copy(new_xid)
-        new_state.pc = self.pc
-        new_state.trace = list(self.trace)
-        new_state.start_balance = translate_xid(self.start_balance, new_xid)
-        new_state.balance = translate_xid(self.balance, new_xid)
-
-        new_state.constraints = list(self.constraints)
-        new_state.sha_constraints = dict(self.sha_constraints)
-        new_state.ctx = dict(self.ctx)
-
-        return new_state
+        return self
 
     def gas_handler(self, ):
         return z3.BitVec('GAS_%x' % self.instruction_count, 256)
