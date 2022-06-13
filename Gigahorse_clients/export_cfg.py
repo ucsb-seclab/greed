@@ -9,7 +9,7 @@ import dill
 
 # IT: Ugly hack; this can be avoided if we pull the script at the top level
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from clientlib.facts_to_cfg import Statement, Block, Function, construct_cfg, load_csv_map # type: ignore
+from clientlib.facts_to_cfg import Statement, Block, Function, construct_cfg, load_csv, load_csv_map # type: ignore
 
 from opcodes import *
 
@@ -101,7 +101,7 @@ def to_dot(cfg_data, blocks, functions):
 def main():
     global tac_variable_value
     tac_variable_value = load_csv_map('TAC_Variable_Value.csv')
-    tac_functions_blocks = load_csv_map('InFunction.csv')
+    tac_functions_blocks = load_csv('InFunction.csv')
 
     blocks, functions = construct_cfg()
 
@@ -123,7 +123,7 @@ def main():
         #         stack based representation
         func_blocks = []
         
-        for block_id,f_id in tac_functions_blocks.items():
+        for block_id, f_id in tac_functions_blocks:
             if f_id == f_data.head_block.ident:
                 func_blocks.append(block_id)
         
