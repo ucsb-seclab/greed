@@ -1,19 +1,15 @@
 import logging
+from bb import BB
 
 import networkx as nx
 
 
-class BB(object):
-    def __init__(self, ins):
-        self.ins = ins
-
+class CFGNode(object):
+    def __init__(self, bb:BB):
         self.cfg = None
+        self.bb = bb
 
-        self.start = self.ins[0].addr
         self.succ_addrs = set()
-
-        self.branch = self.ins[-1].op == 0x57
-        self.indirect_jump = self.ins[-1].op in (0x56, 0x57)
 
         # cached properties
         self._succ = None
@@ -87,19 +83,14 @@ class BB(object):
 
 
 class CFG(object):
-    def __init__(self, TAC_cfg_raw):
+    def __init__(self):
 
         self.graph = nx.DiGraph()
-        # Data from Gigahorse in a dictionary
-        self.TAC_cfg_raw = TAC_cfg_raw
 
         # keep basic block organized in a dictionary
         self._bb_at = dict()
         self.bbs = list()
         self._dominators = None
-
-        # resolve basic blocks and edges
-        self._import_cfg_gigahorse()
         
         '''
         self.trim()
@@ -116,11 +107,6 @@ class CFG(object):
         else:
             return [ins for bb in self.bbs for ins in bb.ins if ins.name in names and 0 in bb.ancestors | {bb.start}]
 
-    def _import_cfg_gigahorse(self):
-        # TODO
-        # here parse the TAC_cfg_raw 
-        pass
-
     @property
     def dominators(self):
         if not self._dominators:
@@ -135,3 +121,20 @@ class CFG(object):
         for bb in delete:
             del self._bb_at[bb.start]
             self.graph.remove_node(bb)
+
+def _import_cfgs_gigahorse(TAC_cfg_raw):
+    # Data from Gigahorse is passed in a dictionary
+
+    cfgs = list()
+    for function in functions:
+        cfg = CFG()
+        cfgnodes = dict()
+        for bb in function.bbs:
+            cfgnode = CFGNode(bb)
+            cfgnodes[bb] = cfgnode
+
+        for bb in function.bbs:
+            for succ in bb.succ:
+                cfg.graph.add_edge(cfgnodes[bb], cfgnodes[succ])
+
+        cfgs += [cfg]
