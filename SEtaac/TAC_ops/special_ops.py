@@ -53,7 +53,7 @@ class TAC_Sha3(TAC_Binary):
                 state.sha_constraints[sha] = sha_data
             succ.registers[self.res_var] = sha
 
-        succ.pc = succ.next_statement()
+        succ.pc = succ.set_next_pc()
         return [succ]
 
 class TAC_Stop(TAC_NoOperandsNoRes):

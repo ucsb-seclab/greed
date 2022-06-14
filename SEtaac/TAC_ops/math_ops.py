@@ -21,9 +21,13 @@ class TAC_Add(TAC_Binary):
     __aliases__ = {}
 
     def handle(self, state:SymbolicEVMState):
+        # Grab vals from Gigahorse IR and registers
+        # if they are available.
         self.set_op_val(state)
         succ = state.copy()
-
+        
+        # If we already have the result of the op
+        # from the Gigahorse IR, just use it.
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
             return [succ]
