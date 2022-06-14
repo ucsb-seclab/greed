@@ -43,6 +43,7 @@ class TAC_Base(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.arg_vars = []
         self.arg_vals = {}
         self.num_args = None
@@ -51,6 +52,7 @@ class TAC_Base(Aliased):
         self.res_val = None
 
     def parse(self, raw_stmt: TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.arg_vars = [x for x in raw_stmt.operands]
         self.arg_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.operands}
         self.num_args = len(self.arg_vars)
@@ -134,6 +136,7 @@ class TAC_DynamicOps(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.arg_vars = []
         self.arg_vals = {}
         self.num_args = None
@@ -141,6 +144,7 @@ class TAC_DynamicOps(Aliased):
         self.res_vals = {}
 
     def parse(self, raw_stmt: TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.arg_vars = [x for x in raw_stmt.operands]
         self.num_args = len(self.arg_vars)
         self.arg_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.operands}
