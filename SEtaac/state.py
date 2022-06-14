@@ -1,15 +1,11 @@
 import datetime
-import logging
+from collections import defaultdict
 
 import z3
 
-from collections import defaultdict
-
 from SEtaac import utils
-from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException
-from SEtaac.memory import SymRead, SymbolicMemory
+from SEtaac.memory import SymbolicMemory
 from SEtaac.storage import SymbolicStorage
-from SEtaac.utils import concrete, is_true, get_solver, translate_xid
 
 
 class AbstractEVMState(object):
@@ -91,10 +87,3 @@ class SymbolicEVMState(AbstractEVMState):
         # new_state.ctx = dict(self.ctx)
 
         return self
-
-    def gas_handler(self, ):
-        return z3.BitVec('GAS_%x' % self.instruction_count, 256)
-
-    def stop_handler(self, ):
-        self.constraints.append(z3.Or(*(z3.ULE(self.calldatasize, access) for access in self.calldata_accesses)))
-        self.halt = True

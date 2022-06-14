@@ -60,7 +60,13 @@ class TAC_Stop(TAC_NoOperandsNoRes):
     __internal_name__ = "STOP"
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+
+        succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
+        succ.halt = True
+
+        succ.set_next_pc()
+        return [succ]
 
 
 
@@ -584,4 +590,9 @@ class TAC_Gas(TAC_NoOperands):
                   }
 
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+        succ.set_next_pc()
+
+        succ.registers[self.res_var] = z3.BitVec('GAS_%x' % succ.instruction_count, 256)
+
+        return [succ]
