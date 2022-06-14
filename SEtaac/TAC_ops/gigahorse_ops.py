@@ -9,7 +9,7 @@ from .base import TAC_NoOperands, TAC_NoOperandsNoRes, TAC_DynamicOps, TAC_Dynam
 from ..state import SymbolicEVMState
 
 
-__all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_Const']
+__all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
 class TAC_Throw(TAC_NoOperandsNoRes):
     __internal_name__ = "THROW"
@@ -97,5 +97,15 @@ class TAC_Const(TAC_NoOperands):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         succ.registers[self.var] = self.val
+        succ.set_next_pc()
+        return [succ]
+
+
+class TAC_Nop(TAC_NoOperandsNoRes):
+    __internal_name__ = "NOP"
+
+    def handle(self, state: SymbolicEVMState):
+        succ = state.copy()
+
         succ.set_next_pc()
         return [succ]

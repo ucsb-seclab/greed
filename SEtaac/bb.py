@@ -1,3 +1,5 @@
+from SEtaac.TAC_ops.base import TAC_Statement
+from SEtaac.TAC_ops.gigahorse_ops import TAC_Nop
 
 
 class TAC_Block(object):
@@ -7,15 +9,20 @@ class TAC_Block(object):
         self.function = None
         # WARNING: Gigahorse sometimes creates empty 
         #          basic blocks (i.e., no statements)
-        #          We'll keep as of now.
-        if len(statements) > 0:
-            self.first_ins = statements[0]
-        else:
-            self.first_ins = None
+        #          we patch such blocks with a fake NOP
+        if len(self.statements) == 0:
+            # inject a fake NOP statement to simplify the handling of empty blocks
+            # create fake raw statement
+            fake_raw_statement = TAC_Statement(TACblock_ident=block_id, ident=block_id+'_fake_stmt', opcode='NOP')
+
+            # parse raw statement
+            nop = TAC_Nop()
+            nop.parse(fake_raw_statement)
+
+            self.statements.append(nop)
+            self.first_ins = nop
+
+        self.first_ins = self.statements[0]
         
         # This keep a dictionary from statement id to statement.
         self._statement_at = {s.stmt_id:s for s in self.statements}
-
-        
-        
-        

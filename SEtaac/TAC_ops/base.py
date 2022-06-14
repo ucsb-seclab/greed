@@ -5,7 +5,7 @@ from SEtaac.state import SymbolicEVMState
 class TAC_Statement:
     __name__ = "TAC_Statement"
     __internal_name__ = ""
-    def __init__(self, TACblock_ident:dict, ident:str, opcode:str, operands:str=None, defs:list=None, values:dict=None):
+    def __init__(self, TACblock_ident:str, ident:str, opcode:str, operands:str=None, defs:list=None, values:dict=None):
         self.tac_block_id = TACblock_ident
         self.ident = ident
         self.opcode = opcode
