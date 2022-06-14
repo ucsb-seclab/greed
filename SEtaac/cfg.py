@@ -1,12 +1,12 @@
 import logging
-from SEtaac.bb import BB
+from SEtaac.bb import TAC_Block
 from SEtaac.function import TAC_Function
 
 import networkx as nx
 
 
 class CFGNode(object):
-    def __init__(self, bb:BB):
+    def __init__(self, bb:TAC_Block):
         self.bb = bb
         self.succ_addrs = set()
 
@@ -23,6 +23,11 @@ class CFGNode(object):
         if self._succ is None:
             self._succ = list(self.cfg.graph.successors(self))
         return self._succ
+    
+    # WARNING: assuming BB indexed are UNIQUE.
+    #def __hash__(self):
+    #    return self.bb.first_ins.stmt_ident
+
 
     @property
     def pred(self):
@@ -121,15 +126,17 @@ class CFG(object):
             del self._bb_at[bb.start]
             self.graph.remove_node(bb)
 
-def make_cfg(function:TAC_Function):
+# Building the intra-functional CFG of a target function.
+def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
+
     cfg = CFG()
-    cfgnodes = dict()
 
     for bb in function.blocks:
-        cfgnode = CFGNode(bb)
+        cfgnode = CFGNode(factory.block(bb))
         cfg.graph.add_node(cfgnode)
-        cfgnodes[bb] = cfgnode
-
-    for bb in function.bbs:
-        for succ in bb.succ:
-            cfg.graph.add_edge(cfgnodes[bb], cfgnodes[succ])
+        # Adding information about successors from Gigahorse analysis
+        jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
+        if jump_data:
+            for j in jump_data:
+                new_cfgnode = CFGNode(factory.block(j))
+                cfg.graph.add_edge(cfgnode, new_cfgnode)

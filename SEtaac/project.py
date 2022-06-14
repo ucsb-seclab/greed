@@ -4,7 +4,8 @@ import dill
 import sys 
 
 from datetime import datetime
-from SEtaac.cfg import CFG, _import_cfgs_gigahorse
+from SEtaac.bb import TAC_Block
+from SEtaac.cfg import CFG
 from SEtaac.simulation_manager import SimulationManager
 from SEtaac.TAC_parser import TACparser
 from SEtaac.state import SymbolicEVMState
@@ -32,15 +33,10 @@ class Project(object):
             self.TAC_cfg_raw = dill.load(cfgdata_file)
 
         # Object that creates other objects
-<<<<<<< HEAD
-        self.factory = FactoryObjects(TACparser(self.TAC_code_raw))
-        
-=======
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw), project=self)
->>>>>>> 69ef7b4bdcfde09dd130b95936256aa4272fefa5
         self.functions = self._import_functions_gigahorse()
-        for func in self.functions:
-            make_cfg(func)
+        for func in self.functions.values():
+            make_cfg(self.factory, self.TAC_cfg_raw, func)
 
         # import the web3 provider just in case (from config)
         self.web3 = w3 
@@ -79,11 +75,11 @@ class FactoryObjects:
         self.TAC_parser = TAC_parser
         self.project = project
         
-    def simgr(self, entry_state:SymbolicEVMState):
+    def simgr(self, entry_state:SymbolicEVMState) -> SimulationManager:
         return SimulationManager(entry_state=entry_state)
     
-    def entry_state(self, xid:str):
+    def entry_state(self, xid:str) -> SymbolicEVMState:
         return SymbolicEVMState(xid=xid, project=self.project)
     
-    def block(self, block_id:str):
+    def block(self, block_id:str) -> TAC_Block:
         return self.TAC_parser.parse(block_id)

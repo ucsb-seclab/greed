@@ -45,6 +45,7 @@ class TAC_DynamicOps(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.arg_vars = []
         self.arg_vals = {}
         self.num_args = None
@@ -52,6 +53,7 @@ class TAC_DynamicOps(Aliased):
         self.res_vals = {}
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.arg_vars = [x for x in raw_stmt.operands]
         self.num_args = len(self.arg_vars)
         self.arg_vals = {x:raw_stmt.values.get(x, None) for x in raw_stmt.operands}
@@ -82,11 +84,14 @@ class TAC_DynamicOpsNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.arg_vars = []
         self.arg_vals = {}
         self.num_args = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
+        self.ident = raw_stmt.ident
         self.arg_vars = [x for x in raw_stmt.operands]
         self.num_args = len(self.arg_vars)
         self.arg_vals = {x:raw_stmt.values.get(x, None) for x in raw_stmt.operands}
@@ -106,9 +111,11 @@ class TAC_NoOperandsNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         pass
     def parse(self, raw_stmt:TAC_Statement):
-        pass
+        self.stmt_ident = raw_stmt.ident
+        self.ident = raw_stmt.ident
     def __str__(self):
         return "{}".format(self.__internal_name__)
 
@@ -117,10 +124,12 @@ class TAC_NoOperands(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.res_var = None
         self.res_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.res_var = raw_stmt.defs[0]
         self.res_val = raw_stmt.values.get(self.res_var, None)
 
@@ -133,6 +142,7 @@ class TAC_Unary(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.res_var = None
 
@@ -140,6 +150,7 @@ class TAC_Unary(Aliased):
         self.res_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.res_var = raw_stmt.defs[0]
 
@@ -156,10 +167,12 @@ class TAC_UnaryNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op1_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op1_val = raw_stmt.values.get(self.op1_var, None)
 
@@ -172,6 +185,7 @@ class TAC_Binary(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.res_var = None
@@ -181,6 +195,7 @@ class TAC_Binary(Aliased):
         self.res_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.res_var = raw_stmt.defs[0]
@@ -201,12 +216,14 @@ class TAC_BinaryNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op1_val = None
         self.op2_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
 
@@ -223,6 +240,7 @@ class TAC_Ternary(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -234,6 +252,7 @@ class TAC_Ternary(Aliased):
         self.res_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]
@@ -256,6 +275,7 @@ class TAC_TernaryNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -265,6 +285,7 @@ class TAC_TernaryNoRes(Aliased):
         self.op3_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]
@@ -284,6 +305,7 @@ class TAC_Quaternary(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -298,6 +320,7 @@ class TAC_Quaternary(Aliased):
         self.res_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]
@@ -324,6 +347,7 @@ class TAC_QuaternaryNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -335,6 +359,7 @@ class TAC_QuaternaryNoRes(Aliased):
         self.op4_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]
@@ -358,6 +383,7 @@ class TAC_QuinaryNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -371,6 +397,7 @@ class TAC_QuinaryNoRes(Aliased):
         self.op5_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]
@@ -396,6 +423,7 @@ class TAC_Senary(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -413,6 +441,7 @@ class TAC_Senary(Aliased):
         self.res_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]
@@ -445,6 +474,7 @@ class TAC_SenaryNoRes(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -460,6 +490,7 @@ class TAC_SenaryNoRes(Aliased):
         self.op6_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]
@@ -488,6 +519,7 @@ class TAC_Septenary(Aliased):
     __aliases__ = {}
 
     def __init__(self):
+        self.stmt_ident = None
         self.op1_var = None
         self.op2_var = None
         self.op3_var = None
@@ -507,6 +539,7 @@ class TAC_Septenary(Aliased):
         self.res_val = None
 
     def parse(self, raw_stmt:TAC_Statement):
+        self.stmt_ident = raw_stmt.ident
         self.op1_var = raw_stmt.operands[0]
         self.op2_var = raw_stmt.operands[1]
         self.op3_var = raw_stmt.operands[2]

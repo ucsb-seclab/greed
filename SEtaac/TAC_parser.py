@@ -1,8 +1,10 @@
 
+from ast import stmt
 import logging 
 
 
 from .exceptions import TACparser_NO_OPS
+from .bb import TAC_Block
 from . import TAC_ops
 
 l = logging.getLogger("tac_parser")
@@ -19,7 +21,7 @@ class TACparser:
         # Keep here the list of already parsed "raw" TAC_Statement
         self.TAC_code_cache = {}
 
-    def parse(self, block_id):
+    def parse(self, block_id) -> TAC_Block:
 
         stmts = []
         
@@ -58,7 +60,9 @@ class TACparser:
                 # operations (we will raise the exception).
                 stmts.append(raw_tac_stmt)
         
-        # Save in cache the current parse ops.
-        self.TAC_code_cache[block_id] = stmts.copy()
+        bb = TAC_Block(stmts, block_id)
         
-        return stmts
+        # Save in cache the current parse ops.
+        self.TAC_code_cache[block_id] = bb
+        
+        return bb
