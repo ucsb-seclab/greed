@@ -25,4 +25,4 @@ class TAC_Block(object):
         self.first_ins = self.statements[0]
         
         # This keep a dictionary from statement id to statement.
-        self._statement_at = {s.stmt_id:s for s in self.statements}
+        self._statement_at = {s.stmt_ident:s for s in self.statements}

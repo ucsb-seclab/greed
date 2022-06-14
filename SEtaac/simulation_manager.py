@@ -5,8 +5,6 @@ import sys
 
 class SimulationManager:
     def __init__(self, entry_state, keep_predecessors=0):
-        self.active.append(entry_state)
-
         self.keep_predecessors = keep_predecessors
         self.error = list()
         self._halt = False
@@ -20,6 +18,8 @@ class SimulationManager:
             'found': [],
             'pruned': []
         }
+
+        self.active.append(entry_state)
 
     def set_error(self, s):
         logging.error(f'[ERROR] {s}')

@@ -1,4 +1,3 @@
-
 from SEtaac.state import SymbolicEVMState
 
 # This is the object exported from Gigahorse
