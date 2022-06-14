@@ -65,6 +65,22 @@ class TAC_Base(Aliased):
         self.res_var = raw_stmt.defs[0] if raw_stmt.defs else None
         self.res_val = raw_stmt.values.get(self.res_var, None)
 
+    def handle(self, state:SymbolicEVMState):
+        for i in range(self.num_args):
+            var = object.__getattr__(state, "op{}_var".format(i + 1))
+            arg_val = object.__getattr__(state, "op{}_val".format(i + 1))
+            val = arg_val or state.registers[var]
+            object.__setattr__(self, "arg{}".format(i + 1), val)
+
+        # todo: move this stuff in each handler (which can have side-effects)
+        # if self.res_var and self.res_val:
+        #     succ.registers[self.res_var] = self.res_val
+        #     return [succ]
+
+        # todo: call this as super().handle(...) in each handler
+        # todo: use self.arg<N> in all handlers
+
+
     def __str__(self):
         args_str = ''
         for arg in self.arg_vars:
