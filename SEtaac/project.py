@@ -64,8 +64,15 @@ class Project(object):
                 bb_obj = self.factory.block(block_addr)
                 if bb_obj:
                     tac_blocks.append(bb_obj) 
+
             funcs[func_data["addr"]] = TAC_Function(func_data["addr"], func_data["name"], func_data["is_public"], 
                                                     tac_blocks, func_data['arguments'])
+
+            # Set the function object to the blocks
+            # to be able to go back later  
+            for tac_block in tac_blocks:
+                tac_block.function = funcs[func_data["addr"]]
+        
         return funcs
     
     #@property
@@ -88,3 +95,6 @@ class FactoryObjects:
     
     def block(self, block_id:str) -> TAC_Block:
         return self.TAC_parser.parse(block_id)
+    
+    def statement(self, stmt_id:str):
+        return self.TAC_parser.parse_stmt(stmt_id)

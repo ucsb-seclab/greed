@@ -95,8 +95,7 @@ class CFG(object):
         self.graph = nx.DiGraph()
 
         # keep basic block organized in a dictionary
-        self._bb_at = dict()
-        self.bbs = list()
+        self.blockids_to_cfgnode = dict()
         self._dominators = None
         
         '''
@@ -106,6 +105,7 @@ class CFG(object):
         self.shortest_paths = nx.single_source_shortest_path(self.graph, self.root)
         '''
 
+    '''
     def filter_ins(self, names, reachable=False):
         if isinstance(names, str):
             names = [names]
@@ -113,6 +113,7 @@ class CFG(object):
             return [ins for bb in self.bbs for ins in bb.ins if ins.name in names]
         else:
             return [ins for bb in self.bbs for ins in bb.ins if ins.name in names and 0 in bb.ancestors | {bb.start}]
+    '''
 
     @property
     def dominators(self):
@@ -120,24 +121,15 @@ class CFG(object):
             self._dominators = {k: v for k, v in nx.immediate_dominators(self.graph, 0).items()}
         return self._dominators
 
-    def trim(self):
-        keep = set(nx.descendants(self.graph, self.root)) | {self.root}
-        delete = set(self.bbs) - keep
-        self.bbs = [bb for bb in self.bbs if bb in keep]
-        logging.info(f'Trimming CFG (deleting {[hex(bb.start)[2:] for bb in delete]})')
-        for bb in delete:
-            del self._bb_at[bb.start]
-            self.graph.remove_node(bb)
-
 # Building the intra-functional CFG of a target function.
 def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
 
     cfg = CFG()
-    blocks_to_cfgnode = {}
+    blockids_to_cfgnode = {}
 
     for bb in function.blocks:
         cfgnode = CFGNode(bb)
-        blocks_to_cfgnode[bb.ident] = cfgnode
+        blockids_to_cfgnode[bb.ident] = cfgnode
         cfg.graph.add_node(cfgnode)
     
     for bb in function.blocks:        
@@ -145,7 +137,8 @@ def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
         jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
         if jump_data:
             for j in jump_data:
-                new_cfgnode = blocks_to_cfgnode[j]
+                new_cfgnode = blockids_to_cfgnode[j]
                 cfg.graph.add_edge(cfgnode, new_cfgnode)
-
+    
+    cfg.blockids_to_cfgnode = blockids_to_cfgnode
     function.cfg = cfg

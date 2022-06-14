@@ -1,12 +1,13 @@
 import datetime
 from collections import defaultdict
+from SEtaac.exceptions import VMException
 
 import z3
 
-from SEtaac import utils
+from SEtaac import cfg, utils
 from SEtaac.memory import SymbolicMemory
 from SEtaac.storage import SymbolicStorage
-
+from SEtaac.utils import concrete
 
 class AbstractEVMState(object):
     def __init__(self, code=None):
@@ -66,22 +67,41 @@ class SymbolicEVMState(AbstractEVMState):
 
         # get block
         curr_bb = self.project.factory.block(self.curr_stmt.block_ident)
+        stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
+        remaining_stmts = curr_bb.statements[stmt_list_idx:]
+        cfgnode = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb]
 
         # case 1: middle of the block
+        if remaining_stmts:
+            self.pc = remaining_stmts[0].stmt_ident
+        elif len(cfgnode.succ) == 1:
+            # WARNING We are at the end of the block and there is only 1 successor, something went wrong!    
+            # WHY?
+            #  If we are at the end of the block we assume there is going to be a 
+            #  JUMP (case 2) or JUMPI (case 3).
+            #  case 2 should never happen because JUMP handles control flow inside the handler.
+            #  case 3 happens because the JUMPI has a fallthrough branch.
+            raise VMException("Instruction at the end of block is not a JUMP?!")
+        elif len(cfgnode.succ) == 2:
+            #  case 3: end of the block and two targets
+            #  we need to set the fallthrough to the state. 
+            #  The handler of the JUMPI has already created the state at the jump target. 
+            assert(self.curr_stmt.__internal_name__ == "JUMPI")
+            not_fallthrough = self.registers[self.curr_stmt.destination_var]
+            
+            # We need make sure this is concrete to check against the successors of 
+            # the node 
+            if not concrete(not_fallthrough):
+                raise VMException("Symbolic destination for JUMPI. This should not happen.")
+            else:
+                # Fallthrough addresses are block addresses
+                fallthrough_node = list(filter(lambda n: n.bb.ident != not_fallthrough, cfgnode.succ))[0]
+                # TODO CHECK IF THIS SHIT IS NONE (i.e., TAC_Block with empty statements)
+                assert(fallthrough_node.bb.first_ins)
+                self.pc = fallthrough_node.bb.first_ins
+        else:
+            raise VMException("We have more than two successors for block {}?!".format(curr_bb))
 
-        # case 2: end of the block but only one target, concrete
-
-        # case 3: end of the block but only one target, symbolic
-
-        # case 4: end of the block and multiple targets
-
-
-
-
-        # todo: read next statement from dict
-        next_pcs = get_next_pcs(self.curr_stmt)
-        assert len(next_pcs) == 1
-        self.pc = next_pcs[0]
 
     def copy(self, new_xid=None):
         # todo: implement state copy
