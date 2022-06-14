@@ -5,6 +5,9 @@ from SEtaac.function import TAC_Function
 import networkx as nx
 
 
+l = logging.getLogger("cfg")
+l.setLevel(logging.DEBUG)
+
 class CFGNode(object):
     def __init__(self, bb:TAC_Block):
         self.bb = bb
@@ -80,7 +83,7 @@ class CFGNode(object):
         return self._acyclic_subgraph
 
     def __str__(self):
-        return f'BB @ {self.start}'
+        return f'CFGNode @ {self.bb.ident}'
 
     def __repr__(self):
         return str(self)
@@ -130,13 +133,26 @@ class CFG(object):
 def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
 
     cfg = CFG()
+    blocks_to_cfgnode = {}
 
+    for bb in function.blocks:        
+        bb_obj = factory.block(bb)
+        if bb_obj:
+            cfgnode = CFGNode(bb_obj)
+            blocks_to_cfgnode[bb] = cfgnode
+        else:
+            l.debug("Deadnode for {}.Skipping.".format(function.name))
+    
     for bb in function.blocks:
-        cfgnode = CFGNode(factory.block(bb))
-        cfg.graph.add_node(cfgnode)
-        # Adding information about successors from Gigahorse analysis
-        jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
-        if jump_data:
-            for j in jump_data:
-                new_cfgnode = CFGNode(factory.block(j))
-                cfg.graph.add_edge(cfgnode, new_cfgnode)
+        l.debug("Adding node {} to {} graph".format(cfgnode, function.name))
+        cfgnode = blocks_to_cfgnode.get(bb, None)
+        if cfgnode:
+            cfg.graph.add_node(cfgnode)
+            # Adding information about successors from Gigahorse analysis
+            jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
+            if jump_data:
+                for j in jump_data:
+                    new_cfgnode = blocks_to_cfgnode[j]
+                    cfg.graph.add_edge(cfgnode, new_cfgnode)
+
+    function.cfg = cfg

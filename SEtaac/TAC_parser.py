@@ -1,7 +1,6 @@
 
 from ast import stmt
-import logging 
-
+import logging
 
 from .exceptions import TACparser_NO_OPS
 from .bb import TAC_Block
@@ -24,6 +23,10 @@ class TACparser:
     def parse(self, block_id) -> TAC_Block:
 
         stmts = []
+        
+        if block_id not in self.TAC_code.keys():
+            l.debug("Deadblock at {}".format(block_id))
+            return None 
         
         l.debug("Parsing block at {}".format(block_id))
         
