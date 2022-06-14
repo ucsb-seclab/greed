@@ -59,8 +59,13 @@ class Project(object):
         for _, func_data in self.TAC_cfg_raw['functions'].items():
             # Just to make sure there are no collision on function addresses
             assert(not funcs.get(func_data["addr"], None))
-            funcs[func_data["addr"]] = TAC_Function(func_data["addr"]  , func_data["name"], func_data["is_public"], 
-                                                    func_data['blocks'], func_data['arguments'])
+            tac_blocks = []
+            for block_addr in func_data['blocks']:
+                bb_obj = self.factory.block(block_addr)
+                if bb_obj:
+                    tac_blocks.append(bb_obj) 
+            funcs[func_data["addr"]] = TAC_Function(func_data["addr"], func_data["name"], func_data["is_public"], 
+                                                    tac_blocks, func_data['arguments'])
         return funcs
     
     #@property

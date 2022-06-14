@@ -135,24 +135,17 @@ def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
     cfg = CFG()
     blocks_to_cfgnode = {}
 
-    for bb in function.blocks:        
-        bb_obj = factory.block(bb)
-        if bb_obj:
-            cfgnode = CFGNode(bb_obj)
-            blocks_to_cfgnode[bb] = cfgnode
-        else:
-            l.debug("Deadnode for {}.Skipping.".format(function.name))
-    
     for bb in function.blocks:
-        l.debug("Adding node {} to {} graph".format(cfgnode, function.name))
-        cfgnode = blocks_to_cfgnode.get(bb, None)
-        if cfgnode:
-            cfg.graph.add_node(cfgnode)
-            # Adding information about successors from Gigahorse analysis
-            jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
-            if jump_data:
-                for j in jump_data:
-                    new_cfgnode = blocks_to_cfgnode[j]
-                    cfg.graph.add_edge(cfgnode, new_cfgnode)
+        cfgnode = CFGNode(bb)
+        blocks_to_cfgnode[bb.ident] = cfgnode
+        cfg.graph.add_node(cfgnode)
+    
+    for bb in function.blocks:        
+        # Adding information about successors from Gigahorse analysis
+        jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
+        if jump_data:
+            for j in jump_data:
+                new_cfgnode = blocks_to_cfgnode[j]
+                cfg.graph.add_edge(cfgnode, new_cfgnode)
 
     function.cfg = cfg
