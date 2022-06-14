@@ -75,7 +75,7 @@ class SymbolicEVMState(AbstractEVMState):
         if remaining_stmts:
             self.pc = remaining_stmts[0].stmt_ident
         elif len(cfgnode.succ) == 1:
-            self.pc = cfgnode.succ[0].bb.first_ins
+            self.pc = cfgnode.succ[0].bb.first_ins.stmt_ident
         elif len(cfgnode.succ) == 2:
             #  case 3: end of the block and two targets
             #  we need to set the fallthrough to the state. 
@@ -89,9 +89,7 @@ class SymbolicEVMState(AbstractEVMState):
             else:
                 # Fallthrough addresses are block addresses
                 fallthrough_node = list(filter(lambda n: n.bb.ident != not_fallthrough, cfgnode.succ))[0]
-                # TODO CHECK IF THIS SHIT IS NONE (i.e., TAC_Block with empty statements)
-                assert(fallthrough_node.bb.first_ins)
-                self.pc = fallthrough_node.bb.first_ins
+                self.pc = fallthrough_node.bb.first_ins.stmt_ident
         else:
             raise VMException("We have more than two successors for block {}?!".format(curr_bb))
 

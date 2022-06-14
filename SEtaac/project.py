@@ -91,7 +91,9 @@ class FactoryObjects:
         return SimulationManager(entry_state=entry_state)
     
     def entry_state(self, xid:str) -> SymbolicEVMState:
-        return SymbolicEVMState(xid=xid, project=self.project)
+        state = SymbolicEVMState(xid=xid, project=self.project)
+        state.pc = self.block('0x0').first_ins.stmt_ident
+        return state
     
     def block(self, block_id:str) -> TAC_Block:
         return self.TAC_parser.parse(block_id)
