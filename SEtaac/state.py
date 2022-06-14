@@ -58,9 +58,26 @@ class SymbolicEVMState(AbstractEVMState):
     def curr_stmt(self):
         # todo: pass project to state
         # todo: pc is the statement id
-        return self.project.tac_parser.get_stmt_at(self.pc)
+        return self.project.factory.statement(self.pc)
 
     def set_next_pc(self):
+        # todo: add get_statement to project.factory
+        # actually look at curr_stmt(self)
+
+        # get block
+        curr_bb = self.project.factory.block(self.curr_stmt.block_ident)
+
+        # case 1: middle of the block
+
+        # case 2: end of the block but only one target, concrete
+
+        # case 3: end of the block but only one target, symbolic
+
+        # case 4: end of the block and multiple targets
+
+
+
+
         # todo: read next statement from dict
         next_pcs = get_next_pcs(self.curr_stmt)
         assert len(next_pcs) == 1
