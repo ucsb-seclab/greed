@@ -4,7 +4,7 @@ from SEtaac.exceptions import VMException
 
 import z3
 
-from SEtaac import cfg, utils
+from SEtaac import utils
 from SEtaac.memory import SymbolicMemory
 from SEtaac.storage import SymbolicStorage
 from SEtaac.utils import concrete
