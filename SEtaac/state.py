@@ -74,6 +74,8 @@ class SymbolicEVMState(AbstractEVMState):
         # case 1: middle of the block
         if remaining_stmts:
             self.pc = remaining_stmts[0].stmt_ident
+        elif len(cfgnode.succ) == 0:
+            raise VMException("We have no successors for {}?!".format(curr_bb))
         elif len(cfgnode.succ) == 1:
             self.pc = cfgnode.succ[0].bb.first_ins.stmt_ident
         elif len(cfgnode.succ) == 2:
@@ -91,7 +93,7 @@ class SymbolicEVMState(AbstractEVMState):
                 fallthrough_node = list(filter(lambda n: n.bb.ident != not_fallthrough, cfgnode.succ))[0]
                 self.pc = fallthrough_node.bb.first_ins.stmt_ident
         else:
-            raise VMException("We have more than two successors for block {}?!".format(curr_bb))
+            raise VMException("We have more than two successors for {}?!".format(curr_bb))
 
     def copy(self):
         # assume unchanged xid
