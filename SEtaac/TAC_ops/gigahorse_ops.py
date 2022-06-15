@@ -96,7 +96,7 @@ class TAC_Const(TAC_NoOperands):
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        succ.registers[self.var] = self.val
+        succ.registers[self.res_var] = self.res_val
         succ.set_next_pc()
         return [succ]
 

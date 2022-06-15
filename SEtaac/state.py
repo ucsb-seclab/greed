@@ -68,10 +68,11 @@ class SymbolicEVMState(AbstractEVMState):
         # get block
         curr_bb = self.project.factory.block(self.curr_stmt.block_ident)
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
-        remaining_stmts = curr_bb.statements[stmt_list_idx:]
-        cfgnode = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb]
+        remaining_stmts = curr_bb.statements[stmt_list_idx+1:]
+        cfgnode = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb.ident]
 
         # case 1: middle of the block
+        #import ipdb; ipdb.set_trace()
         if remaining_stmts:
             self.pc = remaining_stmts[0].stmt_ident
         elif len(cfgnode.succ) == 1:
