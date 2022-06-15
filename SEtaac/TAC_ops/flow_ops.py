@@ -33,9 +33,13 @@ class TAC_Jumpi(TAC_BinaryNoRes):
 
     def handle(self, state:SymbolicEVMState):
         # TODO: implement symbolic jumpi destination
+        self.set_op_val(state)
         succ = state.copy()
-        dest = succ.registers[self.destination_var]
-        cond = succ.registers[self.condition_var]
+
+        target_bb = state.project.factory.block(self.destination_val)
+
+        dest = target_bb.first_ins.stmt_ident
+        cond = self.condition_val
 
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
