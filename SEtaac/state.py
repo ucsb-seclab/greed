@@ -7,7 +7,7 @@ import z3
 from SEtaac import utils
 from SEtaac.memory import SymbolicMemory
 from SEtaac.storage import SymbolicStorage
-from SEtaac.utils import concrete
+from SEtaac.utils import concrete, translate_xid
 
 class AbstractEVMState(object):
     def __init__(self, code=None):
@@ -93,27 +93,39 @@ class SymbolicEVMState(AbstractEVMState):
         else:
             raise VMException("We have more than two successors for block {}?!".format(curr_bb))
 
-    def copy(self, new_xid=None):
-        # todo: implement state copy
-        # todo: there shouldn't be any need to set a new xid, in most cases
-        # new_state = SymbolicEVMState(new_xid or self.xid, code=self.code)
-        #
-        # new_state.pc = self.pc
-        # self.memory = None
-        # self.trace = list()
-        # self.gas = None
-        #
-        # new_state.storage = self.storage.copy(new_xid)
-        # new_state.pc = self.pc
-        # new_state.trace = list(self.trace)
-        # new_state.start_balance = translate_xid(self.start_balance, new_xid)
-        # new_state.balance = translate_xid(self.balance, new_xid)
-        #
-        # new_state.constraints = list(self.constraints)
-        # new_state.sha_constraints = dict(self.sha_constraints)
-        # new_state.ctx = dict(self.ctx)
+    def copy(self):
+        # assume unchanged xid
+        new_state = SymbolicEVMState(self.xid, project=self.project, program=self.program, code=self.code)
 
-        return self
+        new_state.pc = self.pc
+
+        new_state.memory = self.memory.copy(self.xid)
+        new_state.storage = self.storage.copy(self.xid)
+        new_state.registers = dict(self.registers)
+        new_state.ctx = dict(self.ctx)
+
+        new_state.callstack = list(self.callstack)
+
+        new_state.instruction_count = self.instruction_count
+        new_state.halt = self.halt
+        new_state.error = self.error
+
+        new_state.gas = self.gas
+        new_state.start_balance = self.start_balance
+        new_state.balance = self.balance
+
+        new_state.constraints = list(self.constraints)
+        new_state.sha_constraints = dict(self.sha_constraints)
+
+        new_state.min_timestamp = self.min_timestamp
+        new_state.max_timestamp = self.max_timestamp
+
+        new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
+        new_state.calldata = self.calldata
+        new_state.calldatasize = self.calldatasize
+        new_state.calldata_accesses = list(self.calldata_accesses)
+
+        return new_state
 
     def __str__(self):
         return "State at {}".format(self.pc)
