@@ -32,11 +32,14 @@ class Project(object):
         with open(cfg_data, "rb") as cfgdata_file:
             self.TAC_cfg_raw = dill.load(cfgdata_file)
 
+        self._statement_at = dict()
+
         # Object that creates other objects
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw), project=self)
         self.functions = self._import_functions_gigahorse()
         for func in self.functions.values():
             make_cfg(self.factory, self.TAC_cfg_raw, func)
+
 
         # import the web3 provider just in case (from config)
         self.web3 = w3 
@@ -72,6 +75,7 @@ class Project(object):
             # to be able to go back later  
             for tac_block in tac_blocks:
                 tac_block.function = funcs[func_data["addr"]]
+                self._statement_at.update(tac_block._statement_at)
         
         return funcs
     

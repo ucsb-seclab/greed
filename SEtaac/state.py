@@ -59,7 +59,7 @@ class SymbolicEVMState(AbstractEVMState):
     def curr_stmt(self):
         # todo: pass project to state
         # todo: pc is the statement id
-        return self.project.factory.statement(self.pc)
+        return self.project._statement_at[self.pc]
 
     def set_next_pc(self):
         # todo: add get_statement to project.factory
