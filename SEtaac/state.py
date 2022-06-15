@@ -75,7 +75,7 @@ class SymbolicEVMState(AbstractEVMState):
         if remaining_stmts:
             self.pc = remaining_stmts[0].stmt_ident
         elif len(cfgnode.succ) == 0:
-            raise VMException("We have no successors for {}?!".format(curr_bb))
+            self.halt = True
         elif len(cfgnode.succ) == 1:
             self.pc = cfgnode.succ[0].bb.first_ins.stmt_ident
         elif len(cfgnode.succ) == 2:
