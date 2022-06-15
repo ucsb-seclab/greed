@@ -11,7 +11,7 @@ l.setLevel(logging.DEBUG)
 class CFGNode(object):
     def __init__(self, bb:TAC_Block):
         self.bb = bb
-        self.succ_addrs = set()
+        self.cfg = None
 
         # cached properties
         self._succ = None
@@ -131,6 +131,7 @@ def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
         cfgnode = CFGNode(bb)
         blockids_to_cfgnode[bb.ident] = cfgnode
         cfg.graph.add_node(cfgnode)
+        cfgnode.cfg = cfg
     
     for bb in function.blocks:        
         # Adding information about successors from Gigahorse analysis
