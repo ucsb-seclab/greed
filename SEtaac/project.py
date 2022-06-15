@@ -102,5 +102,5 @@ class FactoryObjects:
     def block(self, block_id:str) -> TAC_Block:
         return self.TAC_parser.parse(block_id)
     
-    def statement(self, stmt_id:str):
-        return self.TAC_parser.parse_stmt(stmt_id)
+    # def statement(self, stmt_id:str):
+    #     return self.TAC_parser.parse_stmt(stmt_id)

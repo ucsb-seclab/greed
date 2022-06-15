@@ -62,15 +62,10 @@ class TACparser:
                 # This is just for debug, this shouldn't happen when we have all the
                 # operations (we will raise the exception).
                 stmts.append(raw_tac_stmt)
-        
+
         bb = TAC_Block(stmts, block_id)
         
         # Save in cache the current parse ops.
         self.TAC_code_cache[block_id] = bb
         
         return bb
-    
-    def parse_stmt(self, stmt_id:str):
-        block_id = stmt_id.block_ident
-        tac_block = self.parse(block_id)
-        return tac_block._statement_at[stmt_id]

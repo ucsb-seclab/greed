@@ -34,8 +34,8 @@ class TAC_Jumpi(TAC_BinaryNoRes):
     def handle(self, state:SymbolicEVMState):
         # TODO: implement symbolic jumpi destination
         succ = state.copy()
-        dest = succ.registers[self.destination_val]
-        cond = succ.registers[self.condition_val]
+        dest = succ.registers[self.destination_var]
+        cond = succ.registers[self.condition_var]
 
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
@@ -48,6 +48,7 @@ class TAC_Jumpi(TAC_BinaryNoRes):
                 succ.set_next_pc()
                 return [succ]
         else:
+            print('symbolic')
             # TODO: fix get_solver
             # let's check if both branches are sat
             s = get_solver()
@@ -56,6 +57,7 @@ class TAC_Jumpi(TAC_BinaryNoRes):
             sat_false = is_true(cond == 0, s)
 
             if sat_true and sat_false:
+                print('both sat')
                 # actually fork here
                 succ_true = succ.copy()
                 succ_false = succ
@@ -68,6 +70,7 @@ class TAC_Jumpi(TAC_BinaryNoRes):
 
                 return [succ_true, succ_false]
             elif sat_true:
+                print('sat true')
                 # if only the true branch is sat, jump
                 if not concrete(dest):
                     raise SymbolicError('Symbolic jump target')
@@ -76,12 +79,14 @@ class TAC_Jumpi(TAC_BinaryNoRes):
 
                 return [succ]
             elif sat_false:
+                print('sat false')
                 # if only the false branch is sat, step to the fallthrough branch
                 succ.set_next_pc()
                 succ.constraints.append(cond == 0)
 
                 return [succ]
             else:
+                print('nothing sat')
                 # nothing is sat
                 return []
 

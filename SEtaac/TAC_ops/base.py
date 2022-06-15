@@ -57,8 +57,9 @@ class TAC_Base(Aliased):
         self.stmt_ident = raw_stmt.ident
         self.arg_vars = [x for x in raw_stmt.operands]
         self.arg_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.operands}
-        # cast arg_vals to int
-        self.arg_vals = {x: int(v, 16) if v else v for x, v in self.arg_vals.items()}
+        if self.__internal_name__ not in ['JUMP', 'JUMPI']:
+            # cast arg_vals to int
+            self.arg_vals = {x: int(v, 16) if v else v for x, v in self.arg_vals.items()}
         self.num_args = len(self.arg_vars)
 
         for i in range(self.num_args):
@@ -68,8 +69,9 @@ class TAC_Base(Aliased):
 
         self.res_var = raw_stmt.defs[0] if raw_stmt.defs else None
         self.res_val = raw_stmt.values.get(self.res_var, None)
-        # cast res_val to int
-        self.res_val = int(self.res_val, 16) if self.res_val else self.res_val
+        if self.__internal_name__ not in ['JUMP', 'JUMPI']:
+            # cast res_val to int
+            self.res_val = int(self.res_val, 16) if self.res_val else self.res_val
 
     def set_op_val(self, state:SymbolicEVMState):
         for i in range(self.num_args):
