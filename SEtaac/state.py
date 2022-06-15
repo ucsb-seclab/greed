@@ -72,7 +72,6 @@ class SymbolicEVMState(AbstractEVMState):
         cfgnode = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb.ident]
 
         # case 1: middle of the block
-        #import ipdb; ipdb.set_trace()
         if remaining_stmts:
             self.pc = remaining_stmts[0].stmt_ident
         elif len(cfgnode.succ) == 1:
