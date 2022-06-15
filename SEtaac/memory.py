@@ -61,7 +61,7 @@ class SymbolicMemory(object):
             return SymRead(sym_mem, start, size)
             # raise SymbolicError("Read of symbolic length")
 
-    def copy(self, istart, ilen, ostart, olen):
+    def copy_return_data(self, istart, ilen, ostart, olen):
         if concrete(ilen) and concrete(olen):
             self.write(ostart, olen, self.read(istart, min(ilen, olen)) + [0] * max(olen - ilen, 0))
         elif concrete(olen):
@@ -70,6 +70,15 @@ class SymbolicMemory(object):
             self.write(ostart, SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE,
                        [z3.If(i < olen, z3.If(i < ilen, self[istart + i], 0), self[ostart + i]) for i in
                         range(SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE)])
+
+    def copy(self, new_xid):
+        new_memory = SymbolicMemory()
+
+        new_memory.memory = translate_xid(self.memory, new_xid)
+        new_memory.write_count = self.write_count
+        new_memory.read_count = self.read_count
+
+        return new_memory
 
     def write(self, start, size, val):
         if not concrete(size):

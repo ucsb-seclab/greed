@@ -119,7 +119,7 @@ class TAC_BaseCall(TAC_Septenary):
                 logging.info("Calling precompiled identity contract")
                 istart = arg4 if concrete(arg4) else z3.simplify(arg4)
                 ilen = arg5 if concrete(arg5) else z3.simplify(arg5)
-                succ.memory.copy(istart, ilen, ostart, olen)
+                succ.memory.copy_return_data(istart, ilen, ostart, olen)
                 succ.registers[self.res_var] = 1
             else:
                 raise SymbolicError("Precompiled contract %d not implemented" % arg2)
@@ -189,7 +189,7 @@ class TAC_Staticcall(TAC_Senary):
                 logging.info("Calling precompiled identity contract")
                 istart = arg4 if concrete(arg4) else z3.simplify(arg4)
                 ilen = arg5 if concrete(arg5) else z3.simplify(arg5)
-                succ.memory.copy(istart, ilen, ostart, olen)
+                succ.memory.copy_return_data(istart, ilen, ostart, olen)
                 succ.registers[self.res_var] = 1
             else:
                 raise SymbolicError("Precompiled contract %d not implemented" % arg2)
