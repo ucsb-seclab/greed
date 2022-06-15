@@ -162,6 +162,42 @@ def is_true(cond, s=None):
     return is_false(z3.Not(cond), s)
 
 
+def is_unsat(cond, s=None):
+    s = s or get_solver()
+
+    # backup the solver
+    s.push()
+
+    # add the constraint
+    s.add(cond)
+
+    # check if sat
+    res = (s.check() == z3.unsat)
+
+    # restore the solver
+    s.pop()
+
+    return res
+
+
+def is_sat(cond, s=None):
+    s = s or get_solver()
+
+    # backup the solver
+    s.push()
+
+    # add the constraint
+    s.add(cond)
+
+    # check if sat
+    res = (s.check() == z3.sat)
+
+    # restore the solver
+    s.pop()
+
+    return res
+
+
 def get_solver():
     z3.set_param('rewriter.blast_select_store', True)
     return z3.SolverFor('QF_ABV')
