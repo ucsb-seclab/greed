@@ -114,3 +114,9 @@ class SymbolicEVMState(AbstractEVMState):
         # new_state.ctx = dict(self.ctx)
 
         return self
+
+    def __str__(self):
+        return "State at {}".format(self.pc)
+
+    def __repr__(self):
+        return str(self)
