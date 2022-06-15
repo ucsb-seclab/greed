@@ -120,8 +120,8 @@ class SimulationManager:
         new_active = list()
         for state in self.active:
             successors = self.single_step_state(state)
-            new_active += [successors]
-        self._active = new_active
+            new_active += successors
+        self._stashes['active'] = new_active
 
     def single_step_state(self, state):
         successors = state.curr_stmt.handle(state)
