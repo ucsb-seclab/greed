@@ -26,3 +26,9 @@ class TAC_Block(object):
         
         # This keep a dictionary from statement id to statement.
         self._statement_at = {s.stmt_ident:s for s in self.statements}
+
+    def __str__(self):
+        return "Block at {}".format(self.ident)
+
+    def __repr__(self):
+        return str(self)

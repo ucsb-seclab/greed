@@ -98,6 +98,9 @@ class TAC_Base(Aliased):
 
         return "{} {} {}".format(res_str, self.__internal_name__, args_str).strip()
 
+    def __repr__(self):
+        return str(self)
+
 class TAC_NoOperands(TAC_Base):
     pass
 
@@ -193,6 +196,9 @@ class TAC_DynamicOps(Aliased):
             res_str += " ="
 
         return "{} {} {}".format(res_str, self.__internal_name__, args_str).strip()
+
+    def __repr__(self):
+        return str(self)
 
 
 class TAC_DynamicOpsNoRes(TAC_DynamicOps):

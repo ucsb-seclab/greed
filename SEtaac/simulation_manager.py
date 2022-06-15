@@ -124,6 +124,9 @@ class SimulationManager:
         self._stashes['active'] = new_active
 
     def single_step_state(self, state):
+        print('Stepping {}'.format(state))
+        print(state.curr_stmt)
+
         successors = state.curr_stmt.handle(state)
 
         # todo: somewhere we should take care of stuff that used to be in state.step()
