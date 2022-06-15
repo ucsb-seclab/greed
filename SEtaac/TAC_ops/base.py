@@ -73,8 +73,8 @@ class TAC_Base(Aliased):
 
     def set_op_val(self, state:SymbolicEVMState):
         for i in range(self.num_args):
-            var = object.__getattr__(state, "op{}_var".format(i + 1))
-            arg_val = object.__getattr__(state, "op{}_val".format(i + 1))
+            var = object.__getattribute__(self, "op{}_var".format(i + 1))
+            arg_val = object.__getattribute__(self, "op{}_val".format(i + 1))
             val = arg_val or state.registers[var]
             object.__setattr__(self, "op{}_val".format(i + 1), val)
 
