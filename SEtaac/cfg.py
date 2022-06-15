@@ -135,7 +135,7 @@ def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
     
     for bb in function.blocks:        
         # Adding information about successors from Gigahorse analysis
-        cfgnode = CFGNode(bb)
+        cfgnode = blockids_to_cfgnode[bb.ident]
         jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
         if jump_data:
             for j in jump_data:
