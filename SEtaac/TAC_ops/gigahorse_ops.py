@@ -9,7 +9,7 @@ from .base import TAC_NoOperands, TAC_NoOperandsNoRes, TAC_DynamicOps, TAC_Dynam
 from ..state import SymbolicEVMState
 
 
-__all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
+__all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Return', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
 class TAC_Throw(TAC_NoOperandsNoRes):
     __internal_name__ = "THROW"
@@ -76,6 +76,10 @@ class TAC_Returnprivate(TAC_DynamicOpsNoRes):
             succ.registers[callprivate_return_var] = succ.registers[returnprivate_arg]
 
         return [succ]
+
+
+class TAC_Return(TAC_Returnprivate):
+    __internal_name__ = "RETURN"
 
 
 class TAC_Phi(TAC_DynamicOps):

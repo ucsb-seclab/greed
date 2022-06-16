@@ -214,22 +214,3 @@ class TAC_Staticcall(TAC_Senary):
         arg3 = 0
 
         return self._handler(succ, arg3=arg3)
-
-class TAC_Return(TAC_BinaryNoRes):
-    __internal_name__ = "RETURN"
-    __aliases__ = {
-                   'offset_var'    : 'op1_var', 'offset_val'    : 'op1_val', 
-                   'size_var'      : 'op2_var', 'size_val'      : 'op2_val',
-                   }
-    def handler(self, state:SymbolicEVMState):
-        succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
-
-        if concrete(arg1) and concrete(arg2):
-            succ.memory.extend(arg1, arg2)
-        succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
-        succ.halt = True
-
-        succ.set_next_pc()
-        return [succ]
