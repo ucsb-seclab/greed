@@ -16,8 +16,8 @@ class TAC_Jump(TAC_Statement):
     __internal_name__ = "JUMP"
     __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val'}
 
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
-        self.set_arg_val(state)
         succ = state.copy()
 
         target_bb_id = hex(self.destination_val)
@@ -39,9 +39,8 @@ class TAC_Jumpi(TAC_Statement):
     __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val', 
                    'condition_var': 'arg2_var', 'condition_val': 'arg2_val'}
 
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
-        # TODO: implement symbolic jumpi destination
-        self.set_arg_val(state)
         succ = state.copy()
 
         target_bb_id = hex(self.destination_val)
@@ -116,31 +115,32 @@ class TAC_BaseCall(TAC_Statement):
                    'success_var'   : 'res_var', 'success_val'   : 'res_val'
                    }
 
-    def _handle(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
-        arg1 = arg1 or succ.registers[self.arg1_var]
-        arg2 = arg2 or succ.registers[self.arg2_var]
-        arg3 = arg3 or succ.registers[self.arg3_var]
-        arg4 = arg4 or succ.registers[self.arg4_var]
-        arg5 = arg5 or succ.registers[self.arg5_var]
-        arg6 = arg6 or succ.registers[self.arg6_var]
-        arg7 = arg7 or succ.registers[self.arg7_var]
+    def _handle(self, succ, gas_val=None, address_val=None, value_val=None, argsOffset_val=None, argsSize_val=None,
+                retOffset_val=None, retSize_val=None):
+        gas_val = gas_val or self.gas_val
+        address_val = address_val or self.address_val
+        value_val = value_val or self.value_val
+        argsOffset_val = argsOffset_val or self.argsOffset_val
+        argsSize_val = argsSize_val or self.argsSize_val
+        retOffset_val = retOffset_val or self.retOffset_val
+        retSize_val = retSize_val or self.retSize_val
 
-        ostart = arg6 if concrete(arg6) else z3.simplify(arg6)
-        olen = arg7 if concrete(arg7) else z3.simplify(arg7)
+        ostart = retOffset_val if concrete(retOffset_val) else z3.simplify(retOffset_val)
+        olen = retSize_val if concrete(retSize_val) else z3.simplify(retSize_val)
 
-        if concrete(arg2) and arg2 <= 8:
-            if arg2 == 4:
+        if concrete(address_val) and address_val <= 8:
+            if address_val == 4:
                 logging.info("Calling precompiled identity contract")
-                istart = arg4 if concrete(arg4) else z3.simplify(arg4)
-                ilen = arg5 if concrete(arg5) else z3.simplify(arg5)
+                istart = argsOffset_val if concrete(argsOffset_val) else z3.simplify(argsOffset_val)
+                ilen = argsSize_val if concrete(argsSize_val) else z3.simplify(argsSize_val)
                 succ.memory.copy_return_data(istart, ilen, ostart, olen)
                 succ.registers[self.res1_var] = 1
             else:
-                raise SymbolicError("Precompiled contract %d not implemented" % arg2)
+                raise SymbolicError("Precompiled contract %d not implemented" % address_val)
         else:
             for i in range(olen):
                 succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
-            logging.info("Calling contract %s (%d_%d)" % (arg2, succ.instruction_count, succ.xid))
+            logging.info("Calling contract %s (%d_%d)" % (address_val, succ.instruction_count, succ.xid))
             succ.registers[self.res1_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
 
         succ.set_next_pc()
@@ -149,18 +149,20 @@ class TAC_BaseCall(TAC_Statement):
 class TAC_Call(TAC_BaseCall):
     __internal_name__ = "CALL"
 
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg3 = succ.registers[self.arg3_var]
+        value_val = succ.registers[self.value_val]
 
-        succ.constraints.append(z3.UGE(succ.balance, arg3))
-        succ.balance -= arg3
+        succ.constraints.append(z3.UGE(succ.balance, value_val))
+        succ.balance -= value_val
 
-        return self._handle(succ, arg3=arg3)
+        return self._handle(succ, value_val=value_val)
 
 class TAC_Callcode(TAC_BaseCall):
     __internal_name__ = "CALLCODE"
 
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         return self._handle(succ)
@@ -168,13 +170,14 @@ class TAC_Callcode(TAC_BaseCall):
 class TAC_Delegatecall(TAC_BaseCall):
     __internal_name__ = "DELEGATECALL"
 
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg3 = utils.ctx_or_symbolic('CALLVALUE', succ.ctx, succ.xid)
+        value_val = utils.ctx_or_symbolic('CALLVALUE', succ.ctx, succ.xid)
 
-        return self._handle(succ, arg3=arg3)
+        return self._handle(succ, value_val=value_val)
 
-class TAC_Staticcall(TAC_Statement):
+class TAC_Staticcall(TAC_BaseCall):
     __internal_name__ = "STATICCALL"
     __aliases__ = {
         'gas_var': 'arg1_var', 'gas_val': 'arg1_val',
@@ -186,38 +189,9 @@ class TAC_Staticcall(TAC_Statement):
         'success_var': 'res_var', 'success_val': 'res_val'
     }
 
-    def _handle(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
-        arg1 = arg1 or succ.registers[self.arg1_var]
-        arg2 = arg2 or succ.registers[self.arg2_var]
-        arg3 = 0 # it sucks but opcodes are shifted here
-        arg4 = arg4 or succ.registers[self.arg3_var]
-        arg5 = arg5 or succ.registers[self.arg4_var]
-        arg6 = arg6 or succ.registers[self.arg5_var]
-        arg7 = arg7 or succ.registers[self.arg6_var]
-
-        ostart = arg6 if concrete(arg6) else z3.simplify(arg6)
-        olen = arg7 if concrete(arg7) else z3.simplify(arg7)
-
-        if concrete(arg2) and arg2 <= 8:
-            if arg2 == 4:
-                logging.info("Calling precompiled identity contract")
-                istart = arg4 if concrete(arg4) else z3.simplify(arg4)
-                ilen = arg5 if concrete(arg5) else z3.simplify(arg5)
-                succ.memory.copy_return_data(istart, ilen, ostart, olen)
-                succ.registers[self.res1_var] = 1
-            else:
-                raise SymbolicError("Precompiled contract %d not implemented" % arg2)
-        else:
-            for i in range(olen):
-                succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
-            logging.info("Calling contract %s (%d_%d)" % (arg2, succ.instruction_count, succ.xid))
-            succ.registers[self.res1_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
-
-        succ.set_next_pc()
-        return [succ]
-
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg3 = 0
+        value_val = 0
 
-        return self._handle(succ, arg3=arg3)
+        return self._handle(succ, value_val=value_val)
