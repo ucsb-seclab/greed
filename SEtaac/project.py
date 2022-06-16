@@ -1,17 +1,17 @@
 import logging
-import os 
-import dill
-import sys 
-
+import sys
 from datetime import datetime
-from SEtaac.bb import TAC_Block
-from SEtaac.cfg import CFG
-from SEtaac.simulation_manager import SimulationManager
-from SEtaac.TAC_parser import TACparser
-from SEtaac.state import SymbolicEVMState
-from SEtaac.function import TAC_Function
-from SEtaac.cfg import make_cfg
 
+import dill
+
+from SEtaac.TAC_ops.base import TAC_Statement
+from SEtaac.TAC_ops.special_ops import TAC_Stop
+from SEtaac.TAC_parser import TACparser
+from SEtaac.bb import TAC_Block
+from SEtaac.cfg import make_cfg
+from SEtaac.function import TAC_Function
+from SEtaac.simulation_manager import SimulationManager
+from SEtaac.state import SymbolicEVMState
 from .config import *
 
 l = logging.getLogger("project")
@@ -76,7 +76,8 @@ class Project(object):
             for tac_block in tac_blocks:
                 tac_block.function = funcs[func_data["addr"]]
                 self._statement_at.update(tac_block._statement_at)
-        
+
+        self._statement_at['fake_exit'] = self.factory.TAC_parser._fake_exit_stmt
         return funcs
     
     #@property

@@ -1,10 +1,9 @@
-
-from ast import stmt
 import logging
 
-from .exceptions import TACparser_NO_OPS
-from .bb import TAC_Block
-from . import TAC_ops
+from SEtaac import TAC_ops
+from SEtaac.TAC_ops.base import TAC_Statement
+from SEtaac.TAC_ops.special_ops import TAC_Stop
+from SEtaac.bb import TAC_Block
 
 l = logging.getLogger("tac_parser")
 l.setLevel(logging.INFO)
@@ -20,11 +19,25 @@ class TACparser:
         # Keep here the list of already parsed "raw" TAC_Statement
         self.TAC_code_cache = {}
 
+        # inject a fake STOP statement to simplify the handling of CALLPRIVATE without successors
+        # create fake STOP statement
+        fake_raw_statement = TAC_Statement(TACblock_ident='fake_exit', ident='fake_exit', opcode='STOP')
+
+        # parse raw statement
+        stop = TAC_Stop()
+        stop.parse(fake_raw_statement)
+
+        # create fake block
+        self._fake_exit_stmt = stop
+        self._fake_exit_block = TAC_Block(block_id='fake_exit', statements=[stop])
+
     def parse(self, block_id) -> TAC_Block:
 
         stmts = []
-        
-        if block_id not in self.TAC_code.keys():
+
+        if block_id == "fake_exit":
+            return self._fake_exit_block
+        elif block_id not in self.TAC_code.keys():
             l.debug("Deadblock at {}".format(block_id))
             return None 
         
