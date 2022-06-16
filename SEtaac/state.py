@@ -1,6 +1,6 @@
 import datetime
 from collections import defaultdict
-from SEtaac.exceptions import VMException
+from SEtaac.exceptions import VMException, VM_NoSuccessors, VM_UnexpectedSuccessors
 
 import z3
 
@@ -57,43 +57,43 @@ class SymbolicEVMState(AbstractEVMState):
 
     @property
     def curr_stmt(self):
-        # todo: pass project to state
-        # todo: pc is the statement id
         return self.project._statement_at[self.pc]
 
     def set_next_pc(self):
-        # todo: add get_statement to project.factory
-        # actually look at curr_stmt(self)
+        try:
+            self.pc = self.get_next_pc()
+        except VM_NoSuccessors:
+            self.halt = True
 
+    def get_next_pc(self):
         # get block
         curr_bb = self.project.factory.block(self.curr_stmt.block_ident)
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
-        remaining_stmts = curr_bb.statements[stmt_list_idx+1:]
+        remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
         cfgnode = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb.ident]
 
         # case 1: middle of the block
         if remaining_stmts:
-            self.pc = remaining_stmts[0].stmt_ident
+            return remaining_stmts[0].stmt_ident
         elif len(cfgnode.succ) == 0:
-            self.halt = True
+            raise VM_NoSuccessors
         elif len(cfgnode.succ) == 1:
-            self.pc = cfgnode.succ[0].bb.first_ins.stmt_ident
+            return cfgnode.succ[0].bb.first_ins.stmt_ident
         elif len(cfgnode.succ) == 2:
             #  case 3: end of the block and two targets
-            #  we need to set the fallthrough to the state. 
-            #  The handler of the JUMPI has already created the state at the jump target. 
-            assert(self.curr_stmt.__internal_name__ == "JUMPI")
+            #  we need to set the fallthrough to the state.
+            #  The handler of the JUMPI has already created the state at the jump target.
+            assert (self.curr_stmt.__internal_name__ == "JUMPI")
             not_fallthrough = self.registers[self.curr_stmt.destination_var]
-            
+
             # We need make sure this is concrete to check against the successors of the node
-            if not concrete(not_fallthrough):
-                raise VMException("Symbolic destination for JUMPI. This should not happen.")
-            else:
-                # Fallthrough addresses are block addresses
-                fallthrough_node = list(filter(lambda n: n.bb.ident != not_fallthrough, cfgnode.succ))[0]
-                self.pc = fallthrough_node.bb.first_ins.stmt_ident
+            # if not concrete(not_fallthrough):
+            #     raise VMException("Symbolic destination for JUMPI. This should not happen.")
+            # Fallthrough addresses are block addresses
+            fallthrough_node = list(filter(lambda n: n.bb.ident != not_fallthrough, cfgnode.succ))[0]
+            return fallthrough_node.bb.first_ins.stmt_ident
         else:
-            raise VMException("We have more than two successors for {}?!".format(curr_bb))
+            raise VM_UnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
 
     def copy(self):
         # assume unchanged xid

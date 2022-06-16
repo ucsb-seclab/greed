@@ -15,3 +15,9 @@ class VMException(Exception):
 
 class TACparser_NO_OPS(Exception):
     pass
+
+class VM_NoSuccessors(Exception):
+    pass
+
+class VM_UnexpectedSuccessors(Exception):
+    pass
