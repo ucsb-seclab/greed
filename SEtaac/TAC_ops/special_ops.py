@@ -34,7 +34,7 @@ class TAC_Sha3(TAC_Binary):
         mm = state.memory.read(arg1, arg2)
         if not isinstance(mm, SymRead) and all(concrete(m) for m in mm):
             data = utils.bytearray_to_bytestr(mm)
-            return utils.big_endian_to_int(utils.sha3(data))
+            succ.registers[self.res_var] = utils.big_endian_to_int(utils.sha3(data))
         else:
             if not isinstance(mm, SymRead):
                 sha_data = z3.simplify(z3.Concat([m if z3.is_expr(m) else z3.BitVecVal(m, 8) for m in mm]))
