@@ -28,12 +28,12 @@ class TAC_Add(TAC_Binary):
 
         # If we already have the result of the op
         # from the Gigahorse IR, just use it.
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = self.op1_val + self.op2_val
+        succ.registers[self.res1_var] = self.op1_val + self.op2_val
 
         succ.set_next_pc()
         return [succ]
@@ -47,12 +47,12 @@ class TAC_Sub(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = self.op1_val - self.op2_val
+        succ.registers[self.res1_var] = self.op1_val - self.op2_val
 
         succ.set_next_pc()
         return [succ]
@@ -66,12 +66,12 @@ class TAC_Mul(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = self.op1_val * self.op2_val
+        succ.registers[self.res1_var] = self.op1_val * self.op2_val
 
         succ.set_next_pc()
         return [succ]
@@ -85,17 +85,17 @@ class TAC_Div(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op2_val):
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else self.op1_val / self.op2_val if concrete(
+            succ.registers[self.res1_var] = 0 if self.op2_val == 0 else self.op1_val / self.op2_val if concrete(
                 self.op1_val) else z3.UDiv(self.op1_val, self.op2_val)
         else:
-            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
-                                                 z3.UDiv(self.op1_val, self.op2_val))
+            succ.registers[self.res1_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
+                                                  z3.UDiv(self.op1_val, self.op2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -109,19 +109,19 @@ class TAC_Sdiv(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else abs(self.op1_val) // abs(self.op2_val) * (
+            succ.registers[self.res1_var] = 0 if self.op2_val == 0 else abs(self.op1_val) // abs(self.op2_val) * (
                 -1 if self.op1_val * self.op2_val < 0 else 1)
         elif concrete(self.op2_val):
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else self.op1_val / self.op2_val
+            succ.registers[self.res1_var] = 0 if self.op2_val == 0 else self.op1_val / self.op2_val
         else:
-            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256), self.op1_val / self.op2_val)
+            succ.registers[self.res1_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256), self.op1_val / self.op2_val)
 
         succ.set_next_pc()
         return [succ]
@@ -135,16 +135,16 @@ class TAC_Mod(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op2_val):
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else self.op1_val % self.op2_val
+            succ.registers[self.res1_var] = 0 if self.op2_val == 0 else self.op1_val % self.op2_val
         else:
-            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
-                                                 z3.URem(self.op1_val, self.op2_val))
+            succ.registers[self.res1_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
+                                                  z3.URem(self.op1_val, self.op2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -157,20 +157,20 @@ class TAC_Smod(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else abs(self.op1_val) % abs(self.op2_val) * (
+            succ.registers[self.res1_var] = 0 if self.op2_val == 0 else abs(self.op1_val) % abs(self.op2_val) * (
                 -1 if self.op1_val < 0 else 1)
         elif concrete(self.op2_val):
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else z3.SRem(self.op1_val, self.op2_val)
+            succ.registers[self.res1_var] = 0 if self.op2_val == 0 else z3.SRem(self.op1_val, self.op2_val)
         else:
-            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
-                                                 z3.SRem(self.op1_val, self.op2_val))
+            succ.registers[self.res1_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
+                                                  z3.SRem(self.op1_val, self.op2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -184,17 +184,17 @@ class TAC_Addmod(TAC_Ternary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.denominator_val):
-            succ.registers[self.res_var] = (
+            succ.registers[self.res1_var] = (
                                                        self.op1_val + self.op2_val) % self.denominator_val if self.denominator_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
-                                                 z3.URem((self.op1_val + self.op2_val), self.denominator_val))
+            succ.registers[self.res1_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
+                                                  z3.URem((self.op1_val + self.op2_val), self.denominator_val))
 
         succ.set_next_pc()
         return [succ]
@@ -208,17 +208,17 @@ class TAC_Mulmod(TAC_Ternary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.denominator_val):
-            succ.registers[self.res_var] = (
+            succ.registers[self.res1_var] = (
                                                        self.op1_val * self.op2_val) % self.denominator_val if self.denominator_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
-                                                 z3.URem((self.op1_val * self.op2_val), self.denominator_val))
+            succ.registers[self.res1_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
+                                                  z3.URem((self.op1_val * self.op2_val), self.denominator_val))
 
         succ.set_next_pc()
         return [succ]
@@ -232,17 +232,17 @@ class TAC_Exp(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.base_val) and concrete(self.exp_val):
-            succ.registers[self.res_var] = pow(self.base_val, self.exp_val, utils.TT256)
+            succ.registers[self.res1_var] = pow(self.base_val, self.exp_val, utils.TT256)
         else:
             if concrete(self.base_val) and utils.is_pow2(self.base_val):
                 l2 = utils.log2(self.base_val)
-                succ.registers[self.res_var] = 1 << (l2 * self.exp_val)
+                succ.registers[self.res1_var] = 1 << (l2 * self.exp_val)
             else:
                 raise SymbolicError('exponentiation with symbolic exponent currently not supported :-/')
 
@@ -257,8 +257,8 @@ class TAC_Signextend(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
@@ -266,17 +266,17 @@ class TAC_Signextend(TAC_Binary):
             if self.op1_val <= 31:
                 testbit = self.op1_val * 8 + 7
                 if self.op2_val & (1 << testbit):
-                    succ.registers[self.res_var] = self.op2_val | (utils.TT256 - (1 << testbit))
+                    succ.registers[self.res1_var] = self.op2_val | (utils.TT256 - (1 << testbit))
                 else:
-                    succ.registers[self.res_var] = self.op2_val & ((1 << testbit) - 1)
+                    succ.registers[self.res1_var] = self.op2_val & ((1 << testbit) - 1)
             else:
-                succ.registers[self.res_var] = self.op2_val
+                succ.registers[self.res1_var] = self.op2_val
         elif concrete(self.op1_val):
             if self.op1_val <= 31:
                 oldwidth = (self.op1_val + 1) * 8
-                succ.registers[self.res_var] = z3.SignExt(256 - oldwidth, self.op2_val)
+                succ.registers[self.res1_var] = z3.SignExt(256 - oldwidth, self.op2_val)
             else:
-                succ.registers[self.res_var] = self.op2_val
+                succ.registers[self.res1_var] = self.op2_val
         else:
             raise SymbolicError('symbolic bitwidth for signextension is currently not supported')
 
@@ -291,16 +291,16 @@ class TAC_Lt(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
-            succ.registers[self.res_var] = 1 if self.op1_val < self.op2_val else 0
+            succ.registers[self.res1_var] = 1 if self.op1_val < self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(z3.ULT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256),
-                                                 z3.BitVecVal(0, 256))
+            succ.registers[self.res1_var] = z3.If(z3.ULT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256),
+                                                  z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -313,16 +313,16 @@ class TAC_Gt(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
-            succ.registers[self.res_var] = 1 if self.op1_val > self.op2_val else 0
+            succ.registers[self.res1_var] = 1 if self.op1_val > self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(z3.UGT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256),
-                                                 z3.BitVecVal(0, 256))
+            succ.registers[self.res1_var] = z3.If(z3.UGT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256),
+                                                  z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -335,17 +335,17 @@ class TAC_Slt(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
-            succ.registers[self.res_var] = 1 if self.op1_val < self.op2_val else 0
+            succ.registers[self.res1_var] = 1 if self.op1_val < self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.op1_val < self.op2_val, z3.BitVecVal(1, 256),
-                                                 z3.BitVecVal(0, 256))
+            succ.registers[self.res1_var] = z3.If(self.op1_val < self.op2_val, z3.BitVecVal(1, 256),
+                                                  z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -358,17 +358,17 @@ class TAC_Sgt(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
-            succ.registers[self.res_var] = 1 if self.op1_val > self.op2_val else 0
+            succ.registers[self.res1_var] = 1 if self.op1_val > self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.op1_val > self.op2_val, z3.BitVecVal(1, 256),
-                                                 z3.BitVecVal(0, 256))
+            succ.registers[self.res1_var] = z3.If(self.op1_val > self.op2_val, z3.BitVecVal(1, 256),
+                                                  z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -381,16 +381,16 @@ class TAC_Eq(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
-            succ.registers[self.res_var] = 1 if self.op1_val == self.op2_val else 0
+            succ.registers[self.res1_var] = 1 if self.op1_val == self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.op1_val == self.op2_val, z3.BitVecVal(1, 256),
-                                                 z3.BitVecVal(0, 256))
+            succ.registers[self.res1_var] = z3.If(self.op1_val == self.op2_val, z3.BitVecVal(1, 256),
+                                                  z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -403,15 +403,15 @@ class TAC_Iszero(TAC_Unary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val):
-            succ.registers[self.res_var] = 1 if self.op1_val == 0 else 0
+            succ.registers[self.res1_var] = 1 if self.op1_val == 0 else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.op1_val == 0, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
+            succ.registers[self.res1_var] = z3.If(self.op1_val == 0, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -424,12 +424,12 @@ class TAC_And(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = self.op1_val & self.op2_val
+        succ.registers[self.res1_var] = self.op1_val & self.op2_val
 
         succ.set_next_pc()
         return [succ]
@@ -442,12 +442,12 @@ class TAC_Or(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = self.op1_val | self.op2_val
+        succ.registers[self.res1_var] = self.op1_val | self.op2_val
 
         succ.set_next_pc()
         return [succ]
@@ -460,12 +460,12 @@ class TAC_Xor(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = self.op1_val ^ self.op2_val
+        succ.registers[self.res1_var] = self.op1_val ^ self.op2_val
 
         succ.set_next_pc()
         return [succ]
@@ -478,12 +478,12 @@ class TAC_Not(TAC_Unary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = ~self.op1_val
+        succ.registers[self.res1_var] = ~self.op1_val
 
         succ.set_next_pc()
         return [succ]
@@ -497,24 +497,24 @@ class TAC_Byte(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.offset_val):
             if self.offset_val >= 32:
-                succ.registers[self.res_var] = 0
+                succ.registers[self.res1_var] = 0
             else:
                 if concrete(self.op2_val):
-                    succ.registers[self.res_var] = (self.op2_val // 256 ** (31 - self.offset_val)) % 256
+                    succ.registers[self.res1_var] = (self.op2_val // 256 ** (31 - self.offset_val)) % 256
                 else:
                     v = z3.simplify(
                         z3.Extract((31 - self.offset_val) * 8 + 7, (31 - self.offset_val) * 8, self.op2_val))
                     if z3.is_bv_value(v):
-                        succ.registers[self.res_var] = v.as_long()
+                        succ.registers[self.res1_var] = v.as_long()
                     else:
-                        succ.registers[self.res_var] = z3.ZeroExt(256 - 32, v)
+                        succ.registers[self.res1_var] = z3.ZeroExt(256 - 32, v)
         else:
             raise SymbolicError('symbolic byte-index not supported')
 
@@ -530,12 +530,12 @@ class TAC_Shl(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = self.op2_val << self.shift_val
+        succ.registers[self.res1_var] = self.op2_val << self.shift_val
 
         succ.set_next_pc()
         return [succ]
@@ -549,15 +549,15 @@ class TAC_Shr(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
         if concrete(self.op2_val) and concrete(self.shift_val):
-            succ.registers[self.res_var] = self.op2_val >> self.shift_val
+            succ.registers[self.res1_var] = self.op2_val >> self.shift_val
         else:
-            succ.registers[self.res_var] = z3.LShR(self.op2_val, self.shift_val)
+            succ.registers[self.res1_var] = z3.LShR(self.op2_val, self.shift_val)
 
         succ.set_next_pc()
         return [succ]
@@ -571,12 +571,12 @@ class TAC_Sar(TAC_Binary):
         self.set_op_val(state)
         succ = state.copy()
 
-        if self.res_var and self.res_val:
-            succ.registers[self.res_var] = self.res_val
+        if self.res1_var and self.res1_val:
+            succ.registers[self.res1_var] = self.res1_val
             succ.set_next_pc()
             return [succ]
 
-        succ.registers[self.res_var] = utils.to_signed(self.op2_val) >> self.shift_val
+        succ.registers[self.res1_var] = utils.to_signed(self.op2_val) >> self.shift_val
 
         succ.set_next_pc()
         return [succ]

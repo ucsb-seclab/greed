@@ -70,13 +70,13 @@ class TAC_Mload(TAC_Unary):
         state.memory.extend(arg1, 32)
         mm = [state.memory[arg1 + i] for i in range(32)]
         if all(concrete(m) for m in mm):
-            succ.registers[self.res_var] = utils.bytes_to_int(state.memory.read(arg1, 32))
+            succ.registers[self.res1_var] = utils.bytes_to_int(state.memory.read(arg1, 32))
         else:
             v = z3.simplify(z3.Concat([m if not concrete(m) else z3.BitVecVal(m, 8) for m in mm]))
             if z3.is_bv_value(v):
-                succ.registers[self.res_var] = v.as_long()
+                succ.registers[self.res1_var] = v.as_long()
             else:
-                succ.registers[self.res_var] = v
+                succ.registers[self.res1_var] = v
 
         succ.set_next_pc()
         return [succ]
@@ -94,9 +94,9 @@ class TAC_Sload(TAC_Unary):
 
         v = z3.simplify(state.storage[arg1])
         if z3.is_bv_value(v):
-            succ.registers[self.res_var] = v.as_long()
+            succ.registers[self.res1_var] = v.as_long()
         else:
-            succ.registers[self.res_var] = v
+            succ.registers[self.res1_var] = v
 
         succ.set_next_pc()
         return [succ]
@@ -127,7 +127,7 @@ class TAC_Msize(TAC_NoOperands):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        succ.registers[self.res_var] = len(state.memory)
+        succ.registers[self.res1_var] = len(state.memory)
 
         succ.set_next_pc()
         return [succ]

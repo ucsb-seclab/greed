@@ -135,14 +135,14 @@ class TAC_BaseCall(TAC_Septenary):
                 istart = arg4 if concrete(arg4) else z3.simplify(arg4)
                 ilen = arg5 if concrete(arg5) else z3.simplify(arg5)
                 succ.memory.copy_return_data(istart, ilen, ostart, olen)
-                succ.registers[self.res_var] = 1
+                succ.registers[self.res1_var] = 1
             else:
                 raise SymbolicError("Precompiled contract %d not implemented" % arg2)
         else:
             for i in range(olen):
                 succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
             logging.info("Calling contract %s (%d_%d)" % (arg2, succ.instruction_count, succ.xid))
-            succ.registers[self.res_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
+            succ.registers[self.res1_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
 
         succ.set_next_pc()
         return [succ]
@@ -205,14 +205,14 @@ class TAC_Staticcall(TAC_Senary):
                 istart = arg4 if concrete(arg4) else z3.simplify(arg4)
                 ilen = arg5 if concrete(arg5) else z3.simplify(arg5)
                 succ.memory.copy_return_data(istart, ilen, ostart, olen)
-                succ.registers[self.res_var] = 1
+                succ.registers[self.res1_var] = 1
             else:
                 raise SymbolicError("Precompiled contract %d not implemented" % arg2)
         else:
             for i in range(olen):
                 succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
             logging.info("Calling contract %s (%d_%d)" % (arg2, succ.instruction_count, succ.xid))
-            succ.registers[self.res_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
+            succ.registers[self.res1_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
 
         succ.set_next_pc()
         return [succ]

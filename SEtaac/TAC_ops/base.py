@@ -49,8 +49,8 @@ class TAC_Base(Aliased):
         self.arg_vals = {}
         self.num_args = None
 
-        self.res_var = None
-        self.res_val = None
+        self.res1_var = None
+        self.res1_val = None
 
     def parse(self, raw_stmt: TAC_Statement):
         self.block_ident = raw_stmt.tac_block_id
@@ -67,11 +67,11 @@ class TAC_Base(Aliased):
             object.__setattr__(self, "op{}_var".format(i+1), var)
             object.__setattr__(self, "op{}_val".format(i+1), self.arg_vals[var])
 
-        self.res_var = raw_stmt.defs[0] if raw_stmt.defs else None
-        self.res_val = raw_stmt.values.get(self.res_var, None)
+        self.res1_var = raw_stmt.defs[0] if raw_stmt.defs else None
+        self.res1_val = raw_stmt.values.get(self.res1_var, None)
         # if self.__internal_name__ not in ['JUMP', 'JUMPI']:
         # cast res_val to int
-        self.res_val = int(self.res_val, 16) if self.res_val else self.res_val
+        self.res1_val = int(self.res1_val, 16) if self.res1_val else self.res1_val
 
     def set_op_val(self, state:SymbolicEVMState):
         for i in range(self.num_args):
@@ -86,10 +86,10 @@ class TAC_Base(Aliased):
             args_str += "{}".format(arg)
             args_str += " "
 
-        if not self.res_var:
+        if not self.res1_var:
             res_str = ""
         else:
-            res_str = "{} =".format(self.res_var)
+            res_str = "{} =".format(self.res1_var)
 
         return "{} {} {}".format(res_str, self.__internal_name__, args_str).strip()
 
