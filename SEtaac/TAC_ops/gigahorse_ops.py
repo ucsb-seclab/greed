@@ -1,6 +1,6 @@
 from SEtaac.exceptions import VM_NoSuccessors
 
-from .base import TAC_Statement, TAC_DynamicOps, TAC_DynamicOpsNoRes
+from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
 
@@ -11,7 +11,7 @@ class TAC_Throw(TAC_Statement):
     def handle(self, state:SymbolicEVMState):
         pass
 
-class TAC_Callprivate(TAC_DynamicOps):
+class TAC_Callprivate(TAC_Statement):
     __internal_name__ = "CALLPRIVATE"
     __aliases__ = {}
     
@@ -53,7 +53,7 @@ class TAC_Callprivate(TAC_DynamicOps):
         return [succ]
 
 
-class TAC_Returnprivate(TAC_DynamicOpsNoRes):
+class TAC_Returnprivate(TAC_Statement):
     __internal_name__ = "RETURNPRIVATE"
     __aliases__ = {}
 
@@ -76,7 +76,7 @@ class TAC_Return(TAC_Returnprivate):
     __internal_name__ = "RETURN"
 
 
-class TAC_Phi(TAC_DynamicOps):
+class TAC_Phi(TAC_Statement):
     __internal_name__ = "PHI"
     __aliases__ = {}
     

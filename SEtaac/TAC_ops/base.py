@@ -45,88 +45,47 @@ class TAC_Statement(Aliased):
     def __init__(self):
         self.block_ident = None
         self.stmt_ident = None
+
         self.arg_vars = []
         self.arg_vals = {}
         self.num_args = None
 
-        self.res1_var = None
-        self.res1_val = None
+        self.res_vars = []
+        self.res_vals = {}
+        self.num_ress = None
 
     def parse(self, raw_stmt: TAC_RawStatement):
         self.block_ident = raw_stmt.tac_block_id
         self.stmt_ident = raw_stmt.ident
+
         self.arg_vars = [x for x in raw_stmt.operands]
         self.arg_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.operands}
-        # if self.__internal_name__ not in ['JUMP', 'JUMPI']:
+        self.num_args = len(self.arg_vars)
         # cast arg_vals to int
         self.arg_vals = {x: int(v, 16) if v else v for x, v in self.arg_vals.items()}
-        self.num_args = len(self.arg_vars)
 
         for i in range(self.num_args):
             var = self.arg_vars[i]
             object.__setattr__(self, "arg{}_var".format(i+1), var)
             object.__setattr__(self, "arg{}_val".format(i+1), self.arg_vals[var])
 
-        self.res1_var = raw_stmt.defs[0] if raw_stmt.defs else None
-        self.res1_val = raw_stmt.values.get(self.res1_var, None)
-        # if self.__internal_name__ not in ['JUMP', 'JUMPI']:
-        # cast res_val to int
-        self.res1_val = int(self.res1_val, 16) if self.res1_val else self.res1_val
-
-    def set_arg_val(self, state:SymbolicEVMState):
-        for i in range(self.num_args):
-            var = object.__getattribute__(self, "arg{}_var".format(i + 1))
-            arg_val = object.__getattribute__(self, "arg{}_val".format(i + 1))
-            val = state.registers[var] if arg_val is None else arg_val
-            object.__setattr__(self, "arg{}_val".format(i + 1), val)
-
-    def __str__(self):
-        args_str = ''
-        for arg in self.arg_vars:
-            args_str += "{}".format(arg)
-            args_str += " "
-
-        if not self.res1_var:
-            res_str = ""
-        else:
-            res_str = "{} =".format(self.res1_var)
-
-        return "{} {} {}".format(res_str, self.__internal_name__, args_str).strip()
-
-    def __repr__(self):
-        return str(self)
-
-
-class TAC_DynamicOps(Aliased):
-    __internal_name__ = None
-    __aliases__ = {}
-
-    def __init__(self):
-        self.block_ident = None
-        self.stmt_ident = None
-        self.arg_vars = []
-        self.arg_vals = {}
-        self.num_args = None
-        self.res_vars = []
-        self.res_vals = {}
-
-    def parse(self, raw_stmt: TAC_RawStatement):
-        self.block_ident = raw_stmt.tac_block_id
-        self.stmt_ident = raw_stmt.ident
-        self.arg_vars = [x for x in raw_stmt.operands]
-        self.num_args = len(self.arg_vars)
-        self.arg_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.operands}
-        # cast arg_vals to int
-        self.arg_vals = {x: int(v, 16) if v else v for x, v in self.arg_vals.items()}
         self.res_vars = [x for x in raw_stmt.defs]
         self.res_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.defs}
+        self.num_ress = len(self.res_vars)
         # cast res_vals to int
         self.res_vals = {x: int(v, 16) if v else v for x, v in self.res_vals.items()}
 
-    def set_op_val(self, state:SymbolicEVMState):
+        for i in range(self.num_ress):
+            var = self.res_vars[i]
+            object.__setattr__(self, "res{}_var".format(i+1), var)
+            object.__setattr__(self, "res{}_val".format(i+1), self.res_vals[var])
+
+    def set_arg_val(self, state:SymbolicEVMState):
         for i in range(self.num_args):
             var = self.arg_vars[i]
-            self.arg_vals[var] = state.registers[var] if self.arg_vals[var] is None else self.arg_vals[var]
+            arg_val = self.arg_vals[var]
+            val = state.registers[var] if arg_val is None else arg_val
+            self.arg_vals[var] = val
 
     def __str__(self):
         args_str = ''
@@ -147,9 +106,6 @@ class TAC_DynamicOps(Aliased):
     def __repr__(self):
         return str(self)
 
-
-class TAC_DynamicOpsNoRes(TAC_DynamicOps):
-    pass
 
 # def handler(func):
 #     """
