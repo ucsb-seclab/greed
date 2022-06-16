@@ -25,8 +25,8 @@ class TAC_Jump(TAC_UnaryNoRes):
         target_bb = state.project.factory.block(target_bb_id)
 
         dest = target_bb.first_ins.stmt_ident
-        if not concrete(dest):
-            raise SymbolicError('Symbolic jump target')
+        # if not concrete(dest):
+        #     raise SymbolicError('Symbolic jump target')
 
         succ.pc = dest
 
@@ -51,8 +51,8 @@ class TAC_Jumpi(TAC_BinaryNoRes):
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
             if cond is True:
-                if not concrete(dest):
-                    raise SymbolicError('Symbolic jump target')
+                # if not concrete(dest):
+                #     raise SymbolicError('Symbolic jump target')
                 succ.pc = dest
                 return [succ]
             else:
@@ -80,8 +80,8 @@ class TAC_Jumpi(TAC_BinaryNoRes):
                 return [succ_true, succ_false]
             elif sat_true:
                 # if only the true branch is sat, jump
-                if not concrete(dest):
-                    raise SymbolicError('Symbolic jump target')
+                # if not concrete(dest):
+                #     raise SymbolicError('Symbolic jump target')
                 succ.pc = dest
                 succ.constraints.append(cond == 1)
 
