@@ -117,7 +117,7 @@ class TAC_BaseCall(TAC_Septenary):
                    'success_var'   : 'res_var', 'success_val'   : 'res_val'
                    }
 
-    def _handler(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
+    def _handle(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
         arg1 = arg1 or succ.registers[self.op1_var]
         arg2 = arg2 or succ.registers[self.op2_var]
         arg3 = arg3 or succ.registers[self.op3_var]
@@ -150,30 +150,30 @@ class TAC_BaseCall(TAC_Septenary):
 class TAC_Call(TAC_BaseCall):
     __internal_name__ = "CALL"
 
-    def handler(self, state:SymbolicEVMState):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg3 = succ.registers[self.op3_var]
 
         succ.constraints.append(z3.UGE(succ.balance, arg3))
         succ.balance -= arg3
 
-        return self._handler(succ, arg3=arg3)
+        return self._handle(succ, arg3=arg3)
 
 class TAC_Callcode(TAC_BaseCall):
     __internal_name__ = "CALLCODE"
 
-    def handler(self, state:SymbolicEVMState):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        return self._handler(succ)
+        return self._handle(succ)
 
 class TAC_Delegatecall(TAC_BaseCall):
     __internal_name__ = "DELEGATECALL"
 
-    def handler(self, state:SymbolicEVMState):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg3 = utils.ctx_or_symbolic('CALLVALUE', succ.ctx, succ.xid)
 
-        return self._handler(succ, arg3=arg3)
+        return self._handle(succ, arg3=arg3)
 
 class TAC_Staticcall(TAC_Senary):
     __internal_name__ = "STATICCALL"
@@ -187,7 +187,7 @@ class TAC_Staticcall(TAC_Senary):
         'success_var': 'res_var', 'success_val': 'res_val'
     }
 
-    def _handler(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
+    def _handle(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
         arg1 = arg1 or succ.registers[self.op1_var]
         arg2 = arg2 or succ.registers[self.op2_var]
         arg3 = 0 # it sucks but opcodes are shifted here
@@ -217,8 +217,8 @@ class TAC_Staticcall(TAC_Senary):
         succ.set_next_pc()
         return [succ]
 
-    def handler(self, state:SymbolicEVMState):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
         arg3 = 0
 
-        return self._handler(succ, arg3=arg3)
+        return self._handle(succ, arg3=arg3)
