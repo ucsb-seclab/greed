@@ -46,12 +46,14 @@ class TAC_Statement(Aliased):
         self.block_ident = None
         self.stmt_ident = None
 
-        self.arg_vars = []
-        self.arg_vals = {}
+        self.arg_vars = list()
+        self.arg_vals = dict()
         self.num_args = None
 
-        self.res_vars = []
-        self.res_vals = {}
+        self.raw_arg_vals = dict()
+
+        self.res_vars = list()
+        self.res_vals = dict()
         self.num_ress = None
 
     def parse(self, raw_stmt: TAC_RawStatement):
@@ -64,6 +66,10 @@ class TAC_Statement(Aliased):
         # cast arg_vals to int
         self.arg_vals = {x: int(v, 16) if v else v for x, v in self.arg_vals.items()}
 
+        # keep a copy of the arg_vals
+        self.raw_arg_vals = dict(self.arg_vals)
+
+        # create arg vars/vals aliases
         for i in range(self.num_args):
             var = self.arg_vars[i]
             object.__setattr__(self, "arg{}_var".format(i+1), var)
@@ -75,12 +81,17 @@ class TAC_Statement(Aliased):
         # cast res_vals to int
         self.res_vals = {x: int(v, 16) if v else v for x, v in self.res_vals.items()}
 
+        # create res vars/vals aliases
         for i in range(self.num_ress):
             var = self.res_vars[i]
             object.__setattr__(self, "res{}_var".format(i+1), var)
             object.__setattr__(self, "res{}_val".format(i+1), self.res_vals[var])
 
     def set_arg_val(self, state:SymbolicEVMState):
+        # IMPORTANT: we need to reset this every time we re-execute this statement or we'll have the old registers
+        # values in self.arg_vals (as set by this function)
+        self.arg_vals = dict(self.raw_arg_vals)
+
         for i in range(self.num_args):
             var = self.arg_vars[i]
             arg_val = self.arg_vals[var]
