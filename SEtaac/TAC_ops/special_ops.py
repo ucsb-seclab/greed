@@ -65,7 +65,7 @@ class TAC_Stop(TAC_NoOperandsNoRes):
         succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.halt = True
 
-        succ.set_next_pc()
+        # succ.set_next_pc()
         return [succ]
 
 
@@ -486,7 +486,7 @@ class TAC_Revert(TAC_BinaryNoRes):
         succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.halt = True
 
-        succ.set_next_pc()
+        # succ.set_next_pc()
         return [succ]
 
 
@@ -562,7 +562,7 @@ class TAC_Invalid(TAC_NoOperandsNoRes):
 
         succ.halt = True
 
-        succ.set_next_pc()
+        # succ.set_next_pc()
         return [succ]
 
 
@@ -579,7 +579,7 @@ class TAC_Selfdestruct(TAC_UnaryNoRes):
         succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.halt = True
 
-        succ.set_next_pc()
+        # succ.set_next_pc()
         return [succ]
 
 
