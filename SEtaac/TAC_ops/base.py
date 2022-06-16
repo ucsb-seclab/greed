@@ -88,6 +88,44 @@ class TAC_Statement(Aliased):
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i+1), val)
 
+    def handler_without_side_effects(func):
+        """
+        Decorator that executes the basic functionalities for handlers without side effects
+        (can just read and return statically computed results).
+        """
+
+        def wrap(self, state: SymbolicEVMState):
+            # Grab vals from Gigahorse IR and registers if they are available.
+            self.set_arg_val(state)
+
+            # If we already have the result of the op from the Gigahorse IR, just use it.
+            if self.res1_var and self.res1_val:
+                succ = state.copy()
+                succ.registers[self.res1_var] = self.res1_val
+                succ.set_next_pc()
+                return [succ]
+
+            # otherwise, execute the actual handler
+            successors = func(self, state)
+            return successors
+
+        return wrap
+
+    def handler_with_side_effects(func):
+        """
+        Decorator that executes the basic functionalities for handlers with side effects
+        (can't just read and return statically computed results).
+        """
+        def wrap(self, state: SymbolicEVMState):
+            # Grab vals from Gigahorse IR and registers if they are available.
+            self.set_arg_val(state)
+
+            # always execute the actual handler because we need the side-effects
+            successors = func(self, state)
+            return successors
+
+        return wrap
+
     def __str__(self):
         args_str = ''
         for arg in self.arg_vars:
@@ -106,14 +144,3 @@ class TAC_Statement(Aliased):
 
     def __repr__(self):
         return str(self)
-
-
-# def handler(func):
-#     """
-#     Decorator that executes the basic handler functionalities.
-#     """
-#     def wrap(*args, **kwargs):
-#         successors = func(*args, **kwargs)
-#         return successors
-#
-#     return wrap

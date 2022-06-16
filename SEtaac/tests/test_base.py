@@ -13,4 +13,4 @@ try:
 except KeyboardInterrupt:
     pass
 
-import ipdb; ipdb.set_trace()
+import IPython; IPython.embed()
