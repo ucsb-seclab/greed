@@ -147,6 +147,7 @@ class SimulationManager:
         try:
             while len(self.active) > 0 and len(self.found) == 0 and not self._halt:
                 self.move(from_stash='active', to_stash='found', filter_func=find)
+                self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
 
                 self.step()
 
