@@ -93,11 +93,12 @@ class TAC_Phi(TAC_DynamicOps):
         # possible and forking. 
         # FIXME: can we do better tho, this might end up exploding and leaf to
         #        impossible paths.
-        for arg in self.args_var:
+        var = self.res_vars[0]
+        for arg in self.arg_vars:
             # is this variable defined already?
             if state.registers.get(arg, None):
                 succ = state.copy()
-                succ.registers[self.res_var] = succ.registers[arg]
+                succ.registers[var] = succ.registers[arg]
                 successors.append(succ)
         return successors
         
