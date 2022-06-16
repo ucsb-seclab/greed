@@ -99,6 +99,7 @@ class TAC_Phi(TAC_DynamicOps):
             if state.registers.get(arg, None):
                 succ = state.copy()
                 succ.registers[var] = succ.registers[arg]
+                succ.set_next_pc()
                 successors.append(succ)
         return successors
         
