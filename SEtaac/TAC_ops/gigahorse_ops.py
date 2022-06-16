@@ -21,23 +21,33 @@ class TAC_Callprivate(TAC_DynamicOps):
     __aliases__ = {}
     
     def handle(self, state:SymbolicEVMState):
+        self.set_op_val(state)
         succ = state.copy()
 
         # read target
-        target_pc = succ.registers[self.arg_vars[0]]
-        if not concrete(target_pc):
-            raise SymbolicError("CALLPRIVATE with symbolic target")
+        dest_var = self.arg_vars[0]
+        dest_val = self.arg_vals[dest_var]
+        target_bb_id = hex(dest_val)
+        target_bb = state.project.factory.block(target_bb_id)
 
         # read arg-alias map
         args = self.arg_vars[1:]
-        args_alias = succ.project.functions[target_pc]
-        args_alias_map = dict(zip(args_alias, args))
+        args_alias = target_bb.function.arguments
+        alias_arg_map = dict(zip(args_alias, args))
 
-        for alias, arg in args_alias_map:
+        for alias, arg in alias_arg_map.items():
             succ.registers['v' + alias.replace('0x', '')] = succ.registers[arg]
 
+        # read destination
+        dest = target_bb.first_ins.stmt_ident
+        # if not concrete(dest):
+        #     raise SymbolicError("CALLPRIVATE with symbolic target")
+
         # push stack frame
-        succ.callstack.append((target_pc, self.res_vars))
+        succ.callstack.append((dest, self.res_vars))
+
+        # jump to target
+        succ.pc = dest
 
         return [succ]
 
