@@ -85,9 +85,8 @@ class TAC_Phi(TAC_DynamicOps):
     __internal_name__ = "PHI"
     __aliases__ = {}
     
-    def handler(self, state:SymbolicEVMState):
+    def handle(self, state:SymbolicEVMState):
         successors = []
-        succ = state.copy()
         # Let's say we have v6 = PHI v1,v2.
         # If 'v2' has not been defined yet, v6 = v1 for sure.
         # Otherwise, as of now we can over-approximate and consider both assigment 
@@ -98,7 +97,7 @@ class TAC_Phi(TAC_DynamicOps):
             # is this variable defined already?
             if state.registers.get(arg, None):
                 succ = state.copy()
-                succ.registers[self.res_var] = state.registers[arg]
+                succ.registers[self.res_var] = succ.registers[arg]
                 successors.append(succ)
         return successors
         
