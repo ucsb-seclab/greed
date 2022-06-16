@@ -43,14 +43,14 @@ class TAC_Log(TAC_Statement):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Log0(TAC_Statement):
+class TAC_Log0(TAC_Log):
     __internal_name__ = "LOG0"
     __aliases__ = {
                    'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
                    'size_var'  : 'arg2_var', 'size_val'  : 'arg2_val'
                   }
 
-class TAC_Log1(TAC_Statement):
+class TAC_Log1(TAC_Log):
     __internal_name__ = "LOG1"
     __aliases__ = {
                    'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
@@ -58,7 +58,7 @@ class TAC_Log1(TAC_Statement):
                    'topic_var'   : 'arg3_var'  , 'topic_val'   : 'arg3_val'
                    }
 
-class TAC_Log2(TAC_Statement):
+class TAC_Log2(TAC_Log):
     __internal_name__ = "LOG2"
     __aliases__ = {
                    'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
@@ -68,7 +68,7 @@ class TAC_Log2(TAC_Statement):
                    }
 
 
-class TAC_Log3(TAC_Statement):
+class TAC_Log3(TAC_Log):
     __internal_name__ = "LOG3"
     __aliases__ = {
                    'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
@@ -78,7 +78,7 @@ class TAC_Log3(TAC_Statement):
                    'topic3_var'  : 'arg5_var'  , 'topic3_val'  : 'arg5_val'
                    }
 
-class TAC_Log4(TAC_Statement):
+class TAC_Log4(TAC_Log):
     __internal_name__ = "LOG4"
     __aliases__ = {
                    'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
