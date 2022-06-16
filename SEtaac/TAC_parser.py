@@ -1,7 +1,7 @@
 import logging
 
 from SEtaac import TAC_ops
-from SEtaac.TAC_ops.base import TAC_Statement
+from SEtaac.TAC_ops.base import TAC_RawStatement
 from SEtaac.TAC_ops.special_ops import TAC_Stop
 from SEtaac.bb import TAC_Block
 
@@ -21,7 +21,7 @@ class TACparser:
 
         # inject a fake STOP statement to simplify the handling of CALLPRIVATE without successors
         # create fake STOP statement
-        fake_raw_statement = TAC_Statement(TACblock_ident='fake_exit', ident='fake_exit', opcode='STOP')
+        fake_raw_statement = TAC_RawStatement(TACblock_ident='fake_exit', ident='fake_exit', opcode='STOP')
 
         # parse raw statement
         stop = TAC_Stop()

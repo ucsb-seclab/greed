@@ -1,7 +1,7 @@
 from SEtaac.state import SymbolicEVMState
 
 # This is the object exported from Gigahorse
-class TAC_Statement:
+class TAC_RawStatement:
     __name__ = "TAC_Statement"
     __internal_name__ = ""
     def __init__(self, TACblock_ident:str, ident:str, opcode:str, operands:str=None, defs:list=None, values:dict=None):
@@ -38,7 +38,7 @@ class Aliased:
         else:
             object.__setattr__(self, key, value)
 
-class TAC_Base(Aliased):
+class TAC_Statement(Aliased):
     __internal_name__ = None
     __aliases__ = {}
 
@@ -52,7 +52,7 @@ class TAC_Base(Aliased):
         self.res1_var = None
         self.res1_val = None
 
-    def parse(self, raw_stmt: TAC_Statement):
+    def parse(self, raw_stmt: TAC_RawStatement):
         self.block_ident = raw_stmt.tac_block_id
         self.stmt_ident = raw_stmt.ident
         self.arg_vars = [x for x in raw_stmt.operands]
@@ -96,52 +96,52 @@ class TAC_Base(Aliased):
     def __repr__(self):
         return str(self)
 
-class TAC_NoOperands(TAC_Base):
+class TAC_NoOperands(TAC_Statement):
     pass
 
-class TAC_NoOperandsNoRes(TAC_Base):
+class TAC_NoOperandsNoRes(TAC_Statement):
     pass
 
-class TAC_Unary(TAC_Base):
+class TAC_Unary(TAC_Statement):
     pass
 
-class TAC_UnaryNoRes(TAC_Base):
+class TAC_UnaryNoRes(TAC_Statement):
     pass
 
-class TAC_Binary(TAC_Base):
+class TAC_Binary(TAC_Statement):
     pass
 
-class TAC_BinaryNoRes(TAC_Base):
+class TAC_BinaryNoRes(TAC_Statement):
     pass
 
-class TAC_Ternary(TAC_Base):
+class TAC_Ternary(TAC_Statement):
     pass
 
-class TAC_TernaryNoRes(TAC_Base):
+class TAC_TernaryNoRes(TAC_Statement):
     pass
 
-class TAC_Quaternary(TAC_Base):
+class TAC_Quaternary(TAC_Statement):
     pass
 
-class TAC_QuaternaryNoRes(TAC_Base):
+class TAC_QuaternaryNoRes(TAC_Statement):
     pass
 
-class TAC_Quinary(TAC_Base):
+class TAC_Quinary(TAC_Statement):
     pass
 
-class TAC_QuinaryNoRes(TAC_Base):
+class TAC_QuinaryNoRes(TAC_Statement):
     pass
 
-class TAC_Senary(TAC_Base):
+class TAC_Senary(TAC_Statement):
     pass
 
-class TAC_SenaryNoRes(TAC_Base):
+class TAC_SenaryNoRes(TAC_Statement):
     pass
 
-class TAC_Septenary(TAC_Base):
+class TAC_Septenary(TAC_Statement):
     pass
 
-class TAC_SeptenaryNoRes(TAC_Base):
+class TAC_SeptenaryNoRes(TAC_Statement):
     pass
 
 class TAC_DynamicOps(Aliased):
@@ -157,7 +157,7 @@ class TAC_DynamicOps(Aliased):
         self.res_vars = []
         self.res_vals = {}
 
-    def parse(self, raw_stmt: TAC_Statement):
+    def parse(self, raw_stmt: TAC_RawStatement):
         self.block_ident = raw_stmt.tac_block_id
         self.stmt_ident = raw_stmt.ident
         self.arg_vars = [x for x in raw_stmt.operands]

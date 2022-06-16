@@ -4,7 +4,7 @@ from datetime import datetime
 
 import dill
 
-from SEtaac.TAC_ops.base import TAC_Statement
+from SEtaac.TAC_ops.base import TAC_RawStatement
 from SEtaac.TAC_ops.special_ops import TAC_Stop
 from SEtaac.TAC_parser import TACparser
 from SEtaac.bb import TAC_Block

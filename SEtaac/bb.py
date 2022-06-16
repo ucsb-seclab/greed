@@ -1,4 +1,4 @@
-from SEtaac.TAC_ops.base import TAC_Statement
+from SEtaac.TAC_ops.base import TAC_RawStatement
 from SEtaac.TAC_ops.gigahorse_ops import TAC_Nop
 
 
@@ -13,7 +13,7 @@ class TAC_Block(object):
         if len(self.statements) == 0:
             # inject a fake NOP statement to simplify the handling of empty blocks
             # create fake raw statement
-            fake_raw_statement = TAC_Statement(TACblock_ident=block_id, ident=block_id+'_fake_stmt', opcode='NOP')
+            fake_raw_statement = TAC_RawStatement(TACblock_ident=block_id, ident=block_id + '_fake_stmt', opcode='NOP')
 
             # parse raw statement
             nop = TAC_Nop()
