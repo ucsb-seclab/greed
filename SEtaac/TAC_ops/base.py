@@ -77,7 +77,7 @@ class TAC_Base(Aliased):
         for i in range(self.num_args):
             var = object.__getattribute__(self, "op{}_var".format(i + 1))
             arg_val = object.__getattribute__(self, "op{}_val".format(i + 1))
-            val = arg_val or state.registers[var]
+            val = state.registers[var] if arg_val is None else arg_val
             object.__setattr__(self, "op{}_val".format(i + 1), val)
 
     def __str__(self):
@@ -175,10 +175,15 @@ class TAC_DynamicOps(Aliased):
         # cast res_vals to int
         self.res_vals = {x: int(v, 16) if v else v for x, v in self.res_vals.items()}
 
+    def set_op_val(self, state:SymbolicEVMState):
+        for i in range(self.num_args):
+            var = self.arg_vars[i]
+            self.arg_vals[var] = state.registers[var] if self.arg_vals[var] is None else self.arg_vals[var]
+
     def __str__(self):
         args_str = ''
         for arg in self.arg_vars:
-            if not self.arg_vals.get(arg, None):
+            if arg in self.arg_vals:
                 args_str += "{}({})".format(arg, self.arg_vals[arg])
             else:
                 args_str += "{}".format(arg)
