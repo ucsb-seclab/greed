@@ -20,16 +20,17 @@ class TAC_Add(TAC_Binary):
     __internal_name__ = "ADD"
     __aliases__ = {}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         # Grab vals from Gigahorse IR and registers
         # if they are available.
         self.set_op_val(state)
         succ = state.copy()
-        
+
         # If we already have the result of the op
         # from the Gigahorse IR, just use it.
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = self.op1_val + self.op2_val
@@ -41,13 +42,14 @@ class TAC_Add(TAC_Binary):
 class TAC_Sub(TAC_Binary):
     __internal_name__ = "SUB"
     __aliases__ = {}
-    
-    def handle(self, state:SymbolicEVMState):
+
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = self.op1_val - self.op2_val
@@ -60,12 +62,13 @@ class TAC_Mul(TAC_Binary):
     __internal_name__ = "MUL"
     __aliases__ = {}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = self.op1_val * self.op2_val
@@ -78,18 +81,21 @@ class TAC_Div(TAC_Binary):
     __internal_name__ = "DIV"
     __aliases__ = {}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op2_val):
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else self.op1_val / self.op2_val if concrete(self.op1_val) else z3.UDiv(self.op1_val, self.op2_val)
+            succ.registers[self.res_var] = 0 if self.op2_val == 0 else self.op1_val / self.op2_val if concrete(
+                self.op1_val) else z3.UDiv(self.op1_val, self.op2_val)
         else:
-            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256), z3.UDiv(self.op1_val, self.op2_val))
+            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
+                                                 z3.UDiv(self.op1_val, self.op2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -99,17 +105,19 @@ class TAC_Sdiv(TAC_Binary):
     __internal_name__ = "SDIV"
     __aliases__ = {}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else abs(self.op1_val) // abs(self.op2_val) * (-1 if self.op1_val * self.op2_val < 0 else 1)
+            succ.registers[self.res_var] = 0 if self.op2_val == 0 else abs(self.op1_val) // abs(self.op2_val) * (
+                -1 if self.op1_val * self.op2_val < 0 else 1)
         elif concrete(self.op2_val):
             succ.registers[self.res_var] = 0 if self.op2_val == 0 else self.op1_val / self.op2_val
         else:
@@ -123,18 +131,20 @@ class TAC_Mod(TAC_Binary):
     __internal_name__ = "MOD"
     __aliases__ = {}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op2_val):
             succ.registers[self.res_var] = 0 if self.op2_val == 0 else self.op1_val % self.op2_val
         else:
-            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256), z3.URem(self.op1_val, self.op2_val))
+            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
+                                                 z3.URem(self.op1_val, self.op2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -143,21 +153,24 @@ class TAC_Mod(TAC_Binary):
 class TAC_Smod(TAC_Binary):
     __internal_name__ = "SMOD"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
-            succ.registers[self.res_var] = 0 if self.op2_val == 0 else abs(self.op1_val) % abs(self.op2_val) * (-1 if self.op1_val < 0 else 1)
+            succ.registers[self.res_var] = 0 if self.op2_val == 0 else abs(self.op1_val) % abs(self.op2_val) * (
+                -1 if self.op1_val < 0 else 1)
         elif concrete(self.op2_val):
             succ.registers[self.res_var] = 0 if self.op2_val == 0 else z3.SRem(self.op1_val, self.op2_val)
         else:
-            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256), z3.SRem(self.op1_val, self.op2_val))
+            succ.registers[self.res_var] = z3.If(self.op2_val == 0, z3.BitVecVal(0, 256),
+                                                 z3.SRem(self.op1_val, self.op2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -167,18 +180,21 @@ class TAC_Addmod(TAC_Ternary):
     __internal_name__ = "ADDMOD"
     __aliases__ = {'denominator_var': 'op3_var', 'denominator_val': 'op3_val'}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.denominator_val):
-            succ.registers[self.res_var] = (self.op1_val + self.op2_val) % self.denominator_val if self.denominator_val else 0
+            succ.registers[self.res_var] = (
+                                                       self.op1_val + self.op2_val) % self.denominator_val if self.denominator_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256), z3.URem((self.op1_val + self.op2_val), self.denominator_val))
+            succ.registers[self.res_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
+                                                 z3.URem((self.op1_val + self.op2_val), self.denominator_val))
 
         succ.set_next_pc()
         return [succ]
@@ -188,18 +204,21 @@ class TAC_Mulmod(TAC_Ternary):
     __internal_name__ = "MULMOD"
     __aliases__ = {'denominator_var': 'op3_var', 'denominator_val': 'op3_val'}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.denominator_val):
-            succ.registers[self.res_var] = (self.op1_val * self.op2_val) % self.denominator_val if self.denominator_val else 0
+            succ.registers[self.res_var] = (
+                                                       self.op1_val * self.op2_val) % self.denominator_val if self.denominator_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256), z3.URem((self.op1_val * self.op2_val), self.denominator_val))
+            succ.registers[self.res_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
+                                                 z3.URem((self.op1_val * self.op2_val), self.denominator_val))
 
         succ.set_next_pc()
         return [succ]
@@ -209,12 +228,13 @@ class TAC_Exp(TAC_Binary):
     __internal_name__ = "EXP"
     __aliases__ = {'base_var': 'op1_var', 'base_val': 'op1_val', 'exp_var': 'op2_var', 'exp_val': 'op2_val'}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.base_val) and concrete(self.exp_val):
@@ -233,12 +253,13 @@ class TAC_Exp(TAC_Binary):
 class TAC_Signextend(TAC_Binary):
     __internal_name__ = "SIGNEXTEND"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
@@ -266,18 +287,20 @@ class TAC_Signextend(TAC_Binary):
 class TAC_Lt(TAC_Binary):
     __internal_name__ = "LT"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             succ.registers[self.res_var] = 1 if self.op1_val < self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(z3.ULT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
+            succ.registers[self.res_var] = z3.If(z3.ULT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256),
+                                                 z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -286,18 +309,20 @@ class TAC_Lt(TAC_Binary):
 class TAC_Gt(TAC_Binary):
     __internal_name__ = "GT"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             succ.registers[self.res_var] = 1 if self.op1_val > self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(z3.UGT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
+            succ.registers[self.res_var] = z3.If(z3.UGT(self.op1_val, self.op2_val), z3.BitVecVal(1, 256),
+                                                 z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -306,19 +331,21 @@ class TAC_Gt(TAC_Binary):
 class TAC_Slt(TAC_Binary):
     __internal_name__ = "SLT"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
             succ.registers[self.res_var] = 1 if self.op1_val < self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.op1_val < self.op2_val, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
+            succ.registers[self.res_var] = z3.If(self.op1_val < self.op2_val, z3.BitVecVal(1, 256),
+                                                 z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -327,19 +354,21 @@ class TAC_Slt(TAC_Binary):
 class TAC_Sgt(TAC_Binary):
     __internal_name__ = "SGT"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             self.op1_val, self.op2_val = utils.to_signed(self.op1_val), utils.to_signed(self.op2_val)
             succ.registers[self.res_var] = 1 if self.op1_val > self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.op1_val > self.op2_val, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
+            succ.registers[self.res_var] = z3.If(self.op1_val > self.op2_val, z3.BitVecVal(1, 256),
+                                                 z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -348,18 +377,20 @@ class TAC_Sgt(TAC_Binary):
 class TAC_Eq(TAC_Binary):
     __internal_name__ = "EQ"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val) and concrete(self.op2_val):
             succ.registers[self.res_var] = 1 if self.op1_val == self.op2_val else 0
         else:
-            succ.registers[self.res_var] = z3.If(self.op1_val == self.op2_val, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
+            succ.registers[self.res_var] = z3.If(self.op1_val == self.op2_val, z3.BitVecVal(1, 256),
+                                                 z3.BitVecVal(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -368,12 +399,13 @@ class TAC_Eq(TAC_Binary):
 class TAC_Iszero(TAC_Unary):
     __internal_name__ = "ISZERO"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op1_val):
@@ -388,12 +420,13 @@ class TAC_Iszero(TAC_Unary):
 class TAC_And(TAC_Binary):
     __internal_name__ = "AND"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = self.op1_val & self.op2_val
@@ -405,12 +438,13 @@ class TAC_And(TAC_Binary):
 class TAC_Or(TAC_Binary):
     __internal_name__ = "OR"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = self.op1_val | self.op2_val
@@ -422,12 +456,13 @@ class TAC_Or(TAC_Binary):
 class TAC_Xor(TAC_Binary):
     __internal_name__ = "XOR"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = self.op1_val ^ self.op2_val
@@ -439,12 +474,13 @@ class TAC_Xor(TAC_Binary):
 class TAC_Not(TAC_Unary):
     __internal_name__ = "NOT"
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = ~self.op1_val
@@ -457,12 +493,13 @@ class TAC_Byte(TAC_Binary):
     __internal_name__ = "BYTE"
     __aliases__ = {'offset_var': 'op1_var', 'offset_val': 'op1_val'}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.offset_val):
@@ -472,7 +509,8 @@ class TAC_Byte(TAC_Binary):
                 if concrete(self.op2_val):
                     succ.registers[self.res_var] = (self.op2_val // 256 ** (31 - self.offset_val)) % 256
                 else:
-                    v = z3.simplify(z3.Extract((31 - self.offset_val) * 8 + 7, (31 - self.offset_val) * 8, self.op2_val))
+                    v = z3.simplify(
+                        z3.Extract((31 - self.offset_val) * 8 + 7, (31 - self.offset_val) * 8, self.op2_val))
                     if z3.is_bv_value(v):
                         succ.registers[self.res_var] = v.as_long()
                     else:
@@ -488,12 +526,13 @@ class TAC_Shl(TAC_Binary):
     __internal_name__ = "SHL"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = self.op2_val << self.shift_val
@@ -506,12 +545,13 @@ class TAC_Shr(TAC_Binary):
     __internal_name__ = "SHR"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         if concrete(self.op2_val) and concrete(self.shift_val):
@@ -527,12 +567,13 @@ class TAC_Sar(TAC_Binary):
     __internal_name__ = "SAR"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         self.set_op_val(state)
         succ = state.copy()
 
         if self.res_var and self.res_val:
             succ.registers[self.res_var] = self.res_val
+            succ.set_next_pc()
             return [succ]
 
         succ.registers[self.res_var] = utils.to_signed(self.op2_val) >> self.shift_val
