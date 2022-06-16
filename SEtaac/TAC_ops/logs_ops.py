@@ -31,14 +31,8 @@ class TAC_Log(TAC_Statement):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.arg1_var]
-        arg2 = succ.registers[self.arg2_var]
 
-        mstart, msz = arg1, arg2
-        succ.memory.extend(mstart, msz)
-        # Ignore external effects...
-        # depth = 0
-        # topics = []
+        succ.memory.extend(self.offset_val, self.size_val)
 
         succ.set_next_pc()
         return [succ]
