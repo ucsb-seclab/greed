@@ -8,15 +8,21 @@ __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Return', 'T
 
 class TAC_Throw(TAC_Statement):
     __internal_name__ = "THROW"
+
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
-        pass
+        succ = state.copy()
+
+        succ.halt = True
+
+        return [succ]
 
 class TAC_Callprivate(TAC_Statement):
     __internal_name__ = "CALLPRIVATE"
     __aliases__ = {}
-    
+
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
-        self.set_arg_val(state)
         succ = state.copy()
 
         # read target
@@ -57,6 +63,7 @@ class TAC_Returnprivate(TAC_Statement):
     __internal_name__ = "RETURNPRIVATE"
     __aliases__ = {}
 
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
@@ -79,7 +86,8 @@ class TAC_Return(TAC_Returnprivate):
 class TAC_Phi(TAC_Statement):
     __internal_name__ = "PHI"
     __aliases__ = {}
-    
+
+    @TAC_Statement.handler_with_side_effects
     def handle(self, state:SymbolicEVMState):
         successors = []
         # Let's say we have v6 = PHI v1,v2.
@@ -88,12 +96,14 @@ class TAC_Phi(TAC_Statement):
         # possible and forking. 
         # FIXME: can we do better tho, this might end up exploding and leaf to
         #        impossible paths.
-        var = self.res_vars[0]
-        for arg in self.arg_vars:
+        target_var = self.res_vars[0]
+        for var in self.arg_vars:
             # is this variable defined already?
-            if state.registers.get(arg, None):
+            if var in state.registers:
                 succ = state.copy()
-                succ.registers[var] = succ.registers[arg]
+
+                succ.registers[target_var] = self.arg_vals[var]
+
                 succ.set_next_pc()
                 successors.append(succ)
         return successors
@@ -103,9 +113,12 @@ class TAC_Const(TAC_Statement):
     __internal_name__ = "CONST"
     __aliases__ = {}
 
+    @TAC_Statement.handler_without_side_effects
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
+
         succ.registers[self.res1_var] = self.res1_val
+
         succ.set_next_pc()
         return [succ]
 
@@ -113,6 +126,7 @@ class TAC_Const(TAC_Statement):
 class TAC_Nop(TAC_Statement):
     __internal_name__ = "NOP"
 
+    @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state.copy()
 
