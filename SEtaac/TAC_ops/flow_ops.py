@@ -45,10 +45,16 @@ class TAC_Jumpi(TAC_BinaryNoRes):
         succ = state.copy()
 
         target_bb_id = hex(self.destination_val)
-        target_bb = state.project.factory.block(target_bb_id)
+        curr_bb_id = state.curr_stmt.block_ident
+        curr_bb = state.project.factory.block(curr_bb_id)
+        target_bb = state.project.factory.block(target_bb_id + curr_bb.function.id)
+
+        if not target_bb:
+            target_bb = state.project.factory.block(target_bb_id)
 
         dest = target_bb.first_ins.stmt_ident
         cond = self.condition_val
+
 
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
