@@ -1,6 +1,6 @@
 
-# Created by https://www.toptal.com/developers/gitignore/api/osx,windows,linux,pycharm+all,sublimetext,python
-# Edit at https://www.toptal.com/developers/gitignore?templates=osx,windows,linux,pycharm+all,sublimetext,python
+# Created by https://www.toptal.com/developers/gitignore/api/osx,windows,linux,pycharm+all,sublimetext,python,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=osx,windows,linux,pycharm+all,sublimetext,python,visualstudiocode
 
 ### Linux ###
 *~
@@ -329,6 +329,31 @@ bh_unicode_properties.cache
 # https://packagecontrol.io/packages/sublime-github
 GitHub.sublime-settings
 
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
+
+# Support for Project snippet scope
+.vscode/*.code-snippets
+
+# Ignore code-workspaces
+*.code-workspace
+
 ### Windows ###
 # Windows thumbnail cache files
 Thumbs.db
@@ -355,4 +380,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/osx,windows,linux,pycharm+all,sublimetext,python
+# End of https://www.toptal.com/developers/gitignore/api/osx,windows,linux,pycharm+all,sublimetext,python,visualstudiocode
