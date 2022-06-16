@@ -9,7 +9,7 @@ from SEtaac.utils import concrete, is_true, is_false, is_sat, is_unsat, get_solv
 from .base import TAC_Septenary, TAC_Senary, TAC_UnaryNoRes, TAC_BinaryNoRes
 from ..state import SymbolicEVMState
 
-__all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode', 'TAC_Return', 
+__all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
            'TAC_Delegatecall', 'TAC_Staticcall', ]
 
 class TAC_Jump(TAC_UnaryNoRes):
@@ -20,13 +20,15 @@ class TAC_Jump(TAC_UnaryNoRes):
         self.set_op_val(state)
         succ = state.copy()
 
+        target_bb_id = hex(self.destination_val)
         curr_bb_id = state.curr_stmt.block_ident
         curr_bb = state.project.factory.block(curr_bb_id)
-        succ_bbs = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb_id].succ
-        assert len(succ_bbs) == 1
+        target_bb = state.project.factory.block(target_bb_id + curr_bb.function.id)
 
-        next_bb = succ_bbs[0].bb
-        dest = next_bb.first_ins.stmt_ident
+        if not target_bb:
+            target_bb = state.project.factory.block(target_bb_id)
+
+        dest = target_bb.first_ins.stmt_ident
 
         succ.pc = dest
 
