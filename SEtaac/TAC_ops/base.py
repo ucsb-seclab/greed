@@ -197,3 +197,13 @@ class TAC_DynamicOps(Aliased):
 
 class TAC_DynamicOpsNoRes(TAC_DynamicOps):
     pass
+
+# def handler(func):
+#     """
+#     Decorator that executes the basic handler functionalities.
+#     """
+#     def wrap(*args, **kwargs):
+#         successors = func(*args, **kwargs)
+#         return successors
+#
+#     return wrap
