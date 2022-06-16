@@ -11,5 +11,6 @@ simgr = p.factory.simgr(entry_state=entry_state)
 try:
     simgr.run()
 except KeyboardInterrupt:
-    import IPython; IPython.embed()
-    # import ipdb; ipdb.set_trace()
+    pass
+
+import ipdb; ipdb.set_trace()
