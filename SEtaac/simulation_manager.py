@@ -2,6 +2,8 @@ import logging
 import os
 import sys
 
+from SEtaac.exceptions import VMException
+
 
 class SimulationManager:
     def __init__(self, entry_state, keep_predecessors=0):
@@ -128,12 +130,13 @@ class SimulationManager:
         print('Stepping {}'.format(state))
         print(state.curr_stmt)
 
-        successors = state.curr_stmt.handle(state)
+        successors = list()
 
-        # todo: somewhere we should take care of stuff that used to be in state.step()
-        # state.trace.append(state.pc)
-        # state.instruction_count += 1
-        # state.gas -= ins.gas
+        try:
+            successors += state.curr_stmt.handle(state)
+        except VMException as e:
+            state.error = e
+            state.halt = True
 
         return successors
 
