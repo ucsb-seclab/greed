@@ -84,7 +84,7 @@ class TAC_Statement(Aliased):
         for i in range(self.num_args):
             var = self.arg_vars[i]
             arg_val = self.arg_vals[var]
-            val = state.registers[var] if arg_val is None else arg_val
+            val = state.registers.get(var, None) if arg_val is None else arg_val
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i+1), val)
 
