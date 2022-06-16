@@ -1,17 +1,12 @@
+from SEtaac.exceptions import VM_NoSuccessors
 
-import z3
-
-from SEtaac import utils
-from SEtaac.utils import concrete, is_true, get_solver
-from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException, VM_NoSuccessors
-
-from .base import TAC_NoOperands, TAC_NoOperandsNoRes, TAC_DynamicOps, TAC_DynamicOpsNoRes
+from .base import TAC_Statement, TAC_DynamicOps, TAC_DynamicOpsNoRes
 from ..state import SymbolicEVMState
 
 
 __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Return', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
-class TAC_Throw(TAC_NoOperandsNoRes):
+class TAC_Throw(TAC_Statement):
     __internal_name__ = "THROW"
     def handle(self, state:SymbolicEVMState):
         pass
@@ -104,7 +99,7 @@ class TAC_Phi(TAC_DynamicOps):
         return successors
         
 
-class TAC_Const(TAC_NoOperands):
+class TAC_Const(TAC_Statement):
     __internal_name__ = "CONST"
     __aliases__ = {}
 
@@ -115,7 +110,7 @@ class TAC_Const(TAC_NoOperands):
         return [succ]
 
 
-class TAC_Nop(TAC_NoOperandsNoRes):
+class TAC_Nop(TAC_Statement):
     __internal_name__ = "NOP"
 
     def handle(self, state: SymbolicEVMState):

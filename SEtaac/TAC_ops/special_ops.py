@@ -1,13 +1,10 @@
-from re import L
 import z3
 
 from SEtaac import utils
 from SEtaac.exceptions import ExternalData, SymbolicError, VMException
 from SEtaac.memory import SymRead
 from SEtaac.utils import concrete, is_true
-
-from .base import TAC_Binary, TAC_BinaryNoRes, TAC_NoOperands, TAC_Ternary, TAC_TernaryNoRes, \
-                  TAC_Quaternary, TAC_QuaternaryNoRes, TAC_Unary, TAC_UnaryNoRes, TAC_NoOperandsNoRes
+from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
@@ -19,7 +16,7 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Stop', 'TAC_Gas']
 
 
-class TAC_Sha3(TAC_Binary):
+class TAC_Sha3(TAC_Statement):
     __internal_name__ = "SHA3"
     __aliases__ = {'offset_var': 'op1_var', 'offset_val': 'op1_val', 
                    'size_var'  : 'op2_var', 'size_val'  : 'op2_val',
@@ -56,7 +53,7 @@ class TAC_Sha3(TAC_Binary):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Stop(TAC_NoOperandsNoRes):
+class TAC_Stop(TAC_Statement):
     __internal_name__ = "STOP"
 
     def handle(self, state:SymbolicEVMState):
@@ -70,7 +67,7 @@ class TAC_Stop(TAC_NoOperandsNoRes):
 
 
 
-class TAC_Address(TAC_NoOperands):
+class TAC_Address(TAC_Statement):
     __internal_name__ = "ADDRESS"
     __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
 
@@ -83,7 +80,7 @@ class TAC_Address(TAC_NoOperands):
         return [succ]
 
 
-class TAC_Balance(TAC_Unary):
+class TAC_Balance(TAC_Statement):
     __internal_name__ = "BALANCE"
     __aliases__ = { 
                     'address_var': 'op1_var', 'address_val': 'op1_val',
@@ -109,7 +106,7 @@ class TAC_Balance(TAC_Unary):
         return [succ]
 
 
-class TAC_Origin(TAC_NoOperands):
+class TAC_Origin(TAC_Statement):
     __internal_name__ = "ORIGIN"
     __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
 
@@ -121,7 +118,7 @@ class TAC_Origin(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Caller(TAC_NoOperands):
+class TAC_Caller(TAC_Statement):
     __internal_name__ = "CALLER"
     __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
 
@@ -134,7 +131,7 @@ class TAC_Caller(TAC_NoOperands):
         return [succ]
 
 
-class TAC_Callvalue(TAC_NoOperands):
+class TAC_Callvalue(TAC_Statement):
     __internal_name__ = "CALLVALUE"
     __aliases__ = {'value_var': 'res_var', 'value_val': 'res_val'}
 
@@ -146,7 +143,7 @@ class TAC_Callvalue(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Calldataload(TAC_Unary):
+class TAC_Calldataload(TAC_Statement):
     __internal_name__ = "CALLDATALOAD"
     __aliases__ = {'byte_offset_var': 'op1_var', 'byte_offset_val': 'op1_val',
                    'calldata_var'   : 'res_var', 'calldata_val'   : 'res_val'}
@@ -164,7 +161,7 @@ class TAC_Calldataload(TAC_Unary):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Calldatasize(TAC_NoOperands):
+class TAC_Calldatasize(TAC_Statement):
     __internal_name__ = "CALLDATASIZE"
     __aliases__ = {'calldatasize_var': 'res_var', 'calldatasize_val': 'res_val'}
 
@@ -176,7 +173,7 @@ class TAC_Calldatasize(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Calldatacopy(TAC_TernaryNoRes):
+class TAC_Calldatacopy(TAC_Statement):
     __internal_name__ = "CALLDATACOPY"
     __aliases__ = {
                    'destOffset_var'    : 'op1_var', 'destOffset_val'    : 'op1_val',
@@ -205,7 +202,7 @@ class TAC_Calldatacopy(TAC_TernaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Codesize(TAC_NoOperands):
+class TAC_Codesize(TAC_Statement):
     __internal_name__ = "CODESIZE"
     __aliases__ = {
                    'size_var': 'op1_var', 'size_val': 'op1_val'
@@ -219,7 +216,7 @@ class TAC_Codesize(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Codecopy(TAC_TernaryNoRes):
+class TAC_Codecopy(TAC_Statement):
     __internal_name__ = "CODECOPY"
     __aliases__ = {
                    'destOffset_var': 'op1_var', 'destOffset_val': 'op1_val',
@@ -246,7 +243,7 @@ class TAC_Codecopy(TAC_TernaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Gasprice(TAC_NoOperands):
+class TAC_Gasprice(TAC_Statement):
     __internal_name__ = "GASPRICE"
     __aliases__ = {
                    'price_var': 'res_var', 'price_val': 'res_val'
@@ -260,7 +257,7 @@ class TAC_Gasprice(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Extcodesize(TAC_Unary):
+class TAC_Extcodesize(TAC_Statement):
     __internal_name__ = "EXTCODESIZE"
     __aliases__ = {
                    'address_var': 'op1_var', 'address_val': 'op1_val',
@@ -283,7 +280,7 @@ class TAC_Extcodesize(TAC_Unary):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Extcodecopy(TAC_QuaternaryNoRes):
+class TAC_Extcodecopy(TAC_Statement):
     __internal_name__ = "EXTCODECOPY"
     __aliases__ = {
                    'address_var'     : 'op1_var', 'address_val'      : 'op1_val',
@@ -296,7 +293,7 @@ class TAC_Extcodecopy(TAC_QuaternaryNoRes):
         raise ExternalData('EXTCODECOPY')
 
 
-class TAC_Returndatasize(TAC_NoOperands):
+class TAC_Returndatasize(TAC_Statement):
     __internal_name__ = "RETURNDATASIZE"
     __aliases__ = {
                    'size_var': 'res_var', 'size_val': 'res_val'
@@ -306,7 +303,7 @@ class TAC_Returndatasize(TAC_NoOperands):
         raise ExternalData('RETURNDATASIZE')
 
 
-class TAC_Returndatacopy(TAC_TernaryNoRes):
+class TAC_Returndatacopy(TAC_Statement):
     __internal_name__ = "RETURNDATACOPY"
     __aliases__ = {
                    'destOffset_var': 'op1_var', 'destOffset_val': 'op1_val',
@@ -318,7 +315,7 @@ class TAC_Returndatacopy(TAC_TernaryNoRes):
         raise ExternalData('RETURNDATACOPY')
 
 
-class TAC_Extcodehash(TAC_Unary):
+class TAC_Extcodehash(TAC_Statement):
     __internal_name__ = "EXTCODEHASH"
     __aliases__ = {
                    'address_var'   : 'op1_var', 'address_val'   : 'op1_val',
@@ -329,7 +326,7 @@ class TAC_Extcodehash(TAC_Unary):
         raise ExternalData('EXTCODEHASH')
 
 
-class TAC_Blockhash(TAC_Unary):
+class TAC_Blockhash(TAC_Statement):
     __internal_name__ = "BLOCKHASH"
     __aliases__ = {
                    'blockNumber_var'   : 'op1_var', 'blockNumber_val'   : 'op1_val',
@@ -348,7 +345,7 @@ class TAC_Blockhash(TAC_Unary):
         return [succ]
 
 
-class TAC_Coinbase(TAC_NoOperands):
+class TAC_Coinbase(TAC_Statement):
     __internal_name__ = "COINBASE"
     __aliases__ = {
                    'address_var'   : 'res_var', 'address_val'   : 'res_val',
@@ -362,7 +359,7 @@ class TAC_Coinbase(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Timestamp(TAC_NoOperands):
+class TAC_Timestamp(TAC_Statement):
     __internal_name__ = "TIMESTAMP"
     __aliases__ = {
                    'timestamp_var': 'res_var', 'timestamp_val': 'res_val',
@@ -380,7 +377,7 @@ class TAC_Timestamp(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Number(TAC_NoOperands):
+class TAC_Number(TAC_Statement):
     __internal_name__ = "NUMBER"
     __aliases__ = {
                    'blockNumber_var': 'res_var', 'blockNumber_val': 'res_val',
@@ -394,7 +391,7 @@ class TAC_Number(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Difficulty(TAC_NoOperands):
+class TAC_Difficulty(TAC_Statement):
     __internal_name__ = "DIFFICULTY"
     __aliases__ = {
                    'difficulty_var': 'res_var', 'difficulty_val': 'res_val',
@@ -408,7 +405,7 @@ class TAC_Difficulty(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Gaslimit(TAC_NoOperands):
+class TAC_Gaslimit(TAC_Statement):
     __internal_name__ = "GASLIMIT"
     __aliases__ = {
                    'gasLimit_var': 'res_var', 'gasLimit_val': 'res_val',
@@ -422,7 +419,7 @@ class TAC_Gaslimit(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Chainid(TAC_NoOperands):
+class TAC_Chainid(TAC_Statement):
     __internal_name__ = "CHAINID"
     __aliases__ = {
                    'chainID_var': 'res_var', 'chainID_val': 'res_val',
@@ -438,7 +435,7 @@ class TAC_Chainid(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Selfbalance(TAC_NoOperands):
+class TAC_Selfbalance(TAC_Statement):
     __internal_name__ = "SELFBALANCE"
     __aliases__ = {
                    'balance_var': 'res_var', 'balance_val': 'res_val',
@@ -452,7 +449,7 @@ class TAC_Selfbalance(TAC_NoOperands):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Basefee(TAC_NoOperands):
+class TAC_Basefee(TAC_Statement):
     __internal_name__ = "BASEFEE"
     __aliases__ = {
                    'baseFee_var': 'res_var', 'baseFee_val': 'res_val',
@@ -468,7 +465,7 @@ class TAC_Basefee(TAC_NoOperands):
         return [succ]
 
 
-class TAC_Revert(TAC_BinaryNoRes):
+class TAC_Revert(TAC_Statement):
     __internal_name__ = "REVERT"
     __aliases__ = {
                    'offset_var': 'op1_var', 'offset_val': 'op1_val',
@@ -490,7 +487,7 @@ class TAC_Revert(TAC_BinaryNoRes):
         return [succ]
 
 
-class TAC_Create(TAC_Ternary):
+class TAC_Create(TAC_Statement):
     __internal_name__ = "CREATE"
     __aliases__ = {
                    'value_var'   : 'op1_var', 'value_val'   : 'op1_val',
@@ -512,7 +509,7 @@ class TAC_Create(TAC_Ternary):
         return [succ]
 
 
-class TAC_Create2(TAC_Quaternary):
+class TAC_Create2(TAC_Statement):
     __internal_name__ = "CREATE2"
     __aliases__ = {
                    'value_var'      : 'op1_var', 'value_val'   : 'op1_val',
@@ -536,7 +533,7 @@ class TAC_Create2(TAC_Quaternary):
         return [succ]
 
 
-class TAC_Pc(TAC_NoOperands):
+class TAC_Pc(TAC_Statement):
     __internal_name__ = "PC"
     __aliases__ = {
                    'counter_var': 'res_var', 'counter_val': 'res_val',
@@ -553,7 +550,7 @@ class TAC_Pc(TAC_NoOperands):
         # return [succ]
 
 
-class TAC_Invalid(TAC_NoOperandsNoRes):
+class TAC_Invalid(TAC_Statement):
     __internal_name__ = "INVALID"
 
     def handle(self, state:SymbolicEVMState):
@@ -566,7 +563,7 @@ class TAC_Invalid(TAC_NoOperandsNoRes):
         return [succ]
 
 
-class TAC_Selfdestruct(TAC_UnaryNoRes):
+class TAC_Selfdestruct(TAC_Statement):
     __internal_name__ = "SELFDESTRUCT"
     __aliases__ = {
                    'address_var': 'op1_var', 'address_val': 'op1_val'
@@ -583,7 +580,7 @@ class TAC_Selfdestruct(TAC_UnaryNoRes):
         return [succ]
 
 
-class TAC_Gas(TAC_NoOperands):
+class TAC_Gas(TAC_Statement):
     __internal_name__ = "GAS"
     __aliases__ = {
                    'gas_var': 'res_var', 'gas_val': 'res_val'

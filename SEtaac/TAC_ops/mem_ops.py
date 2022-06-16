@@ -2,16 +2,13 @@
 import z3
 
 from SEtaac import utils
-from SEtaac.exceptions import SymbolicError
 from SEtaac.utils import concrete
-
-from .base import TAC_BinaryNoRes, TAC_NoOperands, TAC_Unary
-                  
+from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize']
 
-class TAC_Mstore(TAC_BinaryNoRes):
+class TAC_Mstore(TAC_Statement):
     __internal_name__ = "MSTORE"
     __aliases__ = {
                    'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
@@ -38,7 +35,7 @@ class TAC_Mstore(TAC_BinaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Mstore8(TAC_BinaryNoRes):
+class TAC_Mstore8(TAC_Statement):
     __internal_name__ = "MSTORE8"
     __aliases__ = {
                    'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
@@ -56,7 +53,7 @@ class TAC_Mstore8(TAC_BinaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Mload(TAC_Unary):
+class TAC_Mload(TAC_Statement):
     __internal_name__ = "MLOAD"
     __aliases__ = {
                    'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
@@ -81,7 +78,7 @@ class TAC_Mload(TAC_Unary):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Sload(TAC_Unary):
+class TAC_Sload(TAC_Statement):
     __internal_name__ = "SLOAD"
     __aliases__ = {
                    'key_var'    : 'op1_var', 'key_val'    : 'op1_val',
@@ -101,7 +98,7 @@ class TAC_Sload(TAC_Unary):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Sstore(TAC_BinaryNoRes):
+class TAC_Sstore(TAC_Statement):
     __internal_name__ = "SSTORE"
     __aliases__ = {
                    'key_var'    : 'op1_var', 'key_val'    : 'op1_val',
@@ -118,7 +115,7 @@ class TAC_Sstore(TAC_BinaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Msize(TAC_NoOperands):
+class TAC_Msize(TAC_Statement):
     __internal_name__ = "MSIZE"
     __aliases__ = {
                    'size_var'  : 'res_var', 'size_val'  : 'res_val'

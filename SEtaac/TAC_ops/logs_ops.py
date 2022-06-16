@@ -1,4 +1,4 @@
-from .base import TAC_BinaryNoRes, TAC_TernaryNoRes, TAC_QuaternaryNoRes, TAC_QuinaryNoRes, TAC_SenaryNoRes
+from .base import TAC_Statement
                   
 from ..state import SymbolicEVMState
 
@@ -22,7 +22,7 @@ c. The ordered list of logs in the transaction are expressed as [log0, log1, ...
 """
 
 
-class TAC_Log0(TAC_BinaryNoRes):
+class TAC_Log0(TAC_Statement):
     __internal_name__ = "LOG0"
     __aliases__ = {
                    'offset_var': 'op1_var', 'offset_val': 'op1_val',
@@ -43,7 +43,7 @@ class TAC_Log0(TAC_BinaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Log1(TAC_TernaryNoRes):
+class TAC_Log1(TAC_Statement):
     __internal_name__ = "LOG1"
     __aliases__ = {
                    'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',
@@ -66,7 +66,7 @@ class TAC_Log1(TAC_TernaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Log2(TAC_QuaternaryNoRes):
+class TAC_Log2(TAC_Statement):
     __internal_name__ = "LOG2"
     __aliases__ = {
                    'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',
@@ -91,7 +91,7 @@ class TAC_Log2(TAC_QuaternaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Log3(TAC_QuinaryNoRes):
+class TAC_Log3(TAC_Statement):
     __internal_name__ = "LOG3"
     __aliases__ = {
                    'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',
@@ -118,7 +118,7 @@ class TAC_Log3(TAC_QuinaryNoRes):
         succ.set_next_pc()
         return [succ]
 
-class TAC_Log4(TAC_SenaryNoRes):
+class TAC_Log4(TAC_Statement):
     __internal_name__ = "LOG4"
     __aliases__ = {
                    'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',

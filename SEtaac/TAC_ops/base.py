@@ -96,53 +96,6 @@ class TAC_Statement(Aliased):
     def __repr__(self):
         return str(self)
 
-class TAC_NoOperands(TAC_Statement):
-    pass
-
-class TAC_NoOperandsNoRes(TAC_Statement):
-    pass
-
-class TAC_Unary(TAC_Statement):
-    pass
-
-class TAC_UnaryNoRes(TAC_Statement):
-    pass
-
-class TAC_Binary(TAC_Statement):
-    pass
-
-class TAC_BinaryNoRes(TAC_Statement):
-    pass
-
-class TAC_Ternary(TAC_Statement):
-    pass
-
-class TAC_TernaryNoRes(TAC_Statement):
-    pass
-
-class TAC_Quaternary(TAC_Statement):
-    pass
-
-class TAC_QuaternaryNoRes(TAC_Statement):
-    pass
-
-class TAC_Quinary(TAC_Statement):
-    pass
-
-class TAC_QuinaryNoRes(TAC_Statement):
-    pass
-
-class TAC_Senary(TAC_Statement):
-    pass
-
-class TAC_SenaryNoRes(TAC_Statement):
-    pass
-
-class TAC_Septenary(TAC_Statement):
-    pass
-
-class TAC_SeptenaryNoRes(TAC_Statement):
-    pass
 
 class TAC_DynamicOps(Aliased):
     __internal_name__ = None

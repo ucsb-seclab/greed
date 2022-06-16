@@ -3,8 +3,7 @@ import z3
 from SEtaac import utils
 from SEtaac.exceptions import SymbolicError
 from SEtaac.utils import concrete
-
-from .base import TAC_Unary, TAC_Binary, TAC_Ternary
+from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
 __all__ = [
@@ -16,7 +15,7 @@ __all__ = [
 ]
 
 
-class TAC_Add(TAC_Binary):
+class TAC_Add(TAC_Statement):
     __internal_name__ = "ADD"
     __aliases__ = {}
 
@@ -39,7 +38,7 @@ class TAC_Add(TAC_Binary):
         return [succ]
 
 
-class TAC_Sub(TAC_Binary):
+class TAC_Sub(TAC_Statement):
     __internal_name__ = "SUB"
     __aliases__ = {}
 
@@ -58,7 +57,7 @@ class TAC_Sub(TAC_Binary):
         return [succ]
 
 
-class TAC_Mul(TAC_Binary):
+class TAC_Mul(TAC_Statement):
     __internal_name__ = "MUL"
     __aliases__ = {}
 
@@ -77,7 +76,7 @@ class TAC_Mul(TAC_Binary):
         return [succ]
 
 
-class TAC_Div(TAC_Binary):
+class TAC_Div(TAC_Statement):
     __internal_name__ = "DIV"
     __aliases__ = {}
 
@@ -101,7 +100,7 @@ class TAC_Div(TAC_Binary):
         return [succ]
 
 
-class TAC_Sdiv(TAC_Binary):
+class TAC_Sdiv(TAC_Statement):
     __internal_name__ = "SDIV"
     __aliases__ = {}
 
@@ -127,7 +126,7 @@ class TAC_Sdiv(TAC_Binary):
         return [succ]
 
 
-class TAC_Mod(TAC_Binary):
+class TAC_Mod(TAC_Statement):
     __internal_name__ = "MOD"
     __aliases__ = {}
 
@@ -150,7 +149,7 @@ class TAC_Mod(TAC_Binary):
         return [succ]
 
 
-class TAC_Smod(TAC_Binary):
+class TAC_Smod(TAC_Statement):
     __internal_name__ = "SMOD"
 
     def handle(self, state: SymbolicEVMState):
@@ -176,7 +175,7 @@ class TAC_Smod(TAC_Binary):
         return [succ]
 
 
-class TAC_Addmod(TAC_Ternary):
+class TAC_Addmod(TAC_Statement):
     __internal_name__ = "ADDMOD"
     __aliases__ = {'denominator_var': 'op3_var', 'denominator_val': 'op3_val'}
 
@@ -200,7 +199,7 @@ class TAC_Addmod(TAC_Ternary):
         return [succ]
 
 
-class TAC_Mulmod(TAC_Ternary):
+class TAC_Mulmod(TAC_Statement):
     __internal_name__ = "MULMOD"
     __aliases__ = {'denominator_var': 'op3_var', 'denominator_val': 'op3_val'}
 
@@ -224,7 +223,7 @@ class TAC_Mulmod(TAC_Ternary):
         return [succ]
 
 
-class TAC_Exp(TAC_Binary):
+class TAC_Exp(TAC_Statement):
     __internal_name__ = "EXP"
     __aliases__ = {'base_var': 'op1_var', 'base_val': 'op1_val', 'exp_var': 'op2_var', 'exp_val': 'op2_val'}
 
@@ -250,7 +249,7 @@ class TAC_Exp(TAC_Binary):
         return [succ]
 
 
-class TAC_Signextend(TAC_Binary):
+class TAC_Signextend(TAC_Statement):
     __internal_name__ = "SIGNEXTEND"
 
     def handle(self, state: SymbolicEVMState):
@@ -284,7 +283,7 @@ class TAC_Signextend(TAC_Binary):
         return [succ]
 
 
-class TAC_Lt(TAC_Binary):
+class TAC_Lt(TAC_Statement):
     __internal_name__ = "LT"
 
     def handle(self, state: SymbolicEVMState):
@@ -306,7 +305,7 @@ class TAC_Lt(TAC_Binary):
         return [succ]
 
 
-class TAC_Gt(TAC_Binary):
+class TAC_Gt(TAC_Statement):
     __internal_name__ = "GT"
 
     def handle(self, state: SymbolicEVMState):
@@ -328,7 +327,7 @@ class TAC_Gt(TAC_Binary):
         return [succ]
 
 
-class TAC_Slt(TAC_Binary):
+class TAC_Slt(TAC_Statement):
     __internal_name__ = "SLT"
 
     def handle(self, state: SymbolicEVMState):
@@ -351,7 +350,7 @@ class TAC_Slt(TAC_Binary):
         return [succ]
 
 
-class TAC_Sgt(TAC_Binary):
+class TAC_Sgt(TAC_Statement):
     __internal_name__ = "SGT"
 
     def handle(self, state: SymbolicEVMState):
@@ -374,7 +373,7 @@ class TAC_Sgt(TAC_Binary):
         return [succ]
 
 
-class TAC_Eq(TAC_Binary):
+class TAC_Eq(TAC_Statement):
     __internal_name__ = "EQ"
 
     def handle(self, state: SymbolicEVMState):
@@ -396,7 +395,7 @@ class TAC_Eq(TAC_Binary):
         return [succ]
 
 
-class TAC_Iszero(TAC_Unary):
+class TAC_Iszero(TAC_Statement):
     __internal_name__ = "ISZERO"
 
     def handle(self, state: SymbolicEVMState):
@@ -417,7 +416,7 @@ class TAC_Iszero(TAC_Unary):
         return [succ]
 
 
-class TAC_And(TAC_Binary):
+class TAC_And(TAC_Statement):
     __internal_name__ = "AND"
 
     def handle(self, state: SymbolicEVMState):
@@ -435,7 +434,7 @@ class TAC_And(TAC_Binary):
         return [succ]
 
 
-class TAC_Or(TAC_Binary):
+class TAC_Or(TAC_Statement):
     __internal_name__ = "OR"
 
     def handle(self, state: SymbolicEVMState):
@@ -453,7 +452,7 @@ class TAC_Or(TAC_Binary):
         return [succ]
 
 
-class TAC_Xor(TAC_Binary):
+class TAC_Xor(TAC_Statement):
     __internal_name__ = "XOR"
 
     def handle(self, state: SymbolicEVMState):
@@ -471,7 +470,7 @@ class TAC_Xor(TAC_Binary):
         return [succ]
 
 
-class TAC_Not(TAC_Unary):
+class TAC_Not(TAC_Statement):
     __internal_name__ = "NOT"
 
     def handle(self, state: SymbolicEVMState):
@@ -489,7 +488,7 @@ class TAC_Not(TAC_Unary):
         return [succ]
 
 
-class TAC_Byte(TAC_Binary):
+class TAC_Byte(TAC_Statement):
     __internal_name__ = "BYTE"
     __aliases__ = {'offset_var': 'op1_var', 'offset_val': 'op1_val'}
 
@@ -522,7 +521,7 @@ class TAC_Byte(TAC_Binary):
         return [succ]
 
 
-class TAC_Shl(TAC_Binary):
+class TAC_Shl(TAC_Statement):
     __internal_name__ = "SHL"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
@@ -541,7 +540,7 @@ class TAC_Shl(TAC_Binary):
         return [succ]
 
 
-class TAC_Shr(TAC_Binary):
+class TAC_Shr(TAC_Statement):
     __internal_name__ = "SHR"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 
@@ -563,7 +562,7 @@ class TAC_Shr(TAC_Binary):
         return [succ]
 
 
-class TAC_Sar(TAC_Binary):
+class TAC_Sar(TAC_Statement):
     __internal_name__ = "SAR"
     __aliases__ = {'shift_var': 'op1_var', 'shift_val': 'op1_val'}
 

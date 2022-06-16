@@ -5,14 +5,14 @@ import z3
 
 from SEtaac import utils
 from SEtaac.exceptions import SymbolicError
-from SEtaac.utils import concrete, is_true, is_false, is_sat, is_unsat, get_solver
-from .base import TAC_Septenary, TAC_Senary, TAC_UnaryNoRes, TAC_BinaryNoRes
+from SEtaac.utils import concrete, is_sat, get_solver
+from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
            'TAC_Delegatecall', 'TAC_Staticcall', ]
 
-class TAC_Jump(TAC_UnaryNoRes):
+class TAC_Jump(TAC_Statement):
     __internal_name__ = "JUMP"
     __aliases__ = {'destination_var': 'op1_var', 'destination_val': 'op1_val'}
 
@@ -34,7 +34,7 @@ class TAC_Jump(TAC_UnaryNoRes):
 
         return [succ]
 
-class TAC_Jumpi(TAC_BinaryNoRes):
+class TAC_Jumpi(TAC_Statement):
     __internal_name__ = "JUMPI"
     __aliases__ = {'destination_var': 'op1_var', 'destination_val': 'op1_val', 
                    'condition_var': 'op2_var', 'condition_val': 'op2_val'}
@@ -104,7 +104,7 @@ class TAC_Jumpi(TAC_BinaryNoRes):
                 # nothing is sat
                 return []
 
-class TAC_BaseCall(TAC_Septenary):
+class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
     __aliases__ = {
                    'gas_var'       : 'op1_var', 'gas_val'       : 'op1_val',
@@ -175,7 +175,7 @@ class TAC_Delegatecall(TAC_BaseCall):
 
         return self._handle(succ, arg3=arg3)
 
-class TAC_Staticcall(TAC_Senary):
+class TAC_Staticcall(TAC_Statement):
     __internal_name__ = "STATICCALL"
     __aliases__ = {
         'gas_var': 'op1_var', 'gas_val': 'op1_val',
