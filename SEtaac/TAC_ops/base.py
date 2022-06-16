@@ -83,16 +83,11 @@ class TAC_Base(Aliased):
     def __str__(self):
         args_str = ''
         for arg in self.arg_vars:
-            if not self.arg_vals.get(arg, None):
-                args_str += "{}({})".format(arg, self.arg_vals[arg])
-            else:
-                args_str += "{}".format(arg)
+            args_str += "{}".format(arg)
             args_str += " "
 
         if not self.res_var:
             res_str = ""
-        elif self.res_val:
-            res_str = "{}({}) =".format(self.res_var, self.res_val)
         else:
             res_str = "{} =".format(self.res_var)
 
@@ -183,10 +178,7 @@ class TAC_DynamicOps(Aliased):
     def __str__(self):
         args_str = ''
         for arg in self.arg_vars:
-            if arg in self.arg_vals:
-                args_str += "{}({})".format(arg, self.arg_vals[arg])
-            else:
-                args_str += "{}".format(arg)
+            args_str += "{}".format(arg)
             args_str += " "
 
         if not self.res_vars:
@@ -194,10 +186,7 @@ class TAC_DynamicOps(Aliased):
         else:
             res_str = ""
             for res in self.res_vars:
-                if not self.res_vals.get(res, None):
-                    res_str += "{}({})".format(res, self.res_vals[res])
-                else:
-                    res_str += "{}".format(res)
+                res_str += "{}".format(res)
             res_str += " ="
 
         return "{} {} {}".format(res_str, self.__internal_name__, args_str).strip()
