@@ -16,7 +16,7 @@ class TAC_Callprivate(TAC_Statement):
     __aliases__ = {}
     
     def handle(self, state:SymbolicEVMState):
-        self.set_op_val(state)
+        self.set_arg_val(state)
         succ = state.copy()
 
         # read target
