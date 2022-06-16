@@ -55,7 +55,6 @@ class TAC_Jumpi(TAC_Statement):
         dest = target_bb.first_ins.stmt_ident
         cond = self.condition_val
 
-
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
             if cond is True:

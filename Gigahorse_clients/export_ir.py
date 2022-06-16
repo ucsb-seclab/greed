@@ -14,7 +14,7 @@ from clientlib.facts_to_cfg import Statement, Block, Function, construct_cfg, lo
 IR_DICT = {}
 IR_DICT_EXPORT_FILENAME = "IR_DICT.dill"
 
-class TAC_Statement:
+class TAC_RawStatement:
     def __init__(self, TACblock_ident, ident, opcode, operands=None, defs=None, values=None):
         self.tac_block_id = TACblock_ident
         self.ident = ident
@@ -24,7 +24,7 @@ class TAC_Statement:
         self.values = values if values else dict()
     
     def __str__(self):
-        return "TAC_Statement[blockid:{}|stmtid:{}] | opcode: {} | operands:{} | defs:{} | values:{}".format(self.tac_block_id, 
+        return "TAC_RawStatement[blockid:{}|stmtid:{}] | opcode: {} | operands:{} | defs:{} | values:{}".format(self.tac_block_id,
                                                                                                              self.ident,
                                                                                                              self.opcode, 
                                                                                                              self.operands,
@@ -57,7 +57,7 @@ def process_tac_blocks(block: Block, visited: Set[str]):
     IR_DICT[block.ident] = []
 
     for stmt in block.statements:
-        tac_statement = TAC_Statement(block.ident, stmt.ident, stmt.op)
+        tac_statement = TAC_RawStatement(block.ident, stmt.ident, stmt.op)
         full_tac_statement = create_tac_statement(tac_statement, stmt)
         IR_DICT[block.ident].append(full_tac_statement)
     

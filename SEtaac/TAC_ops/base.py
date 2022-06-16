@@ -2,7 +2,7 @@ from SEtaac.state import SymbolicEVMState
 
 # This is the object exported from Gigahorse
 class TAC_RawStatement:
-    __name__ = "TAC_Statement"
+    __name__ = "TAC_RawStatement"
     __internal_name__ = ""
     def __init__(self, TACblock_ident:str, ident:str, opcode:str, operands:str=None, defs:list=None, values:dict=None):
         self.tac_block_id = TACblock_ident
@@ -13,7 +13,7 @@ class TAC_RawStatement:
         self.values = values if values else dict()
     
     def __str__(self):
-        return "TACStatement[blockid:{}|stmtid:{}] | opcode: {} | operands:{} | defs:{} | values:{}".format(self.tac_block_id, 
+        return "TAC_RawStatement[blockid:{}|stmtid:{}] | opcode: {} | operands:{} | defs:{} | values:{}".format(self.tac_block_id,
                                                                                                             self.ident,
                                                                                                             self.opcode, 
                                                                                                             self.operands,
@@ -86,6 +86,7 @@ class TAC_Statement(Aliased):
             arg_val = self.arg_vals[var]
             val = state.registers[var] if arg_val is None else arg_val
             self.arg_vals[var] = val
+            object.__setattr__(self, "arg{}_val".format(i+1), val)
 
     def __str__(self):
         args_str = ''
