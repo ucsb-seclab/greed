@@ -17,16 +17,16 @@ class TAC_Jump(TAC_UnaryNoRes):
     __aliases__ = {'destination_var': 'op1_var', 'destination_val': 'op1_val'}
 
     def handle(self, state:SymbolicEVMState):
-        # TODO: implement symbolic jump destination
         self.set_op_val(state)
         succ = state.copy()
 
-        target_bb_id = hex(self.destination_val)
-        target_bb = state.project.factory.block(target_bb_id)
+        curr_bb_id = state.curr_stmt.block_ident
+        curr_bb = state.project.factory.block(curr_bb_id)
+        succ_bbs = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb_id].succ
+        assert len(succ_bbs) == 1
 
-        dest = target_bb.first_ins.stmt_ident
-        # if not concrete(dest):
-        #     raise SymbolicError('Symbolic jump target')
+        next_bb = succ_bbs[0].bb
+        dest = next_bb.first_ins.stmt_ident
 
         succ.pc = dest
 
