@@ -58,6 +58,7 @@ class SymbolicEVMState:
     @pc.setter
     def pc(self, value):
         self.trace.append(self._pc)
+        self.instruction_count += 1
         self._pc = value
 
     @property
