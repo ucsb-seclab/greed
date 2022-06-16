@@ -3,7 +3,7 @@ import z3
 
 from SEtaac import utils
 from SEtaac.utils import concrete, is_true, get_solver
-from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException
+from SEtaac.exceptions import ExternalData, SymbolicError, IntractablePath, VMException, VM_NoSuccessors
 
 from .base import TAC_NoOperands, TAC_NoOperandsNoRes, TAC_DynamicOps, TAC_DynamicOpsNoRes
 from ..state import SymbolicEVMState
@@ -44,7 +44,13 @@ class TAC_Callprivate(TAC_DynamicOps):
         #     raise SymbolicError("CALLPRIVATE with symbolic target")
 
         # push stack frame
-        succ.callstack.append((dest, self.res_vars))
+        try:
+            saved_return_pc = succ.get_next_pc()
+        except VM_NoSuccessors:
+            fake_exit_bb = state.project.factory.block('fake_exit')
+            saved_return_pc = fake_exit_bb.statements[0].stmt_ident
+
+        succ.callstack.append((saved_return_pc, self.res_vars))
 
         # jump to target
         succ.pc = dest
@@ -59,22 +65,15 @@ class TAC_Returnprivate(TAC_DynamicOpsNoRes):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        # read target
-        target_pc = succ.registers[self.arg_vars[0]]
-        if not concrete(target_pc):
-            raise SymbolicError("RETURNPRIVATE with symbolic target")
-
-        # pop stack frame
-        saved_target, callprivate_return_vars = succ.callstack.pop()
-
-        if saved_target != target_pc:
-            raise VMException("Return address does not match the callstack")
+        # pop stack frame (read saved return pc from stack)
+        saved_return_pc, callprivate_return_vars = succ.callstack.pop()
 
         # set the return variables to their correct values
         returnprivate_args = self.arg_vars[1:]
         for callprivate_return_var, returnprivate_arg in zip(callprivate_return_vars, returnprivate_args):
             succ.registers[callprivate_return_var] = succ.registers[returnprivate_arg]
 
+        succ.pc = saved_return_pc
         return [succ]
 
 
