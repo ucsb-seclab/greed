@@ -64,8 +64,8 @@ class TAC_Statement(Aliased):
 
         for i in range(self.num_args):
             var = self.arg_vars[i]
-            object.__setattr__(self, "op{}_var".format(i+1), var)
-            object.__setattr__(self, "op{}_val".format(i+1), self.arg_vals[var])
+            object.__setattr__(self, "arg{}_var".format(i+1), var)
+            object.__setattr__(self, "arg{}_val".format(i+1), self.arg_vals[var])
 
         self.res1_var = raw_stmt.defs[0] if raw_stmt.defs else None
         self.res1_val = raw_stmt.values.get(self.res1_var, None)
@@ -73,12 +73,12 @@ class TAC_Statement(Aliased):
         # cast res_val to int
         self.res1_val = int(self.res1_val, 16) if self.res1_val else self.res1_val
 
-    def set_op_val(self, state:SymbolicEVMState):
+    def set_arg_val(self, state:SymbolicEVMState):
         for i in range(self.num_args):
-            var = object.__getattribute__(self, "op{}_var".format(i + 1))
-            arg_val = object.__getattribute__(self, "op{}_val".format(i + 1))
+            var = object.__getattribute__(self, "arg{}_var".format(i + 1))
+            arg_val = object.__getattribute__(self, "arg{}_val".format(i + 1))
             val = state.registers[var] if arg_val is None else arg_val
-            object.__setattr__(self, "op{}_val".format(i + 1), val)
+            object.__setattr__(self, "arg{}_val".format(i + 1), val)
 
     def __str__(self):
         args_str = ''

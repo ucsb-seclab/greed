@@ -11,14 +11,14 @@ __all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 
 class TAC_Mstore(TAC_Statement):
     __internal_name__ = "MSTORE"
     __aliases__ = {
-                   'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
-                   'value_var'  : 'op2_var', 'value_val'  : 'op2_val'
+                   'offset_var' : 'arg1_var', 'offset_val' : 'arg1_val',
+                   'value_var'  : 'arg2_var', 'value_val'  : 'arg2_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
 
         # todo: check operand order here
         state.memory.extend(arg1, 32)
@@ -38,14 +38,14 @@ class TAC_Mstore(TAC_Statement):
 class TAC_Mstore8(TAC_Statement):
     __internal_name__ = "MSTORE8"
     __aliases__ = {
-                   'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
-                   'value_var'  : 'op2_var', 'value_val'  : 'op2_val'
+                   'offset_var' : 'arg1_var', 'offset_val' : 'arg1_val',
+                   'value_var'  : 'arg2_var', 'value_val'  : 'arg2_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
 
         state.memory.extend(arg1, 1)
         state.memory[arg1] = arg2 % 256
@@ -56,13 +56,13 @@ class TAC_Mstore8(TAC_Statement):
 class TAC_Mload(TAC_Statement):
     __internal_name__ = "MLOAD"
     __aliases__ = {
-                   'offset_var' : 'op1_var', 'offset_val' : 'op1_val',
+                   'offset_var' : 'arg1_var', 'offset_val' : 'arg1_val',
                    'value_var'  : 'res_var', 'value_val'  : 'res_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         state.memory.extend(arg1, 32)
         mm = [state.memory[arg1 + i] for i in range(32)]
@@ -81,13 +81,13 @@ class TAC_Mload(TAC_Statement):
 class TAC_Sload(TAC_Statement):
     __internal_name__ = "SLOAD"
     __aliases__ = {
-                   'key_var'    : 'op1_var', 'key_val'    : 'op1_val',
+                   'key_var'    : 'arg1_var', 'key_val'    : 'arg1_val',
                    'value_var'  : 'res_var', 'value_val'  : 'res_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         v = z3.simplify(state.storage[arg1])
         if z3.is_bv_value(v):
@@ -101,14 +101,14 @@ class TAC_Sload(TAC_Statement):
 class TAC_Sstore(TAC_Statement):
     __internal_name__ = "SSTORE"
     __aliases__ = {
-                   'key_var'    : 'op1_var', 'key_val'    : 'op1_val',
-                   'value_var'  : 'op2_var', 'value_val'  : 'op2_val'
+                   'key_var'    : 'arg1_var', 'key_val'    : 'arg1_val',
+                   'value_var'  : 'arg2_var', 'value_val'  : 'arg2_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
 
         state.storage[arg1] = arg2
 

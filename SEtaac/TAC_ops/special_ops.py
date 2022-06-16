@@ -18,14 +18,14 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
 
 class TAC_Sha3(TAC_Statement):
     __internal_name__ = "SHA3"
-    __aliases__ = {'offset_var': 'op1_var', 'offset_val': 'op1_val', 
-                   'size_var'  : 'op2_var', 'size_val'  : 'op2_val',
+    __aliases__ = {'offset_var': 'arg1_var', 'offset_val': 'arg1_val', 
+                   'size_var'  : 'arg2_var', 'size_val'  : 'arg2_val',
                    'hash_var'  : 'res_var', 'hash_val'  : 'res_val'}
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
 
         succ.memory.extend(arg1, arg2)
         mm = succ.memory.read(arg1, arg2)
@@ -83,13 +83,13 @@ class TAC_Address(TAC_Statement):
 class TAC_Balance(TAC_Statement):
     __internal_name__ = "BALANCE"
     __aliases__ = { 
-                    'address_var': 'op1_var', 'address_val': 'op1_val',
+                    'address_var': 'arg1_var', 'address_val': 'arg1_val',
                     'balance_var': 'res_var', 'balance_val': 'res_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         if concrete(arg1):
             succ.registers[self.res1_var] = utils.ctx_or_symbolic('BALANCE-%x' % arg1, succ.ctx, succ.xid)
@@ -145,12 +145,12 @@ class TAC_Callvalue(TAC_Statement):
 
 class TAC_Calldataload(TAC_Statement):
     __internal_name__ = "CALLDATALOAD"
-    __aliases__ = {'byte_offset_var': 'op1_var', 'byte_offset_val': 'op1_val',
+    __aliases__ = {'byte_offset_var': 'arg1_var', 'byte_offset_val': 'arg1_val',
                    'calldata_var'   : 'res_var', 'calldata_val'   : 'res_val'}
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         succ.constraints.append(z3.UGE(succ.calldatasize, arg1 + 32))
         succ.calldata_accesses.append(arg1 + 32)
@@ -176,16 +176,16 @@ class TAC_Calldatasize(TAC_Statement):
 class TAC_Calldatacopy(TAC_Statement):
     __internal_name__ = "CALLDATACOPY"
     __aliases__ = {
-                   'destOffset_var'    : 'op1_var', 'destOffset_val'    : 'op1_val',
-                   'calldataOffset_var': 'op2_var', 'calldataOffset_val': 'op2_val',
-                   'size_var'          : 'op3_var', 'size_val'          : 'op3_val',
+                   'destOffset_var'    : 'arg1_var', 'destOffset_val'    : 'arg1_val',
+                   'calldataOffset_var': 'arg2_var', 'calldataOffset_val': 'arg2_val',
+                   'size_var'          : 'arg3_var', 'size_val'          : 'arg3_val',
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
-        arg3 = succ.registers[self.op3_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
+        arg3 = succ.registers[self.arg3_var]
 
         succ.constraints.append(z3.UGE(succ.calldatasize, arg2 + arg3))
         succ.calldata_accesses.append(arg2 + arg3)
@@ -205,7 +205,7 @@ class TAC_Calldatacopy(TAC_Statement):
 class TAC_Codesize(TAC_Statement):
     __internal_name__ = "CODESIZE"
     __aliases__ = {
-                   'size_var': 'op1_var', 'size_val': 'op1_val'
+                   'size_var': 'arg1_var', 'size_val': 'arg1_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
@@ -219,16 +219,16 @@ class TAC_Codesize(TAC_Statement):
 class TAC_Codecopy(TAC_Statement):
     __internal_name__ = "CODECOPY"
     __aliases__ = {
-                   'destOffset_var': 'op1_var', 'destOffset_val': 'op1_val',
-                   'offset_var'    : 'op2_var', 'offset_val'    : 'op2_val',
-                   'size_var'      : 'op3_var', 'size_val'      : 'op3_val'
+                   'destOffset_var': 'arg1_var', 'destOffset_val': 'arg1_val',
+                   'offset_var'    : 'arg2_var', 'offset_val'    : 'arg2_val',
+                   'size_var'      : 'arg3_var', 'size_val'      : 'arg3_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
-        arg3 = succ.registers[self.op3_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
+        arg3 = succ.registers[self.arg3_var]
 
         if concrete(arg1) and concrete(arg2) and concrete(arg3):
             self.memory.extend(arg1, arg3)
@@ -260,13 +260,13 @@ class TAC_Gasprice(TAC_Statement):
 class TAC_Extcodesize(TAC_Statement):
     __internal_name__ = "EXTCODESIZE"
     __aliases__ = {
-                   'address_var': 'op1_var', 'address_val': 'op1_val',
+                   'address_var': 'arg1_var', 'address_val': 'arg1_val',
                    'size_var'   : 'res_var', 'size_val'   : 'res_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         if concrete(arg1):
             succ.registers[self.res1_var] = utils.ctx_or_symbolic('CODESIZE-%x' % arg1, succ.ctx, succ.xid)
@@ -283,10 +283,10 @@ class TAC_Extcodesize(TAC_Statement):
 class TAC_Extcodecopy(TAC_Statement):
     __internal_name__ = "EXTCODECOPY"
     __aliases__ = {
-                   'address_var'     : 'op1_var', 'address_val'      : 'op1_val',
-                   'destOffset_var'  : 'op2_var', 'destOffset_val'   : 'op2_val',
-                   'offset_var'      : 'op3_var', 'offset_val'       : 'op3_val',
-                   'size_var'        : 'op4_var', 'size_val'         : 'op4_val'
+                   'address_var'     : 'arg1_var', 'address_val'      : 'arg1_val',
+                   'destOffset_var'  : 'arg2_var', 'destOffset_val'   : 'arg2_val',
+                   'offset_var'      : 'arg3_var', 'offset_val'       : 'arg3_val',
+                   'size_var'        : 'arg4_var', 'size_val'         : 'arg4_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
@@ -306,9 +306,9 @@ class TAC_Returndatasize(TAC_Statement):
 class TAC_Returndatacopy(TAC_Statement):
     __internal_name__ = "RETURNDATACOPY"
     __aliases__ = {
-                   'destOffset_var': 'op1_var', 'destOffset_val': 'op1_val',
-                   'offset_var'    : 'op2_var', 'offset_val'    : 'op2_val',
-                   'size_var'      : 'op3_var', 'size_val'      : 'op3_val'
+                   'destOffset_var': 'arg1_var', 'destOffset_val': 'arg1_val',
+                   'offset_var'    : 'arg2_var', 'offset_val'    : 'arg2_val',
+                   'size_var'      : 'arg3_var', 'size_val'      : 'arg3_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
@@ -318,7 +318,7 @@ class TAC_Returndatacopy(TAC_Statement):
 class TAC_Extcodehash(TAC_Statement):
     __internal_name__ = "EXTCODEHASH"
     __aliases__ = {
-                   'address_var'   : 'op1_var', 'address_val'   : 'op1_val',
+                   'address_var'   : 'arg1_var', 'address_val'   : 'arg1_val',
                    'hash_var'      : 'res_var', 'hash_val'      : 'res_val'
                   }
 
@@ -329,13 +329,13 @@ class TAC_Extcodehash(TAC_Statement):
 class TAC_Blockhash(TAC_Statement):
     __internal_name__ = "BLOCKHASH"
     __aliases__ = {
-                   'blockNumber_var'   : 'op1_var', 'blockNumber_val'   : 'op1_val',
+                   'blockNumber_var'   : 'arg1_var', 'blockNumber_val'   : 'arg1_val',
                    'hash_var'          : 'res_var', 'hash_val'          : 'res_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         if not concrete(arg1):
             raise SymbolicError('symbolic blockhash index')
@@ -468,14 +468,14 @@ class TAC_Basefee(TAC_Statement):
 class TAC_Revert(TAC_Statement):
     __internal_name__ = "REVERT"
     __aliases__ = {
-                   'offset_var': 'op1_var', 'offset_val': 'op1_val',
-                   'size_var'  : 'op2_var', 'size_val'  : 'op2_val',
+                   'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
+                   'size_var'  : 'arg2_var', 'size_val'  : 'arg2_val',
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
 
         if not concrete(arg1) or not concrete(arg2):
             raise SymbolicError('symbolic memory index')
@@ -490,15 +490,15 @@ class TAC_Revert(TAC_Statement):
 class TAC_Create(TAC_Statement):
     __internal_name__ = "CREATE"
     __aliases__ = {
-                   'value_var'   : 'op1_var', 'value_val'   : 'op1_val',
-                   'offset_var'  : 'op2_var', 'offset_val'  : 'op2_val',
-                   'size_var'    : 'op3_var', 'size_val'    : 'op3_val',
+                   'value_var'   : 'arg1_var', 'value_val'   : 'arg1_val',
+                   'offset_var'  : 'arg2_var', 'offset_val'  : 'arg2_val',
+                   'size_var'    : 'arg3_var', 'size_val'    : 'arg3_val',
                    'address_var' : 'res_var', 'address_val' : 'res_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         succ.constraints.append(z3.UGE(succ.balance, arg1))
         succ.balance -= arg1
@@ -512,16 +512,16 @@ class TAC_Create(TAC_Statement):
 class TAC_Create2(TAC_Statement):
     __internal_name__ = "CREATE2"
     __aliases__ = {
-                   'value_var'      : 'op1_var', 'value_val'   : 'op1_val',
-                   'offset_var'     : 'op2_var', 'offset_val'  : 'op2_val',
-                   'size_var'       : 'op3_var', 'size_val'    : 'op3_val',
-                   'salt_var'       : 'op4_var', 'salt_val'    : 'op4_val',
+                   'value_var'      : 'arg1_var', 'value_val'   : 'arg1_val',
+                   'offset_var'     : 'arg2_var', 'offset_val'  : 'arg2_val',
+                   'size_var'       : 'arg3_var', 'size_val'    : 'arg3_val',
+                   'salt_var'       : 'arg4_var', 'salt_val'    : 'arg4_val',
                    'address_var'    : 'res_var', 'address_val' : 'res_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
+        arg1 = succ.registers[self.arg1_var]
 
         succ.constraints.append(z3.UGE(succ.balance, arg1))
         succ.balance -= arg1
@@ -566,7 +566,7 @@ class TAC_Invalid(TAC_Statement):
 class TAC_Selfdestruct(TAC_Statement):
     __internal_name__ = "SELFDESTRUCT"
     __aliases__ = {
-                   'address_var': 'op1_var', 'address_val': 'op1_val'
+                   'address_var': 'arg1_var', 'address_val': 'arg1_val'
                   }
 
     def handle(self, state:SymbolicEVMState):

@@ -25,14 +25,14 @@ c. The ordered list of logs in the transaction are expressed as [log0, log1, ...
 class TAC_Log0(TAC_Statement):
     __internal_name__ = "LOG0"
     __aliases__ = {
-                   'offset_var': 'op1_var', 'offset_val': 'op1_val',
-                   'size_var'  : 'op2_var', 'size_val'  : 'op2_val'
+                   'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
+                   'size_var'  : 'arg2_var', 'size_val'  : 'arg2_val'
                   }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
 
         mstart, msz = arg1, arg2
         succ.memory.extend(mstart, msz)
@@ -46,16 +46,16 @@ class TAC_Log0(TAC_Statement):
 class TAC_Log1(TAC_Statement):
     __internal_name__ = "LOG1"
     __aliases__ = {
-                   'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',
-                   'size_var'    : 'op2_var'  , 'size_val'    : 'op2_val',
-                   'topic_var'   : 'op3_var'  , 'topic_val'   : 'op3_val'
+                   'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
+                   'size_var'    : 'arg2_var'  , 'size_val'    : 'arg2_val',
+                   'topic_var'   : 'arg3_var'  , 'topic_val'   : 'arg3_val'
                    }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
-        arg3 = succ.registers[self.op3_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
+        arg3 = succ.registers[self.arg3_var]
 
         mstart, msz = arg1, arg2
         succ.memory.extend(mstart, msz)
@@ -69,18 +69,18 @@ class TAC_Log1(TAC_Statement):
 class TAC_Log2(TAC_Statement):
     __internal_name__ = "LOG2"
     __aliases__ = {
-                   'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',
-                   'size_var'    : 'op2_var'  , 'size_val'    : 'op2_val',
-                   'topic1_var'  : 'op3_var'  , 'topic1_val'  : 'op3_val',
-                   'topic2_var'  : 'op4_var'  , 'topic2_val'  : 'op4_val'
+                   'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
+                   'size_var'    : 'arg2_var'  , 'size_val'    : 'arg2_val',
+                   'topic1_var'  : 'arg3_var'  , 'topic1_val'  : 'arg3_val',
+                   'topic2_var'  : 'arg4_var'  , 'topic2_val'  : 'arg4_val'
                    }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
-        arg3 = succ.registers[self.op3_var]
-        arg4 = succ.registers[self.op4_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
+        arg3 = succ.registers[self.arg3_var]
+        arg4 = succ.registers[self.arg4_var]
 
         mstart, msz = arg1, arg2
         succ.memory.extend(mstart, msz)
@@ -94,20 +94,20 @@ class TAC_Log2(TAC_Statement):
 class TAC_Log3(TAC_Statement):
     __internal_name__ = "LOG3"
     __aliases__ = {
-                   'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',
-                   'size_var'    : 'op2_var'  , 'size_val'    : 'op2_val',
-                   'topic1_var'  : 'op3_var'  , 'topic1_val'  : 'op3_val',
-                   'topic2_var'  : 'op4_var'  , 'topic2_val'  : 'op4_val',
-                   'topic3_var'  : 'op5_var'  , 'topic3_val'  : 'op5_val'
+                   'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
+                   'size_var'    : 'arg2_var'  , 'size_val'    : 'arg2_val',
+                   'topic1_var'  : 'arg3_var'  , 'topic1_val'  : 'arg3_val',
+                   'topic2_var'  : 'arg4_var'  , 'topic2_val'  : 'arg4_val',
+                   'topic3_var'  : 'arg5_var'  , 'topic3_val'  : 'arg5_val'
                    }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
-        arg3 = succ.registers[self.op3_var]
-        arg4 = succ.registers[self.op4_var]
-        arg5 = succ.registers[self.op5_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
+        arg3 = succ.registers[self.arg3_var]
+        arg4 = succ.registers[self.arg4_var]
+        arg5 = succ.registers[self.arg5_var]
 
         mstart, msz = arg1, arg2
         succ.memory.extend(mstart, msz)
@@ -121,22 +121,22 @@ class TAC_Log3(TAC_Statement):
 class TAC_Log4(TAC_Statement):
     __internal_name__ = "LOG4"
     __aliases__ = {
-                   'offset_var'  : 'op1_var'  , 'offset_val'  : 'op1_val',
-                   'size_var'    : 'op2_var'  , 'size_val'    : 'op2_val',
-                   'topic1_var'  : 'op3_var'  , 'topic1_val'  : 'op3_val',
-                   'topic2_var'  : 'op4_var'  , 'topic2_val'  : 'op4_val',
-                   'topic3_var'  : 'op5_var'  , 'topic3_val'  : 'op5_val',
-                   'topic4_var'  : 'op6_var'  , 'topic4_val'  : 'op6_val'
+                   'offset_var'  : 'arg1_var'  , 'offset_val'  : 'arg1_val',
+                   'size_var'    : 'arg2_var'  , 'size_val'    : 'arg2_val',
+                   'topic1_var'  : 'arg3_var'  , 'topic1_val'  : 'arg3_val',
+                   'topic2_var'  : 'arg4_var'  , 'topic2_val'  : 'arg4_val',
+                   'topic3_var'  : 'arg5_var'  , 'topic3_val'  : 'arg5_val',
+                   'topic4_var'  : 'arg6_var'  , 'topic4_val'  : 'arg6_val'
                    }
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg1 = succ.registers[self.op1_var]
-        arg2 = succ.registers[self.op2_var]
-        arg3 = succ.registers[self.op3_var]
-        arg4 = succ.registers[self.op4_var]
-        arg5 = succ.registers[self.op5_var]
-        arg6 = succ.registers[self.op6_var]
+        arg1 = succ.registers[self.arg1_var]
+        arg2 = succ.registers[self.arg2_var]
+        arg3 = succ.registers[self.arg3_var]
+        arg4 = succ.registers[self.arg4_var]
+        arg5 = succ.registers[self.arg5_var]
+        arg6 = succ.registers[self.arg6_var]
 
         mstart, msz = arg1, arg2
         succ.memory.extend(mstart, msz)

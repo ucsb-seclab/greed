@@ -14,10 +14,10 @@ __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
 
 class TAC_Jump(TAC_Statement):
     __internal_name__ = "JUMP"
-    __aliases__ = {'destination_var': 'op1_var', 'destination_val': 'op1_val'}
+    __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val'}
 
     def handle(self, state:SymbolicEVMState):
-        self.set_op_val(state)
+        self.set_arg_val(state)
         succ = state.copy()
 
         target_bb_id = hex(self.destination_val)
@@ -36,12 +36,12 @@ class TAC_Jump(TAC_Statement):
 
 class TAC_Jumpi(TAC_Statement):
     __internal_name__ = "JUMPI"
-    __aliases__ = {'destination_var': 'op1_var', 'destination_val': 'op1_val', 
-                   'condition_var': 'op2_var', 'condition_val': 'op2_val'}
+    __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val', 
+                   'condition_var': 'arg2_var', 'condition_val': 'arg2_val'}
 
     def handle(self, state:SymbolicEVMState):
         # TODO: implement symbolic jumpi destination
-        self.set_op_val(state)
+        self.set_arg_val(state)
         succ = state.copy()
 
         target_bb_id = hex(self.destination_val)
@@ -107,24 +107,24 @@ class TAC_Jumpi(TAC_Statement):
 class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
     __aliases__ = {
-                   'gas_var'       : 'op1_var', 'gas_val'       : 'op1_val',
-                   'address_var'   : 'op2_var', 'address_val'   : 'op2_val',
-                   'value_var'     : 'op3_var', 'value_val'     : 'op3_val',
-                   'argsOffset_var': 'op4_var', 'argsOffset_val': 'op4_val',
-                   'argsSize_var'  : 'op5_var', 'argsSize_val'  : 'op5_val',
-                   'retOffset_var' : 'op6_var', 'retOffset_val' : 'op6_val',
-                   'retSize_var'   : 'op7_var', 'retSize_val'   : 'op7_val',
+                   'gas_var'       : 'arg1_var', 'gas_val'       : 'arg1_val',
+                   'address_var'   : 'arg2_var', 'address_val'   : 'arg2_val',
+                   'value_var'     : 'arg3_var', 'value_val'     : 'arg3_val',
+                   'argsOffset_var': 'arg4_var', 'argsOffset_val': 'arg4_val',
+                   'argsSize_var'  : 'arg5_var', 'argsSize_val'  : 'arg5_val',
+                   'retOffset_var' : 'arg6_var', 'retOffset_val' : 'arg6_val',
+                   'retSize_var'   : 'arg7_var', 'retSize_val'   : 'arg7_val',
                    'success_var'   : 'res_var', 'success_val'   : 'res_val'
                    }
 
     def _handle(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
-        arg1 = arg1 or succ.registers[self.op1_var]
-        arg2 = arg2 or succ.registers[self.op2_var]
-        arg3 = arg3 or succ.registers[self.op3_var]
-        arg4 = arg4 or succ.registers[self.op4_var]
-        arg5 = arg5 or succ.registers[self.op5_var]
-        arg6 = arg6 or succ.registers[self.op6_var]
-        arg7 = arg7 or succ.registers[self.op7_var]
+        arg1 = arg1 or succ.registers[self.arg1_var]
+        arg2 = arg2 or succ.registers[self.arg2_var]
+        arg3 = arg3 or succ.registers[self.arg3_var]
+        arg4 = arg4 or succ.registers[self.arg4_var]
+        arg5 = arg5 or succ.registers[self.arg5_var]
+        arg6 = arg6 or succ.registers[self.arg6_var]
+        arg7 = arg7 or succ.registers[self.arg7_var]
 
         ostart = arg6 if concrete(arg6) else z3.simplify(arg6)
         olen = arg7 if concrete(arg7) else z3.simplify(arg7)
@@ -152,7 +152,7 @@ class TAC_Call(TAC_BaseCall):
 
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
-        arg3 = succ.registers[self.op3_var]
+        arg3 = succ.registers[self.arg3_var]
 
         succ.constraints.append(z3.UGE(succ.balance, arg3))
         succ.balance -= arg3
@@ -178,23 +178,23 @@ class TAC_Delegatecall(TAC_BaseCall):
 class TAC_Staticcall(TAC_Statement):
     __internal_name__ = "STATICCALL"
     __aliases__ = {
-        'gas_var': 'op1_var', 'gas_val': 'op1_val',
-        'address_var': 'op2_var', 'address_val': 'op2_val',
-        'argsOffset_var': 'op3_var', 'argsOffset_val': 'op3_val',
-        'argsSize_var': 'op4_var', 'argsSize_val': 'op4_val',
-        'retOffset_var': 'op5_var', 'retOffset_val': 'op5_val',
-        'retSize_var': 'op6_var', 'retSize_val': 'op6_val',
+        'gas_var': 'arg1_var', 'gas_val': 'arg1_val',
+        'address_var': 'arg2_var', 'address_val': 'arg2_val',
+        'argsOffset_var': 'arg3_var', 'argsOffset_val': 'arg3_val',
+        'argsSize_var': 'arg4_var', 'argsSize_val': 'arg4_val',
+        'retOffset_var': 'arg5_var', 'retOffset_val': 'arg5_val',
+        'retSize_var': 'arg6_var', 'retSize_val': 'arg6_val',
         'success_var': 'res_var', 'success_val': 'res_val'
     }
 
     def _handle(self, succ, arg1=None, arg2=None, arg3=None, arg4=None, arg5=None, arg6=None, arg7=None):
-        arg1 = arg1 or succ.registers[self.op1_var]
-        arg2 = arg2 or succ.registers[self.op2_var]
+        arg1 = arg1 or succ.registers[self.arg1_var]
+        arg2 = arg2 or succ.registers[self.arg2_var]
         arg3 = 0 # it sucks but opcodes are shifted here
-        arg4 = arg4 or succ.registers[self.op3_var]
-        arg5 = arg5 or succ.registers[self.op4_var]
-        arg6 = arg6 or succ.registers[self.op5_var]
-        arg7 = arg7 or succ.registers[self.op6_var]
+        arg4 = arg4 or succ.registers[self.arg3_var]
+        arg5 = arg5 or succ.registers[self.arg4_var]
+        arg6 = arg6 or succ.registers[self.arg5_var]
+        arg7 = arg7 or succ.registers[self.arg6_var]
 
         ostart = arg6 if concrete(arg6) else z3.simplify(arg6)
         olen = arg7 if concrete(arg7) else z3.simplify(arg7)
