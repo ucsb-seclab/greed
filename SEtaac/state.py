@@ -9,21 +9,17 @@ from SEtaac.memory import SymbolicMemory
 from SEtaac.storage import SymbolicStorage
 from SEtaac.utils import concrete, translate_xid
 
-class AbstractEVMState(object):
-    def __init__(self, code=None):
-        self.code = code or bytearray()
-        self.pc = 0
-        self.memory = None
-        self.trace = list()
-        self.gas = None
 
 
-class SymbolicEVMState(AbstractEVMState):
+class SymbolicEVMState:
     def __init__(self, xid, project, program=None, code=None):
-        super(SymbolicEVMState, self).__init__(code)
+        self.code = code or bytearray()
         self.program = program
         self.xid = xid
         self.project = project
+
+        self._pc = None
+        self.trace = list()
 
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
@@ -56,8 +52,17 @@ class SymbolicEVMState(AbstractEVMState):
         self.calldata_accesses = [0]
 
     @property
+    def pc(self):
+        return self._pc
+
+    @pc.setter
+    def pc(self, value):
+        self.trace.append(self._pc)
+        self._pc = value
+
+    @property
     def curr_stmt(self):
-        return self.project._statement_at[self.pc]
+        return self.project._statement_at[self._pc]
 
     def set_next_pc(self):
         try:
@@ -99,7 +104,8 @@ class SymbolicEVMState(AbstractEVMState):
         # assume unchanged xid
         new_state = SymbolicEVMState(self.xid, project=self.project, program=self.program, code=self.code)
 
-        new_state.pc = self.pc
+        new_state._pc = self._pc
+        new_state.trace = list(self.trace)
 
         new_state.memory = self.memory.copy(self.xid)
         new_state.storage = self.storage.copy(self.xid)
