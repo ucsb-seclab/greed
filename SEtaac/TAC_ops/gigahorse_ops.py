@@ -29,7 +29,7 @@ class TAC_Callprivate(TAC_Statement):
         dest_var = self.arg_vars[0]
         dest_val = self.arg_vals[dest_var]
         target_bb_id = hex(dest_val)
-        target_bb = state.project.factory.block(target_bb_id)
+        target_bb = succ.project.factory.block(target_bb_id)
 
         # read arg-alias map
         args = self.arg_vars[1:]
@@ -48,7 +48,7 @@ class TAC_Callprivate(TAC_Statement):
         try:
             saved_return_pc = succ.get_next_pc()
         except VM_NoSuccessors:
-            fake_exit_bb = state.project.factory.block('fake_exit')
+            fake_exit_bb = succ.project.factory.block('fake_exit')
             saved_return_pc = fake_exit_bb.statements[0].stmt_ident
 
         succ.callstack.append((saved_return_pc, self.res_vars))
@@ -127,7 +127,7 @@ class TAC_Nop(TAC_Statement):
     __internal_name__ = "NOP"
 
     @TAC_Statement.handler_without_side_effects
-    def handle(self, state: SymbolicEVMState):
+    def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
         succ.set_next_pc()

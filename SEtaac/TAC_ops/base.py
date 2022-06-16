@@ -84,6 +84,8 @@ class TAC_Statement(Aliased):
         for i in range(self.num_args):
             var = self.arg_vars[i]
             arg_val = self.arg_vals[var]
+            # todo: the fact that we are reading the original state's registers here (not succ) could cause issues e.g.,
+            # if we need some kind of translation
             val = state.registers.get(var, None) if arg_val is None else arg_val
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i+1), val)
@@ -93,7 +95,6 @@ class TAC_Statement(Aliased):
         Decorator that executes the basic functionalities for handlers without side effects
         (can just read and return statically computed results).
         """
-
         def wrap(self, state: SymbolicEVMState):
             # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)

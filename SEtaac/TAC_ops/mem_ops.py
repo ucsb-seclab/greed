@@ -18,16 +18,16 @@ class TAC_Mstore(TAC_Statement):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        state.memory.extend(self.offset_val, 32)
+        succ.memory.extend(self.offset_val, 32)
         if concrete(self.value_val):
-            state.memory.write(self.offset_val, 32, utils.encode_int32(self.value_val))
+            succ.memory.write(self.offset_val, 32, utils.encode_int32(self.value_val))
         else:
             for i in range(32):
                 m = z3.simplify(z3.Extract((31 - i) * 8 + 7, (31 - i) * 8, self.value_val))
                 if z3.is_bv_value(m):
-                    state.memory[self.offset_val + i] = m.as_long()
+                    succ.memory[self.offset_val + i] = m.as_long()
                 else:
-                    state.memory[self.offset_val + i] = m
+                    succ.memory[self.offset_val + i] = m
 
         succ.set_next_pc()
         return [succ]
@@ -43,8 +43,8 @@ class TAC_Mstore8(TAC_Statement):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        state.memory.extend(self.offset_val, 1)
-        state.memory[self.offset_val] = self.value_val % 256
+        succ.memory.extend(self.offset_val, 1)
+        succ.memory[self.offset_val] = self.value_val % 256
 
         succ.set_next_pc()
         return [succ]
@@ -60,10 +60,10 @@ class TAC_Mload(TAC_Statement):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        state.memory.extend(self.offset_val, 32)
-        mm = [state.memory[self.offset_val + i] for i in range(32)]
+        succ.memory.extend(self.offset_val, 32)
+        mm = [succ.memory[self.offset_val + i] for i in range(32)]
         if all(concrete(m) for m in mm):
-            succ.registers[self.res1_var] = utils.bytes_to_int(state.memory.read(self.offset_val, 32))
+            succ.registers[self.res1_var] = utils.bytes_to_int(succ.memory.read(self.offset_val, 32))
         else:
             v = z3.simplify(z3.Concat([m if not concrete(m) else z3.BitVecVal(m, 8) for m in mm]))
             if z3.is_bv_value(v):
@@ -85,7 +85,7 @@ class TAC_Sload(TAC_Statement):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        v = z3.simplify(state.storage[self.key_val])
+        v = z3.simplify(succ.storage[self.key_val])
         if z3.is_bv_value(v):
             succ.registers[self.res1_var] = v.as_long()
         else:
@@ -105,7 +105,7 @@ class TAC_Sstore(TAC_Statement):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        state.storage[self.key_val] = self.value_val
+        succ.storage[self.key_val] = self.value_val
 
         succ.set_next_pc()
         return [succ]
