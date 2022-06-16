@@ -98,10 +98,13 @@ class TAC_Statement(Aliased):
             # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)
 
-            # If we already have the result of the op from the Gigahorse IR, just use it.
-            if self.res1_var and self.res1_val:
+            # If we already have all the results from the Gigahorse IR, just use it.
+            if all([self.res_vals[var] is not None for var in self.res_vars]):
                 succ = state.copy()
-                succ.registers[self.res1_var] = self.res1_val
+
+                for var in self.res_vars:
+                    succ.registers[var] = self.res_vals[var]
+                
                 succ.set_next_pc()
                 return [succ]
 
