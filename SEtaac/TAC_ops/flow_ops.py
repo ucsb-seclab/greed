@@ -56,7 +56,7 @@ class TAC_Jumpi(TAC_Statement):
 
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
-            if cond is True:
+            if cond:
                 # if not concrete(dest):
                 #     raise SymbolicError('Symbolic jump target')
                 succ.pc = dest
