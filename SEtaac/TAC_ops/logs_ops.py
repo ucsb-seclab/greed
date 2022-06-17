@@ -32,7 +32,7 @@ class TAC_Log(TAC_Statement):
     def handle(self, state:SymbolicEVMState):
         succ = state.copy()
 
-        succ.memory.extend(self.offset_val, self.size_val)
+        # succ.memory.extend(self.offset_val, self.size_val)
 
         succ.set_next_pc()
         return [succ]

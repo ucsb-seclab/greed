@@ -101,6 +101,8 @@ class TAC_Statement(Aliased):
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i+1), val)
 
+        # print(self.arg_vals, self.res_vals)
+
     def handler_without_side_effects(func):
         """
         Decorator that executes the basic functionalities for handlers without side effects
