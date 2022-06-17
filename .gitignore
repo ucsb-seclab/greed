@@ -386,6 +386,7 @@ $RECYCLE.BIN/
 tests/test_*/*
 !tests/test_*/bytecode.hex
 !tests/test_*/source.sol
+!tests/test_*/contract.tac
 !tests/test_*/gigahorse_cfg.dot
 !tests/test_*/TAC_CFG.dill
 !tests/test_*/IR_DICT.dill
