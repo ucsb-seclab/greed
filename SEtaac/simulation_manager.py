@@ -150,12 +150,11 @@ class SimulationManager:
 
         try:
             while len(self.active) > 0 and len(self.found) == 0 and not self._halt:
+                self.step()
+                self.insns_count += 1
+
                 self.move(from_stash='active', to_stash='found', filter_func=find)
                 self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
-
-                self.step()
-
-                self.insns_count += 1
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
