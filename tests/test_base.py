@@ -1,8 +1,14 @@
+import argparse
+
 from SEtaac import Project
 from SEtaac.utils import gen_exec_id
 
-p = Project("./IR_DICT.dill",
-            "./TAC_CFG.dill")
+parser = argparse.ArgumentParser()
+parser.add_argument('--target', type=str, action='store', help='Path to Gigahorse output folder', required=True)
+args = parser.parse_args()
+
+p = Project(f"{args.target}/IR_DICT.dill",
+            f"{args.target}/TAC_CFG.dill")
 
 xid = gen_exec_id()
 entry_state = p.factory.entry_state(xid=1)
