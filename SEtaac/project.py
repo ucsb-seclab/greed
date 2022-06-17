@@ -4,15 +4,12 @@ from datetime import datetime
 
 import dill
 
-from SEtaac.TAC_ops.base import TAC_RawStatement
-from SEtaac.TAC_ops.special_ops import TAC_Stop
 from SEtaac.TAC_parser import TACparser
-from SEtaac.bb import TAC_Block
-from SEtaac.cfg import make_cfg
+from SEtaac.cfg import TAC_Block, make_cfg
+from SEtaac.config import *
 from SEtaac.function import TAC_Function
 from SEtaac.simulation_manager import SimulationManager
 from SEtaac.state import SymbolicEVMState
-from .config import *
 
 l = logging.getLogger("project")
 l.setLevel(logging.INFO)

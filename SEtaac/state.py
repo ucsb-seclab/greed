@@ -1,14 +1,12 @@
 import datetime
 from collections import defaultdict
-from SEtaac.exceptions import VMException, VM_NoSuccessors, VM_UnexpectedSuccessors
 
 import z3
 
 from SEtaac import utils
+from SEtaac.exceptions import VM_NoSuccessors, VM_UnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
 from SEtaac.storage import SymbolicStorage
-from SEtaac.utils import concrete, translate_xid
-
 
 
 class SymbolicEVMState:
@@ -76,28 +74,30 @@ class SymbolicEVMState:
         curr_bb = self.project.factory.block(self.curr_stmt.block_ident)
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
         remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
-        cfgnode = curr_bb.function.cfg.blockids_to_cfgnode[curr_bb.ident]
 
         # case 1: middle of the block
         if remaining_stmts:
             return remaining_stmts[0].stmt_ident
-        elif len(cfgnode.succ) == 0:
+        elif len(curr_bb.succ) == 0:
             raise VM_NoSuccessors
-        elif len(cfgnode.succ) == 1:
-            return cfgnode.succ[0].bb.first_ins.stmt_ident
-        elif len(cfgnode.succ) == 2:
+        elif len(curr_bb.succ) == 1:
+            return curr_bb.succ[0].first_ins.stmt_ident
+        elif len(curr_bb.succ) == 2:
             #  case 3: end of the block and two targets
             #  we need to set the fallthrough to the state.
             #  The handler of the JUMPI has already created the state at the jump target.
             assert (self.curr_stmt.__internal_name__ == "JUMPI")
-            not_fallthrough = self.registers[self.curr_stmt.destination_var]
 
-            # We need make sure this is concrete to check against the successors of the node
-            # if not concrete(not_fallthrough):
-            #     raise VMException("Symbolic destination for JUMPI. This should not happen.")
-            # Fallthrough addresses are block addresses
-            fallthrough_node = list(filter(lambda n: n.bb.ident != not_fallthrough, cfgnode.succ))[0]
-            return fallthrough_node.bb.first_ins.stmt_ident
+            # guess and refine target_bb_id
+            target_bb_id = hex(self.registers[self.curr_stmt.destination_var])
+            target_bb = self.project.factory.block(target_bb_id + curr_bb.function.id)
+            if not target_bb:
+                target_bb = self.project.factory.block(target_bb_id)
+            target_bb_id = target_bb.ident
+
+            # find and return fallthrough branch
+            fallthrough_bb = [bb for bb in curr_bb.succ if bb.ident != target_bb_id][0]
+            return fallthrough_bb.first_ins.stmt_ident
         else:
             raise VM_UnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
 

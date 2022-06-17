@@ -1,17 +1,36 @@
 import logging
-from SEtaac.bb import TAC_Block
-from SEtaac.function import TAC_Function
 
 import networkx as nx
 
+from SEtaac.TAC_ops.base import TAC_RawStatement
+from SEtaac.TAC_ops.gigahorse_ops import TAC_Nop
+from SEtaac.function import TAC_Function
 
 l = logging.getLogger("cfg")
 l.setLevel(logging.DEBUG)
 
-class CFGNode(object):
-    def __init__(self, bb:TAC_Block):
-        self.bb = bb
+class TAC_Block(object):
+    def __init__(self, statements, block_id):
+        # WARNING: assuming BB indexes are UNIQUE.
+        self.ident = block_id
+        self.statements = statements
+
+        # Gigahorse sometimes creates empty basic blocks (i.e., no statements). We patch such blocks with a fake NOP
+        if len(self.statements) == 0:
+            # create fake raw statement
+            fake_raw_statement = TAC_RawStatement(TACblock_ident=block_id, ident=block_id + '_fake_stmt', opcode='NOP')
+            # parse raw statement
+            nop = TAC_Nop()
+            nop.parse(fake_raw_statement)
+            # append the parsed statement to the current block
+            self.statements.append(nop)
+
+        # keep a dictionary from statement id to statement
+        self._statement_at = {s.stmt_ident: s for s in self.statements}
+        self.first_ins = self.statements[0]
+
         self.cfg = None
+        self.function = None
 
         # cached properties
         self._succ = None
@@ -26,11 +45,6 @@ class CFGNode(object):
         if self._succ is None:
             self._succ = list(self.cfg.graph.successors(self))
         return self._succ
-    
-    # WARNING: assuming BB indexed are UNIQUE.
-    #def __hash__(self):
-    #    return self.bb.first_ins.stmt_ident
-
 
     @property
     def pred(self):
@@ -45,7 +59,7 @@ class CFGNode(object):
             self._ancestors = list(set(reversed_subtree) - {self})
             # if there is a loop, add the current bb to it's ancestors
             for bb in self._ancestors:
-                if self.cfg.graph.has_edge(self.cfg._bb_at[self.start], self.cfg._bb_at[bb.start]):
+                if self.cfg.graph.has_edge(self, bb):
                     self._ancestors += [self]
                     break
         return self._ancestors
@@ -83,7 +97,7 @@ class CFGNode(object):
         return self._acyclic_subgraph
 
     def __str__(self):
-        return f'CFGNode @ {self.bb.ident}'
+        return "Block at {}".format(self.ident)
 
     def __repr__(self):
         return str(self)
@@ -95,25 +109,14 @@ class CFG(object):
         self.graph = nx.DiGraph()
 
         # keep basic block organized in a dictionary
-        self.blockids_to_cfgnode = dict()
+        self.bbs = list()
+        self._bb_at = dict()
         self._dominators = None
-        
-        '''
-        self.trim()
-        self.root = self._bb_at[0]
-        self._ins_at = {i.addr: i for bb in self.bbs for i in bb.ins}
-        self.shortest_paths = nx.single_source_shortest_path(self.graph, self.root)
-        '''
 
-    '''
-    def filter_ins(self, names, reachable=False):
+    def filter_stmt(self, names):
         if isinstance(names, str):
             names = [names]
-        if not reachable:
-            return [ins for bb in self.bbs for ins in bb.ins if ins.name in names]
-        else:
-            return [ins for bb in self.bbs for ins in bb.ins if ins.name in names and 0 in bb.ancestors | {bb.start}]
-    '''
+        return [stmt for bb in self.bbs for stmt in bb.statements if stmt.__internal_name__ in names]
 
     @property
     def dominators(self):
@@ -123,24 +126,25 @@ class CFG(object):
 
 # Building the intra-functional CFG of a target function.
 def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
-
     cfg = CFG()
-    blockids_to_cfgnode = {}
-
-    for bb in function.blocks:
-        cfgnode = CFGNode(bb)
-        blockids_to_cfgnode[bb.ident] = cfgnode
-        cfg.graph.add_node(cfgnode)
-        cfgnode.cfg = cfg
-    
-    for bb in function.blocks:        
-        # Adding information about successors from Gigahorse analysis
-        cfgnode = blockids_to_cfgnode[bb.ident]
-        jump_data = TAC_cfg_raw['jump_data'].get(cfgnode.bb.ident, None)
-        if jump_data:
-            for j in jump_data:
-                new_cfgnode = blockids_to_cfgnode[j]
-                cfg.graph.add_edge(cfgnode, new_cfgnode)
-    
-    cfg.blockids_to_cfgnode = blockids_to_cfgnode
     function.cfg = cfg
+    for bb in function.blocks:
+        bb.cfg = cfg
+        cfg.graph.add_node(bb)
+    
+    for a in function.blocks:
+        # Adding information about successors from Gigahorse analysis
+        jump_data = TAC_cfg_raw['jump_data'].get(a.ident, None)
+        if jump_data:
+            for b_ident in jump_data:
+                cfg.graph.add_edge(a, factory.block(b_ident))
+
+    cfg.bbs = list(cfg.graph.nodes())
+    cfg._bb_at = {bb.ident: bb for bb in cfg.bbs}
+
+    # find function root
+    bbs_with_no_preds = [bb for bb in cfg.bbs if len(bb.pred) == 0]
+    assert len(bbs_with_no_preds) == 1, f"Something went wrong while retrieving the root for function {function.id}"
+    cfg.root = bbs_with_no_preds[0]
+
+    cfg.shortest_paths = nx.single_source_shortest_path(cfg.graph, cfg.root)

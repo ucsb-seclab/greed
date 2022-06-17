@@ -3,7 +3,7 @@ import logging
 from SEtaac import TAC_ops
 from SEtaac.TAC_ops.base import TAC_RawStatement
 from SEtaac.TAC_ops.special_ops import TAC_Stop
-from SEtaac.bb import TAC_Block
+from SEtaac.cfg import TAC_Block
 
 l = logging.getLogger("tac_parser")
 l.setLevel(logging.INFO)
