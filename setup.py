@@ -9,7 +9,11 @@ setup(
         'pysha3>=1.0.2',
         'networkx>=2.5.1',
         'web3>=5.29.2',
-        'dill>=0.3.4'
+        'dill>=0.3.4',
+        'solc-select>=0.2.1',
+        'teether@git+ssh://git@github.com/ucsb-seclab/teether_shellphish.git'
     ],
     python_requires='>=3.5',
 )
+
+
