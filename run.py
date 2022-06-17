@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import logging
-
-from SEtaac.project import Project
+from SEtaac import Project
+from SEtaac.utils import gen_exec_id
 
 LOGGING_FORMAT = '%(levelname)s | %(name)s | %(message)s'
 # LOGGING_FORMAT = '%(message)s'
@@ -11,9 +11,19 @@ log = logging.getLogger(__name__)
 
 
 def main(args):
-    log.info(args)
+    p = Project(f"{args.target}/IR_DICT.dill",
+                f"{args.target}/TAC_CFG.dill")
 
-    project = Project(code='0x0')
+    xid = gen_exec_id()
+    entry_state = p.factory.entry_state(xid=xid)
+    simgr = p.factory.simgr(entry_state=entry_state)
+
+    try:
+        simgr.run()
+    except KeyboardInterrupt:
+        pass
+
+    import IPython; IPython.embed()
 
 
 if __name__ == '__main__':
@@ -22,8 +32,7 @@ if __name__ == '__main__':
     required = parser.add_argument_group('Required arguments')
     optional = parser.add_argument_group('Optional arguments')
 
-    required.add_argument('--facts', type=str, action='store',
-                          help='Path to Gigahorse output folder (.temp/<addr>/out/)', required=True)
+    required.add_argument('--target', type=str, action='store', help='Path to Gigahorse output folder', required=True)
 
     optional.add_argument('-d', '--debug', action='store_true',
                             help='Enable debug output')
