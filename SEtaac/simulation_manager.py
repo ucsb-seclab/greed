@@ -143,6 +143,7 @@ class SimulationManager:
 
             log.exception(f'Exception while stepping the Simulation Manager')
             self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
+            exit(1)
 
     def __str__(self):
         stashes_str = [f'{len(stash)} {stash_name}'  # {[s for s in stash]}'
