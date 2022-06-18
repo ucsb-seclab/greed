@@ -1,5 +1,4 @@
 import logging
-
 import networkx as nx
 
 from SEtaac.TAC.base import TAC_RawStatement
@@ -8,6 +7,7 @@ from SEtaac.function import TAC_Function
 
 l = logging.getLogger("cfg")
 l.setLevel(logging.DEBUG)
+
 
 class TAC_Block(object):
     def __init__(self, statements, block_id):
@@ -124,14 +124,15 @@ class CFG(object):
             self._dominators = {k: v for k, v in nx.immediate_dominators(self.graph, 0).items()}
         return self._dominators
 
+
 # Building the intra-functional CFG of a target function.
-def make_cfg(factory, TAC_cfg_raw:dict, function:TAC_Function):
+def make_cfg(factory, TAC_cfg_raw: dict, function: TAC_Function):
     cfg = CFG()
     function.cfg = cfg
     for bb in function.blocks:
         bb.cfg = cfg
         cfg.graph.add_node(bb)
-    
+
     for a in function.blocks:
         # Adding information about successors from Gigahorse analysis
         jump_data = TAC_cfg_raw['jump_data'].get(a.ident, None)

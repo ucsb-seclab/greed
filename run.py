@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import IPython
 import argparse
 import logging
+
 from SEtaac import Project
 from SEtaac.utils import gen_exec_id
 
@@ -23,7 +25,7 @@ def main(args):
     except KeyboardInterrupt:
         pass
 
-    import IPython; IPython.embed()
+    IPython.embed()
 
 
 if __name__ == '__main__':
@@ -35,13 +37,13 @@ if __name__ == '__main__':
     required.add_argument('--target', type=str, action='store', help='Path to Gigahorse output folder', required=True)
 
     optional.add_argument('-d', '--debug', action='store_true',
-                            help='Enable debug output')
+                          help='Enable debug output')
     # optional.add_argument('--breakpoints', type=str, nargs='+', default=[], action='store',
     #                         help='Set a breakpoint at a specific instruction count')
     # optional.add_argument('-i', '--interactive', action='store_true',
     #                         help='Drop an IPython shell after the execution')
     optional.add_argument('--log', type=str, action='store',
-                            help='Path to save the logfile')
+                          help='Path to save the logfile')
 
     args = parser.parse_args()
 

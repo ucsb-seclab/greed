@@ -117,9 +117,8 @@ class SimulationManager:
     #
     #         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt or s.error)
 
-
     def step(self):
-        print('-'*30)
+        print('-' * 30)
         new_active = list()
         for state in self.active:
             successors = self.single_step_state(state)

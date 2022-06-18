@@ -1,29 +1,29 @@
 from SEtaac.state import SymbolicEVMState
 
+
 # This is the object exported from Gigahorse
 class TAC_RawStatement:
     __name__ = "TAC_RawStatement"
     __internal_name__ = ""
-    def __init__(self, TACblock_ident:str, ident:str, opcode:str, operands:str=None, defs:list=None, values:dict=None):
-        self.tac_block_id = TACblock_ident
+
+    def __init__(self, tac_block_id: str, ident: str, opcode: str, operands: str = None, defs: list = None,
+                 values: dict = None):
+        self.tac_block_id = tac_block_id
         self.ident = ident
         self.opcode = opcode
         self.operands = operands if operands else list()
         self.defs = defs if defs else list()
         self.values = values if values else dict()
-    
+
     def __str__(self):
-        return "TAC_RawStatement[blockid:{}|stmtid:{}] | opcode: {} | operands:{} | defs:{} | values:{}".format(self.tac_block_id,
-                                                                                                            self.ident,
-                                                                                                            self.opcode, 
-                                                                                                            self.operands,
-                                                                                                            self.defs,
-                                                                                                            self.values)
+        return f"TAC_RawStatement[blockid:{self.tac_block_id}|stmtid:{self.ident}] | opcode: {self.opcode} | " \
+               f"operands:{self.operands} | defs:{self.defs} | values:{self.values}"
+
 
 class Aliased:
     def __init__(self):
         __aliases__ = []
-    
+
     def __getattr__(self, key):
         if key in object.__getattribute__(self, "__aliases__"):
             aliased_key = self.__aliases__[key]
@@ -38,11 +38,13 @@ class Aliased:
         else:
             object.__setattr__(self, key, value)
 
+
 class TAC_Statement(Aliased):
     __internal_name__ = None
     __aliases__ = {}
 
     def __init__(self):
+        super().__init__()
         self.block_ident = None
         self.stmt_ident = None
 
@@ -72,8 +74,8 @@ class TAC_Statement(Aliased):
         # create arg vars/vals aliases
         for i in range(self.num_args):
             var = self.arg_vars[i]
-            object.__setattr__(self, "arg{}_var".format(i+1), var)
-            object.__setattr__(self, "arg{}_val".format(i+1), self.arg_vals[var])
+            object.__setattr__(self, "arg{}_var".format(i + 1), var)
+            object.__setattr__(self, "arg{}_val".format(i + 1), self.arg_vals[var])
 
         self.res_vars = [x for x in raw_stmt.defs]
         self.res_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.defs}
@@ -84,10 +86,10 @@ class TAC_Statement(Aliased):
         # create res vars/vals aliases
         for i in range(self.num_ress):
             var = self.res_vars[i]
-            object.__setattr__(self, "res{}_var".format(i+1), var)
-            object.__setattr__(self, "res{}_val".format(i+1), self.res_vals[var])
+            object.__setattr__(self, "res{}_var".format(i + 1), var)
+            object.__setattr__(self, "res{}_val".format(i + 1), self.res_vals[var])
 
-    def set_arg_val(self, state:SymbolicEVMState):
+    def set_arg_val(self, state: SymbolicEVMState):
         # IMPORTANT: we need to reset this every time we re-execute this statement or we'll have the old registers
         # values in self.arg_vals (as set by this function)
         self.arg_vals = dict(self.raw_arg_vals)
@@ -99,15 +101,17 @@ class TAC_Statement(Aliased):
             # if we need some kind of translation
             val = state.registers.get(var, None) if arg_val is None else arg_val
             self.arg_vals[var] = val
-            object.__setattr__(self, "arg{}_val".format(i+1), val)
+            object.__setattr__(self, "arg{}_val".format(i + 1), val)
 
         # print(self.arg_vals, self.res_vals)
 
+    @staticmethod
     def handler_without_side_effects(func):
         """
         Decorator that executes the basic functionalities for handlers without side effects
         (can just read and return statically computed results).
         """
+
         def wrap(self, state: SymbolicEVMState):
             # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)
@@ -118,7 +122,7 @@ class TAC_Statement(Aliased):
 
                 for var in self.res_vars:
                     succ.registers[var] = self.res_vals[var]
-                
+
                 succ.set_next_pc()
                 return [succ]
 
@@ -128,11 +132,13 @@ class TAC_Statement(Aliased):
 
         return wrap
 
+    @staticmethod
     def handler_with_side_effects(func):
         """
         Decorator that executes the basic functionalities for handlers with side effects
         (can't just read and return statically computed results).
         """
+
         def wrap(self, state: SymbolicEVMState):
             # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)

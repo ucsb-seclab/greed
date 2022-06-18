@@ -16,5 +16,3 @@ setup(
     ],
     python_requires='>=3.5',
 )
-
-

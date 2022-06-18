@@ -1,6 +1,4 @@
-
 import logging
-
 import z3
 
 from SEtaac import utils
@@ -12,12 +10,13 @@ from ..state import SymbolicEVMState
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
            'TAC_Delegatecall', 'TAC_Staticcall', ]
 
+
 class TAC_Jump(TAC_Statement):
     __internal_name__ = "JUMP"
     __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val'}
 
     @TAC_Statement.handler_with_side_effects
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         succ = state.copy()
 
         target_bb_id = hex(self.destination_val)
@@ -34,13 +33,14 @@ class TAC_Jump(TAC_Statement):
 
         return [succ]
 
+
 class TAC_Jumpi(TAC_Statement):
     __internal_name__ = "JUMPI"
-    __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val', 
+    __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val',
                    'condition_var': 'arg2_var', 'condition_val': 'arg2_val'}
 
     @TAC_Statement.handler_with_side_effects
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         succ = state.copy()
 
         target_bb_id = hex(self.destination_val)
@@ -102,18 +102,19 @@ class TAC_Jumpi(TAC_Statement):
                 # nothing is sat
                 return []
 
+
 class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
     __aliases__ = {
-                   'gas_var'       : 'arg1_var', 'gas_val'       : 'arg1_val',
-                   'address_var'   : 'arg2_var', 'address_val'   : 'arg2_val',
-                   'value_var'     : 'arg3_var', 'value_val'     : 'arg3_val',
-                   'argsOffset_var': 'arg4_var', 'argsOffset_val': 'arg4_val',
-                   'argsSize_var'  : 'arg5_var', 'argsSize_val'  : 'arg5_val',
-                   'retOffset_var' : 'arg6_var', 'retOffset_val' : 'arg6_val',
-                   'retSize_var'   : 'arg7_var', 'retSize_val'   : 'arg7_val',
-                   'success_var'   : 'res_var', 'success_val'   : 'res_val'
-                   }
+        'gas_var': 'arg1_var', 'gas_val': 'arg1_val',
+        'address_var': 'arg2_var', 'address_val': 'arg2_val',
+        'value_var': 'arg3_var', 'value_val': 'arg3_val',
+        'argsOffset_var': 'arg4_var', 'argsOffset_val': 'arg4_val',
+        'argsSize_var': 'arg5_var', 'argsSize_val': 'arg5_val',
+        'retOffset_var': 'arg6_var', 'retOffset_val': 'arg6_val',
+        'retSize_var': 'arg7_var', 'retSize_val': 'arg7_val',
+        'success_var': 'res_var', 'success_val': 'res_val'
+    }
 
     def _handle(self, succ, gas_val=None, address_val=None, value_val=None, argsOffset_val=None, argsSize_val=None,
                 retOffset_val=None, retSize_val=None):
@@ -146,11 +147,12 @@ class TAC_BaseCall(TAC_Statement):
         succ.set_next_pc()
         return [succ]
 
+
 class TAC_Call(TAC_BaseCall):
     __internal_name__ = "CALL"
 
     @TAC_Statement.handler_with_side_effects
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         succ = state.copy()
         value_val = succ.registers[self.value_val]
 
@@ -159,23 +161,26 @@ class TAC_Call(TAC_BaseCall):
 
         return self._handle(succ, value_val=value_val)
 
+
 class TAC_Callcode(TAC_BaseCall):
     __internal_name__ = "CALLCODE"
 
     @TAC_Statement.handler_with_side_effects
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         succ = state.copy()
         return self._handle(succ)
+
 
 class TAC_Delegatecall(TAC_BaseCall):
     __internal_name__ = "DELEGATECALL"
 
     @TAC_Statement.handler_with_side_effects
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         succ = state.copy()
         value_val = utils.ctx_or_symbolic('CALLVALUE', succ.ctx, succ.xid)
 
         return self._handle(succ, value_val=value_val)
+
 
 class TAC_Staticcall(TAC_BaseCall):
     __internal_name__ = "STATICCALL"
@@ -190,7 +195,7 @@ class TAC_Staticcall(TAC_BaseCall):
     }
 
     @TAC_Statement.handler_with_side_effects
-    def handle(self, state:SymbolicEVMState):
+    def handle(self, state: SymbolicEVMState):
         succ = state.copy()
         value_val = 0
 

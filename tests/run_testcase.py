@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 
 from SEtaac import Project, utils
@@ -11,7 +13,7 @@ p = Project(f"{args.target}/IR_DICT.dill",
             f"{args.target}/TAC_CFG.dill")
 
 xid = gen_exec_id()
-entry_state = p.factory.entry_state(xid=1)
+entry_state = p.factory.entry_state(xid=xid)
 simgr = p.factory.simgr(entry_state=entry_state)
 
 def parse_log(state):

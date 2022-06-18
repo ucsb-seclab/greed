@@ -1,7 +1,6 @@
 import datetime
-from collections import defaultdict
-
 import z3
+from collections import defaultdict
 
 from SEtaac import utils
 from SEtaac.exceptions import VM_NoSuccessors, VM_UnexpectedSuccessors

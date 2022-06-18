@@ -1,8 +1,7 @@
+import dill
 import logging
 import sys
 from datetime import datetime
-
-import dill
 
 from SEtaac.TAC.TAC_parser import TACparser
 from SEtaac.cfg import TAC_Block, make_cfg
@@ -14,9 +13,10 @@ from SEtaac.state import SymbolicEVMState
 l = logging.getLogger("project")
 l.setLevel(logging.INFO)
 
+
 class Project(object):
-    def __init__(self, binary:str="", cfg_data:str="", onchain_address:str=""):
-        
+    def __init__(self, binary: str = "", cfg_data: str = "", onchain_address: str = ""):
+
         if binary == "" or cfg_data == "":
             l.fatal("Need gigahorse artifacts to create a project (IR_DICT and TAC_CFG)")
             sys.exit(0)
@@ -37,9 +37,8 @@ class Project(object):
         for func in self.functions.values():
             make_cfg(self.factory, self.TAC_cfg_raw, func)
 
-
         # import the web3 provider just in case (from config)
-        self.web3 = w3 
+        self.web3 = w3
         self.onchain_address = onchain_address
 
         if self.onchain_address != '':
@@ -53,19 +52,19 @@ class Project(object):
         isExist = os.path.exists(self._workspace_folder)
         if not isExist:
             os.makedirs(self._workspace_folder)
-    
+
     def _import_functions_gigahorse(self):
         funcs = {}
         for _, func_data in self.TAC_cfg_raw['functions'].items():
             # Just to make sure there are no collision on function addresses
-            assert(not funcs.get(func_data["addr"], None))
+            assert (not funcs.get(func_data["addr"], None))
             tac_blocks = []
             for block_addr in func_data['blocks']:
                 bb_obj = self.factory.block(block_addr)
                 if bb_obj:
-                    tac_blocks.append(bb_obj) 
+                    tac_blocks.append(bb_obj)
 
-            funcs[func_data["addr"]] = TAC_Function(func_data["addr"], func_data["name"], func_data["is_public"], 
+            funcs[func_data["addr"]] = TAC_Function(func_data["addr"], func_data["name"], func_data["is_public"],
                                                     tac_blocks, func_data['arguments'])
 
             # Set the function object to the blocks
@@ -76,29 +75,30 @@ class Project(object):
 
         self._statement_at['fake_exit'] = self.factory.TAC_parser._fake_exit_stmt
         return funcs
-    
-    #@property
-    #def cfg(self):
+
+    # @property
+    # def cfg(self):
     #    if not self._cfg:
     #        self._cfg = CFG()
     #    return self._cfg
 
+
 # This class create object like the simgr, entry_state, etc...
 class FactoryObjects:
-    def __init__(self, TAC_parser:TACparser, project):
+    def __init__(self, TAC_parser: TACparser, project):
         self.TAC_parser = TAC_parser
         self.project = project
-        
-    def simgr(self, entry_state:SymbolicEVMState) -> SimulationManager:
+
+    def simgr(self, entry_state: SymbolicEVMState) -> SimulationManager:
         return SimulationManager(entry_state=entry_state)
-    
-    def entry_state(self, xid:str) -> SymbolicEVMState:
+
+    def entry_state(self, xid: str) -> SymbolicEVMState:
         state = SymbolicEVMState(xid=xid, project=self.project)
         state.pc = self.block('0x0').first_ins.stmt_ident
         return state
-    
-    def block(self, block_id:str) -> TAC_Block:
+
+    def block(self, block_id: str) -> TAC_Block:
         return self.TAC_parser.parse(block_id)
-    
+
     # def statement(self, stmt_id:str):
     #     return self.TAC_parser.parse_stmt(stmt_id)

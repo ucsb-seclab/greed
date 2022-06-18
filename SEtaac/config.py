@@ -1,4 +1,4 @@
-import os 
+import os
 from web3 import Web3
 
 # w3 = Web3(Web3.WebsocketProvider('ws://localhost:8546'))
@@ -9,5 +9,5 @@ w3 = Web3(Web3.HTTPProvider(URL))
 WORKSPACE = "/tmp/.SEtaac"
 isExist = os.path.exists(WORKSPACE)
 if not isExist:
-  # Create a new directory if it does not exist 
-  os.makedirs(WORKSPACE)
+    # Create a new directory if it does not exist
+    os.makedirs(WORKSPACE)
