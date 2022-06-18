@@ -4,6 +4,8 @@ import sys
 
 from SEtaac.exceptions import VMException
 
+log = logging.getLogger(__name__)
+
 
 class SimulationManager:
     def __init__(self, entry_state, keep_predecessors=0):
@@ -24,7 +26,7 @@ class SimulationManager:
         self.active.append(entry_state)
 
     def set_error(self, s):
-        logging.error(f'[ERROR] {s}')
+        log.error(f'[ERROR] {s}')
         self.error += [s]
 
     @property
@@ -98,27 +100,8 @@ class SimulationManager:
                 self._stashes[from_stash].remove(s)
                 self._stashes[to_stash].append(s)
 
-    # def step(self, n=1):
-    #     """
-    #     Perform n steps (default is 1), after each step move all the halted states to the deadended stash
-    #     :param n: Number of steps
-    #     :return: None
-    #     """
-    #     for _ in range(n):
-    #         for state in list(self.active):
-    #             try:
-    #                 state.step()
-    #             except Exception as e:
-    #                 exc_type, exc_obj, exc_tb = sys.exc_info()
-    #                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-    #
-    #                 self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
-    #                 state.error = e.__class__
-    #
-    #         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt or s.error)
-
     def step(self):
-        print('-' * 30)
+        log.debug('-' * 30)
         new_active = list()
         for state in self.active:
             successors = self.single_step_state(state)
@@ -126,8 +109,8 @@ class SimulationManager:
         self._stashes['active'] = new_active
 
     def single_step_state(self, state):
-        print('Stepping {}'.format(state))
-        print(state.curr_stmt)
+        log.debug('Stepping {}'.format(state))
+        log.debug(state.curr_stmt)
 
         successors = list()
 
@@ -158,7 +141,7 @@ class SimulationManager:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 
-            logging.exception(f'Exception while stepping the Simulation Manager')
+            log.exception(f'Exception while stepping the Simulation Manager')
             self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
 
     def __str__(self):
