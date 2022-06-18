@@ -15,7 +15,8 @@ for c in $SETAAC_DIR/gigahorse_clients/*; do
   ln -sf $CLIENT_ABS_PATH $SETAAC_DIR/gigahorse-toolchain/clients/
 done
 
-# this is needed by solc
+# this is needed by solc-select
 sudo apt install mkisofs
+solc-select install 0.8.7
 
 # we probably don't need to setup gigahorse-toolkit if we use the pre-compiled datalog
