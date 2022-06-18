@@ -239,14 +239,14 @@ class TAC_Codecopy(TAC_Statement):
         succ = state.copy()
 
         if concrete(self.destOffset_val) and concrete(self.offset_val) and concrete(self.size_val):
-            self.memory.extend(self.destOffset_val, self.size_val)
+            succ.memory.extend(self.destOffset_val, self.size_val)
             for i in range(self.size_val):
-                if self.offset_val + i < len(self.code):
-                    self.memory[self.destOffset_val + i] = self.code[self.offset_val + i]
+                if self.offset_val + i < len(succ.code):
+                    succ.memory[self.destOffset_val + i] = succ.code[self.offset_val + i]
                 else:
-                    self.memory[self.destOffset_val + i] = 0
+                    succ.memory[self.destOffset_val + i] = 0
         else:
-            raise SymbolicError('Symbolic code index @ %s' % self.pc)
+            raise SymbolicError('Symbolic code index @ %s' % succ.pc)
 
         succ.set_next_pc()
         return [succ]
