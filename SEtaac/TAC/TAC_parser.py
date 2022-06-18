@@ -23,7 +23,7 @@ class TACparser:
 
         # inject a fake STOP statement to simplify the handling of CALLPRIVATE without successors
         # create fake STOP statement
-        fake_raw_statement = TAC_RawStatement(TACblock_ident='fake_exit', ident='fake_exit', opcode='STOP')
+        fake_raw_statement = TAC_RawStatement(tac_block_id='fake_exit', ident='fake_exit', opcode='STOP')
 
         # parse raw statement
         stop = TAC_Stop()
