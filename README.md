@@ -2,4 +2,6 @@
 
 A symbolic executor for the TAC IR used by Gigahorse
 
-NOTE: install this package like `pip install -e SEtaac`, then run the setup script like `SEtaac/setup.sh`
+To use this package, first create a virtual environment (e.g., using virtualenvwrapper: `mkvirtualenv SEtaac`). 
+Then, activate the virtual environment (`workon SEtaac`) and install SEtaac (`pip install -e SEtaac`).
+Finally, run the setup script (`SEtaac/setup.sh`).
