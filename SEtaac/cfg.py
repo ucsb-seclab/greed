@@ -2,8 +2,8 @@ import logging
 
 import networkx as nx
 
-from SEtaac.TAC_ops.base import TAC_RawStatement
-from SEtaac.TAC_ops.gigahorse_ops import TAC_Nop
+from SEtaac.TAC.base import TAC_RawStatement
+from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.function import TAC_Function
 
 l = logging.getLogger("cfg")

@@ -1,8 +1,8 @@
 import logging
 
-from SEtaac import TAC_ops
-from SEtaac.TAC_ops.base import TAC_RawStatement
-from SEtaac.TAC_ops.special_ops import TAC_Stop
+from SEtaac import TAC
+from SEtaac.TAC.base import TAC_RawStatement
+from SEtaac.TAC.special_ops import TAC_Stop
 from SEtaac.cfg import TAC_Block
 
 l = logging.getLogger("tac_parser")
@@ -52,7 +52,7 @@ class TACparser:
             # Look for the correspondent tac_op
             
             found = False
-            for tac_op in TAC_ops.__dict__.values():
+            for tac_op in TAC.__dict__.values():
                 # FIXME HACK 
                 # Maybe let's do a better import from TAC_ops
                 if "type" not in str(type(tac_op)):

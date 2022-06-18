@@ -1,4 +1,4 @@
-from SEtaac.TAC_ops.base import TAC_Statement
+from SEtaac.TAC.base import TAC_Statement
                   
 from SEtaac.state import SymbolicEVMState
 
