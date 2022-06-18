@@ -14,8 +14,10 @@ SETAAC_DIR=`dirname "${BASH_SOURCE[0]}"`
 SETAAC_DIR=`readlink -f $SETAAC_DIR/../`
 GIGAHORSE_DIR=$SETAAC_DIR/gigahorse-toolchain
 
+arch=$(uname -i)
+
 $GIGAHORSE_DIR/generatefacts $HEX_FILE facts &&
-($SETAAC_DIR/scripts/main.x86_64.dl_compiled -F facts || $SETAAC_DIR/scripts/main.aarch64.dl_compiled -F facts) &&
+LD_LIBRARY_PATH=$SETAAC_DIR/scripts/lib/$arch/ $SETAAC_DIR/scripts/main.$arch.dl_compiled -F facts &&
 $GIGAHORSE_DIR/clients/visualizeout.py &&
 $GIGAHORSE_DIR/clients/check_bad_opcode.py &&
 $GIGAHORSE_DIR/clients/export_ir.py &&
