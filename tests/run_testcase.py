@@ -45,7 +45,7 @@ def parse_log(state):
     value_ptr = log_stmt.topic_val + 32
     value = bytes(state.memory.read(value_ptr, length)).decode()
 
-    log.info(f'---> {value}')
+    print(f'---> {value}')
 
 
 while len(simgr.active) > 0:

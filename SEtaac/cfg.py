@@ -1,12 +1,8 @@
-import logging
 import networkx as nx
 
 from SEtaac.TAC.base import TAC_RawStatement
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.function import TAC_Function
-
-l = logging.getLogger("cfg")
-l.setLevel(logging.DEBUG)
 
 
 class TAC_Block(object):
