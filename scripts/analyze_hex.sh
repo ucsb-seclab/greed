@@ -15,7 +15,7 @@ SETAAC_DIR=`readlink -f $SETAAC_DIR/../`
 GIGAHORSE_DIR=$SETAAC_DIR/gigahorse-toolchain
 
 $GIGAHORSE_DIR/generatefacts $HEX_FILE facts &&
-$SETAAC_DIR/scripts/main.dl_compiled -F facts &&
+($SETAAC_DIR/scripts/main.x86_64.dl_compiled -F facts || $SETAAC_DIR/scripts/main.aarch64.dl_compiled -F facts) &&
 $GIGAHORSE_DIR/clients/visualizeout.py &&
 $GIGAHORSE_DIR/clients/check_bad_opcode.py &&
 $GIGAHORSE_DIR/clients/export_ir.py &&
