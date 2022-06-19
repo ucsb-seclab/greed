@@ -1,6 +1,6 @@
 pragma solidity 0.8.7;
 
-contract TestMath {
+contract TestStorage {
     event Event(string message);
 
     function log(string memory message) private {
