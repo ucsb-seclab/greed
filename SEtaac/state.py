@@ -6,6 +6,7 @@ from SEtaac import utils
 from SEtaac.exceptions import VM_NoSuccessors, VM_UnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
 from SEtaac.storage import SymbolicStorage
+from SEtaac.registers import SymbolicRegisters
 
 
 class SymbolicEVMState:
@@ -20,7 +21,7 @@ class SymbolicEVMState:
 
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
-        self.registers = defaultdict(None)
+        self.registers = SymbolicRegisters(None)
         self.ctx = dict()
 
         self.callstack = list()
@@ -109,7 +110,7 @@ class SymbolicEVMState:
 
         new_state.memory = self.memory.copy(self.xid)
         new_state.storage = self.storage.copy(self.xid)
-        new_state.registers = dict(self.registers)
+        new_state.registers = self.registers.copy()
         new_state.ctx = dict(self.ctx)
 
         new_state.callstack = list(self.callstack)
