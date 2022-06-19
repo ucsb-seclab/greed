@@ -66,8 +66,12 @@ class TAC_Div(TAC_Statement):
         succ = state.copy()
 
         if concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else self.arg1_val / self.arg2_val if concrete(
-                self.arg1_val) else z3.UDiv(self.arg1_val, self.arg2_val)
+            if self.arg2_val == 0:
+                succ.registers[self.res1_var] = 0
+            elif concrete(self.arg1_val):
+                succ.registers[self.res1_var] = self.arg1_val // self.arg2_val
+            else:
+                succ.registers[self.res1_var] = z3.UDiv(self.arg1_val, self.arg2_val)
         else:
             succ.registers[self.res1_var] = z3.If(self.arg2_val == 0, z3.BitVecVal(0, 256),
                                                   z3.UDiv(self.arg1_val, self.arg2_val))
@@ -89,7 +93,7 @@ class TAC_Sdiv(TAC_Statement):
             succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else abs(self.arg1_val) // abs(self.arg2_val) * (
                 -1 if self.arg1_val * self.arg2_val < 0 else 1)
         elif concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else self.arg1_val / self.arg2_val
+            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else self.arg1_val // self.arg2_val
         else:
             succ.registers[self.res1_var] = z3.If(self.arg2_val == 0, z3.BitVecVal(0, 256),
                                                   self.arg1_val / self.arg2_val)
