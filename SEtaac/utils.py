@@ -233,7 +233,7 @@ def translate_xid(expr, old_xid, new_xid):
 
     def raw(s):
         return '_'.join(s.split('_')[:-1])
-    
+
     substitutions = dict()
 
     for v in get_vars_non_recursive(expr):
