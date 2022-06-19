@@ -71,10 +71,10 @@ class SymbolicMemory(object):
                        [z3.If(i < olen, z3.If(i < ilen, self[istart + i], 0), self[ostart + i]) for i in
                         range(SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE)])
 
-    def copy(self, new_xid):
+    def copy(self, old_xid, new_xid):
         new_memory = SymbolicMemory()
 
-        new_memory.memory = translate_xid(self.memory, new_xid)
+        new_memory.memory = translate_xid(self.memory, old_xid, new_xid)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
 
@@ -108,11 +108,11 @@ class SymRead(object):
         if not concrete(size):
             self.size = z3.simplify(self.size)
 
-    def translate(self, new_xid):
-        sym_mem_mem = translate_xid(self.memory.memory, new_xid)
+    def translate(self, old_xid, new_xid):
+        sym_mem_mem = translate_xid(self.memory.memory, old_xid, new_xid)
         sym_mem = SymbolicMemory()
         sym_mem.memory = sym_mem_mem
         new_symread = SymRead(sym_mem, 0, 0)
-        new_symread.start = self.start if concrete(self.start) else translate_xid(self.start, new_xid)
-        new_symread.size = self.size if concrete(self.size) else translate_xid(self.size, new_xid)
+        new_symread.start = self.start if concrete(self.start) else translate_xid(self.start, old_xid, new_xid)
+        new_symread.size = self.size if concrete(self.size) else translate_xid(self.size, old_xid, new_xid)
         return new_symread

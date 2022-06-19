@@ -29,9 +29,9 @@ class SymbolicStorage(object):
     def all(self):
         return [a for t, a in self.accesses]
 
-    def copy(self, new_xid):
+    def copy(self, old_xid, new_xid):
         new_storage = SymbolicStorage(new_xid)
-        new_storage.base = translate_xid(self.base, new_xid)
-        new_storage.storage = translate_xid(self.storage, new_xid)
-        new_storage.accesses = [(t, a if concrete(a) else translate_xid(a, new_xid)) for t, a in self.accesses]
+        new_storage.base = translate_xid(self.base, old_xid, new_xid)
+        new_storage.storage = translate_xid(self.storage, old_xid, new_xid)
+        new_storage.accesses = [(t, a if concrete(a) else translate_xid(a, old_xid, new_xid)) for t, a in self.accesses]
         return new_storage

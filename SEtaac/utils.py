@@ -227,23 +227,26 @@ def get_vars_non_recursive(f, include_select=False, include_indices=True):
     return rs
 
 
-def translate_xid(expr, xid):
-    substitutions = dict()
+def translate_xid(expr, old_xid, new_xid):
+    if old_xid == new_xid:
+        return z3.substitute(expr, [])
 
     def raw(s):
         return '_'.join(s.split('_')[:-1])
+    
+    substitutions = dict()
 
     for v in get_vars_non_recursive(expr):
         if v not in substitutions:
             v_name = raw(v.decl().name())
             if v.sort_kind() == z3.Z3_INT_SORT:
-                substitutions[v] = z3.Int('%s_%d' % (v_name, xid))
+                substitutions[v] = z3.Int('%s_%d' % (v_name, new_xid))
             elif v.sort_kind() == z3.Z3_BOOL_SORT:
-                substitutions[v] = z3.Bool('%s_%d' % (v_name, xid))
+                substitutions[v] = z3.Bool('%s_%d' % (v_name, new_xid))
             elif v.sort_kind() == z3.Z3_BV_SORT:
-                substitutions[v] = z3.BitVec('%s_%d' % (v_name, xid), v.size())
+                substitutions[v] = z3.BitVec('%s_%d' % (v_name, new_xid), v.size())
             elif v.sort_kind() == z3.Z3_ARRAY_SORT:
-                substitutions[v] = z3.Array('%s_%d' % (v_name, xid), v.domain(), v.range())
+                substitutions[v] = z3.Array('%s_%d' % (v_name, new_xid), v.domain(), v.range())
             else:
                 raise Exception('CANNOT CONVERT %s (%d)' % (v, v.sort_kind()))
     subst = list(substitutions.items())

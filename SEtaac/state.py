@@ -108,8 +108,8 @@ class SymbolicEVMState:
         new_state._pc = self._pc
         new_state.trace = list(self.trace)
 
-        new_state.memory = self.memory.copy(self.xid)
-        new_state.storage = self.storage.copy(self.xid)
+        new_state.memory = self.memory.copy(self.xid, self.xid)
+        new_state.storage = self.storage.copy(self.xid, self.xid)
         new_state.registers = self.registers.copy()
         new_state.ctx = dict(self.ctx)
 
