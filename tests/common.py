@@ -37,11 +37,13 @@ def parse_log(state):
     if not (log_stmt.offset_val == 0 and log_stmt.size_val == 0):
         return
 
-    length_ptr = log_stmt.topic_val
-    length = utils.bytes_to_int(state.memory.read(length_ptr, 32))
+    # length_ptr = log_stmt.topic_val
+    # length = utils.bytes_to_int(state.memory.read(length_ptr, 32))
+    #
+    # value_ptr = log_stmt.topic_val + 32
+    # value = bytes(state.memory.read(value_ptr, length)).decode()
 
-    value_ptr = log_stmt.topic_val + 32
-    value = bytes(state.memory.read(value_ptr, length)).decode()
+    value = utils.int_to_big_endian(log_stmt.topic_val).decode().split('\x00')[0]
 
     print(f"---> {value}")
     outcome, testname = value.split(":")
