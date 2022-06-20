@@ -16,6 +16,8 @@ class SymbolicEVMState:
         self.xid = xid
         self.project = project
 
+        self.uuid = utils.gen_uuid()
+
         self._pc = None
         self.trace = list()
 
@@ -135,7 +137,7 @@ class SymbolicEVMState:
         return new_state
 
     def __str__(self):
-        return "State at {}".format(self.pc)
+        return f"State {self.uuid} at {self.pc}"
 
     def __repr__(self):
         return str(self)
