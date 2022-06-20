@@ -1,16 +1,6 @@
 pragma solidity 0.8.7;
 
 contract TestFork {
-    //event Event(string message);
-
-    function log(string memory message) private {
-        //emit Event(message);
-        assembly {
-            // manually emit a technically invalid LOG1 that we
-            // can then recognize and parse in the testing routine
-            log1(0x0, 0x0, message)
-        }
-    }
 
     function sstore(uint key, uint value) private {
         assembly {
@@ -52,24 +42,24 @@ contract TestFork {
         }
 
         if ((branch == 0) && (sload(42) != 0x00)) {
-            log("error:test_branch_storage");
+            assembly {log1(0, 0, "error:test_branch_storage")}
             revert();
         } else if ((branch == 1) && (sload(42) != 0x01)) {
-            log("error:test_branch_storage");
+            assembly {log1(0, 0, "error:test_branch_storage")}
             revert();
         }
-        log("success:test_branch_storage");
+        assembly {log1(0, 0, "success:test_branch_storage")}
 
         if ((branch == 0) && (mload(42) != 0x00)) {
-            log("error:test_branch_memory");
+            assembly {log1(0, 0, "error:test_branch_memory")}
             revert();
         } else if ((branch == 1) && (mload(42) != 0x01)) {
-            log("error:test_branch_memory");
+            assembly {log1(0, 0, "error:test_branch_memory")}
             revert();
         }
-        log("success:test_branch_memory");
+        assembly {log1(0, 0, "success:test_branch_memory")}
 
 
-        log("success:");
+        assembly {log1(0, 0, "success:")}
     }
 }
