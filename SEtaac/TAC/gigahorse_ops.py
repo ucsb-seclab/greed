@@ -1,9 +1,12 @@
-from SEtaac.exceptions import VM_NoSuccessors
+import logging
 
-from .base import TAC_Statement
-from ..state import SymbolicEVMState
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.exceptions import VM_NoSuccessors
+from SEtaac.state import SymbolicEVMState
 
 __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Return', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
+
+log = logging.getLogger(__name__)
 
 
 class TAC_Throw(TAC_Statement):
@@ -105,6 +108,7 @@ class TAC_Phi(TAC_Statement):
                 if succ is None:
                     succ = state
                 else:
+                    log.debug(f'PHI branching on vars {",".join(self.arg_vars)}')
                     succ = state.copy()
 
                 succ.registers[target_var] = self.arg_vals[var]
