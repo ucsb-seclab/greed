@@ -124,7 +124,7 @@ class TAC_Statement(Aliased):
 
             # If we already have all the results from the Gigahorse IR, just use it.
             if all([self.res_vals[var] is not None for var in self.res_vars]):
-                succ = state.copy()
+                succ = state
 
                 for var in self.res_vars:
                     succ.registers[var] = self.res_vals[var]

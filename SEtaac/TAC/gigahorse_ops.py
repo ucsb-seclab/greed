@@ -11,7 +11,7 @@ class TAC_Throw(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.halt = True
 
@@ -24,7 +24,7 @@ class TAC_Callprivate(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         # read target
         dest_var = self.arg_vars[0]
@@ -66,7 +66,7 @@ class TAC_Returnprivate(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         # pop stack frame (read saved return pc from stack)
         saved_return_pc, callprivate_return_vars = succ.callstack.pop()
@@ -98,15 +98,21 @@ class TAC_Phi(TAC_Statement):
         # FIXME: can we do better tho, this might end up exploding and leaf to
         #        impossible paths.
         target_var = self.res_vars[0]
+        succ = None
         for var in self.arg_vars:
             # is this variable defined already?
             if var in state.registers:
-                succ = state.copy()
+                # only copy state if needed
+                if succ is None:
+                    succ = state
+                else:
+                    succ = state.copy()
 
                 succ.registers[target_var] = self.arg_vals[var]
 
                 succ.set_next_pc()
                 successors.append(succ)
+
         return successors
 
 
@@ -116,7 +122,7 @@ class TAC_Const(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.res1_val
 
@@ -129,7 +135,7 @@ class TAC_Nop(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.set_next_pc()
         return [succ]

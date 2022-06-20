@@ -21,7 +21,7 @@ class TAC_Add(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.arg1_val + self.arg2_val
 
@@ -35,7 +35,7 @@ class TAC_Sub(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.arg1_val - self.arg2_val
 
@@ -49,7 +49,7 @@ class TAC_Mul(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.arg1_val * self.arg2_val
 
@@ -63,7 +63,7 @@ class TAC_Div(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg2_val):
             if self.arg2_val == 0:
@@ -86,7 +86,7 @@ class TAC_Sdiv(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
@@ -108,7 +108,7 @@ class TAC_Mod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg2_val):
             succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else self.arg1_val % self.arg2_val
@@ -125,7 +125,7 @@ class TAC_Smod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
@@ -147,7 +147,7 @@ class TAC_Addmod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.denominator_val):
             succ.registers[self.res1_var] = (self.arg1_val + self.arg2_val) % \
@@ -166,7 +166,7 @@ class TAC_Mulmod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.denominator_val):
             succ.registers[self.res1_var] = (self.arg1_val * self.arg2_val) % \
@@ -185,7 +185,7 @@ class TAC_Exp(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.base_val) and concrete(self.exp_val):
             succ.registers[self.res1_var] = pow(self.base_val, self.exp_val, utils.TT256)
@@ -205,7 +205,7 @@ class TAC_Signextend(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             if self.arg1_val <= 31:
@@ -234,7 +234,7 @@ class TAC_Lt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             succ.registers[self.res1_var] = 1 if self.arg1_val < self.arg2_val else 0
@@ -251,7 +251,7 @@ class TAC_Gt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             succ.registers[self.res1_var] = 1 if self.arg1_val > self.arg2_val else 0
@@ -268,7 +268,7 @@ class TAC_Slt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
@@ -286,7 +286,7 @@ class TAC_Sgt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
@@ -304,7 +304,7 @@ class TAC_Eq(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             succ.registers[self.res1_var] = 1 if self.arg1_val == self.arg2_val else 0
@@ -321,7 +321,7 @@ class TAC_Iszero(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg1_val):
             succ.registers[self.res1_var] = 1 if self.arg1_val == 0 else 0
@@ -337,7 +337,7 @@ class TAC_And(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.arg1_val & self.arg2_val
 
@@ -350,7 +350,7 @@ class TAC_Or(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.arg1_val | self.arg2_val
 
@@ -363,7 +363,7 @@ class TAC_Xor(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.arg1_val ^ self.arg2_val
 
@@ -376,7 +376,7 @@ class TAC_Not(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = ~self.arg1_val
 
@@ -390,7 +390,7 @@ class TAC_Byte(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.offset_val):
             if self.offset_val >= 32:
@@ -418,7 +418,7 @@ class TAC_Shl(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = self.arg2_val << self.shift_val
 
@@ -432,7 +432,7 @@ class TAC_Shr(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         if concrete(self.arg2_val) and concrete(self.shift_val):
             succ.registers[self.res1_var] = self.arg2_val >> self.shift_val
@@ -449,7 +449,7 @@ class TAC_Sar(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = utils.to_signed(self.arg2_val) >> self.shift_val
 

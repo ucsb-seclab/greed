@@ -17,7 +17,7 @@ class TAC_Jump(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         target_bb_id = hex(self.destination_val)
         curr_bb_id = succ.curr_stmt.block_ident
@@ -41,7 +41,7 @@ class TAC_Jumpi(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         target_bb_id = hex(self.destination_val)
         curr_bb_id = succ.curr_stmt.block_ident
@@ -153,7 +153,7 @@ class TAC_Call(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
         value_val = succ.registers[self.value_val]
 
         succ.constraints.append(z3.UGE(succ.balance, value_val))
@@ -167,7 +167,7 @@ class TAC_Callcode(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
         return self._handle(succ)
 
 
@@ -176,7 +176,7 @@ class TAC_Delegatecall(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
         value_val = utils.ctx_or_symbolic('CALLVALUE', succ.ctx, succ.xid)
 
         return self._handle(succ, value_val=value_val)
@@ -196,7 +196,7 @@ class TAC_Staticcall(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
         value_val = 0
 
         return self._handle(succ, value_val=value_val)

@@ -17,7 +17,7 @@ class TAC_Mstore(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.memory.extend(self.offset_val, 32)
         if concrete(self.value_val):
@@ -43,7 +43,7 @@ class TAC_Mstore8(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.memory.extend(self.offset_val, 1)
         succ.memory[self.offset_val] = self.value_val % 256
@@ -61,7 +61,7 @@ class TAC_Mload(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.memory.extend(self.offset_val, 32)
         mm = [succ.memory[self.offset_val + i] for i in range(32)]
@@ -87,7 +87,7 @@ class TAC_Sload(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         v = z3.simplify(succ.storage[self.key_val])
         if z3.is_bv_value(v):
@@ -108,7 +108,7 @@ class TAC_Sstore(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.storage[self.key_val] = self.value_val
 
@@ -124,7 +124,7 @@ class TAC_Msize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state.copy()
+        succ = state
 
         succ.registers[self.res1_var] = len(succ.memory)
 
