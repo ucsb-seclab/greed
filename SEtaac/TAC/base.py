@@ -1,4 +1,8 @@
+import logging
+
 from SEtaac.state import SymbolicEVMState
+
+log = logging.getLogger(__name__)
 
 
 # This is the object exported from Gigahorse
@@ -103,7 +107,7 @@ class TAC_Statement(Aliased):
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)
 
-        # print(self.arg_vals, self.res_vals)
+        log.debug(f"{self.arg_vals, self.res_vals}")
 
     @staticmethod
     def handler_without_side_effects(func):
@@ -115,6 +119,8 @@ class TAC_Statement(Aliased):
         def wrap(self, state: SymbolicEVMState):
             # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)
+            state.trace.append(state.curr_stmt)
+            state.instruction_count += 1
 
             # If we already have all the results from the Gigahorse IR, just use it.
             if all([self.res_vals[var] is not None for var in self.res_vars]):
@@ -142,6 +148,8 @@ class TAC_Statement(Aliased):
         def wrap(self, state: SymbolicEVMState):
             # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)
+            state.trace.append(state.curr_stmt)
+            state.instruction_count += 1
 
             # always execute the actual handler because we need the side-effects
             successors = func(self, state)

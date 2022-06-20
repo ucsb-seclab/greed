@@ -9,8 +9,7 @@ from SEtaac.function import TAC_Function
 from SEtaac.simulation_manager import SimulationManager
 from SEtaac.state import SymbolicEVMState
 
-l = logging.getLogger("project")
-l.setLevel(logging.INFO)
+log = logging.getLogger(__name__)
 
 
 class Project(object):
