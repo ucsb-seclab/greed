@@ -2,7 +2,6 @@ import networkx as nx
 
 from SEtaac.TAC.base import TAC_RawStatement
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
-from SEtaac.function import TAC_Function
 
 
 class TAC_Block(object):
@@ -33,6 +32,8 @@ class TAC_Block(object):
         self._pred = None
         self._ancestors = None
         self._descendants = None
+
+        self._shortest_paths = None
 
         self._acyclic_subgraph = None
 
@@ -73,6 +74,12 @@ class TAC_Block(object):
                     break
 
         return self._descendants
+
+    @property
+    def shortest_paths(self):
+        if self._shortest_paths is None:
+            self._shortest_paths = nx.single_source_shortest_path(self.graph, self.root)
+        return self._shortest_paths
 
     @property
     def acyclic_subgraph(self):
@@ -119,29 +126,3 @@ class CFG(object):
         if not self._dominators:
             self._dominators = {k: v for k, v in nx.immediate_dominators(self.graph, 0).items()}
         return self._dominators
-
-
-# Building the intra-functional CFG of a target function.
-def make_cfg(factory, TAC_cfg_raw: dict, function: TAC_Function):
-    cfg = CFG()
-    function.cfg = cfg
-    for bb in function.blocks:
-        bb.cfg = cfg
-        cfg.graph.add_node(bb)
-
-    for a in function.blocks:
-        # Adding information about successors from Gigahorse analysis
-        jump_data = TAC_cfg_raw['jump_data'].get(a.ident, None)
-        if jump_data:
-            for b_ident in jump_data:
-                cfg.graph.add_edge(a, factory.block(b_ident))
-
-    cfg.bbs = list(cfg.graph.nodes())
-    cfg._bb_at = {bb.ident: bb for bb in cfg.bbs}
-
-    # find function root
-    bbs_with_no_preds = [bb for bb in cfg.bbs if len(bb.pred) == 0]
-    assert len(bbs_with_no_preds) == 1, f"Something went wrong while retrieving the root for function {function.id}"
-    cfg.root = bbs_with_no_preds[0]
-
-    cfg.shortest_paths = nx.single_source_shortest_path(cfg.graph, cfg.root)
