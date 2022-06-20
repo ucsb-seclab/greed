@@ -117,7 +117,6 @@ class TAC_Statement(Aliased):
         """
 
         def wrap(self, state: SymbolicEVMState):
-            # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)
             state.trace.append(state.curr_stmt)
             state.instruction_count += 1
@@ -126,6 +125,7 @@ class TAC_Statement(Aliased):
             if all([self.res_vals[var] is not None for var in self.res_vars]):
                 succ = state
 
+                # Grab vals from Gigahorse IR and registers if they are available.
                 for var in self.res_vars:
                     succ.registers[var] = self.res_vals[var]
 
@@ -146,7 +146,6 @@ class TAC_Statement(Aliased):
         """
 
         def wrap(self, state: SymbolicEVMState):
-            # Grab vals from Gigahorse IR and registers if they are available.
             self.set_arg_val(state)
             state.trace.append(state.curr_stmt)
             state.instruction_count += 1

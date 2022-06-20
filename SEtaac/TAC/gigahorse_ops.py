@@ -95,8 +95,7 @@ class TAC_Phi(TAC_Statement):
         # If 'v2' has not been defined yet, v6 = v1 for sure.
         # Otherwise, as of now we can over-approximate and consider both assigment 
         # possible and forking. 
-        # FIXME: can we do better tho, this might end up exploding and leaf to
-        #        impossible paths.
+        # FIXME: can we do better tho? this might end up exploding and lead to impossible paths.
         target_var = self.res_vars[0]
         succ = None
         for var in self.arg_vars:
