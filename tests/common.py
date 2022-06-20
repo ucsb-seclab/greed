@@ -1,3 +1,4 @@
+import IPython
 import argparse
 import logging
 
@@ -47,7 +48,7 @@ def parse_log(state):
     assert outcome == "success", f"{testname} failed"
 
 
-def run_test(target_dir):
+def run_test(target_dir, debug=False):
     p = Project(target_dir=target_dir)
 
     xid = gen_exec_id()
@@ -60,3 +61,6 @@ def run_test(target_dir):
             parse_log(s)
 
         simgr.move(from_stash="found", to_stash="active")
+
+    if debug:
+        IPython.embed()

@@ -23,7 +23,8 @@ def main(args):
     except KeyboardInterrupt:
         pass
 
-    IPython.embed()
+    if args.debug:
+        IPython.embed()
 
 
 if __name__ == "__main__":
