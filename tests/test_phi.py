@@ -7,12 +7,12 @@ else:
     import common
 
 
-def test_fork():
-    common.run_test(f"{os.path.dirname(__file__)}/test_fork")
+def test_phi():
+    common.run_test(f"{os.path.dirname(__file__)}/test_phi")
 
 
 if __name__ == "__main__":
     common.setup_logging()
     args = common.parse_args()
 
-    test_fork()
+    test_phi()
