@@ -391,4 +391,4 @@ tests/test_*/*
 !tests/test_*/TAC_CFG.dill
 !tests/test_*/IR_DICT.dill
 
-!scripts/lib/**.so
+!gigahorse_clients/lib/**.so
