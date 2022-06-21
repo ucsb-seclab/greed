@@ -107,7 +107,7 @@ class TAC_Statement(Aliased):
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)
 
-        log.debug(f"{self.arg_vals, self.res_vals}")
+        # log.debug(f"{self.arg_vals, self.res_vals}")
 
     @staticmethod
     def handler_without_side_effects(func):

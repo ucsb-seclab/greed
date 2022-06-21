@@ -23,7 +23,7 @@ class SymbolicEVMState:
 
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
-        self.registers = SymbolicRegisters(None)
+        self.registers = SymbolicRegisters()
         self.ctx = dict()
 
         self.callstack = list()
