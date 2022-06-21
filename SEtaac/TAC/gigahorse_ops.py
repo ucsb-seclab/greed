@@ -93,30 +93,15 @@ class TAC_Phi(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        successors = []
-        # Let's say we have v6 = PHI v1,v2.
-        # If 'v2' has not been defined yet, v6 = v1 for sure.
-        # Otherwise, as of now we can over-approximate and consider both assigment 
-        # possible and forking. 
-        # FIXME: can we do better tho? this might end up exploding and lead to impossible paths.
+        succ = state
+
         target_var = self.res_vars[0]
-        succ = None
-        for var in self.arg_vars:
-            # is this variable defined already?
-            if var in state.registers:
-                # only copy state if needed
-                if succ is None:
-                    succ = state
-                else:
-                    log.debug(f'PHI branching on vars {",".join(self.arg_vars)}')
-                    succ = state.copy()
+        last_accessed = state.registers.last_accessed(self.arg_vars)
 
-                succ.registers[target_var] = self.arg_vals[var]
-
-                succ.set_next_pc()
-                successors.append(succ)
-
-        return successors
+        succ.registers[target_var] = self.arg_vals[last_accessed]
+        
+        succ.set_next_pc()
+        return [succ]
 
 
 class TAC_Const(TAC_Statement):
