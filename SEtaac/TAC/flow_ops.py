@@ -105,26 +105,16 @@ class TAC_Jumpi(TAC_Statement):
 
 class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
-    __aliases__ = {
-        'gas_var': 'arg1_var', 'gas_val': 'arg1_val',
-        'address_var': 'arg2_var', 'address_val': 'arg2_val',
-        'value_var': 'arg3_var', 'value_val': 'arg3_val',
-        'argsOffset_var': 'arg4_var', 'argsOffset_val': 'arg4_val',
-        'argsSize_var': 'arg5_var', 'argsSize_val': 'arg5_val',
-        'retOffset_var': 'arg6_var', 'retOffset_val': 'arg6_val',
-        'retSize_var': 'arg7_var', 'retSize_val': 'arg7_val',
-        'success_var': 'res_var', 'success_val': 'res_val'
-    }
 
     def _handle(self, succ, gas_val=None, address_val=None, value_val=None, argsOffset_val=None, argsSize_val=None,
                 retOffset_val=None, retSize_val=None):
-        gas_val = gas_val or self.gas_val
-        address_val = address_val or self.address_val
-        value_val = value_val or self.value_val
-        argsOffset_val = argsOffset_val or self.argsOffset_val
-        argsSize_val = argsSize_val or self.argsSize_val
-        retOffset_val = retOffset_val or self.retOffset_val
-        retSize_val = retSize_val or self.retSize_val
+        gas_val = gas_val if gas_val is not None else self.gas_val
+        address_val = address_val if address_val is not None else self.address_val
+        value_val = value_val if value_val is not None else self.value_val
+        argsOffset_val = argsOffset_val if argsOffset_val is not None else self.argsOffset_val
+        argsSize_val = argsSize_val if argsSize_val is not None else self.argsSize_val
+        retOffset_val = retOffset_val if retOffset_val is not None else self.retOffset_val
+        retSize_val = retSize_val if retSize_val is not None else self.retSize_val
 
         ostart = retOffset_val if concrete(retOffset_val) else z3.simplify(retOffset_val)
         olen = retSize_val if concrete(retSize_val) else z3.simplify(retSize_val)
@@ -150,6 +140,16 @@ class TAC_BaseCall(TAC_Statement):
 
 class TAC_Call(TAC_BaseCall):
     __internal_name__ = "CALL"
+    __aliases__ = {
+        'gas_var': 'arg1_var', 'gas_val': 'arg1_val',
+        'address_var': 'arg2_var', 'address_val': 'arg2_val',
+        'value_var': 'arg3_var', 'value_val': 'arg3_val',
+        'argsOffset_var': 'arg4_var', 'argsOffset_val': 'arg4_val',
+        'argsSize_var': 'arg5_var', 'argsSize_val': 'arg5_val',
+        'retOffset_var': 'arg6_var', 'retOffset_val': 'arg6_val',
+        'retSize_var': 'arg7_var', 'retSize_val': 'arg7_val',
+        'success_var': 'res_var', 'success_val': 'res_val'
+    }
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -164,6 +164,16 @@ class TAC_Call(TAC_BaseCall):
 
 class TAC_Callcode(TAC_BaseCall):
     __internal_name__ = "CALLCODE"
+    __aliases__ = {
+        'gas_var': 'arg1_var', 'gas_val': 'arg1_val',
+        'address_var': 'arg2_var', 'address_val': 'arg2_val',
+        'value_var': 'arg3_var', 'value_val': 'arg3_val',
+        'argsOffset_var': 'arg4_var', 'argsOffset_val': 'arg4_val',
+        'argsSize_var': 'arg5_var', 'argsSize_val': 'arg5_val',
+        'retOffset_var': 'arg6_var', 'retOffset_val': 'arg6_val',
+        'retSize_var': 'arg7_var', 'retSize_val': 'arg7_val',
+        'success_var': 'res_var', 'success_val': 'res_val'
+    }
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -173,6 +183,15 @@ class TAC_Callcode(TAC_BaseCall):
 
 class TAC_Delegatecall(TAC_BaseCall):
     __internal_name__ = "DELEGATECALL"
+    __aliases__ = {
+        'gas_var': 'arg1_var', 'gas_val': 'arg1_val',
+        'address_var': 'arg2_var', 'address_val': 'arg2_val',
+        'argsOffset_var': 'arg3_var', 'argsOffset_val': 'arg3_val',
+        'argsSize_var': 'arg4_var', 'argsSize_val': 'arg4_val',
+        'retOffset_var': 'arg5_var', 'retOffset_val': 'arg5_val',
+        'retSize_var': 'arg6_var', 'retSize_val': 'arg6_val',
+        'success_var': 'res_var', 'success_val': 'res_val'
+    }
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
