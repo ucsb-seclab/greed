@@ -154,12 +154,11 @@ class TAC_Call(TAC_BaseCall):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state
-        value_val = succ.registers[self.value_val]
 
-        succ.constraints.append(z3.UGE(succ.balance, value_val))
-        succ.balance -= value_val
+        succ.constraints.append(z3.UGE(succ.balance, self.value_val))
+        succ.balance -= self.value_val
 
-        return self._handle(succ, value_val=value_val)
+        return self._handle(succ, value_val=self.value_val)
 
 
 class TAC_Callcode(TAC_BaseCall):
