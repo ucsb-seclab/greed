@@ -95,10 +95,16 @@ class TAC_Phi(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
+        # wild assumption: always pick the most recently accessed var in PHI (top of the stack)
+        # more rationale: PHI is emitted when the top of the stack is uncertain (e.g., there are two paths leading to
+        # this block: A->C but also A->B->C, and B pushes something on the stack).
+        # PHI outputs the variable that is EFFECTIVELY on the top of the stack, at this point in the execution
+        # Our assumption here is that if variable b is written AFTER another variable a (in TAC), then in the original
+        # EVM code it was pushed to the stack AFTER such variable a
         target_var = self.res_vars[0]
-        last_accessed = state.registers.last_accessed(self.arg_vars)
+        last_written = state.registers.last_written(self.arg_vars)
 
-        succ.registers[target_var] = self.arg_vals[last_accessed]
+        succ.registers[target_var] = self.arg_vals[last_written]
         
         succ.set_next_pc()
         return [succ]
