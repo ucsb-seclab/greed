@@ -10,6 +10,8 @@ from ..state import SymbolicEVMState
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
            'TAC_Delegatecall', 'TAC_Staticcall', ]
 
+log = logging.getLogger(__name__)
+
 
 class TAC_Jump(TAC_Statement):
     __internal_name__ = "JUMP"
@@ -57,15 +59,12 @@ class TAC_Jumpi(TAC_Statement):
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
             if cond:
-                # if not concrete(dest):
-                #     raise SymbolicError('Symbolic jump target')
                 succ.pc = dest
                 return [succ]
             else:
                 succ.set_next_pc()
                 return [succ]
         else:
-            # TODO: fix get_solver
             # let's check if both branches are sat
             s = get_solver()
             s.add(succ.constraints)
@@ -86,8 +85,6 @@ class TAC_Jumpi(TAC_Statement):
                 return [succ_true, succ_false]
             elif sat_true:
                 # if only the true branch is sat, jump
-                # if not concrete(dest):
-                #     raise SymbolicError('Symbolic jump target')
                 succ.pc = dest
                 succ.constraints.append(cond == 1)
 
@@ -100,6 +97,7 @@ class TAC_Jumpi(TAC_Statement):
                 return [succ]
             else:
                 # nothing is sat
+                log.debug("nothing is sat")
                 return []
 
 
