@@ -116,9 +116,11 @@ class SimulationManager:
 
         try:
             successors += state.curr_stmt.handle(state)
-        except VMException as e:
+        except Exception as e:
+            log.exception(f"Something went wrong while stepping {state}")
             state.error = e
             state.halt = True
+            successors += [state]
 
         return successors
 

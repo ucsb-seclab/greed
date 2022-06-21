@@ -101,6 +101,9 @@ class TAC_Phi(TAC_Statement):
         # PHI outputs the variable that is EFFECTIVELY on the top of the stack, at this point in the execution
         # Our assumption here is that if variable b is written AFTER another variable a (in TAC), then in the original
         # EVM code it was pushed to the stack AFTER such variable a
+
+        # WARNING: IF THERE ARE TWO IDENTICAL CONSECUTIVE PHI STATEMENTS, THIS IS VERY LIKELY TO BE BROKEN
+        # (0x109C4f2CCc82C4d77Bde15F306707320294Aea3F)
         target_var = self.res_vars[0]
         last_written = state.registers.last_written(self.arg_vars)
 
