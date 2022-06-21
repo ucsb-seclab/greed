@@ -30,7 +30,7 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--target", type=str, action="store", help="Path to Gigahorse output folder", required=True)
+    parser.add_argument("target", type=str, action="store", help="Path to Gigahorse output folder")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
 
     args = parser.parse_args()

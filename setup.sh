@@ -20,6 +20,7 @@ ln -sf $SETAAC_DIR/scripts/analyze_source.sh $VIRTUAL_ENV/bin/
 ln -sf $SETAAC_DIR/scripts/analyze_deployment_hex.sh $VIRTUAL_ENV/bin/
 ln -sf $SETAAC_DIR/scripts/analyze_contract_hex.sh $VIRTUAL_ENV/bin/
 ln -sf $SETAAC_DIR/scripts/deployment_to_contract_hex.py $VIRTUAL_ENV/bin/
+ln -sf $SETAAC_DIR/run.py $VIRTUAL_ENV/bin/SEtaac
 
 # this is needed by solc-select
 sudo apt install mkisofs

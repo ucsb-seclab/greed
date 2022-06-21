@@ -15,7 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
-    parser.add_argument("--target", type=str, action="store", help="Path to Gigahorse output folder")
+    parser.add_argument("target", type=str, action="store", help="Path to Gigahorse output folder")
 
     args = parser.parse_args()
 
