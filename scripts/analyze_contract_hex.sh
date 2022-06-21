@@ -25,5 +25,5 @@ $GIGAHORSE_DIR/clients/export_ir.py &&
 $GIGAHORSE_DIR/clients/export_cfg.py
 
 # decompile
-LD_LIBRARY_PATH=$GIGAHORSE_DIR/clients/lib/$arch/ $GIGAHORSE_DIR/clients/source_decompiler.$arch.dl_compiled -F facts &&
+LD_LIBRARY_PATH=$GIGAHORSE_DIR/clients/lib/$arch/ $GIGAHORSE_DIR/clients/source_decompiler.$arch.dl_compiled &&
 $GIGAHORSE_DIR/clients/get_source.py
