@@ -10,7 +10,8 @@ else
   exit 1
 fi
 
-SETAAC_DIR=`dirname "${BASH_SOURCE[0]}"`
+FILEPATH=`readlink -f "${BASH_SOURCE[0]}"`
+SETAAC_DIR=`dirname $FILEPATH`
 SETAAC_DIR=`readlink -f $SETAAC_DIR/../`
 GIGAHORSE_DIR=$SETAAC_DIR/gigahorse-toolchain
 

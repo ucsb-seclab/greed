@@ -15,6 +15,12 @@ for c in $SETAAC_DIR/gigahorse_clients/*; do
   ln -sf $CLIENT_ABS_PATH $SETAAC_DIR/gigahorse-toolchain/clients/
 done
 
+# link our scripts into virtualenv's bin dir
+ln -sf $SETAAC_DIR/scripts/analyze_source.sh $VIRTUAL_ENV/bin/
+ln -sf $SETAAC_DIR/scripts/analyze_deployment_hex.sh $VIRTUAL_ENV/bin/
+ln -sf $SETAAC_DIR/scripts/analyze_contract_hex.sh $VIRTUAL_ENV/bin/
+ln -sf $SETAAC_DIR/scripts/deployment_to_contract_hex.py $VIRTUAL_ENV/bin/
+
 # this is needed by solc-select
 sudo apt install mkisofs
 solc-select install 0.8.7

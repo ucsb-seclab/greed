@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $# = 0 ]]; then
-  echo usage: $0 \<contract .hex file\>
+  echo usage: $0 \<contract .sol file\>
   exit 1
 elif [ -f $1 ]; then
   SOURCE_FILE=$1
@@ -10,11 +10,12 @@ else
   exit 1
 fi
 
-SETAAC_DIR=`dirname "${BASH_SOURCE[0]}"`
+FILEPATH=`readlink -f "${BASH_SOURCE[0]}"`
+SETAAC_DIR=`dirname $FILEPATH`
 SETAAC_DIR=`readlink -f $SETAAC_DIR/../`
 
 # compile with solc-select
-SOLC_VERSION=0.8.7 solc --bin source.sol | sed "1,/Binary:/d" > contract.hex.raw
+SOLC_VERSION=0.8.7 solc --bin $SOURCE_FILE | sed "1,/Binary:/d" > contract.deployment.hex
 
-# analyze hex raw
-$SETAAC_DIR/scripts/analyze_hex_raw.sh contract.hex.raw
+# analyze deployment hex
+$SETAAC_DIR/scripts/analyze_deployment_hex.sh contract.deployment.hex
