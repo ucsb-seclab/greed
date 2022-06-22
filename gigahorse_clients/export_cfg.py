@@ -122,6 +122,9 @@ def main():
             cfg_data['fallthrough_edge'][bb_key] = None
         elif len(bb.successors) == 1:
             cfg_data['fallthrough_edge'][bb_key] = bb.successors[0].ident
+        elif bb_key not in tac_fallthrough_edge:
+            # this should only happen for callprivate
+            cfg_data['fallthrough_edge'][bb_key] = None
         else:
             cfg_data['fallthrough_edge'][bb_key] = tac_fallthrough_edge[bb_key]
 
