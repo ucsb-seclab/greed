@@ -63,6 +63,12 @@ class SymbolicEVMState:
     def curr_stmt(self):
         return self.project._statement_at[self._pc]
 
+    @property
+    def solver(self):
+        s = utils.get_solver()
+        s.add(self.constraints)
+        return s
+
     def set_next_pc(self):
         try:
             self.pc = self.get_next_pc()
