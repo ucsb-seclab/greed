@@ -97,8 +97,9 @@ class TAC_Jumpi(TAC_Statement):
                 return [succ]
             else:
                 # nothing is sat
-                log.debug("nothing is sat")
-                return []
+                log.debug(f"Unsat branch ({succ})")
+                succ.halt = True
+                return [succ]
 
 
 class TAC_BaseCall(TAC_Statement):
