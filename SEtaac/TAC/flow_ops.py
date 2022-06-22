@@ -130,7 +130,8 @@ class TAC_BaseCall(TAC_Statement):
         else:
             for i in range(olen):
                 succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
-            logging.info("Calling contract %s (%d_%d)" % (address_val, succ.instruction_count, succ.xid))
+            log_address_val = address_val if concrete(address_val) else "<SYMBOLIC>"
+            logging.info("Calling contract %s (%d_%d)" % (log_address_val, succ.instruction_count, succ.xid))
             succ.registers[self.res1_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
 
         succ.set_next_pc()
