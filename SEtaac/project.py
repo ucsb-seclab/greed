@@ -82,6 +82,10 @@ class Project(object):
             # Set the function object to the blocks to be able to go back later
             for tac_block in tac_blocks:
                 tac_block.function = funcs[func_data["addr"]]
+
+                fallthrough_edge_ident = self.TAC_cfg_raw['fallthrough_edge'][tac_block.ident]
+                tac_block.fallthrough_edge = self.factory.block(fallthrough_edge_ident)
+
                 self._statement_at.update(tac_block._statement_at)
 
             function.make_cfg(self.factory, self.TAC_cfg_raw)

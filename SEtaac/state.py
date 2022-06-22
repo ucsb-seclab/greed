@@ -85,18 +85,9 @@ class SymbolicEVMState:
         elif len(curr_bb.succ) == 2:
             #  case 3: end of the block and two targets
             #  we need to set the fallthrough to the state.
-            #  The handler of the JUMPI has already created the state at the jump target.
-            assert (self.curr_stmt.__internal_name__ == "JUMPI")
+            #  The handler (e.g., JUMPI) has already created the state at the jump target.
 
-            # guess and refine target_bb_id
-            target_bb_id = hex(self.registers[self.curr_stmt.destination_var])
-            target_bb = self.project.factory.block(target_bb_id + curr_bb.function.id)
-            if not target_bb:
-                target_bb = self.project.factory.block(target_bb_id)
-            target_bb_id = target_bb.ident
-
-            # find and return fallthrough branch
-            fallthrough_bb = [bb for bb in curr_bb.succ if bb.ident != target_bb_id][0]
+            fallthrough_bb = curr_bb.fallthrough_edge
             return fallthrough_bb.first_ins.stmt_ident
         else:
             raise VM_UnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))

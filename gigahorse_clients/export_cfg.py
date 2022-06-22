@@ -58,7 +58,7 @@ def to_dot(cfg_data, blocks, functions):
     s += '\tsplines=ortho;\n'
     s += '\tnode[fontname="courier"];\n'
     for node in cfg_data['nodes']:
-        
+
         if DROP_ORPHANS and is_orphan(node,cfg_data):
             #print("[!] Discarding orphan node {} (no succs)".format(node))
             continue
@@ -68,9 +68,9 @@ def to_dot(cfg_data, blocks, functions):
 
         if node in functions.keys():
             func_obj = functions[node]
-            if func_obj.is_public: 
+            if func_obj.is_public:
                 visibility = 'public'
-            else: 
+            else:
                 visibility = 'private'
                 color = 'red'
 
@@ -83,13 +83,13 @@ def to_dot(cfg_data, blocks, functions):
                 label.append(emit_stmt(statement))
 
         s += '\t\"{}\" [shape=box, color={}, label="{}"];\n'.format(node, color, '\n'.join(label))
-    
+
     s += '\n'
-    
+
     for src, succs in cfg_data['jump_data'].items():
         for succ in succs:
             s += '\t\"%s\" -> \"%s\";\n' % (src, succ)
-    
+
     s += '}'
 
     with open("./gigahorse_cfg.dot", "w") as cfg_dot:
@@ -100,12 +100,14 @@ def main():
     global tac_variable_value
     tac_variable_value = load_csv_map('TAC_Variable_Value.csv')
     tac_functions_blocks = load_csv('InFunction.csv')
+    tac_fallthrough_edge = load_csv_map('IRFallthroughEdge.csv')
 
     blocks, functions = construct_cfg()
 
     cfg_data = {}
     cfg_data['nodes'] = []
     cfg_data['jump_data'] = {}
+    cfg_data['fallthrough_edge'] = {}
     cfg_data['functions'] = {}
     
     for bb_key, bb in blocks.items():
@@ -115,6 +117,13 @@ def main():
     for bb_key, bb in blocks.items():
         for bb_succ in bb.successors:
             cfg_data['jump_data'][bb_key].append(bb_succ.ident)
+
+        if len(bb.successors) == 0:
+            cfg_data['fallthrough_edge'][bb_key] = None
+        elif len(bb.successors) == 1:
+            cfg_data['fallthrough_edge'][bb_key] = bb.successors[0].ident
+        else:
+            cfg_data['fallthrough_edge'][bb_key] = tac_fallthrough_edge[bb_key]
 
     for f_addr, f_data in functions.items():
         # WARNING the ident for the function is in the TAC representation, might not correspond to the block addr in the 

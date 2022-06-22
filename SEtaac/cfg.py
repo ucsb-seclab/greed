@@ -27,6 +27,8 @@ class TAC_Block(object):
         self.cfg = None
         self.function = None
 
+        self.fallthrough_edge = None
+
         # cached properties
         self._succ = None
         self._pred = None
