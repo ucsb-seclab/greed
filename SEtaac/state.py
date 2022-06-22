@@ -30,6 +30,7 @@ class SymbolicEVMState:
 
         self.instruction_count = 0
         self.halt = False
+        self.revert = False
         self.error = None
 
         self.gas = z3.BitVec('GAS_%d' % self.xid, 256)

@@ -152,6 +152,8 @@ class SimulationManager:
                        for stash_name, stash in self._stashes.items() if len(stash)]
         errored_count = len([s for stash_name, stash in self._stashes.items() if len(stash) for s in stash if s.error])
         stashes_str += [f'({errored_count} errored)']
+        reverted_count = len([s for stash_name, stash in self._stashes.items() if len(stash) for s in stash if s.revert])
+        stashes_str += [f'({reverted_count} reverted)']
         return f'<SimulationManager[{self.insns_count}] with {", ".join(stashes_str)}>'
 
     def __repr__(self):

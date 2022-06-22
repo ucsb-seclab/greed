@@ -512,6 +512,7 @@ class TAC_Revert(TAC_Statement):
             raise SymbolicError('symbolic memory index')
         succ.memory.extend(self.offset_val, self.size_val)
         succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
+        succ.revert = True
         succ.halt = True
 
         # succ.set_next_pc()
