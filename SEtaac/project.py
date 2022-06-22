@@ -34,7 +34,11 @@ class Project(object):
             if stmt.__internal_name__ != 'PHI':
                 continue
             for v in stmt.arg_vars:
+                if v in phimap:
+                    phimap[stmt.res1_var] = phimap[v]
+                    continue
                 phimap[v] = stmt.res1_var
+
         # propagate phi map
         fixpoint = False
         while not fixpoint:
