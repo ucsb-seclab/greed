@@ -1,6 +1,7 @@
 import logging
 
 from SEtaac.state import SymbolicEVMState
+from SEtaac.exceptions import VMException
 
 log = logging.getLogger(__name__)
 
@@ -66,32 +67,38 @@ class TAC_Statement(Aliased):
         self.block_ident = raw_stmt.tac_block_id
         self.stmt_ident = raw_stmt.ident
 
+        # parse args
         self.arg_vars = [x for x in raw_stmt.operands]
         self.arg_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.operands}
         self.num_args = len(self.arg_vars)
+
+        # parse ress
+        self.res_vars = [x for x in raw_stmt.defs]
+        self.res_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.defs}
+        self.num_ress = len(self.res_vars)
+
         # cast arg_vals to int
         self.arg_vals = {x: int(v, 16) if v else v for x, v in self.arg_vals.items()}
+        # cast res_vals to int
+        self.res_vals = {x: int(v, 16) if v else v for x, v in self.res_vals.items()}
 
-        # keep a copy of the arg_vals
-        self.raw_arg_vals = dict(self.arg_vals)
+        self.process_args()
 
+    def process_args(self):
         # create arg vars/vals aliases
         for i in range(self.num_args):
             var = self.arg_vars[i]
             object.__setattr__(self, "arg{}_var".format(i + 1), var)
             object.__setattr__(self, "arg{}_val".format(i + 1), self.arg_vals[var])
 
-        self.res_vars = [x for x in raw_stmt.defs]
-        self.res_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.defs}
-        self.num_ress = len(self.res_vars)
-        # cast res_vals to int
-        self.res_vals = {x: int(v, 16) if v else v for x, v in self.res_vals.items()}
-
         # create res vars/vals aliases
         for i in range(self.num_ress):
             var = self.res_vars[i]
             object.__setattr__(self, "res{}_var".format(i + 1), var)
             object.__setattr__(self, "res{}_val".format(i + 1), self.res_vals[var])
+
+        # keep a copy of the arg_vals (for set_arg_val)
+        self.raw_arg_vals = dict(self.arg_vals)
 
     def set_arg_val(self, state: SymbolicEVMState):
         # IMPORTANT: we need to reset this every time we re-execute this statement or we'll have the old registers
@@ -103,6 +110,8 @@ class TAC_Statement(Aliased):
             arg_val = self.arg_vals[var]
             # todo: the fact that we are reading the original state's registers here (not succ) could cause issues e.g.,
             # if we need some kind of translation
+            if var not in state.registers:
+                raise VMException(f"Uninitialized var {var}")
             val = state.registers.get(var, None) if arg_val is None else arg_val
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)

@@ -91,7 +91,7 @@ class TAC_Phi(TAC_Statement):
     __internal_name__ = "PHI"
     __aliases__ = {}
 
-    @TAC_Statement.handler_with_side_effects
+    # @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state
 
@@ -104,10 +104,10 @@ class TAC_Phi(TAC_Statement):
 
         # WARNING: IF THERE ARE TWO IDENTICAL CONSECUTIVE PHI STATEMENTS, THIS IS VERY LIKELY TO BE BROKEN
         # (0x109C4f2CCc82C4d77Bde15F306707320294Aea3F)
-        target_var = self.res_vars[0]
-        last_written = state.registers.last_written(self.arg_vars)
-
-        succ.registers[target_var] = self.arg_vals[last_written]
+        # target_var = self.res_vars[0]
+        # last_written = state.registers.last_written(self.arg_vars)
+        #
+        # succ.registers[target_var] = self.arg_vals[last_written]
         
         succ.set_next_pc()
         return [succ]
@@ -130,7 +130,7 @@ class TAC_Const(TAC_Statement):
 class TAC_Nop(TAC_Statement):
     __internal_name__ = "NOP"
 
-    @TAC_Statement.handler_without_side_effects
+    # @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state
 

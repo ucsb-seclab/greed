@@ -235,7 +235,6 @@ class TAC_Lt(TAC_Statement):
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state
-
         if concrete(self.arg1_val) and concrete(self.arg2_val):
             succ.registers[self.res1_var] = 1 if self.arg1_val < self.arg2_val else 0
         else:

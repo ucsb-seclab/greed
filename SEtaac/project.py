@@ -28,6 +28,38 @@ class Project(object):
         self.factory = FactoryObjects(TACparser(self.TAC_code_raw), project=self)
         self.functions = self._import_functions_gigahorse()
 
+        # build phi-map (as in gigahorse's decompiler)
+        phimap = dict()
+        for stmt in self._statement_at.values():
+            if stmt.__internal_name__ != 'PHI':
+                continue
+            for v in stmt.arg_vars:
+                phimap[v] = stmt.res1_var
+        # propagate phi map
+        fixpoint = False
+        while not fixpoint:
+            fixpoint = True
+            for v_old, v_new in phimap.items():
+                if v_new in phimap:
+                    phimap[v_old] = phimap[v_new]
+                    fixpoint = False
+
+        # rewrite statements
+        for stmt in self._statement_at.values():
+            if stmt.__internal_name__ == "PHI":
+                stmt.num_args = 0
+                stmt.num_ress = 0
+                stmt.arg_vars = []
+                stmt.res_vars = []
+                stmt.__internal_name__ = "PHI (NOP)"
+            stmt.arg_vars = [v if v not in phimap else phimap[v] for v in stmt.arg_vars]
+            stmt.arg_vals = {v if v not in phimap else phimap[v]: val for v, val in stmt.arg_vals.items()}
+            stmt.res_vars = [v if v not in phimap else phimap[v] for v in stmt.res_vars]
+            stmt.res_vals = {v if v not in phimap else phimap[v]: val for v, val in stmt.res_vals.items()}
+
+            # re-process args
+            stmt.process_args()
+
     def _import_functions_gigahorse(self):
         funcs = {}
         for _, func_data in self.TAC_cfg_raw['functions'].items():
