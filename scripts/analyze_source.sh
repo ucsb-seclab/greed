@@ -14,6 +14,13 @@ FILEPATH=`readlink -f "${BASH_SOURCE[0]}"`
 SETAAC_DIR=`dirname $FILEPATH`
 SETAAC_DIR=`readlink -f $SETAAC_DIR/../`
 
+arch=$(uname -i)
+
+if [ "$arch" != "x86_64" ]; then
+  echo Source analysis not supported on arch $arch
+  exit 1
+fi
+
 # compile with solc-select
 SOLC_VERSION=0.8.7 solc --bin $SOURCE_FILE | sed "1,/Binary:/d" > contract.deployment.hex
 
