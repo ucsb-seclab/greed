@@ -4,22 +4,23 @@ A symbolic executor for the TAC IR used by Gigahorse
 
 ### Installation
 ```bash
+# Clone this repo
+git clone git@github.com:ucsb-seclab/SEtaac.git
 # Create a virtual environment (e.g., using virtualenvwrapper)
 mkvirtualenv SEtaac
 # Activate the virtual environment
 workon SEtaac
-# Install SEtaac
+# Install SEtaac (will run setup.sh)
 pip install -e SEtaac
-# Run the setup script 
-SEtaac/setup.sh
 ```
 
 ### Usage
 First, the contract needs to be pre-processed with `gigahorse`. This can be done in three ways:
 ```bash
-# From the solidity source
 mkdir /tmp/test_contract
 cd /tmp/test_contract/
+
+# From the solidity source
 cp <contract_source> contract.sol
 analyze_source.sh contract.sol
 
