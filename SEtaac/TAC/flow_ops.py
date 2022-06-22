@@ -58,7 +58,7 @@ class TAC_Jumpi(TAC_Statement):
 
         if concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
-            if cond:
+            if cond != 0:
                 succ.pc = dest
                 return [succ]
             else:
@@ -68,7 +68,7 @@ class TAC_Jumpi(TAC_Statement):
             # let's check if both branches are sat
             s = get_solver()
             s.add(succ.constraints)
-            sat_true = is_sat(cond == 1, s)
+            sat_true = is_sat(cond != 0, s)
             sat_false = is_sat(cond == 0, s)
 
             if sat_true and sat_false:
@@ -77,7 +77,7 @@ class TAC_Jumpi(TAC_Statement):
                 succ_false = succ
 
                 succ_true.pc = dest
-                succ_true.constraints.append(cond == 1)
+                succ_true.constraints.append(cond != 0)
 
                 succ_false.set_next_pc()
                 succ_false.constraints.append(cond == 0)
@@ -86,7 +86,7 @@ class TAC_Jumpi(TAC_Statement):
             elif sat_true:
                 # if only the true branch is sat, jump
                 succ.pc = dest
-                succ.constraints.append(cond == 1)
+                succ.constraints.append(cond != 0)
 
                 return [succ]
             elif sat_false:
