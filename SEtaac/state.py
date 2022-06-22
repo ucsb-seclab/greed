@@ -10,7 +10,8 @@ from SEtaac.registers import SymbolicRegisters
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, program=None, code=None):
+    def __init__(self, xid, project, program=None, code=None,
+                 storage=None, start_balance=None, constraints=None, sha_constraints=None):
         self.code = code or bytearray()
         self.program = program
         self.xid = xid
@@ -22,7 +23,7 @@ class SymbolicEVMState:
         self.trace = list()
 
         self.memory = SymbolicMemory()
-        self.storage = SymbolicStorage(self.xid)
+        self.storage = storage or SymbolicStorage(self.xid)
         self.registers = SymbolicRegisters()
         self.ctx = dict()
 
@@ -34,14 +35,14 @@ class SymbolicEVMState:
         self.error = None
 
         self.gas = z3.BitVec('GAS_%d' % self.xid, 256)
-        self.start_balance = z3.BitVec('BALANCE_%d' % self.xid, 256)
+        self.start_balance = start_balance if start_balance is not None else z3.BitVec('BALANCE_%d' % self.xid, 256)
         self.balance = self.start_balance
         self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
         self.ctx['CODESIZE-ADDRESS'] = len(code) if code else 0  # todo: code can be None
 
-        self.constraints = list()
-        self.sha_constraints = dict()
+        self.constraints = constraints or list()
+        self.sha_constraints = sha_constraints or dict()
 
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
