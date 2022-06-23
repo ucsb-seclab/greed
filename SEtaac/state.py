@@ -10,8 +10,7 @@ from SEtaac.registers import SymbolicRegisters
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project,
-                 storage=None, start_balance=None, constraints=None, sha_constraints=None):
+    def __init__(self, xid, project):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -22,7 +21,7 @@ class SymbolicEVMState:
         self.trace = list()
 
         self.memory = SymbolicMemory()
-        self.storage = storage or SymbolicStorage(self.xid)
+        self.storage = SymbolicStorage(self.xid)
         self.registers = SymbolicRegisters()
         self.ctx = dict()
 
@@ -34,14 +33,14 @@ class SymbolicEVMState:
         self.error = None
 
         self.gas = z3.BitVec('GAS_%d' % self.xid, 256)
-        self.start_balance = start_balance if start_balance is not None else z3.BitVec('BALANCE_%d' % self.xid, 256)
+        self.start_balance = z3.BitVec('BALANCE_%d' % self.xid, 256)
         self.balance = self.start_balance
         self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
         self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
-        self.constraints = constraints or list()
-        self.sha_constraints = sha_constraints or dict()
+        self.constraints = list()
+        self.sha_constraints = dict()
 
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
@@ -98,6 +97,16 @@ class SymbolicEVMState:
             return fallthrough_bb.first_ins.stmt_ident
         else:
             raise VM_UnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
+
+    def import_context(self, state: SymbolicEVMState):
+        self.storage = state.storage
+
+        self.start_balance = state.balance
+        self.balance = self.start_balance
+        self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+
+        self.constraints = state.constraints
+        self.sha_constraints = state.sha_constraints
 
     def copy(self):
         # assume unchanged xid
