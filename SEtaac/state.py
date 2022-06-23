@@ -10,12 +10,11 @@ from SEtaac.registers import SymbolicRegisters
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, program=None, code=None,
+    def __init__(self, xid, project,
                  storage=None, start_balance=None, constraints=None, sha_constraints=None):
-        self.code = code or bytearray()
-        self.program = program
         self.xid = xid
         self.project = project
+        self.code = project.code
 
         self.uuid = utils.gen_uuid()
 
@@ -39,7 +38,7 @@ class SymbolicEVMState:
         self.balance = self.start_balance
         self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
-        self.ctx['CODESIZE-ADDRESS'] = len(code) if code else 0  # todo: code can be None
+        self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
         self.constraints = constraints or list()
         self.sha_constraints = sha_constraints or dict()
@@ -102,7 +101,7 @@ class SymbolicEVMState:
 
     def copy(self):
         # assume unchanged xid
-        new_state = SymbolicEVMState(self.xid, project=self.project, program=self.program, code=self.code)
+        new_state = SymbolicEVMState(self.xid, project=self.project)
 
         new_state._pc = self._pc
         new_state.trace = list(self.trace)

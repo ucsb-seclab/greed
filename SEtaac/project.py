@@ -22,6 +22,10 @@ class Project(object):
         with open(f"{target_dir}/TAC_CFG.dill", "rb") as cfgdata_file:
             self.TAC_cfg_raw = dill.load(cfgdata_file)
 
+        # Load the contract code
+        with open(f"{target_dir}/contract.hex", "rb") as contract_file:
+            self.code = contract_file.read()
+
         self._statement_at = dict()
 
         # Object that creates other objects
