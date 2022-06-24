@@ -48,3 +48,21 @@ cd SEtaac/tests
 # Or run the full suite with pytest
 pytest
 ```
+
+### Architecture
+#### Offline representation
+
+* `Project`: calls the TAC_Parser to parse functions, blocks, and statements from Gigahorse
+  * `Factory`: used to access several objects
+  * `Function(s)`: contain blocks + an intra-procedural CFG
+    * `Block(s)`: contain statements
+      * `Statement(s)`: represent TAC operations. Every statement has a `.handle(state)` method that given a state applies such operations to derive its successors
+
+#### Runtime representation
+
+* `SimulationManager`: stores and manages states in "stashes"
+  * `State(s)`: hold the transaction context at every step
+    * `Storage`: symbolic modulo 2^256 store
+    * `Memory`: symbolic modulo 2^256 store
+    * `Registers`: symbolic modulo 2^256 store
+```
