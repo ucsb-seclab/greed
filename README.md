@@ -71,4 +71,3 @@ pytest
     * `Storage`: symbolic modulo 2^256 store
     * `Memory`: symbolic modulo 2^256 store
     * `Registers`: symbolic modulo 2^256 store
-```
