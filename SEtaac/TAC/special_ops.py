@@ -1,7 +1,7 @@
 import z3
 
 from SEtaac import utils
-from SEtaac.exceptions import VMExternalData, VMSymbolicError, VMException
+from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.memory import SymRead
 from SEtaac.utils import concrete, is_true
 from .base import TAC_Statement

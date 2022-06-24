@@ -3,7 +3,7 @@ import os
 import sys
 from typing import Callable
 
-from SEtaac.exceptions import VMException
+from SEtaac.utils.exceptions import VMException
 from SEtaac.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)

@@ -3,7 +3,7 @@ import z3
 from collections import defaultdict
 
 from SEtaac import utils
-from SEtaac.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
+from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
 from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage

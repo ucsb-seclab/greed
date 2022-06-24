@@ -1,7 +1,7 @@
 import logging
 
 from SEtaac.TAC.base import TAC_Statement
-from SEtaac.exceptions import VMNoSuccessors
+from SEtaac.utils.exceptions import VMNoSuccessors
 from SEtaac.state import SymbolicEVMState
 
 __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Return', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']

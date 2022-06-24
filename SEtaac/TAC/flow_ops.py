@@ -2,7 +2,7 @@ import logging
 import z3
 
 from SEtaac import utils
-from SEtaac.exceptions import VMSymbolicError
+from SEtaac.utils.exceptions import VMSymbolicError
 from SEtaac.utils import concrete, is_sat, get_solver
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
