@@ -27,7 +27,7 @@ def main(args):
         label.append(f"block_addr: {block_id}")
 
         for stmt in block.statements:
-            label.append(f"{stmt.stmt_ident}: {stmt}")
+            label.append(f"{stmt.id}: {stmt}")
 
         label = "\n".join(label)
         dot += f"\"{block_id}\" [shape=box, color={color}, \nlabel=\"{label}\"];\n\n"
@@ -36,7 +36,7 @@ def main(args):
 
     for function_id, function in p.function_at.items():
         for a, b in function.cfg.graph.edges:
-            dot += f"\"{a.ident}\" -> \"{b.ident}\";\n"
+            dot += f"\"{a.id}\" -> \"{b.id}\";\n"
 
     dot += "}"
 

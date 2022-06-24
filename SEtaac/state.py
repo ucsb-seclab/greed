@@ -77,24 +77,24 @@ class SymbolicEVMState:
 
     def get_next_pc(self):
         # get block
-        curr_bb = self.project.factory.block(self.curr_stmt.block_ident)
+        curr_bb = self.project.factory.block(self.curr_stmt.block_id)
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
         remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
 
         # case 1: middle of the block
         if remaining_stmts:
-            return remaining_stmts[0].stmt_ident
+            return remaining_stmts[0].id
         elif len(curr_bb.succ) == 0:
             raise VM_NoSuccessors
         elif len(curr_bb.succ) == 1:
-            return curr_bb.succ[0].first_ins.stmt_ident
+            return curr_bb.succ[0].first_ins.id
         elif len(curr_bb.succ) == 2:
             #  case 3: end of the block and two targets
             #  we need to set the fallthrough to the state.
             #  The handler (e.g., JUMPI) has already created the state at the jump target.
 
             fallthrough_bb = curr_bb.fallthrough_edge
-            return fallthrough_bb.first_ins.stmt_ident
+            return fallthrough_bb.first_ins.id
         else:
             raise VM_UnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
 

@@ -6,25 +6,6 @@ from SEtaac.state import SymbolicEVMState
 log = logging.getLogger(__name__)
 
 
-# This is the object exported from Gigahorse
-class TAC_RawStatement:
-    __name__ = "TAC_RawStatement"
-    __internal_name__ = ""
-
-    def __init__(self, tac_block_id: str, ident: str, opcode: str, operands: str = None, defs: list = None,
-                 values: dict = None):
-        self.tac_block_id = tac_block_id
-        self.ident = ident
-        self.opcode = opcode
-        self.operands = operands if operands else list()
-        self.defs = defs if defs else list()
-        self.values = values if values else dict()
-
-    def __str__(self):
-        return f"TAC_RawStatement[blockid:{self.tac_block_id}|stmtid:{self.ident}] | opcode: {self.opcode} | " \
-               f"operands:{self.operands} | defs:{self.defs} | values:{self.values}"
-
-
 class Aliased:
     def __init__(self):
         __aliases__ = []
@@ -50,8 +31,8 @@ class TAC_Statement(Aliased):
 
     def __init__(self, block_id, stmt_id, uses=[], defs=[], values={}):
         super().__init__()
-        self.block_ident = block_id
-        self.stmt_ident = stmt_id
+        self.block_id = block_id
+        self.id = stmt_id
 
         # parse uses
         self.arg_vars = [v for v in uses]

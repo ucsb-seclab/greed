@@ -1,17 +1,16 @@
 import networkx as nx
 
-from SEtaac.TAC.base import TAC_RawStatement
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
 
 
 class TAC_Block(object):
     def __init__(self, statements, block_id):
         # WARNING: assuming BB indexes are UNIQUE.
-        self.ident = block_id
+        self.id = block_id
         self.statements = statements
 
         # keep a dictionary from statement id to statement
-        self._statement_at = {s.stmt_ident: s for s in self.statements}
+        self._statement_at = {s.id: s for s in self.statements}
         self.first_ins = self.statements[0]
 
         self.cfg = None
@@ -92,7 +91,7 @@ class TAC_Block(object):
         return self._acyclic_subgraph
 
     def __str__(self):
-        return "Block at {}".format(self.ident)
+        return "Block at {}".format(self.id)
 
     def __repr__(self):
         return str(self)

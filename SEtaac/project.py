@@ -38,7 +38,7 @@ class Factory:
 
     def entry_state(self, xid: str) -> SymbolicEVMState:
         state = SymbolicEVMState(xid=xid, project=self.project)
-        state.pc = self.block('0x0').first_ins.stmt_ident
+        state.pc = self.block('0x0').first_ins.id
         return state
 
     def function(self, function_id: str) -> TAC_Block:

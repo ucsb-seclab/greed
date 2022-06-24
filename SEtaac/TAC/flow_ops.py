@@ -22,14 +22,14 @@ class TAC_Jump(TAC_Statement):
         succ = state
 
         target_bb_id = hex(self.destination_val)
-        curr_bb_id = succ.curr_stmt.block_ident
+        curr_bb_id = succ.curr_stmt.block_id
         curr_bb = succ.project.factory.block(curr_bb_id)
         target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
 
         if not target_bb:
             target_bb = succ.project.factory.block(target_bb_id)
 
-        dest = target_bb.first_ins.stmt_ident
+        dest = target_bb.first_ins.id
 
         succ.pc = dest
 
@@ -46,14 +46,14 @@ class TAC_Jumpi(TAC_Statement):
         succ = state
 
         target_bb_id = hex(self.destination_val)
-        curr_bb_id = succ.curr_stmt.block_ident
+        curr_bb_id = succ.curr_stmt.block_id
         curr_bb = succ.project.factory.block(curr_bb_id)
         target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
 
         if not target_bb:
             target_bb = succ.project.factory.block(target_bb_id)
 
-        dest = target_bb.first_ins.stmt_ident
+        dest = target_bb.first_ins.id
         cond = self.condition_val
 
         if concrete(cond):

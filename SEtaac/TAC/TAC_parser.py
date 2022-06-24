@@ -4,7 +4,6 @@ from collections import defaultdict
 
 from SEtaac import TAC
 from SEtaac.TAC import tac_opcode_to_class_map
-from SEtaac.TAC.base import TAC_RawStatement
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.TAC.special_ops import TAC_Stop
 from SEtaac.cfg import TAC_Block
@@ -89,7 +88,7 @@ class TACparser:
         for stmt in statements.values():
             if stmt.__internal_name__ == "PHI":
                 # remove all phi statements
-                statements[stmt.stmt_ident] = TAC_Nop(block_id=stmt.block_ident, stmt_id=stmt.stmt_ident)
+                statements[stmt.id] = TAC_Nop(block_id=stmt.block_id, stmt_id=stmt.id)
                 continue
             # rewrite other statements according to the phi map
             stmt.arg_vars = [phimap.get(v, v) for v in stmt.arg_vars]

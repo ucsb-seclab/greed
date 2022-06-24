@@ -30,11 +30,11 @@ class TAC_Function:
 
         for a in self.blocks:
             # Adding information about successors from Gigahorse analysis
-            for b_id in tac_block_succ.get(a.ident, []):
+            for b_id in tac_block_succ.get(a.id, []):
                 cfg.graph.add_edge(a, factory.block(b_id))
 
         cfg.bbs = list(cfg.graph.nodes())
-        cfg._bb_at = {bb.ident: bb for bb in cfg.bbs}
+        cfg._bb_at = {bb.id: bb for bb in cfg.bbs}
 
         # find function root
         bbs_with_no_preds = [bb for bb in cfg.bbs if len(bb.pred) == 0]

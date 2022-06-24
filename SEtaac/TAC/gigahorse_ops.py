@@ -44,7 +44,7 @@ class TAC_Callprivate(TAC_Statement):
             succ.registers['v' + alias.replace('0x', '')] = succ.registers[arg]
 
         # read destination
-        dest = target_bb.first_ins.stmt_ident
+        dest = target_bb.first_ins.id
         # if not concrete(dest):
         #     raise SymbolicError("CALLPRIVATE with symbolic target")
 
@@ -53,7 +53,7 @@ class TAC_Callprivate(TAC_Statement):
             saved_return_pc = succ.get_next_pc()
         except VM_NoSuccessors:
             fake_exit_bb = succ.project.factory.block('fake_exit')
-            saved_return_pc = fake_exit_bb.statements[0].stmt_ident
+            saved_return_pc = fake_exit_bb.statements[0].id
 
         succ.callstack.append((saved_return_pc, self.res_vars))
 
