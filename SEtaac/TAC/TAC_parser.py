@@ -130,6 +130,7 @@ class TACparser:
         # inject a fake exit block to simplify the handling of CALLPRIVATE without successors
         fake_exit_stmt = self.factory.statement('fake_exit')
         fake_exit_block = TAC_Block(block_id='fake_exit', statements=[fake_exit_stmt])
+        fake_exit_block._succ = fake_exit_block._pred = fake_exit_block._ancestors = fake_exit_block._descendants = []
         blocks['fake_exit'] = fake_exit_block
 
         return blocks

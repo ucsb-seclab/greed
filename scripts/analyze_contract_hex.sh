@@ -25,9 +25,7 @@ fi
 $GIGAHORSE_DIR/generatefacts $HEX_FILE facts &&
 LD_LIBRARY_PATH=$GIGAHORSE_DIR/clients/lib/$arch/ $GIGAHORSE_DIR/clients/main.$arch.dl_compiled -F facts &&
 $GIGAHORSE_DIR/clients/visualizeout.py &&
-$GIGAHORSE_DIR/clients/check_bad_opcode.py &&
-$GIGAHORSE_DIR/clients/export_ir.py &&
-$GIGAHORSE_DIR/clients/export_cfg.py
+$GIGAHORSE_DIR/clients/check_bad_opcode.py
 
 # decompile
 if [ -f $GIGAHORSE_DIR/clients/source_decompiler.$arch.dl_compiled ]; then
