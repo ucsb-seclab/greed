@@ -1,7 +1,7 @@
 import logging
 
-from SEtaac.state import SymbolicEVMState
 from SEtaac.exceptions import VMException
+from SEtaac.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
 
@@ -48,33 +48,21 @@ class TAC_Statement(Aliased):
     __internal_name__ = None
     __aliases__ = {}
 
-    def __init__(self):
+    def __init__(self, block_id, stmt_id, uses=[], defs=[], values={}):
         super().__init__()
-        self.block_ident = None
-        self.stmt_ident = None
+        self.block_ident = block_id
+        self.stmt_ident = stmt_id
 
-        self.arg_vars = list()
-        self.arg_vals = dict()
-        self.num_args = None
-
-        self.raw_arg_vals = dict()
-
-        self.res_vars = list()
-        self.res_vals = dict()
-        self.num_ress = None
-
-    def parse(self, raw_stmt: TAC_RawStatement):
-        self.block_ident = raw_stmt.tac_block_id
-        self.stmt_ident = raw_stmt.ident
-
-        # parse args
-        self.arg_vars = [x for x in raw_stmt.operands]
-        self.arg_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.operands}
+        # parse uses
+        self.arg_vars = [v for v in uses]
+        self.arg_vals = {v: values.get(v, None) for v in uses}
         self.num_args = len(self.arg_vars)
 
-        # parse ress
-        self.res_vars = [x for x in raw_stmt.defs]
-        self.res_vals = {x: raw_stmt.values.get(x, None) for x in raw_stmt.defs}
+        self.raw_arg_vals = None
+
+        # parse defs
+        self.res_vars = [v for v in defs]
+        self.res_vals = {v: values.get(v, None) for v in defs}
         self.num_ress = len(self.res_vars)
 
         # cast arg_vals to int

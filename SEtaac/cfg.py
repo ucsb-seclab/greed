@@ -10,16 +10,6 @@ class TAC_Block(object):
         self.ident = block_id
         self.statements = statements
 
-        # Gigahorse sometimes creates empty basic blocks (i.e., no statements). We patch such blocks with a fake NOP
-        if len(self.statements) == 0:
-            # create fake raw statement
-            fake_raw_statement = TAC_RawStatement(tac_block_id=block_id, ident=block_id + '_fake_stmt', opcode='NOP')
-            # parse raw statement
-            nop = TAC_Nop()
-            nop.parse(fake_raw_statement)
-            # append the parsed statement to the current block
-            self.statements.append(nop)
-
         # keep a dictionary from statement id to statement
         self._statement_at = {s.stmt_ident: s for s in self.statements}
         self.first_ins = self.statements[0]

@@ -1,12 +1,35 @@
 import numbers
-
 import z3
+from collections import defaultdict
 from sha3 import keccak_256
+from typing import List, Mapping, Union
 
 TT256 = 2 ** 256
 TT256M1 = 2 ** 256 - 1
 TT255 = 2 ** 255
 SECP256K1P = 2 ** 256 - 4294968273
+
+
+def load_csv(path: str, seperator: str='\t') -> List[Union[str, List[str]]]:
+    with open(path) as f:
+        return [line.split(seperator) for line in f.read().splitlines()]
+
+
+def load_csv_map(path: str, seperator: str='\t', reverse: bool=False) -> Mapping[str, str]:
+    return {y: x for x, y in load_csv(path, seperator)} if reverse else {x: y for x, y in load_csv(path, seperator)}
+
+
+def load_csv_multimap(path: str, seperator: str='\t', reverse: bool=False) -> Mapping[str, List[str]]:
+    ret = defaultdict(list)
+
+    if reverse:
+        for y, x in load_csv(path, seperator):
+            ret[x].append(y)
+    else:
+        for x, y in load_csv(path, seperator):
+            ret[x].append(y)
+
+    return ret
 
 
 def sha3(data):

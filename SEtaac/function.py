@@ -22,19 +22,16 @@ class TAC_Function:
         return internal_calls
 
     # Building the intra-functional CFG of a target function.
-    def make_cfg(self, factory, TAC_cfg_raw: dict):
+    def build_cfg(self, factory, tac_block_succ: dict):
         cfg = CFG()
-        self.cfg = cfg
         for bb in self.blocks:
             bb.cfg = cfg
             cfg.graph.add_node(bb)
 
         for a in self.blocks:
             # Adding information about successors from Gigahorse analysis
-            jump_data = TAC_cfg_raw['jump_data'].get(a.ident, None)
-            if jump_data:
-                for b_ident in jump_data:
-                    cfg.graph.add_edge(a, factory.block(b_ident))
+            for b_id in tac_block_succ.get(a.ident, []):
+                cfg.graph.add_edge(a, factory.block(b_id))
 
         cfg.bbs = list(cfg.graph.nodes())
         cfg._bb_at = {bb.ident: bb for bb in cfg.bbs}
@@ -43,3 +40,5 @@ class TAC_Function:
         bbs_with_no_preds = [bb for bb in cfg.bbs if len(bb.pred) == 0]
         assert len(bbs_with_no_preds) == 1, f"Something went wrong while retrieving the root for function {self.id}"
         cfg.root = bbs_with_no_preds[0]
+
+        return cfg

@@ -5,8 +5,8 @@ from collections import defaultdict
 from SEtaac import utils
 from SEtaac.exceptions import VM_NoSuccessors, VM_UnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
-from SEtaac.storage import SymbolicStorage
 from SEtaac.registers import SymbolicRegisters
+from SEtaac.storage import SymbolicStorage
 
 
 class SymbolicEVMState:
@@ -61,7 +61,7 @@ class SymbolicEVMState:
 
     @property
     def curr_stmt(self):
-        return self.project._statement_at[self._pc]
+        return self.project.factory.statement(self._pc)
 
     @property
     def solver(self):
@@ -98,7 +98,7 @@ class SymbolicEVMState:
         else:
             raise VM_UnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
 
-    def import_context(self, state: SymbolicEVMState):
+    def import_context(self, state):
         self.storage = state.storage
 
         self.start_balance = state.balance

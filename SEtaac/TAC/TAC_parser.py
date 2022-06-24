@@ -1,86 +1,167 @@
+import itertools
 import logging
+from collections import defaultdict
 
 from SEtaac import TAC
+from SEtaac.TAC import tac_opcode_to_class_map
 from SEtaac.TAC.base import TAC_RawStatement
+from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.TAC.special_ops import TAC_Stop
 from SEtaac.cfg import TAC_Block
+from SEtaac.function import TAC_Function
+from SEtaac.utils import load_csv, load_csv_map, load_csv_multimap
 
 l = logging.getLogger("tac_parser")
 l.setLevel(logging.INFO)
 
-'''
-The TACparser takes one block of TAC_Statement(s) and create the 
-specialized TAC_ops that are eventually feeded to the symb executor.
-'''
-
 
 class TACparser:
-    def __init__(self, TAC_code):
-        self.TAC_code = TAC_code
+    def __init__(self, factory, target_dir):
+        self.factory = factory
+        self.target_dir = target_dir
 
-        # Keep here the list of already parsed "raw" TAC_Statement
-        self.TAC_code_cache = {}
+    @staticmethod
+    def stmt_sort_key(stmt_id: str) -> int:
+        return int(stmt_id.split('0x')[1].split('_')[0], base=16)
 
-        # inject a fake STOP statement to simplify the handling of CALLPRIVATE without successors
-        # create fake STOP statement
-        fake_raw_statement = TAC_RawStatement(tac_block_id='fake_exit', ident='fake_exit', opcode='STOP')
+    def parse_statements(self):
+        # Load facts
+        tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
+        tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
+        tac_op = load_csv_map(f"{self.target_dir}/TAC_Op.csv")
 
-        # parse raw statement
-        stop = TAC_Stop()
-        stop.parse(fake_raw_statement)
+        tac_variable_value = load_csv_map(f"{self.target_dir}/TAC_Variable_Value.csv")
+        tac_variable_value = {'v' + v.replace('0x', ''): val for v, val in tac_variable_value.items()}
 
-        # create fake block
-        self._fake_exit_stmt = stop
-        self._fake_exit_block = TAC_Block(block_id='fake_exit', statements=[stop])
+        tac_defs: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
+        for stmt_id, var, pos in load_csv(f"{self.target_dir}/TAC_Def.csv"):
+            tac_defs[stmt_id].append((var, int(pos)))
 
-    def parse(self, block_id) -> TAC_Block:
+        tac_uses: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
+        for stmt_id, var, pos in load_csv(f"{self.target_dir}/TAC_Use.csv"):
+            tac_uses[stmt_id].append((var, int(pos)))
 
-        stmts = []
+        # parse all statements block after block
+        statements = dict()
+        for block_id in itertools.chain(*tac_function_blocks.values()):
+            for stmt_id in sorted(tac_block_stmts[block_id], key=TACparser.stmt_sort_key):
+                opcode = tac_op[stmt_id]
+                raw_uses = [var for var, _ in sorted(tac_uses[stmt_id], key=lambda x: x[1])]
+                raw_defs = [var for var, _ in sorted(tac_defs[stmt_id], key=lambda x: x[1])]
+                uses = ['v' + v.replace('0x', '') for v in raw_uses]
+                defs = ['v' + v.replace('0x', '') for v in raw_defs]
+                values = {v: val for v, val in tac_variable_value.items() if v in uses + defs}
+                OpcodeClass = tac_opcode_to_class_map[opcode]
+                statement = OpcodeClass(block_id=block_id, stmt_id=stmt_id, uses=uses, defs=defs, values=values)
+                statements[stmt_id] = statement
 
-        if block_id == "fake_exit":
-            return self._fake_exit_block
-        elif block_id not in self.TAC_code.keys():
-            l.debug("Deadblock at {}".format(block_id))
-            return None
+            if not tac_block_stmts[block_id]:
+                # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP statement
+                fake_stmt = TAC_Nop(block_id=block_id, stmt_id=block_id + '_fake_stmt')
+                statements[block_id + '_fake_stmt'] = fake_stmt
 
-        l.debug("Parsing block at {}".format(block_id))
+        # inject a fake exit statement to simplify the handling of CALLPRIVATE without successors
+        fake_exit_stmt = TAC_Stop(block_id='fake_exit', stmt_id='fake_exit')
+        statements['fake_exit'] = fake_exit_stmt
 
-        # If we have already parsed this, no need to parse it again :) 
-        if block_id in self.TAC_code_cache.keys():
-            return self.TAC_code_cache[block_id]
-
-        # Create the specialized TAC statements
-        for raw_tac_stmt in self.TAC_code[block_id]:
-            # Look for the correspondent tac_op
-
-            found = False
-            for tac_op in TAC.__dict__.values():
-                # FIXME HACK 
-                # Maybe let's do a better import from TAC_ops
-                if "type" not in str(type(tac_op)):
+        # parse phi-map and re-write statements
+        # build phi-map (as in gigahorse decompiler)
+        phimap = dict()
+        for stmt in statements.values():
+            if stmt.__internal_name__ != 'PHI':
+                continue
+            for v in stmt.arg_vars:
+                if v in phimap:
+                    phimap[stmt.res1_var] = phimap[v]
                     continue
-                # If opcode matches, let's parse it! 
-                if raw_tac_stmt.opcode == tac_op.__internal_name__:
-                    # Create a new instance of this TAC_op
-                    new_tac_op = tac_op.__new__(tac_op)
-                    # Parse it! 
-                    new_tac_op.parse(raw_tac_stmt)
-                    # Add it to the parsed statements
-                    stmts.append(new_tac_op)
-                    found = True
-                    break
-            if not found:
-                l.critical("Could not find a TAC_ops for TAC_Statement {}".format(raw_tac_stmt.opcode))
-                # raise TACparser_NO_OPS()
+                phimap[v] = stmt.res1_var
 
-                # FIXME
-                # This is just for debug, this shouldn't happen when we have all the
-                # operations (we will raise the exception).
-                stmts.append(raw_tac_stmt)
+        # propagate phi map
+        fixpoint = False
+        while not fixpoint:
+            fixpoint = True
+            for v_old, v_new in phimap.items():
+                if v_new in phimap:
+                    phimap[v_old] = phimap[v_new]
+                    fixpoint = False
 
-        bb = TAC_Block(stmts, block_id)
+        # rewrite statements
+        for stmt in statements.values():
+            if stmt.__internal_name__ == "PHI":
+                # remove all phi statements
+                statements[stmt.stmt_ident] = TAC_Nop(block_id=stmt.block_ident, stmt_id=stmt.stmt_ident)
+                continue
+            # rewrite other statements according to the phi map
+            stmt.arg_vars = [phimap.get(v, v) for v in stmt.arg_vars]
+            stmt.arg_vals = {phimap.get(v, v): val for v, val in stmt.arg_vals.items()}
+            stmt.res_vars = [phimap.get(v, v) for v in stmt.res_vars]
+            stmt.res_vals = {phimap.get(v, v): val for v, val in stmt.res_vals.items()}
 
-        # Save in cache the current parse ops.
-        self.TAC_code_cache[block_id] = bb
+            # re-process args
+            stmt.process_args()
 
-        return bb
+        return statements
+
+    def parse_blocks(self):
+        # Load facts
+        tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
+        tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
+        tac_fallthrough_edge = load_csv_map(f"{self.target_dir}/IRFallthroughEdge.csv")
+
+        # parse all blocks
+        blocks = dict()
+        for block_id in itertools.chain(*tac_function_blocks.values()):
+            statements = list()
+            for stmt_id in sorted(tac_block_stmts[block_id], key=TACparser.stmt_sort_key):
+                statement = self.factory.statement(stmt_id)
+                statements.append(statement)
+            if not statements:
+                # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP
+                fake_stmt = self.factory.statement(block_id + '_fake_stmt')
+                statements.append(fake_stmt)
+            blocks[block_id] = TAC_Block(block_id=block_id, statements=statements)
+
+        # set fallthrough edge
+        for block_id in blocks:
+            fallthrough_block_id = tac_fallthrough_edge.get(block_id, None)
+            if fallthrough_block_id is not None:
+                blocks[block_id].fallthrough_edge = blocks[fallthrough_block_id]
+
+        # inject a fake exit block to simplify the handling of CALLPRIVATE without successors
+        fake_exit_stmt = self.factory.statement('fake_exit')
+        fake_exit_block = TAC_Block(block_id='fake_exit', statements=[fake_exit_stmt])
+        blocks['fake_exit'] = fake_exit_block
+
+        return blocks
+
+    def parse_functions(self):
+        # Load facts
+        tac_block_function = load_csv_map(f"{self.target_dir}/InFunction.csv")
+        tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
+        tac_func_id_to_public = load_csv_map(f"{self.target_dir}/PublicFunction.csv")
+        tac_high_level_func_name = load_csv_map(f"{self.target_dir}/HighLevelFunctionName.csv")
+        tac_block_succ = load_csv_multimap(f"{self.target_dir}/LocalBlockEdge.csv")
+        tac_function_entry = load_csv(f"{self.target_dir}/IRFunctionEntry.csv")
+
+        tac_formal_args: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
+        for func_id, arg, pos in load_csv(f"{self.target_dir}/FormalArgs.csv"):
+            tac_formal_args[func_id].append((arg, int(pos)))
+
+        functions = dict()
+        for block_id, in tac_function_entry:
+            func_id = tac_block_function[block_id]
+            is_public = func_id in tac_func_id_to_public or func_id == '0x0'
+            is_fallback = tac_func_id_to_public.get(func_id, None) == '0x0'
+            high_level_name = 'fallback()' if is_fallback else tac_high_level_func_name[func_id]
+            formals = [var for var, _ in sorted(tac_formal_args[func_id], key=lambda x: x[1])]
+
+            blocks = [self.factory.block(id) for id in tac_function_blocks[func_id]]
+
+            function = TAC_Function(block_id, high_level_name, is_public, blocks, formals)
+            function.cfg = function.build_cfg(self.factory, tac_block_succ)
+            functions[func_id] = function
+
+            for b in blocks:
+                b.function = function
+
+        return functions
