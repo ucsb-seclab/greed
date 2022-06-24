@@ -41,9 +41,6 @@ class TAC_Function:
         cfg.bbs = list(cfg.graph.nodes())
         cfg._bb_at = {bb.id: bb for bb in cfg.bbs}
 
-        # find function root
-        bbs_with_no_preds = [bb for bb in cfg.bbs if len(bb.pred) == 0]
-        assert len(bbs_with_no_preds) == 1, f"Something went wrong while retrieving the root for function {self.id}"
-        cfg.root = bbs_with_no_preds[0]
+        cfg.root = factory.block(self.id)
 
         return cfg
