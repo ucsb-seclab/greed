@@ -26,7 +26,7 @@ setup(
     version='0.1.0',
     packages=find_packages(),
     install_requires=[
-        'ipython>=8.4.0',
+        'ipython>=7.16.3',
         'networkx>=2.5.1',
         'pysha3>=1.0.2',
         'solc-select>=0.2.1',
