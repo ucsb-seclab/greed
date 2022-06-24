@@ -17,6 +17,8 @@ pip install -e SEtaac
 ### Usage
 First, the contract needs to be pre-processed with `gigahorse`. This can be done in three ways:
 ```bash
+# IMPORTANT: create a new folder 
+# Analyses will pollute the current working directory
 mkdir /tmp/test_contract
 cd /tmp/test_contract/
 
