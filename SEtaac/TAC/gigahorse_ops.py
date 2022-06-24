@@ -25,7 +25,7 @@ class TAC_Callprivate(TAC_Statement):
     __internal_name__ = "CALLPRIVATE"
     __aliases__ = {}
 
-    def get_target_bb(self, factory, function_id):
+    def get_target_bb(self, factory: "Factory", function_id: str):
         dest_var = self.arg_vars[0]
         dest_val = self.arg_vals[dest_var]
         target_bb_id = hex(dest_val)

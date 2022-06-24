@@ -4,7 +4,7 @@ from SEtaac.utils import concrete, translate_xid
 
 
 class SymbolicStorage(object):
-    def __init__(self, xid):
+    def __init__(self, xid: int):
         self.base = z3.Array('STORAGE_%d' % xid, z3.BitVecSort(256), z3.BitVecSort(256))
         self.storage = self.base
         self.accesses = list()
@@ -29,7 +29,7 @@ class SymbolicStorage(object):
     def all(self):
         return [a for t, a in self.accesses]
 
-    def copy(self, old_xid, new_xid):
+    def copy(self, old_xid: int, new_xid: int):
         new_storage = SymbolicStorage(new_xid)
         new_storage.base = translate_xid(self.base, old_xid, new_xid)
         new_storage.storage = translate_xid(self.storage, old_xid, new_xid)

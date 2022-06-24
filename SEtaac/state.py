@@ -98,7 +98,7 @@ class SymbolicEVMState:
         else:
             raise VMUnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
 
-    def import_context(self, state):
+    def import_context(self, state: "SymbolicEVMState"):
         self.storage = state.storage
 
         self.start_balance = state.balance

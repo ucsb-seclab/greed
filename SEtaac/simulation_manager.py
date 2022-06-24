@@ -1,14 +1,16 @@
 import logging
 import os
 import sys
+from typing import Callable
 
 from SEtaac.exceptions import VMException
+from SEtaac.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
 
 
 class SimulationManager:
-    def __init__(self, entry_state, keep_predecessors=0):
+    def __init__(self, entry_state: SymbolicEVMState, keep_predecessors: int = 0):
         self.keep_predecessors = keep_predecessors
         self.error = list()
         self._halt = False
@@ -25,7 +27,7 @@ class SimulationManager:
 
         self.active.append(entry_state)
 
-    def set_error(self, s):
+    def set_error(self, s: str):
         log.error(f'[ERROR] {s}')
         self.error += [s]
 
@@ -87,7 +89,7 @@ class SimulationManager:
         else:
             return None
 
-    def move(self, from_stash, to_stash, filter_func=lambda s: True):
+    def move(self, from_stash: str, to_stash: str, filter_func: Callable[[SymbolicEVMState], bool] = lambda s: True):
         """
         Move all the states that meet the filter_func condition from from_stash to to_stash
         :param from_stash: Source stash
@@ -108,7 +110,7 @@ class SimulationManager:
             new_active += successors
         self._stashes['active'] = new_active
 
-    def single_step_state(self, state):
+    def single_step_state(self, state: SymbolicEVMState):
         log.debug('Stepping {}'.format(state))
         log.debug(state.curr_stmt)
 
@@ -124,7 +126,7 @@ class SimulationManager:
 
         return successors
 
-    def run(self, find=lambda s: False):
+    def run(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False):
         """
         Run the simulation manager, until the `find` condition is met. The analysis will stop when there are no more
         active states or some states met the `find` condition (these will be moved to the found stash)

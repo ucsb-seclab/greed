@@ -1,5 +1,5 @@
 import logging
-from typing import List, Mapping
+from typing import List, Mapping, Callable
 
 from SEtaac.exceptions import VMException
 from SEtaac.state import SymbolicEVMState
@@ -88,7 +88,7 @@ class TAC_Statement(Aliased):
         # log.debug(f"{self.arg_vals, self.res_vals}")
 
     @staticmethod
-    def handler_without_side_effects(func):
+    def handler_without_side_effects(func: Callable[[SymbolicEVMState], List[SymbolicEVMState]]):
         """
         Decorator that executes the basic functionalities for handlers without side effects
         (can just read and return statically computed results).
@@ -117,7 +117,7 @@ class TAC_Statement(Aliased):
         return wrap
 
     @staticmethod
-    def handler_with_side_effects(func):
+    def handler_with_side_effects(func: Callable[[SymbolicEVMState], List[SymbolicEVMState]]):
         """
         Decorator that executes the basic functionalities for handlers with side effects
         (can't just read and return statically computed results).

@@ -1,12 +1,9 @@
 import logging
-from typing import TYPE_CHECKING
 
 from SEtaac.cfg import TAC_Block
 from SEtaac.simulation_manager import SimulationManager
 from SEtaac.state import SymbolicEVMState
 
-if TYPE_CHECKING:
-    from SEtaac.project import Project
 
 log = logging.getLogger(__name__)
 
