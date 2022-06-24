@@ -1,7 +1,7 @@
 import z3
 
 from SEtaac import utils
-from SEtaac.exceptions import SymbolicError
+from SEtaac.exceptions import VMSymbolicError
 from SEtaac.utils import concrete
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
@@ -194,7 +194,7 @@ class TAC_Exp(TAC_Statement):
                 l2 = utils.log2(self.base_val)
                 succ.registers[self.res1_var] = 1 << (l2 * self.exp_val)
             else:
-                raise SymbolicError('exponentiation with symbolic exponent currently not supported :-/')
+                raise VMSymbolicError('exponentiation with symbolic exponent currently not supported :-/')
 
         succ.set_next_pc()
         return [succ]
@@ -223,7 +223,7 @@ class TAC_Signextend(TAC_Statement):
             else:
                 succ.registers[self.res1_var] = self.arg2_val
         else:
-            raise SymbolicError('symbolic bitwidth for signextension is currently not supported')
+            raise VMSymbolicError('symbolic bitwidth for signextension is currently not supported')
 
         succ.set_next_pc()
         return [succ]
@@ -405,7 +405,7 @@ class TAC_Byte(TAC_Statement):
                     else:
                         succ.registers[self.res1_var] = z3.ZeroExt(256 - 32, v)
         else:
-            raise SymbolicError('symbolic byte-index not supported')
+            raise VMSymbolicError('symbolic byte-index not supported')
 
         succ.set_next_pc()
         return [succ]

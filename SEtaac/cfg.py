@@ -1,10 +1,12 @@
 import networkx as nx
+from typing import List
 
+from SEtaac.TAC import TAC_Statement
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
 
 
 class TAC_Block(object):
-    def __init__(self, statements, block_id):
+    def __init__(self, statements: List[TAC_Statement], block_id: str):
         # WARNING: assuming BB indexes are UNIQUE.
         self.id = block_id
         self.statements = statements
@@ -107,7 +109,7 @@ class CFG(object):
         self._bb_at = dict()
         self._dominators = None
 
-    def filter_stmt(self, names):
+    def filter_stmt(self, names: List[str]):
         if isinstance(names, str):
             names = [names]
         return [stmt for bb in self.bbs for stmt in bb.statements if stmt.__internal_name__ in names]

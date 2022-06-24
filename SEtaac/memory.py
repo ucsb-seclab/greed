@@ -1,6 +1,6 @@
 import z3
 
-from SEtaac.exceptions import SymbolicError
+from SEtaac.exceptions import VMSymbolicError
 from SEtaac.utils import concrete, translate_xid
 
 
@@ -17,7 +17,7 @@ class SymbolicMemory(object):
             if index.stop is None:
                 raise ValueError("Need upper memory address!")
             if (index.start is not None and not concrete(index.start)) or not concrete(index.stop):
-                raise SymbolicError("Use mem.read for symbolic range reads")
+                raise VMSymbolicError("Use mem.read for symbolic range reads")
             r = []
             for i in range(index.start or 0, index.stop, index.step or 1):
                 r.append(self[i])
@@ -35,7 +35,7 @@ class SymbolicMemory(object):
             if index.stop is None:
                 raise ValueError("Need upper memory address!")
             if (index.start is not None and not concrete(index.start)) or not concrete(index.stop):
-                raise SymbolicError("Use mem.write for symbolic range writes")
+                raise VMSymbolicError("Use mem.write for symbolic range writes")
             for j, i in enumerate(range(index.start or 0, index.stop, index.step or 1)):
                 self[i] = v[j]
         else:
@@ -82,7 +82,7 @@ class SymbolicMemory(object):
 
     def write(self, start, size, val):
         if not concrete(size):
-            raise SymbolicError("Write of symbolic length")
+            raise VMSymbolicError("Write of symbolic length")
         if len(val) != size:
             raise ValueError("value does not match length")
         if concrete(start) and concrete(size):

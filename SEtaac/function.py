@@ -1,16 +1,20 @@
 import logging
+from typing import List, Mapping
 
-from SEtaac.cfg import CFG
+from SEtaac.cfg import CFG, TAC_Block
+from SEtaac.factory import Factory
 
 
 class TAC_Function:
-    def __init__(self, id: str, name: str, public: bool, blocks: list, arguments: list):
+    def __init__(self, id: str, name: str, public: bool, blocks: List[TAC_Block], arguments: List[str]):
         self.id = id
         self.name = name
         self.public = public
         self.blocks = blocks
         self.arguments = arguments
+
         self.cfg = None
+
         self.calls = self._get_calls()
 
     def _get_calls(self):
@@ -22,7 +26,7 @@ class TAC_Function:
         return internal_calls
 
     # Building the intra-functional CFG of a target function.
-    def build_cfg(self, factory, tac_block_succ: dict):
+    def build_cfg(self, factory: Factory, tac_block_succ: Mapping[str, List[str]]):
         cfg = CFG()
         for bb in self.blocks:
             bb.cfg = cfg

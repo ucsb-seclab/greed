@@ -3,7 +3,7 @@ import z3
 from collections import defaultdict
 
 from SEtaac import utils
-from SEtaac.exceptions import VM_NoSuccessors, VM_UnexpectedSuccessors
+from SEtaac.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
 from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
@@ -72,7 +72,7 @@ class SymbolicEVMState:
     def set_next_pc(self):
         try:
             self.pc = self.get_next_pc()
-        except VM_NoSuccessors:
+        except VMNoSuccessors:
             self.halt = True
 
     def get_next_pc(self):
@@ -85,7 +85,7 @@ class SymbolicEVMState:
         if remaining_stmts:
             return remaining_stmts[0].id
         elif len(curr_bb.succ) == 0:
-            raise VM_NoSuccessors
+            raise VMNoSuccessors
         elif len(curr_bb.succ) == 1:
             return curr_bb.succ[0].first_ins.id
         elif len(curr_bb.succ) == 2:
@@ -96,7 +96,7 @@ class SymbolicEVMState:
             fallthrough_bb = curr_bb.fallthrough_edge
             return fallthrough_bb.first_ins.id
         else:
-            raise VM_UnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
+            raise VMUnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
 
     def import_context(self, state):
         self.storage = state.storage

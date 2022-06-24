@@ -1,27 +1,18 @@
-class TACparser_NO_OPS(Exception):
-    pass
-
-
 class VMException(Exception):
     pass
 
 
-class VM_NoSuccessors(VMException):
+class VMNoSuccessors(VMException):
     pass
 
 
-class VM_UnexpectedSuccessors(VMException):
+class VMUnexpectedSuccessors(VMException):
     pass
 
 
-class SymbolicError(VMException):
+class VMSymbolicError(VMException):
     pass
 
 
-class ExternalData(VMException):
+class VMExternalData(VMException):
     pass
-
-
-class IntractablePath(VMException):
-    def __init__(self, trace):
-        self.trace = tuple(trace)

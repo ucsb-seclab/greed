@@ -2,7 +2,7 @@ import logging
 import z3
 
 from SEtaac import utils
-from SEtaac.exceptions import SymbolicError
+from SEtaac.exceptions import VMSymbolicError
 from SEtaac.utils import concrete, is_sat, get_solver
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
@@ -105,8 +105,8 @@ class TAC_Jumpi(TAC_Statement):
 class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
 
-    def _handle(self, succ, gas_val=None, address_val=None, value_val=None, argsOffset_val=None, argsSize_val=None,
-                retOffset_val=None, retSize_val=None):
+    def _handle(self, succ: SymbolicEVMState, gas_val=None, address_val=None, value_val=None,
+                argsOffset_val=None, argsSize_val=None, retOffset_val=None, retSize_val=None):
         gas_val = gas_val if gas_val is not None else self.gas_val
         address_val = address_val if address_val is not None else self.address_val
         value_val = value_val if value_val is not None else self.value_val
@@ -126,7 +126,7 @@ class TAC_BaseCall(TAC_Statement):
                 succ.memory.copy_return_data(istart, ilen, ostart, olen)
                 succ.registers[self.res1_var] = 1
             else:
-                raise SymbolicError("Precompiled contract %d not implemented" % address_val)
+                raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
         else:
             for i in range(olen):
                 succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)

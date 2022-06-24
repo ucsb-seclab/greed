@@ -1,7 +1,7 @@
 import z3
 
 from SEtaac import utils
-from SEtaac.exceptions import ExternalData, SymbolicError, VMException
+from SEtaac.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.memory import SymRead
 from SEtaac.utils import concrete, is_true
 from .base import TAC_Statement
@@ -100,7 +100,7 @@ class TAC_Balance(TAC_Statement):
         elif is_true(utils.addr(self.address_val) == utils.addr(utils.ctx_or_symbolic('CALLER', succ.ctx, succ.xid))):
             succ.registers[self.res1_var] = utils.ctx_or_symbolic('BALANCE-CALLER', succ.ctx, succ.xid)
         else:
-            raise SymbolicError('balance of symbolic address (%s)' % str(z3.simplify(self.address_val)))
+            raise VMSymbolicError('balance of symbolic address (%s)' % str(z3.simplify(self.address_val)))
 
         succ.set_next_pc()
         return [succ]
@@ -246,7 +246,7 @@ class TAC_Codecopy(TAC_Statement):
                 else:
                     succ.memory[self.destOffset_val + i] = 0
         else:
-            raise SymbolicError('Symbolic code index @ %s' % succ.pc)
+            raise VMSymbolicError('Symbolic code index @ %s' % succ.pc)
 
         succ.set_next_pc()
         return [succ]
@@ -286,7 +286,7 @@ class TAC_Extcodesize(TAC_Statement):
         elif is_true(self.address_val == utils.addr(utils.ctx_or_symbolic('CALLER', succ.ctx, succ.xid))):
             succ.registers[self.res1_var] = utils.ctx_or_symbolic('CODESIZE-CALLER', succ.ctx, succ.xid)
         else:
-            raise SymbolicError('codesize of symblic address')
+            raise VMSymbolicError('codesize of symblic address')
 
         succ.set_next_pc()
         return [succ]
@@ -303,7 +303,7 @@ class TAC_Extcodecopy(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise ExternalData('EXTCODECOPY')
+        raise VMExternalData('EXTCODECOPY')
 
 
 class TAC_Returndatasize(TAC_Statement):
@@ -314,7 +314,7 @@ class TAC_Returndatasize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise ExternalData('RETURNDATASIZE')
+        raise VMExternalData('RETURNDATASIZE')
 
 
 class TAC_Returndatacopy(TAC_Statement):
@@ -327,7 +327,7 @@ class TAC_Returndatacopy(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise ExternalData('RETURNDATACOPY')
+        raise VMExternalData('RETURNDATACOPY')
 
 
 class TAC_Extcodehash(TAC_Statement):
@@ -339,7 +339,7 @@ class TAC_Extcodehash(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise ExternalData('EXTCODEHASH')
+        raise VMExternalData('EXTCODEHASH')
 
 
 class TAC_Blockhash(TAC_Statement):
@@ -354,7 +354,7 @@ class TAC_Blockhash(TAC_Statement):
         succ = state
 
         if not concrete(self.blockNumber_val):
-            raise SymbolicError('symbolic blockhash index')
+            raise VMSymbolicError('symbolic blockhash index')
         succ.registers[self.res1_var] = utils.ctx_or_symbolic('BLOCKHASH[%d]' % self.blockNumber_val, succ.ctx,
                                                               succ.xid)
 
@@ -509,7 +509,7 @@ class TAC_Revert(TAC_Statement):
         succ = state
 
         if not concrete(self.offset_val) or not concrete(self.size_val):
-            raise SymbolicError('symbolic memory index')
+            raise VMSymbolicError('symbolic memory index')
         succ.memory.extend(self.offset_val, self.size_val)
         succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.revert = True

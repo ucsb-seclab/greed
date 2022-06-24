@@ -8,14 +8,14 @@ from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.TAC.special_ops import TAC_Stop
 from SEtaac.cfg import TAC_Block
 from SEtaac.function import TAC_Function
+from SEtaac.factory import Factory
 from SEtaac.utils import load_csv, load_csv_map, load_csv_multimap
 
-l = logging.getLogger("tac_parser")
-l.setLevel(logging.INFO)
+log = logging.getLogger("tac_parser")
 
 
-class TACparser:
-    def __init__(self, factory, target_dir):
+class TAC_parser:
+    def __init__(self, factory: Factory, target_dir: str):
         self.factory = factory
         self.target_dir = target_dir
 
@@ -43,7 +43,7 @@ class TACparser:
         # parse all statements block after block
         statements = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
-            for stmt_id in sorted(tac_block_stmts[block_id], key=TACparser.stmt_sort_key):
+            for stmt_id in sorted(tac_block_stmts[block_id], key=TAC_parser.stmt_sort_key):
                 opcode = tac_op[stmt_id]
                 raw_uses = [var for var, _ in sorted(tac_uses[stmt_id], key=lambda x: x[1])]
                 raw_defs = [var for var, _ in sorted(tac_defs[stmt_id], key=lambda x: x[1])]
@@ -111,7 +111,7 @@ class TACparser:
         blocks = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
             statements = list()
-            for stmt_id in sorted(tac_block_stmts[block_id], key=TACparser.stmt_sort_key):
+            for stmt_id in sorted(tac_block_stmts[block_id], key=TAC_parser.stmt_sort_key):
                 statement = self.factory.statement(stmt_id)
                 statements.append(statement)
             if not statements:

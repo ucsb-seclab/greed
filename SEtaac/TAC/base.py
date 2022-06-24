@@ -1,4 +1,5 @@
 import logging
+from typing import List, Mapping
 
 from SEtaac.exceptions import VMException
 from SEtaac.state import SymbolicEVMState
@@ -6,18 +7,17 @@ from SEtaac.state import SymbolicEVMState
 log = logging.getLogger(__name__)
 
 
-class Aliased:
-    def __init__(self):
-        __aliases__ = []
+class Aliased(object):
+    __aliases__ = {}
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str):
         if key in object.__getattribute__(self, "__aliases__"):
             aliased_key = self.__aliases__[key]
             return object.__getattribute__(self, aliased_key)
         else:
             return object.__getattribute__(self, key)
 
-    def __setattr__(self, key, value):
+    def __setattr__(self, key: str, value):
         if key in object.__getattribute__(self, "__aliases__"):
             aliased_key = self.__aliases__[key]
             object.__setattr__(self, aliased_key, value)
@@ -27,9 +27,9 @@ class Aliased:
 
 class TAC_Statement(Aliased):
     __internal_name__ = None
-    __aliases__ = {}
 
-    def __init__(self, block_id, stmt_id, uses=[], defs=[], values={}):
+    def __init__(self, block_id: str, stmt_id: str, uses: List[str] = [], defs: List[str] = [],
+                 values: Mapping[str, str] = {}):
         super().__init__()
         self.block_id = block_id
         self.id = stmt_id
