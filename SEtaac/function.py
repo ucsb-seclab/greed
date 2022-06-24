@@ -15,15 +15,15 @@ class TAC_Function:
 
         self.cfg = None
 
-        self.calls = self._get_calls()
-
-    def _get_calls(self):
-        internal_calls = []
+    # todo: build callgraph
+    def get_call_targets(self, factory: Factory) -> List[str]:
+        call_targets = []
         for bb in self.blocks:
-            for s in bb.statements:
-                if s.__internal_name__ == "CALLPRIVATE":
-                    internal_calls.append(s.arg_vals[s.arg_vars[0]])
-        return internal_calls
+            for stmt in bb.statements:
+                if stmt.__internal_name__ == "CALLPRIVATE":
+                    target_bb = stmt.get_target_bb(factory, self.id)
+                    call_targets.append(target_bb.id)
+        return call_targets
 
     # Building the intra-functional CFG of a target function.
     def build_cfg(self, factory: Factory, tac_block_succ: Mapping[str, List[str]]):
