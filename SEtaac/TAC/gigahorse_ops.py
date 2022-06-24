@@ -25,17 +25,12 @@ class TAC_Callprivate(TAC_Statement):
     __internal_name__ = "CALLPRIVATE"
     __aliases__ = {}
 
-    def get_target_bb(self, factory: "Factory", function_id: str):
+    def get_target_bb_id(self):
         dest_var = self.arg_vars[0]
         dest_val = self.arg_vals[dest_var]
         target_bb_id = hex(dest_val)
 
-        target_bb = factory.block(target_bb_id + function_id)
-
-        if not target_bb:
-            target_bb = factory.block(target_bb_id)
-
-        return target_bb
+        return target_bb_id
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -44,7 +39,9 @@ class TAC_Callprivate(TAC_Statement):
         # read target
         curr_bb_id = succ.curr_stmt.block_id
         curr_bb = succ.project.factory.block(curr_bb_id)
-        target_bb = self.get_target_bb(succ.project.factory, curr_bb.function.id)
+
+        target_bb_id = self.get_target_bb_id()
+        target_bb = succ.project.factory.block(target_bb_id)
 
         # read arg-alias map
         args = self.arg_vars[1:]
