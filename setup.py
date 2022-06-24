@@ -31,6 +31,7 @@ setup(
         'pysha3>=1.0.2',
         'solc-select>=0.2.1',
         'z3-solver>=4.8.17.0',
+        'sympy>=1.9'
     ],
     cmdclass={
         'develop': CustomDevelopCommand,
