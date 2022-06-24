@@ -6,7 +6,7 @@ from SEtaac import TAC
 from SEtaac.TAC import tac_opcode_to_class_map
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.TAC.special_ops import TAC_Stop
-from SEtaac.cfg import TAC_Block
+from SEtaac.block import Block
 from SEtaac.function import TAC_Function
 from SEtaac.factory import Factory
 from SEtaac.utils import load_csv, load_csv_map, load_csv_multimap
@@ -118,7 +118,7 @@ class TAC_parser:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP
                 fake_stmt = self.factory.statement(block_id + '_fake_stmt')
                 statements.append(fake_stmt)
-            blocks[block_id] = TAC_Block(block_id=block_id, statements=statements)
+            blocks[block_id] = Block(block_id=block_id, statements=statements)
 
         # set fallthrough edge
         for block_id in blocks:
@@ -128,7 +128,7 @@ class TAC_parser:
 
         # inject a fake exit block to simplify the handling of CALLPRIVATE without successors
         fake_exit_stmt = self.factory.statement('fake_exit')
-        fake_exit_block = TAC_Block(block_id='fake_exit', statements=[fake_exit_stmt])
+        fake_exit_block = Block(block_id='fake_exit', statements=[fake_exit_stmt])
         fake_exit_block._succ = fake_exit_block._pred = fake_exit_block._ancestors = fake_exit_block._descendants = []
         blocks['fake_exit'] = fake_exit_block
 

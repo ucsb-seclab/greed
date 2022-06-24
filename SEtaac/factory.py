@@ -1,6 +1,6 @@
 import logging
 
-from SEtaac.cfg import TAC_Block
+from SEtaac.block import Block
 from SEtaac.simulation_manager import SimulationManager
 from SEtaac.state import SymbolicEVMState
 
@@ -20,11 +20,11 @@ class Factory:
         state.pc = self.block('0x0').first_ins.id
         return state
 
-    def function(self, function_id: str) -> TAC_Block:
+    def function(self, function_id: str) -> Block:
         return self.project.function_at.get(function_id, None)
 
-    def block(self, block_id: str) -> TAC_Block:
+    def block(self, block_id: str) -> Block:
         return self.project.block_at.get(block_id, None)
 
-    def statement(self, stmt_id: str) -> TAC_Block:
+    def statement(self, stmt_id: str) -> Block:
         return self.project.statement_at.get(stmt_id, None)

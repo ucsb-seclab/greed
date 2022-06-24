@@ -1,12 +1,13 @@
 import logging
 from typing import List, Mapping
 
-from SEtaac.cfg import CFG, TAC_Block
+from SEtaac.block import Block
+from SEtaac.cfg import CFG
 from SEtaac.factory import Factory
 
 
 class TAC_Function:
-    def __init__(self, id: str, name: str, public: bool, blocks: List[TAC_Block], arguments: List[str]):
+    def __init__(self, id: str, name: str, public: bool, blocks: List[Block], arguments: List[str]):
         self.id = id
         self.name = name
         self.public = public
