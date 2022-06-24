@@ -1,15 +1,5 @@
 #!/bin/bash
 
-if [[ $# = 0 ]]; then
-  echo usage: $0 \<contract .hex file\>
-  exit 1
-elif [ -f $1 ]; then
-  HEX_FILE=$1
-else
-  echo $1 is not a file
-  exit 1
-fi
-
 FILEPATH=`readlink -f "${BASH_SOURCE[0]}"`
 SETAAC_DIR=`dirname $FILEPATH`
 SETAAC_DIR=`readlink -f $SETAAC_DIR/../`

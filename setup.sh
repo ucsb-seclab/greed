@@ -10,15 +10,16 @@ cd $SETAAC_DIR
 git submodule update --init --recursive
 
 # link our clients into gigahorse-toolkit
-for c in $SETAAC_DIR/gigahorse_clients/*; do
-  CLIENT_ABS_PATH=`readlink -f $c`
-  ln -sf $CLIENT_ABS_PATH $SETAAC_DIR/gigahorse-toolchain/clients/
+for client in $SETAAC_DIR/gigahorse_clients/*; do
+  ln -sf $client $SETAAC_DIR/gigahorse-toolchain/clients/
 done
 
 # link our scripts into virtualenv's bin dir
-ln -sf $SETAAC_DIR/scripts/analyze_source.sh $VIRTUAL_ENV/bin/
-ln -sf $SETAAC_DIR/scripts/analyze_contract_hex.sh $VIRTUAL_ENV/bin/
-ln -sf $SETAAC_DIR/scripts/plot_cfg.py $VIRTUAL_ENV/bin/
+for script in $SETAAC_DIR/scripts/*; do
+  ln -sf $script $VIRTUAL_ENV/bin/
+done
+
+# create alias for run.py
 ln -sf $SETAAC_DIR/scripts/run.py $VIRTUAL_ENV/bin/SEtaac
 
 # this is needed by solc-select
