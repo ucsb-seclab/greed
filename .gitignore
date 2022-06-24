@@ -388,4 +388,18 @@ tests/test_*/*
 !tests/test_*/contract.hex
 !tests/test_*/contract.tac
 
+!tests/test_*/FormalArgs.csv
+!tests/test_*/HighLevelFunctionName.csv
+!tests/test_*/InFunction.csv
+!tests/test_*/IRFallthroughEdge.csv
+!tests/test_*/IRFunctionEntry.csv
+!tests/test_*/LocalBlockEdge.csv
+!tests/test_*/PublicFunction.csv
+!tests/test_*/TAC_Block.csv
+!tests/test_*/TAC_Def.csv
+!tests/test_*/TAC_Op.csv
+!tests/test_*/TAC_Use.csv
+!tests/test_*/TAC_Variable_Value.csv
+
+
 !gigahorse_clients/lib/**.so
