@@ -32,7 +32,6 @@ setup(
         'networkx>=2.5.1',
         'pysha3>=1.0.2',
         'solc-select>=0.2.1',
-        'teether@git+ssh://git@github.com/nescio007/teether.git',
         'web3>=5.29.2',
         'z3-solver>=4.8.17.0',
     ],
