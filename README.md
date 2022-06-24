@@ -33,6 +33,10 @@ analyze_deployment_hex.sh contract.deployment.hex
 # From the contract bytecode
 cp <contract_bytecode> contract.hex
 analyze_contract_hex.sh contract.hex
+
+# To get the decompiled source
+decompile.sh contract.hex
+
 ```
 
 The source analysis only works on `x86_64` systems. The bytecode analyses work on both `aarch64` and `x86_64`. 
