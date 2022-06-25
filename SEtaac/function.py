@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from typing import List, Mapping
 
 from SEtaac.block import Block
@@ -14,9 +15,16 @@ class TAC_Function:
         self.blocks = blocks
         self.arguments = arguments
 
+        # populate source -> target map
+        self.callprivate_source_target = self._get_callprivate_source_target()
+        # populate target -> source map
+        self.callprivate_target_sources = defaultdict(list)
+        for source, target in self.callprivate_source_target.items():
+            self.callprivate_target_sources[target].append(source)
+
         self.cfg = None
 
-    def get_callprivate_source_target(self) -> Mapping[str, str]:
+    def _get_callprivate_source_target(self) -> Mapping[str, str]:
         call_targets = dict()
         for bb in self.blocks:
             for stmt in bb.statements:
