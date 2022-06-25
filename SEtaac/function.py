@@ -22,6 +22,11 @@ class TAC_Function:
         for source, target in self.callprivate_source_target.items():
             self.callprivate_target_sources[target].append(source)
 
+        self.returnprivate_block_ids = [stmt.block_id
+                                        for bb in self.blocks
+                                        for stmt in bb.statements
+                                        if stmt.__internal_name__ == "RETURNPRIVATE"]
+
         self.cfg = None
 
     def _get_callprivate_source_target(self) -> Mapping[str, str]:
