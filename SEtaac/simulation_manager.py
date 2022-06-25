@@ -126,11 +126,13 @@ class SimulationManager:
 
         return successors
 
-    def run(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False):
+    def run(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
+            prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
         """
         Run the simulation manager, until the `find` condition is met. The analysis will stop when there are no more
         active states or some states met the `find` condition (these will be moved to the found stash)
         :param find: Function that will be called after each step. The matching states will be moved to the found stash
+        :param prune: Function that will be called after each step. The matching states will be moved to the pruned stash
         :return: None
         """
 
@@ -141,6 +143,7 @@ class SimulationManager:
 
                 self.move(from_stash='active', to_stash='found', filter_func=find)
                 self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
+                self.move(from_stash='active', to_stash='pruned', filter_func=prune)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
