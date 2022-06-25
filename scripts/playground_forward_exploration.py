@@ -76,7 +76,9 @@ def main(args):
     # target_block_id = '0x1820x16f'
     # target_block_id = '0x18e1' --> this is never found (lost in constraint solving)
     # target_block_id = '0x507' --> this is never found (lost in constraint solving)
-    target_block_id = args.addr
+    target_stmt_id = args.addr
+    target_stmt = p.factory.statement(target_stmt_id)
+    target_block_id = target_stmt.block_id
     target_block = p.factory.block(target_block_id)
 
     simgr = p.factory.simgr(entry_state=entry_state)
