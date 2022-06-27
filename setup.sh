@@ -23,12 +23,12 @@ arch=$(uname -i)
 cd $SETAAC_DIR
 
 # init the submodules (gigahorse-toolkit has submodules)
-echo "Initializing gigahorse submodule.."
+# echo "Initializing gigahorse submodule.."
 git submodule update --init --recursive
 
 # compile gigahorse clients
 command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (https://souffle-lang.github.io/build, version 2.0.2 preferred)${normal}"; exit 1; }
-dpkg -l | grep libboost-all-dev || echo "${bold}${red}libboost-all-dev is not installed. Please install it before proceeding (sudo apt install libboost-all-dev)${normal}"
+dpkg -l | grep -q libboost-all-dev || echo "${bold}${red}libboost-all-dev is not installed. Please install it before proceeding (sudo apt install libboost-all-dev)${normal}"
 
 echo "Compiling gigahorse clients. This will take some time.."
 echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
@@ -36,7 +36,9 @@ echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
 cd $GIGAHORSE_DIR/souffle-addon
 make &> /dev/null || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
 cd $SETAAC_DIR
-souffle --jobs 1 -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/main.dl_compiled $GIGAHORSE_DIR/logic/main.dl -L $GIGAHORSE_DIR/souffle-addon
+souffle --jobs 1 -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/logic/main.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build main.dl_compiled${normal}"; exit 1; }
+mv $GIGAHORSE_DIR/clients/main.dl_compiled $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/clients/main.dl_compiled
+mv $GIGAHORSE_DIR/clients/main.dl_compiled $GIGAHORSE_DIR/clients/main.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/main.dl_compiled.cpp
 
 # link our clients into gigahorse-toolkit
 echo "Linking clients into gigahorse-toolkit.."
