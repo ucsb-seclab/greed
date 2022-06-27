@@ -49,6 +49,7 @@ class SymbolicEVMState:
         self.MAX_CALLDATA_SIZE = 256
         self.calldata = z3.Array('CALLDATA_%d' % self.xid, z3.BitVecSort(256), z3.BitVecSort(8))
         self.calldatasize = z3.BitVec('CALLDATASIZE_%d' % self.xid, 256)
+        self.constraints.append(self.calldatasize < self.MAX_CALLDATA_SIZE + 1)
         self.calldata_accesses = [0]
 
     @property
@@ -67,6 +68,7 @@ class SymbolicEVMState:
     def solver(self):
         s = utils.get_solver()
         s.add(self.constraints)
+        # s.add(self.sha_constraints)
         return s
 
     def set_next_pc(self):

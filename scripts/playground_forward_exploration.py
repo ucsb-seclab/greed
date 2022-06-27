@@ -6,7 +6,7 @@ import z3
 import networkx as nx
 
 from SEtaac import Project
-from SEtaac.utils import gen_exec_id
+from SEtaac.utils import gen_exec_id, get_one_model, eval_one_array
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
@@ -76,18 +76,44 @@ def main(args):
     # target_block_id = '0x1820x16f'
     # target_block_id = '0x18e1' --> this is never found (lost in constraint solving)
     # target_block_id = '0x507' --> this is never found (lost in constraint solving)
-    target_stmt_id = args.addr
-    target_stmt = p.factory.statement(target_stmt_id)
-    target_block_id = target_stmt.block_id
-    target_block = p.factory.block(target_block_id)
+
+    if args.block:
+        target_block_id = args.block
+        target_block = p.factory.block(target_block_id)
+        target_stmt = target_block.first_ins
+    elif args.stmt:
+        target_stmt_id = args.stmt
+        target_stmt = p.factory.statement(target_stmt_id)
+        target_block = p.factory.block(target_stmt.block_id)
+    else:
+        print('Please specify either a target statement or a target block.')
+        exit(1)
+
+    if not target_stmt:
+        print('Target not found.')
+        exit(1)
 
     simgr = p.factory.simgr(entry_state=entry_state)
 
     try:
-        simgr.run(find=lambda s: s.curr_stmt.block_id == target_block_id,
+        simgr.run(find=lambda s: s.curr_stmt == target_stmt,
                   prune=lambda s: not is_indirectly_reachable(s, target_block))
     except KeyboardInterrupt:
         pass
+
+    found = simgr.one_found
+    print('found! now concretizing calldata...')
+
+    # this is to hi-jack a call
+    # found.curr_stmt.set_arg_val(found)
+    # found.constraints.append(found.curr_stmt.address_val == 0x41414141)
+    # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
+
+
+    s = found.solver
+    model = get_one_model(s)
+    calldata = bytes(eval_one_array(model, found.calldata, model[found.calldatasize].as_long())).hex()
+    print(f'CALLDATA: {calldata}')
 
     IPython.embed()
 
@@ -96,7 +122,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("target", type=str, action="store", help="Path to Gigahorse output folder")
-    parser.add_argument("--addr", type=str, action="store", help="Address of the target block")
+    parser.add_argument("--block", type=str, action="store", help="Address of the target block")
+    parser.add_argument("--stmt", type=str, action="store", help="Address of the target statement")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
 
     args = parser.parse_args()
