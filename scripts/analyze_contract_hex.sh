@@ -17,13 +17,13 @@ GIGAHORSE_DIR=$SETAAC_DIR/gigahorse-toolchain
 
 arch=$(uname -i)
 
-if [ ! -d $GIGAHORSE_DIR/clients/lib/$arch/ ]; then
-  echo Analysis not supported on arch $arch
+if [ ! -f $GIGAHORSE_DIR/clients/main.dl_compiled ]; then
+  echo "Can't find main.dl_compiled (something went wrong in setup.sh)"
   exit 1
 fi
 
 $GIGAHORSE_DIR/generatefacts $HEX_FILE facts &&
-LD_LIBRARY_PATH=$GIGAHORSE_DIR/clients/lib/$arch/ $GIGAHORSE_DIR/clients/main.$arch.dl_compiled -F facts &&
+LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/main.dl_compiled -F facts &&
 $GIGAHORSE_DIR/clients/visualizeout.py &&
 $GIGAHORSE_DIR/clients/check_bad_opcode.py
 
