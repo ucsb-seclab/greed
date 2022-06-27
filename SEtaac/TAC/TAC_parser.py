@@ -49,7 +49,7 @@ class TAC_parser:
                 raw_defs = [var for var, _ in sorted(tac_defs[stmt_id], key=lambda x: x[1])]
                 uses = ['v' + v.replace('0x', '') for v in raw_uses]
                 defs = ['v' + v.replace('0x', '') for v in raw_defs]
-                values = {v: val for v, val in tac_variable_value.items() if v in uses + defs}
+                values = {v: tac_variable_value.get(v, None) for v in uses + defs}
                 OpcodeClass = tac_opcode_to_class_map[opcode]
                 statement = OpcodeClass(block_id=block_id, stmt_id=stmt_id, uses=uses, defs=defs, values=values)
                 statements[stmt_id] = statement
