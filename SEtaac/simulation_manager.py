@@ -127,7 +127,8 @@ class SimulationManager:
         return successors
 
     def run(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
-            prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
+            prune: Callable[[SymbolicEVMState], bool] = lambda s: False,
+            find_all=False):
         """
         Run the simulation manager, until the `find` condition is met. The analysis will stop when there are no more
         active states or some states met the `find` condition (these will be moved to the found stash)
@@ -137,7 +138,12 @@ class SimulationManager:
         """
 
         try:
-            while len(self.active) > 0 and len(self.found) == 0 and not self._halt:
+            while len(self.active) > 0:
+                if len(self.found) > 0 and not find_all:
+                    break
+                elif self._halt:
+                    break
+
                 self.step()
                 self.insns_count += 1
 
