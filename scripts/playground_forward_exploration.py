@@ -2,11 +2,12 @@
 import IPython
 import argparse
 import logging
-import z3
 import networkx as nx
+import z3
+from collections import defaultdict
 
 from SEtaac import Project
-from SEtaac.utils import gen_exec_id, get_one_model, eval_one_array
+from SEtaac.utils import gen_exec_id, get_one_model, eval_one_array, get_all_terminals, get_solver
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
@@ -92,6 +93,9 @@ def main(args):
     if not target_stmt:
         print('Target not found.')
         exit(1)
+    elif not target_block:
+        print('Block not found.')
+        exit(1)
 
     simgr = p.factory.simgr(entry_state=entry_state)
 
@@ -109,11 +113,52 @@ def main(args):
     # found.constraints.append(found.curr_stmt.address_val == 0x41414141)
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
-
     s = found.solver
     model = get_one_model(s)
     calldata = bytes(eval_one_array(model, found.calldata, model[found.calldatasize].as_long())).hex()
     print(f'CALLDATA: {calldata}')
+
+    # todo: implement teether-style storage resolution
+    # # find storage offsets in constraints
+    # target_storage = dict()
+    # for t in get_all_terminals(s):
+    #     if t.decl().kind() == z3.Z3_OP_SELECT:
+    #         arr, idx = t.children()
+    #         if arr.decl() == found.storage.storage.decl():
+    #             target_storage[idx.as_long()] = model.eval(arr[idx], model_completion=True).as_long()
+    #
+    # # assume initial storage is all 0s
+    # initial_storage = {idx: 0 for idx in target_storage}
+    #
+    # # find writes to storage offsets in constraints
+    # storage_writes = defaultdict(list)
+    # for addr, stmt in p.statement_at.items():
+    #     if (stmt.__internal_name__ == 'SSTORE'):
+    #         if stmt.key_val and stmt.value_val:
+    #             storage_writes[addr].append((stmt.key_val, stmt.value_val))
+    #         else:
+    #             block = p.factory.block(stmt.block_id)
+    #
+    #             entry_state = p.factory.entry_state(xid=found.xid)
+    #             simgr_tmp = p.factory.simgr(entry_state=entry_state)
+    #             simgr_tmp.run(find=lambda s: s.curr_stmt == stmt,
+    #                           prune=lambda s: not is_indirectly_reachable(s, block),
+    #                           find_all=True)
+    #             for found_tmp in simgr_tmp.found:
+    #                 # todo: make found_tmp reach a RETURN statement before dumping this
+    #                 # todo: dump gadgets' side-effects
+    #                 found_tmp.curr_stmt.set_arg_val(found_tmp)
+    #                 storage_writes[addr].append({'idx': found_tmp.curr_stmt.key_val,
+    #                                              'value': found_tmp.curr_stmt.value_val,
+    #                                              'constraints': found_tmp.constraints,
+    #                                              'side-effects': None})
+    #
+    # # storage_writes are atomic, try to combine them to obtain the result that we want (found.storage.)
+    #
+    # s_tmp = get_solver()
+    # s_tmp.add(storage_writes['0x14a'][0]['constraints'])
+    # s_tmp.add(storage_writes['0x14a'][0]['value'] == target_storage[0])
+    # s_tmp.check()
 
     IPython.embed()
 

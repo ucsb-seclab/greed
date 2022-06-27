@@ -151,9 +151,6 @@ def get_all_models(solver, terminals, n_max=256):
 
 
 def get_all_constraints(solver, expression, model):
-    if isinstance(expression, (AbstractString, AbstractChar)):
-        expression = expression.bv_repr
-
     terminals = get_vars_non_recursive(solver, expression)
     return [t == model[t] for t in terminals]
 
@@ -207,10 +204,10 @@ def get_one_model(solver):
 
 
 def get_all_terminals(solver):
-    terminals = []
+    terminals = set()
 
     for expression in solver.assertions():
-        terminals += get_vars_non_recursive(expression, include_select=True)
+        terminals.update(get_vars_non_recursive(expression, include_select=True))
 
     return terminals
 
