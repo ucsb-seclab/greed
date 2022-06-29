@@ -1,5 +1,3 @@
-import z3
-
 from SEtaac.utils.exceptions import VMSymbolicError
 from SEtaac.utils import concrete, translate_xid
 

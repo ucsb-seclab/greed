@@ -28,6 +28,7 @@ class TAC_Callprivate(TAC_Statement):
     def get_target_bb_id(self):
         dest_var = self.arg_vars[0]
         dest_val = self.arg_vals[dest_var]
+        print('reached target'); exit()
         target_bb_id = hex(dest_val)
 
         return target_bb_id

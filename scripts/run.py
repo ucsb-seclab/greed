@@ -2,7 +2,6 @@
 import IPython
 import argparse
 import logging
-import z3
 
 from SEtaac import Project
 from SEtaac.utils import gen_exec_id

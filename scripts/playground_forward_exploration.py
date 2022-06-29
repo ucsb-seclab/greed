@@ -3,7 +3,6 @@ import IPython
 import argparse
 import logging
 import networkx as nx
-import z3
 from collections import defaultdict
 
 from SEtaac import Project
@@ -117,6 +116,7 @@ def execute_trace(entry_state, trace):
 
 def main(args):
     p = Project(target_dir=args.target)
+    import IPython; IPython.embed(); exit()
 
     if args.block:
         target_block_id = args.block

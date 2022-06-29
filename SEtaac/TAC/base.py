@@ -1,6 +1,7 @@
 import logging
 from typing import List, Mapping, Callable
 
+from SEtaac.utils.solver.shortcuts import BVV
 from SEtaac.utils.exceptions import VMException
 from SEtaac.state import SymbolicEVMState
 
@@ -47,9 +48,15 @@ class TAC_Statement(Aliased):
         self.num_ress = len(self.res_vars)
 
         # cast arg_vals to int
-        self.arg_vals = {x: int(v, 16) if v else v for x, v in self.arg_vals.items()}
+        # print('-'*10)
+        # print(self.arg_vals)
+        self.arg_vals = {x: BVV(int(v, 16)%(2**256), 256) if v else v for x, v in self.arg_vals.items()}
+        # print('done')
         # cast res_vals to int
-        self.res_vals = {x: int(v, 16) if v else v for x, v in self.res_vals.items()}
+        # print(self.res_vals)
+        self.res_vals = {x: BVV(int(v, 16)%(2**256), 256) if v else v for x, v in self.res_vals.items()}
+        # print('done')
+        # print('-'*10)
 
         self.process_args()
 

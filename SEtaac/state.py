@@ -1,5 +1,4 @@
 import datetime
-import z3
 from collections import defaultdict
 
 from SEtaac import utils

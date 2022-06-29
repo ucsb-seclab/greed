@@ -1,5 +1,3 @@
-import z3
-
 from SEtaac import utils
 from SEtaac.utils import concrete
 from .base import TAC_Statement

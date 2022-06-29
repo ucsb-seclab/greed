@@ -1,5 +1,4 @@
 import logging
-import z3
 
 from SEtaac import utils
 from SEtaac.utils.exceptions import VMSymbolicError
