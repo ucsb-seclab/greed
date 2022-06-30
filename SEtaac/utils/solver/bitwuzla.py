@@ -39,12 +39,16 @@ class Bitwuzla(Solver):
             Bitwuzla.BVS_cache[(symbol, width)] = Bitwuzla.BW.mk_const(Bitwuzla.BVSort(width), symbol=symbol)
         return Bitwuzla.BVS_cache[(symbol, width)]
 
-
     @staticmethod
     def bv_unsigned_value(bv):
         assert bv.is_bv_value()
         return int(bv.dump()[2:], 2)
 
+    @staticmethod
+    def get_clean_solver():
+        print('WARNING: resetting all assumptions')
+        Bitwuzla.reset_assumptions()
+        return Bitwuzla
 
     @staticmethod
     def is_sat():

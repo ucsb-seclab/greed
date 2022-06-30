@@ -4,7 +4,8 @@ import argparse
 import logging
 import networkx as nx
 from collections import defaultdict
-from SEtaac.utils.solver.shortcuts import get_solver
+from SEtaac.utils.solver.shortcuts import get_clean_solver, set_solver
+from SEtaac.utils.solver.bitwuzla import Bitwuzla
 
 from SEtaac import Project
 from SEtaac import options
@@ -119,6 +120,7 @@ def execute_trace(entry_state, trace):
 
 
 def main(args):
+    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     if args.block:

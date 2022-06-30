@@ -1,12 +1,18 @@
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.base import Solver
 
-SOLVER = Bitwuzla
+SOLVER = Solver
 
 
-def get_solver():
-    # print('WARNING: resetting all assumptions')
-    SOLVER.reset_assumptions()
-    return SOLVER
+def set_solver(solver):
+    global SOLVER
+    SOLVER = solver
+
+
+def get_clean_solver():
+    global SOLVER
+    if SOLVER is Solver:
+        raise Exception("Please set a solver first (e.g., set_solver(Bitwuzla))")
+    return SOLVER.get_clean_solver()
 
 
 def ctx_or_symbolic(v, ctx, xid):
