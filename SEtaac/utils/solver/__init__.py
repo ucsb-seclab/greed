@@ -164,8 +164,3 @@ def get_all_terminals(solver):
     #     terminals.update(get_vars_non_recursive(expression, include_select=True))
     #
     # return terminals
-
-
-def eval_one_array(solver, array, length):
-    solver.is_sat()
-    return [int(solver.BW.get_value_str(Array_Select(array, BVV(i, 256))), 2) for i in range(length)]

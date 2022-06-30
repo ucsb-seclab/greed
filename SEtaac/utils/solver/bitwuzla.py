@@ -271,3 +271,8 @@ class Bitwuzla(Solver):
     @staticmethod
     def Array_Select(arr, index):
         return Bitwuzla.BW.mk_term(pybitwuzla.Kind.ARRAY_SELECT, [arr, index])
+
+    @staticmethod
+    def eval_one_array(array, length):
+        Bitwuzla.is_sat()
+        return [int(Bitwuzla.BW.get_value_str(Bitwuzla.Array_Select(array, Bitwuzla.BVV(i, 256))), 2) for i in range(length)]
