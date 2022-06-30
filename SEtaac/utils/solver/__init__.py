@@ -1,4 +1,4 @@
-
+from SEtaac.utils.solver.shortcuts import *
 
 
 
@@ -238,6 +238,6 @@ def get_all_terminals(solver):
     # return terminals
 
 
-def eval_one_array(model, array, length):
-    raise Exception("This doesn't work")
-    # return [model.eval(array[i], model_completion=True).as_long() for i in range(length)]
+def eval_one_array(solver, array, length):
+    solver.is_sat()
+    return [int(solver.BW.get_value_str(Array_Select(array, BVV(i, 256))), 2) for i in range(length)]
