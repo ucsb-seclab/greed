@@ -1,6 +1,7 @@
 import logging
 
 from SEtaac import utils
+from SEtaac import options
 from SEtaac.utils.exceptions import VMSymbolicError
 from SEtaac.utils import concrete
 from .base import TAC_Statement
@@ -66,11 +67,16 @@ class TAC_Jumpi(TAC_Statement):
                 succ.set_next_pc()
                 return [succ]
         else:
-            # let's check if both branches are sat
-            s = get_solver()
-            s.add_assumptions(succ.constraints)
-            sat_true = s.is_sat_formula(NotEqual(cond, BVV(0, 256)))
-            sat_false = s.is_sat_formula(Equal(cond, BVV(0, 256)))
+            if options.LAZY_SOLVES:
+                # just collect the constraints
+                sat_true = True
+                sat_false = True
+            else:
+                # let's check if both branches are sat
+                s = get_solver()
+                s.add_assumptions(succ.constraints)
+                sat_true = s.is_sat_formula(NotEqual(cond, BVV(0, 256)))
+                sat_false = s.is_sat_formula(Equal(cond, BVV(0, 256)))
 
             if sat_true and sat_false:
                 # actually fork here
