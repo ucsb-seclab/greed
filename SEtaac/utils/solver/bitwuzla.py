@@ -30,13 +30,13 @@ class Bitwuzla(Solver):
     @staticmethod
     def BVV(value, width):
         if (value, width) not in Bitwuzla.BVV_cache:
-            Bitwuzla.BVV_cache[(value, width)] = Bitwuzla.BW.mk_bv_value(Bitwuzla.BW.mk_bv_sort(width), value)
+            Bitwuzla.BVV_cache[(value, width)] = Bitwuzla.BW.mk_bv_value(Bitwuzla.BVSort(width), value)
         return Bitwuzla.BVV_cache[(value, width)]
 
     @staticmethod
     def BVS(symbol, width):
         if (symbol, width) not in Bitwuzla.BVS_cache:
-            Bitwuzla.BVS_cache[(symbol, width)] = Bitwuzla.BW.mk_const(Bitwuzla.BW.mk_bv_sort(width), symbol=symbol)
+            Bitwuzla.BVS_cache[(symbol, width)] = Bitwuzla.BW.mk_const(Bitwuzla.BVSort(width), symbol=symbol)
         return Bitwuzla.BVS_cache[(symbol, width)]
 
 
