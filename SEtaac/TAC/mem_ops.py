@@ -43,7 +43,7 @@ class TAC_Mstore8(TAC_Statement):
         succ = state
 
         succ.memory.extend(self.offset_val, 1)
-        succ.memory[self.offset_val] = self.value_val % 256
+        succ.memory[self.offset_val] = BV_Extract(0, 7, self.value_val)
 
         succ.set_next_pc()
         return [succ]

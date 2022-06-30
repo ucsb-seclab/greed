@@ -40,12 +40,7 @@ class SymbolicMemory(object):
             if isinstance(v, str):
                 v = ord(v)
 
-            if concrete(v):
-                old_v = self[index]
-                if not concrete(old_v) or old_v != v:
-                    self.memory = Array_Store(self.memory, index, v)
-            else:
-                self.memory = Array_Store(self.memory, index, v)
+            self.memory = Array_Store(self.memory, index, v)
 
     def read(self, start, size):
         if concrete(start) and concrete(size):
