@@ -1,10 +1,12 @@
+from SEtaac.utils.solver.base import Solver
+
 import sys
 
 sys.path.insert(0, "/home/ruaronicola/bitwuzla/build/lib/")
 import pybitwuzla
 
 
-class Bitwuzla:
+class Bitwuzla(Solver):
     """
     This is a singleton class, and all methods are static
     """
