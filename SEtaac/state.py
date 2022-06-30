@@ -69,8 +69,8 @@ class SymbolicEVMState:
     @property
     def solver(self):
         s = get_solver()
-        s.add(self.constraints)
-        # s.add(self.sha_constraints)
+        s.add_assumptions(self.constraints)
+        # s.add_assumptions(self.sha_constraints)
         return s
 
     def set_next_pc(self):
