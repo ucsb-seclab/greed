@@ -1,6 +1,6 @@
 import sys
 
-sys.path.insert(0, "/home/ruaronicola/bitwuzla/build/lib/")
+sys.path.insert(0, "/home/ilgris/repos/SEtaac/bitwuzla/build/lib/")
 import pybitwuzla
 
 
@@ -50,7 +50,7 @@ class Bitwuzla:
 
     @staticmethod
     def is_unsat():
-        return not Bitwuzla.is_sat()
+        return not Bitwuzla.BW.check_sat() == pybitwuzla.Result.UNSAT
 
     @staticmethod
     def is_sat_formula(formula):
