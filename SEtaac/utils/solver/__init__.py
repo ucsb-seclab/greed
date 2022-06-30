@@ -1,29 +1,12 @@
 from SEtaac.utils.solver.shortcuts import *
 
 
+# NOTHING HERE WORKS ########
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-####### NOTHING HERE WORKS ########
 def concrete(v):
     return False
-    raise Exception("This doesn't work")
-    # return isinstance(v, numbers.Number)
+    # raise Exception("NOT IMPLEMENTED. Please replace with Solver.is_concrete()")
 
 
 def is_false(cond, s=None):

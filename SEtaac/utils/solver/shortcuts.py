@@ -79,6 +79,10 @@ def bv_unsigned_value(bv):
     return SOLVER.bv_unsigned_value(bv)
 
 
+def is_concrete(bv):
+    return SOLVER.is_concrete(bv)
+
+
 def BV_Extract(start, end, bv):
     return SOLVER.BV_Extract(start, end, bv)
 

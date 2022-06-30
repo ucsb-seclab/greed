@@ -45,6 +45,11 @@ class Bitwuzla(Solver):
         return int(bv.dump()[2:], 2)
 
     @staticmethod
+    def is_concrete(bv):
+        assert bv.is_bv(), "NOT IMPLEMENTED. This currently only supports BitVectors"
+        return bv.is_bv_value()
+
+    @staticmethod
     def get_clean_solver():
         print('WARNING: resetting all assumptions')
         Bitwuzla.reset_assumptions()

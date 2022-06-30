@@ -20,6 +20,10 @@ class Solver:
         raise Exception("Not implemented")
 
     @staticmethod
+    def is_concrete(bv):
+        raise Exception("Not implemented")
+
+    @staticmethod
     def get_clean_solver():
         raise Exception("Not implemented")
 
