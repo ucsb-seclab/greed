@@ -10,15 +10,31 @@ class Bitwuzla:
     """
 
     BW = pybitwuzla.Bitwuzla()
-    BV8Sort = BW.mk_bv_sort(8)
-    BV256Sort = BW.mk_bv_sort(256)
 
     BW.set_option(pybitwuzla.Option.PRODUCE_MODELS, 1)
     BW.set_option(pybitwuzla.Option.INCREMENTAL, True)
 
+    BVSort_cache = dict()
+    BVV_cache = dict()
+    BVS_cache = dict()
+
+    @staticmethod
+    def BVSort(width):
+        if width not in Bitwuzla.BVSort_cache:
+            Bitwuzla.BVSort_cache[width] = Bitwuzla.BW.mk_bv_sort(width)
+        return Bitwuzla.BVSort_cache[width]
+
     @staticmethod
     def BVV(value, width):
-        return Bitwuzla.BW.mk_bv_value(Bitwuzla.BW.mk_bv_sort(width), value)
+        if (value, width) not in Bitwuzla.BVV_cache:
+            Bitwuzla.BVV_cache[(value, width)] = Bitwuzla.BW.mk_bv_value(Bitwuzla.BW.mk_bv_sort(width), value)
+        return Bitwuzla.BVV_cache[(value, width)]
+
+    @staticmethod
+    def BVS(symbol, width):
+        if (symbol, width) not in Bitwuzla.BVS_cache:
+            Bitwuzla.BVS_cache[(symbol, width)] = Bitwuzla.BW.mk_const(Bitwuzla.BW.mk_bv_sort(width), symbol=symbol)
+        return Bitwuzla.BVS_cache[(symbol, width)]
 
     @staticmethod
     def BVS(symbol, width):

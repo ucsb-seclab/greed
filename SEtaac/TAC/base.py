@@ -48,15 +48,14 @@ class TAC_Statement(Aliased):
         self.num_ress = len(self.res_vars)
 
         # cast arg_vals to int
-        # print('-'*10)
-        # print(self.arg_vals)
-        self.arg_vals = {x: BVV(int(v, 16)%(2**256), 256) if v else v for x, v in self.arg_vals.items()}
-        # print('done')
+        for x, v in self.arg_vals.items():
+            if v:
+                self.arg_vals[x] = BVV(int(v, 16), 256)
+
         # cast res_vals to int
-        # print(self.res_vals)
-        self.res_vals = {x: BVV(int(v, 16)%(2**256), 256) if v else v for x, v in self.res_vals.items()}
-        # print('done')
-        # print('-'*10)
+        for x, v in self.res_vals.items():
+            if v:
+                self.res_vals[x] = BVV(int(v, 16), 256)
 
         self.process_args()
 
