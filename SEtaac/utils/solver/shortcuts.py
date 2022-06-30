@@ -1,4 +1,16 @@
-from . import SOLVER
+from SEtaac.utils.solver.bitwuzla import Bitwuzla
+
+SOLVER = Bitwuzla
+
+
+def get_solver():
+    print('WARNING: resetting all assumptions')
+    SOLVER.reset_assumptions()
+    return SOLVER
+
+
+def ctx_or_symbolic(v, ctx, xid):
+    return ctx.get(v, BVS(f'{v}_{xid}', 256))
 
 
 def BVSort(width):
@@ -98,8 +110,8 @@ def BV_Extract(start, end, bv):
     return SOLVER.BV_Extract(start, end, bv)
 
 
-def BV_Concat(a, b):
-    return SOLVER.BV_Concat(a, b)
+def BV_Concat(terms):
+    return SOLVER.BV_Concat(terms)
 
 
 def BV_Add(a, b):

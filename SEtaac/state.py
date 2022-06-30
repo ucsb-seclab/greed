@@ -1,11 +1,12 @@
 import datetime
 from collections import defaultdict
 
-from SEtaac import utils
+from SEtaac.utils import gen_uuid
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
 from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
+from SEtaac.utils.solver.shortcuts import *
 
 
 class SymbolicEVMState:
@@ -14,7 +15,7 @@ class SymbolicEVMState:
         self.project = project
         self.code = project.code
 
-        self.uuid = utils.gen_uuid()
+        self.uuid = gen_uuid()
 
         self._pc = None
         self.trace = list()
@@ -31,10 +32,12 @@ class SymbolicEVMState:
         self.revert = False
         self.error = None
 
-        self.gas = z3.BitVec('GAS_%d' % self.xid, 256)
-        self.start_balance = z3.BitVec('BALANCE_%d' % self.xid, 256)
+        self.gas = BVS(f'GAS_{self.xid}', 256)
+        self.start_balance = BVS(f'BALANCE_{self.xid}', 256)
         self.balance = self.start_balance
-        self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+
+        callvalue = ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+        self.balance = BV_Add(self.balance, callvalue)
 
         self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
@@ -46,9 +49,9 @@ class SymbolicEVMState:
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
         self.MAX_CALLDATA_SIZE = 256
-        self.calldata = z3.Array('CALLDATA_%d' % self.xid, z3.BitVecSort(256), z3.BitVecSort(8))
-        self.calldatasize = z3.BitVec('CALLDATASIZE_%d' % self.xid, 256)
-        self.constraints.append(self.calldatasize < self.MAX_CALLDATA_SIZE + 1)
+        self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+        self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+        self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
         self.calldata_accesses = [0]
 
     @property
@@ -65,7 +68,7 @@ class SymbolicEVMState:
 
     @property
     def solver(self):
-        s = utils.get_solver()
+        s = get_solver()
         s.add(self.constraints)
         # s.add(self.sha_constraints)
         return s
@@ -104,7 +107,7 @@ class SymbolicEVMState:
 
         self.start_balance = state.balance
         self.balance = self.start_balance
-        self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+        self.balance += ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
         self.constraints = state.constraints
         self.sha_constraints = state.sha_constraints

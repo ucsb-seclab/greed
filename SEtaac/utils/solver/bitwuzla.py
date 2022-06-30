@@ -18,6 +18,7 @@ class Bitwuzla:
     BVV_cache = dict()
     BVS_cache = dict()
 
+
     @staticmethod
     def BVSort(width):
         if width not in Bitwuzla.BVSort_cache:
@@ -50,6 +51,15 @@ class Bitwuzla:
     @staticmethod
     def is_unsat():
         return not Bitwuzla.is_sat()
+
+    @staticmethod
+    def is_sat_formula(formula):
+        Bitwuzla.push()
+        Bitwuzla.add_assumption(formula)
+        sat = Bitwuzla.is_sat()
+        Bitwuzla.pop()
+
+        return sat
 
     @staticmethod
     def push():
@@ -122,11 +132,11 @@ class Bitwuzla:
 
     @staticmethod
     def BV_Extract(start, end, bv):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_EXTRACT, [start, end, bv])
+        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_EXTRACT, [bv], [end, start])
 
     @staticmethod
-    def BV_Concat(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_CONCAT, [a, b])
+    def BV_Concat(terms):
+        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_CONCAT, terms)
 
     @staticmethod
     def BV_Add(a, b):
@@ -162,11 +172,11 @@ class Bitwuzla:
 
     @staticmethod
     def BV_Sign_Extend(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SIGN_EXTEND, [a, b])
+        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SIGN_EXTEND, [a], [b])
 
     @staticmethod
     def BV_Zero_Extend(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_ZERO_EXTEND, [a, b])
+        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_ZERO_EXTEND, [a], [b])
 
     @staticmethod
     def BV_UGE(a, b):

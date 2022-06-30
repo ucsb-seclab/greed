@@ -3,6 +3,8 @@ from SEtaac.utils import concrete
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
+from SEtaac.utils.solver.shortcuts import *
+
 __all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize']
 
 
@@ -22,11 +24,8 @@ class TAC_Mstore(TAC_Statement):
             succ.memory.write(self.offset_val, 32, utils.encode_int32(self.value_val))
         else:
             for i in range(32):
-                m = z3.simplify(z3.Extract((31 - i) * 8 + 7, (31 - i) * 8, self.value_val))
-                if z3.is_bv_value(m):
-                    succ.memory[self.offset_val + i] = m.as_long()
-                else:
-                    succ.memory[self.offset_val + i] = m
+                m = BV_Extract((31 - i) * 8, (31 - i) * 8 + 7, self.value_val)
+                succ.memory[BV_Add(self.offset_val, BVV(i, 256))] = m
 
         succ.set_next_pc()
         return [succ]

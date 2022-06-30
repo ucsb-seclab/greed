@@ -1,9 +1,11 @@
 from SEtaac.utils import concrete, translate_xid
 
+from SEtaac.utils.solver.shortcuts import BVSort, Array
+
 
 class SymbolicStorage(object):
     def __init__(self, xid: int):
-        self.base = z3.Array('STORAGE_%d' % xid, z3.BitVecSort(256), z3.BitVecSort(256))
+        self.base = Array(f'STORAGE_{xid}', BVSort(256), BVSort(256))
         self.storage = self.base
         self.accesses = list()
 

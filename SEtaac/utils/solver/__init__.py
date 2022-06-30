@@ -1,19 +1,3 @@
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
-
-SOLVER = Bitwuzla
-
-
-def get_solver():
-    print('WARNING: resetting all assumptions')
-    SOLVER.reset_assumptions()
-    return SOLVER
-
-
-
-
-
-
-
 
 
 
@@ -36,12 +20,8 @@ def get_solver():
 
 
 ####### NOTHING HERE WORKS ########
-def ctx_or_symbolic(v, ctx, xid):
-    raise Exception("This doesn't work")
-    # return ctx.get(v, z3.BitVec('%s_%d' % (v, xid), 256))
-
-
 def concrete(v):
+    return False
     raise Exception("This doesn't work")
     # return isinstance(v, numbers.Number)
 
@@ -70,43 +50,43 @@ def is_true(cond, s=None):
     # NOTE: This differs from `not is_false(cond)`, which corresponds to "may be true"
     # return is_false(z3.Not(cond), s)
 
+#
+# def is_unsat(cond, s=None):
+#     raise Exception("This doesn't work")
+#     # s = s or get_solver()
+#     #
+#     # # backup the solver
+#     # s.push()
+#     #
+#     # # add the constraint
+#     # s.add(cond)
+#     #
+#     # # check if sat
+#     # res = (s.check() == z3.unsat)
+#     #
+#     # # restore the solver
+#     # s.pop()
+#     #
+#     # return res
 
-def is_unsat(cond, s=None):
-    raise Exception("This doesn't work")
-    # s = s or get_solver()
-    #
-    # # backup the solver
-    # s.push()
-    #
-    # # add the constraint
-    # s.add(cond)
-    #
-    # # check if sat
-    # res = (s.check() == z3.unsat)
-    #
-    # # restore the solver
-    # s.pop()
-    #
-    # return res
 
-
-def is_sat(cond, s=None):
-    raise Exception("This doesn't work")
-    # s = s or get_solver()
-    #
-    # # backup the solver
-    # s.push()
-    #
-    # # add the constraint
-    # s.add(cond)
-    #
-    # # check if sat
-    # res = (s.check() == z3.sat)
-    #
-    # # restore the solver
-    # s.pop()
-    #
-    # return res
+# def is_sat(cond, s=None):
+#     raise Exception("This doesn't work")
+#     # s = s or get_solver()
+#     #
+#     # # backup the solver
+#     # s.push()
+#     #
+#     # # add the constraint
+#     # s.add(cond)
+#     #
+#     # # check if sat
+#     # res = (s.check() == z3.sat)
+#     #
+#     # # restore the solver
+#     # s.pop()
+#     #
+#     # return res
 
 
 def get_vars_non_recursive(f, include_select=False, include_indices=True):
@@ -139,6 +119,8 @@ def get_vars_non_recursive(f, include_select=False, include_indices=True):
 
 
 def translate_xid(expr, old_xid, new_xid):
+    return expr
+
     raise Exception("This doesn't work")
     # if old_xid == new_xid:
     #     return z3.substitute(expr, [])

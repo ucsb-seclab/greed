@@ -4,9 +4,10 @@ import argparse
 import logging
 import networkx as nx
 from collections import defaultdict
+from SEtaac.utils.solver.shortcuts import get_solver
 
 from SEtaac import Project
-from SEtaac.utils import gen_exec_id, get_one_model, eval_one_array, get_all_terminals, get_solver
+from SEtaac.utils import gen_exec_id, get_one_model, eval_one_array, get_all_terminals
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)

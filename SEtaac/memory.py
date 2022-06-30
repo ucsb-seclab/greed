@@ -1,12 +1,14 @@
 from SEtaac.utils.exceptions import VMSymbolicError
 from SEtaac.utils import concrete, translate_xid
 
+from SEtaac.utils.solver.shortcuts import *
+
 
 class SymbolicMemory(object):
     MAX_SYMBOLIC_WRITE_SIZE = 256
 
     def __init__(self):
-        self.memory = z3.K(z3.BitVecSort(256), z3.BitVecVal(0, 8))
+        self.memory = ConstArray('MEMORY', BVSort(256), BVSort(8), BVV(0, 8))
         self.write_count = 0
         self.read_count = 0
 
@@ -44,9 +46,9 @@ class SymbolicMemory(object):
             if concrete(v):
                 old_v = self[index]
                 if not concrete(old_v) or old_v != v:
-                    self.memory = z3.Store(self.memory, index, v)
+                    self.memory = Array_Store(self.memory, index, v)
             else:
-                self.memory = z3.Store(self.memory, index, v)
+                self.memory = Array_Store(self.memory, index, v)
 
     def read(self, start, size):
         if concrete(start) and concrete(size):

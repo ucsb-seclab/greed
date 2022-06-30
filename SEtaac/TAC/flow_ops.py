@@ -2,9 +2,11 @@ import logging
 
 from SEtaac import utils
 from SEtaac.utils.exceptions import VMSymbolicError
-from SEtaac.utils import concrete, is_sat, get_solver
+from SEtaac.utils import concrete
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
+
+from SEtaac.utils.solver.shortcuts import *
 
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
            'TAC_Delegatecall', 'TAC_Staticcall', ]
@@ -20,7 +22,7 @@ class TAC_Jump(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        target_bb_id = hex(self.destination_val)
+        target_bb_id = hex(bv_unsigned_value(self.destination_val))
         curr_bb_id = succ.curr_stmt.block_id
         curr_bb = succ.project.factory.block(curr_bb_id)
         target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
@@ -44,7 +46,7 @@ class TAC_Jumpi(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        target_bb_id = hex(self.destination_val)
+        target_bb_id = hex(bv_unsigned_value(self.destination_val))
         curr_bb_id = succ.curr_stmt.block_id
         curr_bb = succ.project.factory.block(curr_bb_id)
         target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
@@ -66,9 +68,9 @@ class TAC_Jumpi(TAC_Statement):
         else:
             # let's check if both branches are sat
             s = get_solver()
-            s.add(succ.constraints)
-            sat_true = is_sat(cond != 0, s)
-            sat_false = is_sat(cond == 0, s)
+            s.add_assumptions(succ.constraints)
+            sat_true = s.is_sat_formula(NotEqual(cond, BVV(0, 256)))
+            sat_false = s.is_sat_formula(Equal(cond, BVV(0, 256)))
 
             if sat_true and sat_false:
                 # actually fork here
@@ -76,22 +78,22 @@ class TAC_Jumpi(TAC_Statement):
                 succ_false = succ
 
                 succ_true.pc = dest
-                succ_true.constraints.append(cond != 0)
+                succ_true.constraints.append(NotEqual(cond, BVV(0, 256)))
 
                 succ_false.set_next_pc()
-                succ_false.constraints.append(cond == 0)
+                succ_false.constraints.append(Equal(cond, BVV(0, 256)))
 
                 return [succ_true, succ_false]
             elif sat_true:
                 # if only the true branch is sat, jump
                 succ.pc = dest
-                succ.constraints.append(cond != 0)
+                succ.constraints.append(NotEqual(cond, BVV(0, 256)))
 
                 return [succ]
             elif sat_false:
                 # if only the false branch is sat, step to the fallthrough branch
                 succ.set_next_pc()
-                succ.constraints.append(cond == 0)
+                succ.constraints.append(Equal(cond, BVV(0, 256)))
 
                 return [succ]
             else:

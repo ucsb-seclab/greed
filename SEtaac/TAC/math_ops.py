@@ -4,6 +4,8 @@ from SEtaac.utils import concrete
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
+from SEtaac.utils.solver.shortcuts import *
+
 __all__ = [
     'TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv',
     'TAC_Mod', 'TAC_Smod', 'TAC_Addmod', 'TAC_Mulmod', 'TAC_Exp',
@@ -21,7 +23,7 @@ class TAC_Add(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = self.arg1_val + self.arg2_val
+        succ.registers[self.res1_var] = BV_Add(self.arg1_val, self.arg2_val)
 
         succ.set_next_pc()
         return [succ]
@@ -35,7 +37,7 @@ class TAC_Sub(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = self.arg1_val - self.arg2_val
+        succ.registers[self.res1_var] = BV_Sub(self.arg1_val, self.arg2_val)
 
         succ.set_next_pc()
         return [succ]
@@ -49,7 +51,7 @@ class TAC_Mul(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = self.arg1_val * self.arg2_val
+        succ.registers[self.res1_var] = BV_Mul(self.arg1_val, self.arg2_val)
 
         succ.set_next_pc()
         return [succ]
@@ -63,16 +65,8 @@ class TAC_Div(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg2_val):
-            if self.arg2_val == 0:
-                succ.registers[self.res1_var] = 0
-            elif concrete(self.arg1_val):
-                succ.registers[self.res1_var] = self.arg1_val // self.arg2_val
-            else:
-                succ.registers[self.res1_var] = z3.UDiv(self.arg1_val, self.arg2_val)
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg2_val == 0, z3.BitVecVal(0, 256),
-                                                  z3.UDiv(self.arg1_val, self.arg2_val))
+        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
+                                           BV_UDiv(self.arg1_val, self.arg2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -86,15 +80,8 @@ class TAC_Sdiv(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
-            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else abs(self.arg1_val) // abs(self.arg2_val) * (
-                -1 if self.arg1_val * self.arg2_val < 0 else 1)
-        elif concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else self.arg1_val // self.arg2_val
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg2_val == 0, z3.BitVecVal(0, 256),
-                                                  self.arg1_val / self.arg2_val)
+        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
+                                           BV_SDiv(self.arg1_val, self.arg2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -108,11 +95,8 @@ class TAC_Mod(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else self.arg1_val % self.arg2_val
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg2_val == 0, z3.BitVecVal(0, 256),
-                                                  z3.URem(self.arg1_val, self.arg2_val))
+        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
+                                           BV_URem(self.arg1_val, self.arg2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -125,15 +109,8 @@ class TAC_Smod(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
-            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else abs(self.arg1_val) % abs(self.arg2_val) * (
-                -1 if self.arg1_val < 0 else 1)
-        elif concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 0 if self.arg2_val == 0 else z3.SRem(self.arg1_val, self.arg2_val)
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg2_val == 0, z3.BitVecVal(0, 256),
-                                                  z3.SRem(self.arg1_val, self.arg2_val))
+        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
+                                           BV_SRem(self.arg1_val, self.arg2_val))
 
         succ.set_next_pc()
         return [succ]
@@ -147,12 +124,15 @@ class TAC_Addmod(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.denominator_val):
-            succ.registers[self.res1_var] = (self.arg1_val + self.arg2_val) % \
-                                            self.denominator_val if self.denominator_val else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
-                                                  z3.URem((self.arg1_val + self.arg2_val), self.denominator_val))
+        # todo: might be over complicated
+        sext_arg1_val = BV_Zero_Extend(self.arg1_val, 256)
+        sext_arg2_val = BV_Zero_Extend(self.arg2_val, 256)
+        sext_arg3_val = BV_Zero_Extend(self.arg3_val, 256)
+        sext_add_res = BV_Add(sext_arg1_val, sext_arg2_val)
+        sext_mod_res = BV_URem(sext_add_res, sext_arg3_val)
+        mod_res = BV_Extract(0, 255, sext_mod_res)
+        succ.registers[self.res1_var] = If(Equal(self.denominator_val, BVV(0, 256)), BVV(0, 256),
+                                           mod_res)
 
         succ.set_next_pc()
         return [succ]
@@ -166,12 +146,15 @@ class TAC_Mulmod(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.denominator_val):
-            succ.registers[self.res1_var] = (self.arg1_val * self.arg2_val) % \
-                                            self.denominator_val if self.denominator_val else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(self.denominator_val == 0, z3.BitVecVal(0, 256),
-                                                  z3.URem((self.arg1_val * self.arg2_val), self.denominator_val))
+        # todo: might be over complicated
+        sext_arg1_val = BV_Zero_Extend(self.arg1_val, 256)
+        sext_arg2_val = BV_Zero_Extend(self.arg2_val, 256)
+        sext_arg3_val = BV_Zero_Extend(self.arg3_val, 256)
+        sext_mul_res = BV_Mul(sext_arg1_val, sext_arg2_val)
+        sext_mod_res = BV_URem(sext_mul_res, sext_arg3_val)
+        mod_res = BV_Extract(0, 255, sext_mod_res)
+        succ.registers[self.res1_var] = If(Equal(self.denominator_val, BVV(0, 256)), BVV(0, 256),
+                                           mod_res)
 
         succ.set_next_pc()
         return [succ]
@@ -185,14 +168,11 @@ class TAC_Exp(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.base_val) and concrete(self.exp_val):
-            succ.registers[self.res1_var] = pow(self.base_val, self.exp_val, utils.TT256)
+        if self.base_val.is_bv_value() and self.exp_val.is_bv_value():
+            res = pow(bv_unsigned_value(self.base_val), bv_unsigned_value(self.exp_val), utils.TT256)
+            succ.registers[self.res1_var] = BVV(res, 256)
         else:
-            if concrete(self.base_val) and utils.is_pow2(self.base_val):
-                l2 = utils.log2(self.base_val)
-                succ.registers[self.res1_var] = 1 << (l2 * self.exp_val)
-            else:
-                raise VMSymbolicError('exponentiation with symbolic exponent currently not supported :-/')
+            raise VMSymbolicError('exponentiation with symbolic exponent currently not supported :-/')
 
         succ.set_next_pc()
         return [succ]
@@ -205,19 +185,11 @@ class TAC_Signextend(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            if self.arg1_val <= 31:
-                testbit = self.arg1_val * 8 + 7
-                if self.arg2_val & (1 << testbit):
-                    succ.registers[self.res1_var] = self.arg2_val | (utils.TT256 - (1 << testbit))
-                else:
-                    succ.registers[self.res1_var] = self.arg2_val & ((1 << testbit) - 1)
-            else:
-                succ.registers[self.res1_var] = self.arg2_val
-        elif concrete(self.arg1_val):
-            if self.arg1_val <= 31:
-                oldwidth = (self.arg1_val + 1) * 8
-                succ.registers[self.res1_var] = z3.SignExt(256 - oldwidth, self.arg2_val)
+        if self.arg1_val.is_bv_value():
+            if bv_unsigned_value(self.arg1_val) <= 31:
+                oldwidth = (bv_unsigned_value(self.arg1_val) + 1) * 8
+                truncated = BV_Extract(0, oldwidth-1, self.arg2_val)
+                succ.registers[self.res1_var] = BV_Sign_Extend(truncated, 256 - oldwidth)
             else:
                 succ.registers[self.res1_var] = self.arg2_val
         else:
@@ -233,11 +205,8 @@ class TAC_Lt(TAC_Statement):
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 1 if self.arg1_val < self.arg2_val else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(z3.ULT(self.arg1_val, self.arg2_val), z3.BitVecVal(1, 256),
-                                                  z3.BitVecVal(0, 256))
+
+        succ.registers[self.res1_var] = If(BV_ULT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -250,11 +219,7 @@ class TAC_Gt(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 1 if self.arg1_val > self.arg2_val else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(z3.UGT(self.arg1_val, self.arg2_val), z3.BitVecVal(1, 256),
-                                                  z3.BitVecVal(0, 256))
+        succ.registers[self.res1_var] = If(BV_UGT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -267,12 +232,7 @@ class TAC_Slt(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
-            succ.registers[self.res1_var] = 1 if self.arg1_val < self.arg2_val else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg1_val < self.arg2_val, z3.BitVecVal(1, 256),
-                                                  z3.BitVecVal(0, 256))
+        succ.registers[self.res1_var] = If(BV_SLT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -285,12 +245,7 @@ class TAC_Sgt(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            self.arg1_val, self.arg2_val = utils.to_signed(self.arg1_val), utils.to_signed(self.arg2_val)
-            succ.registers[self.res1_var] = 1 if self.arg1_val > self.arg2_val else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg1_val > self.arg2_val, z3.BitVecVal(1, 256),
-                                                  z3.BitVecVal(0, 256))
+        succ.registers[self.res1_var] = If(BV_SGT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -303,11 +258,8 @@ class TAC_Eq(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val) and concrete(self.arg2_val):
-            succ.registers[self.res1_var] = 1 if self.arg1_val == self.arg2_val else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg1_val == self.arg2_val, z3.BitVecVal(1, 256),
-                                                  z3.BitVecVal(0, 256))
+        print(self.arg1_val.dump(), self.arg2_val.dump())
+        succ.registers[self.res1_var] = If(Equal(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -320,10 +272,7 @@ class TAC_Iszero(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg1_val):
-            succ.registers[self.res1_var] = 1 if self.arg1_val == 0 else 0
-        else:
-            succ.registers[self.res1_var] = z3.If(self.arg1_val == 0, z3.BitVecVal(1, 256), z3.BitVecVal(0, 256))
+        succ.registers[self.res1_var] = If(Equal(self.arg1_val, BVV(0, 256)), BVV(1, 256), BVV(0, 256))
 
         succ.set_next_pc()
         return [succ]
@@ -336,7 +285,7 @@ class TAC_And(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = self.arg1_val & self.arg2_val
+        succ.registers[self.res1_var] = BV_And(self.arg1_val, self.arg2_val)
 
         succ.set_next_pc()
         return [succ]
@@ -349,7 +298,7 @@ class TAC_Or(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = self.arg1_val | self.arg2_val
+        succ.registers[self.res1_var] = BV_Or(self.arg1_val, self.arg2_val)
 
         succ.set_next_pc()
         return [succ]
@@ -362,7 +311,7 @@ class TAC_Xor(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = self.arg1_val ^ self.arg2_val
+        succ.registers[self.res1_var] = BV_Xor(self.arg1_val, self.arg2_val)
 
         succ.set_next_pc()
         return [succ]
@@ -375,7 +324,7 @@ class TAC_Not(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = ~self.arg1_val
+        succ.registers[self.res1_var] = BV_Not(self.arg1_val)
 
         succ.set_next_pc()
         return [succ]
@@ -389,19 +338,18 @@ class TAC_Byte(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.offset_val):
-            if self.offset_val >= 32:
-                succ.registers[self.res1_var] = 0
+        if self.offset_val.is_bv_value():
+            if bv_unsigned_value(self.offset_val) >= 32:
+                succ.registers[self.res1_var] = BVV(0, 256)
             else:
-                if concrete(self.arg2_val):
-                    succ.registers[self.res1_var] = (self.arg2_val // 256 ** (31 - self.offset_val)) % 256
+                if self.arg2_val.is_bv_value():
+                    res = bv_unsigned_value(self.arg2_val) // 256 ** (31 - bv_unsigned_value(self.offset_val))
+                    succ.registers[self.res1_var] = BVV(res, 256)
                 else:
-                    v = z3.simplify(
-                        z3.Extract((31 - self.offset_val) * 8 + 7, (31 - self.offset_val) * 8, self.arg2_val))
-                    if z3.is_bv_value(v):
-                        succ.registers[self.res1_var] = v.as_long()
-                    else:
-                        succ.registers[self.res1_var] = z3.ZeroExt(256 - 32, v)
+                    start = (31 - bv_unsigned_value(self.offset_val)) * 8
+                    end = (31 - bv_unsigned_value(self.offset_val)) * 8 + 7
+                    v = BV_Extract(start, end, self.arg2_val)
+                    succ.registers[self.res1_var] = BV_Zero_Extend(v, 256 - 8)
         else:
             raise VMSymbolicError('symbolic byte-index not supported')
 
@@ -417,7 +365,7 @@ class TAC_Shl(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = self.arg2_val << self.shift_val
+        succ.registers[self.res1_var] = BV_Shl(self.arg2_val, self.arg1_val)
 
         succ.set_next_pc()
         return [succ]
@@ -431,10 +379,7 @@ class TAC_Shr(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if concrete(self.arg2_val) and concrete(self.shift_val):
-            succ.registers[self.res1_var] = self.arg2_val >> self.shift_val
-        else:
-            succ.registers[self.res1_var] = z3.LShR(self.arg2_val, self.shift_val)
+        succ.registers[self.res1_var] = BV_Shr(self.arg2_val, self.arg1_val)
 
         succ.set_next_pc()
         return [succ]
@@ -448,7 +393,14 @@ class TAC_Sar(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.registers[self.res1_var] = utils.to_signed(self.arg2_val) >> self.shift_val
+        # (n&msb) | (n>>shift)
+        msb_set = BV_Extract(255, 255, self.arg2_val)
+        shift_mask = BV_Shr(BVV(2**256-1, 256), self.shift_val)
+
+        shifted = BV_Shr(self.arg2_val, self.shift_val)
+        res = If(msb_set, BV_Or(shifted, BV_Not(shift_mask)), BV_And(shifted, shift_mask))
+
+        succ.registers[self.res1_var] = res
 
         succ.set_next_pc()
         return [succ]
