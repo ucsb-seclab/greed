@@ -52,7 +52,7 @@ class Bitwuzla(Solver):
 
     @staticmethod
     def is_unsat():
-        return not Bitwuzla.is_sat()
+        return Bitwuzla.BW.check_sat() == pybitwuzla.Result.UNSAT
 
     @staticmethod
     def is_sat_formula(formula):
