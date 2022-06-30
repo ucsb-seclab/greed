@@ -32,7 +32,19 @@ class Solver:
         raise Exception("Not implemented")
 
     @staticmethod
-    def is_sat_formula(formula):
+    def is_formula_sat(formula):
+        raise Exception("Not implemented")
+
+    @staticmethod
+    def is_formula_unsat(formula):
+        raise Exception("Not implemented")
+
+    @staticmethod
+    def is_formula_true(formula):
+        raise Exception("Not implemented")
+
+    @staticmethod
+    def is_formula_false(formula):
         raise Exception("Not implemented")
 
     @staticmethod

@@ -59,13 +59,30 @@ class Bitwuzla(Solver):
         return Bitwuzla.BW.check_sat() == pybitwuzla.Result.UNSAT
 
     @staticmethod
-    def is_sat_formula(formula):
+    def is_formula_sat(formula):
         Bitwuzla.push()
         Bitwuzla.add_assumption(formula)
         sat = Bitwuzla.is_sat()
         Bitwuzla.pop()
 
         return sat
+
+    @staticmethod
+    def is_formula_unsat(formula):
+        Bitwuzla.push()
+        Bitwuzla.add_assumption(formula)
+        sat = Bitwuzla.is_unsat()
+        Bitwuzla.pop()
+
+        return sat
+
+    @staticmethod
+    def is_formula_true(formula):
+        return Bitwuzla.is_formula_unsat(Bitwuzla.Not(formula))
+
+    @staticmethod
+    def is_formula_false(formula):
+        return Bitwuzla.is_formula_unsat(formula)
 
     @staticmethod
     def push():

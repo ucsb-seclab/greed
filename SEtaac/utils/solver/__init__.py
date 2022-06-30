@@ -27,66 +27,11 @@ def concrete(v):
 
 
 def is_false(cond, s=None):
-    raise Exception("This doesn't work")
-    # s = s or get_solver()
-    #
-    # # backup the solver
-    # s.push()
-    #
-    # # add the constraint
-    # s.add(cond)
-    #
-    # # check if sat
-    # res = (s.check() == z3.unsat)
-    #
-    # # restore the solver
-    # s.pop()
-    #
-    # return res
+    raise Exception("NOT IMPLEMENTED. Please replace with Solver.is_formula_false()")
 
 
 def is_true(cond, s=None):
-    raise Exception("This doesn't work")
-    # NOTE: This differs from `not is_false(cond)`, which corresponds to "may be true"
-    # return is_false(z3.Not(cond), s)
-
-#
-# def is_unsat(cond, s=None):
-#     raise Exception("This doesn't work")
-#     # s = s or get_solver()
-#     #
-#     # # backup the solver
-#     # s.push()
-#     #
-#     # # add the constraint
-#     # s.add(cond)
-#     #
-#     # # check if sat
-#     # res = (s.check() == z3.unsat)
-#     #
-#     # # restore the solver
-#     # s.pop()
-#     #
-#     # return res
-
-
-# def is_sat(cond, s=None):
-#     raise Exception("This doesn't work")
-#     # s = s or get_solver()
-#     #
-#     # # backup the solver
-#     # s.push()
-#     #
-#     # # add the constraint
-#     # s.add(cond)
-#     #
-#     # # check if sat
-#     # res = (s.check() == z3.sat)
-#     #
-#     # # restore the solver
-#     # s.pop()
-#     #
-#     # return res
+    raise Exception("NOT IMPLEMENTED. Please replace with Solver.is_formula_true()")
 
 
 def get_vars_non_recursive(f, include_select=False, include_indices=True):
