@@ -194,17 +194,16 @@ class TAC_Calldatacopy(TAC_Statement):
         succ = state
 
         succ.constraints.append(BV_UGE(succ.calldatasize, BV_Add(self.calldataOffset_val, self.size_val)))
-        succ.calldata_accesses.append(self.calldataOffset_val + self.size_val)
+        succ.calldata_accesses.append(BV_Add(self.calldataOffset_val, self.size_val))
         if not concrete(self.calldataOffset_val):
             succ.constraints.append(BV_ULT(self.calldataOffset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
-        if concrete(self.size_val):
-            for i in range(self.size_val):
-                succ.memory[self.destOffset_val + i] = succ.calldata[self.calldataOffset_val + i]
-        else:
-            succ.constraints.append(z3.ULT(self.size_val, succ.MAX_CALLDATA_SIZE))
-            for i in range(succ.MAX_CALLDATA_SIZE):
-                succ.memory[self.destOffset_val + i] = z3.If(self.size_val < i, succ.memory[self.destOffset_val + i],
-                                                             succ.calldata[self.calldataOffset_val + i])
+        succ.constraints.append(BV_ULT(self.size_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
+        for i in range(succ.MAX_CALLDATA_SIZE):
+            destOffset_plus_i = BV_Add(self.destOffset_val, BVV(i, 256))
+            calldataOffset_plus_i = BV_Add(self.calldataOffset_val, BVV(i, 256))
+            succ.memory[destOffset_plus_i] = If(BV_ULT(self.size_val, BVV(i, 256)),
+                                                succ.memory[destOffset_plus_i],
+                                                Array_Select(succ.calldata, calldataOffset_plus_i))
 
         succ.set_next_pc()
         return [succ]
