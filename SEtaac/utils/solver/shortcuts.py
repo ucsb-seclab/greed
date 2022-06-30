@@ -1,6 +1,10 @@
 from . import SOLVER
 
 
+def BVSort(width):
+    return SOLVER.BVSort(width)
+
+
 def BVV(value, width):
     return SOLVER.BVV(value, width)
 
