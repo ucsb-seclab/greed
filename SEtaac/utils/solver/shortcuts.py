@@ -13,6 +13,9 @@ def ctx_or_symbolic(v, ctx, xid):
     return ctx.get(v, BVS(f'{v}_{xid}', 256))
 
 
+# TYPES
+
+
 def BVSort(width):
     return SOLVER.BVSort(width)
 
@@ -23,46 +26,6 @@ def BVV(value, width):
 
 def BVS(symbol, width):
     return SOLVER.BVS(symbol, width)
-
-
-def bv_unsigned_value(bv):
-    return SOLVER.bv_unsigned_value(bv)
-
-
-def is_sat():
-    return SOLVER.is_sat()
-
-
-def is_unsat():
-    return SOLVER.is_unsat()
-
-
-def push():
-    return SOLVER.push()
-
-
-def pop():
-    return SOLVER.pop()
-
-
-def add_assumption(formula):
-    return SOLVER.add_assumption(formula)
-
-
-def add_assumptions(formulas):
-    return SOLVER.add_assumptions(formulas)
-
-
-def reset_assumptions():
-    return SOLVER.reset_assumptions()
-
-
-def fixate_assumptions():
-    return SOLVER.fixate_assumptions()
-
-
-def simplify():
-    return SOLVER.simplify()
 
 
 def Array(symbol, index_sort, value_sort):
@@ -104,6 +67,10 @@ def Not(a):
 
 
 # BV OPERATIONS
+
+
+def bv_unsigned_value(bv):
+    return SOLVER.bv_unsigned_value(bv)
 
 
 def BV_Extract(start, end, bv):
