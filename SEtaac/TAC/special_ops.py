@@ -32,7 +32,7 @@ class TAC_Sha3(TAC_Statement):
             succ.registers[self.res1_var] = utils.big_endian_to_int(utils.sha3(data))
         else:
             if not isinstance(mm, SymRead):
-                sha_data = z3.simplify(z3.Concat([m if z3.is_expr(m) else z3.BitVecVal(m, 8) for m in mm]))
+                sha_data = BV_Concat([m for m in mm])
                 for k, v in succ.sha_constraints.items():
                     if isinstance(v, SymRead):
                         continue
@@ -40,11 +40,11 @@ class TAC_Sha3(TAC_Statement):
                         sha = k
                         break
                 else:
-                    sha = z3.BitVec('SHA3_%x_%d' % (succ.instruction_count, succ.xid), 256)
+                    sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
                     succ.sha_constraints[sha] = sha_data
             else:
                 sha_data = mm
-                sha = z3.BitVec('SHA3_%x_%d' % (succ.instruction_count, succ.xid), 256)
+                sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
                 succ.sha_constraints[sha] = sha_data
             succ.registers[self.res1_var] = sha
 
@@ -100,7 +100,7 @@ class TAC_Balance(TAC_Statement):
         elif is_true(utils.addr(self.address_val) == utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid))):
             succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', succ.ctx, succ.xid)
         else:
-            raise VMSymbolicError('balance of symbolic address (%s)' % str(z3.simplify(self.address_val)))
+            raise VMSymbolicError('balance of symbolic address (%s)' % str(self.address_val))
 
         succ.set_next_pc()
         return [succ]
@@ -193,10 +193,10 @@ class TAC_Calldatacopy(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.constraints.append(z3.UGE(succ.calldatasize, self.calldataOffset_val + self.size_val))
+        succ.constraints.append(BV_UGE(succ.calldatasize, BV_Add(self.calldataOffset_val, self.size_val)))
         succ.calldata_accesses.append(self.calldataOffset_val + self.size_val)
         if not concrete(self.calldataOffset_val):
-            succ.constraints.append(z3.ULT(self.calldataOffset_val, succ.MAX_CALLDATA_SIZE))
+            succ.constraints.append(BV_ULT(self.calldataOffset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         if concrete(self.size_val):
             for i in range(self.size_val):
                 succ.memory[self.destOffset_val + i] = succ.calldata[self.calldataOffset_val + i]

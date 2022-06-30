@@ -1,6 +1,6 @@
 from SEtaac.utils import concrete, translate_xid
 
-from SEtaac.utils.solver.shortcuts import BVSort, Array
+from SEtaac.utils.solver.shortcuts import *
 
 
 class SymbolicStorage(object):
@@ -10,12 +10,12 @@ class SymbolicStorage(object):
         self.accesses = list()
 
     def __getitem__(self, index):
-        self.accesses.append(('read', index if concrete(index) else z3.simplify(index)))
-        return self.storage[index]
+        self.accesses.append(('read', index if concrete(index) else index))
+        return Array_Select(self.storage, index)
 
     def __setitem__(self, index, v):
-        self.accesses.append(('write', index if concrete(index) else z3.simplify(index)))
-        self.storage = z3.Store(self.storage, index, v)
+        self.accesses.append(('write', index if concrete(index) else index))
+        self.storage = Array_Store(self.storage, index, v)
 
     @property
     def reads(self):

@@ -116,24 +116,24 @@ class TAC_BaseCall(TAC_Statement):
         retOffset_val = retOffset_val if retOffset_val is not None else self.retOffset_val
         retSize_val = retSize_val if retSize_val is not None else self.retSize_val
 
-        ostart = retOffset_val if concrete(retOffset_val) else z3.simplify(retOffset_val)
-        olen = retSize_val if concrete(retSize_val) else z3.simplify(retSize_val)
+        ostart = retOffset_val if concrete(retOffset_val) else retOffset_val
+        olen = retSize_val if concrete(retSize_val) else retSize_val
 
         if concrete(address_val) and address_val <= 8:
             if address_val == 4:
                 logging.info("Calling precompiled identity contract")
-                istart = argsOffset_val if concrete(argsOffset_val) else z3.simplify(argsOffset_val)
-                ilen = argsSize_val if concrete(argsSize_val) else z3.simplify(argsSize_val)
+                istart = argsOffset_val if concrete(argsOffset_val) else argsOffset_val
+                ilen = argsSize_val if concrete(argsSize_val) else argsSize_val
                 succ.memory.copy_return_data(istart, ilen, ostart, olen)
                 succ.registers[self.res1_var] = 1
             else:
                 raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
         else:
             for i in range(olen):
-                succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
+                succ.memory[ostart + i] = BVS(f'EXT_{succ.instruction_count}_{i}_{succ.xid}', 8)
             log_address_val = address_val if concrete(address_val) else "<SYMBOLIC>"
-            logging.info("Calling contract %s (%d_%d)" % (log_address_val, succ.instruction_count, succ.xid))
-            succ.registers[self.res1_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
+            logging.info(f"Calling contract {log_address_val} ({succ.instruction_count}_{succ.xid})")
+            succ.registers[self.res1_var] = BVS(f'CALLRESULT_{succ.instruction_count}_{succ.xid}', 256)
 
         succ.set_next_pc()
         return [succ]
@@ -156,7 +156,7 @@ class TAC_Call(TAC_BaseCall):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.constraints.append(z3.UGE(succ.balance, self.value_val))
+        succ.constraints.append(BV_UGE(succ.balance, self.value_val))
         succ.balance -= self.value_val
 
         return self._handle(succ, value_val=self.value_val)

@@ -4,7 +4,7 @@ SOLVER = Bitwuzla
 
 
 def get_solver():
-    print('WARNING: resetting all assumptions')
+    # print('WARNING: resetting all assumptions')
     SOLVER.reset_assumptions()
     return SOLVER
 

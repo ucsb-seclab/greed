@@ -24,11 +24,8 @@ class SymbolicMemory(object):
             return r
         else:
             self.read_count += 1
-            v = z3.simplify(self.memory[index])
-            if z3.is_bv_value(v):
-                return v.as_long()
-            else:
-                return v
+            v = Array_Select(self.memory, index)
+            return v
 
     def __setitem__(self, index, v):
         if isinstance(index, slice):
@@ -103,10 +100,10 @@ class SymRead(object):
         self.memory = memory
         self.start = start
         if not concrete(start):
-            self.start = z3.simplify(self.start)
+            self.start = self.start
         self.size = size
         if not concrete(size):
-            self.size = z3.simplify(self.size)
+            self.size = self.size
 
     def translate(self, old_xid, new_xid):
         sym_mem_mem = translate_xid(self.memory.memory, old_xid, new_xid)

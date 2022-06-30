@@ -258,7 +258,6 @@ class TAC_Eq(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        print(self.arg1_val.dump(), self.arg2_val.dump())
         succ.registers[self.res1_var] = If(Equal(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
 
         succ.set_next_pc()
