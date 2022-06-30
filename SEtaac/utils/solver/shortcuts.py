@@ -9,6 +9,10 @@ def BVS(symbol, width):
     return SOLVER.BVS(symbol, width)
 
 
+def bv_unsigned_value(bv):
+    return SOLVER.bv_unsigned_value(bv)
+
+
 def is_sat():
     return SOLVER.is_sat()
 

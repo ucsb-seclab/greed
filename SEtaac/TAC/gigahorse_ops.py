@@ -3,6 +3,7 @@ import logging
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac.utils.exceptions import VMNoSuccessors
 from SEtaac.state import SymbolicEVMState
+from SEtaac.utils.solver.shortcuts import bv_unsigned_value
 
 __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Return', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
@@ -28,7 +29,7 @@ class TAC_Callprivate(TAC_Statement):
     def get_target_bb_id(self):
         dest_var = self.arg_vars[0]
         dest_val = self.arg_vals[dest_var]
-        target_bb_id = hex(dest_val)
+        target_bb_id = hex(bv_unsigned_value(dest_val))
 
         return target_bb_id
 

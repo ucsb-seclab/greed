@@ -116,7 +116,6 @@ def execute_trace(entry_state, trace):
 
 def main(args):
     p = Project(target_dir=args.target)
-    import IPython; IPython.embed(); exit()
 
     if args.block:
         target_block_id = args.block

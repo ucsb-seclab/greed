@@ -36,9 +36,12 @@ class Bitwuzla:
             Bitwuzla.BVS_cache[(symbol, width)] = Bitwuzla.BW.mk_const(Bitwuzla.BW.mk_bv_sort(width), symbol=symbol)
         return Bitwuzla.BVS_cache[(symbol, width)]
 
+
     @staticmethod
-    def BVS(symbol, width):
-        return Bitwuzla.BW.mk_const(Bitwuzla.BW.mk_bv_sort(width), symbol=symbol)
+    def bv_unsigned_value(bv):
+        assert bv.is_bv_value()
+        return int(bv.dump()[2:], 2)
+
 
     @staticmethod
     def is_sat():
