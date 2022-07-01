@@ -226,3 +226,7 @@ class Solver:
     @staticmethod
     def eval_one_array(array, length):
         raise Exception("Not implemented")
+
+    @staticmethod
+    def translate_xid(expr, old_xid, new_xid):
+        raise Exception("Not implemented")
