@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [ ! $VIRTUAL_ENV ]; then
+ echo "${bold}${red}Can't install outside of a Python virtualenv${normal}"; exit 1
+fi
+
 bold=$(tput bold)
 normal=$(tput sgr0)
 red=$(tput setaf 160)
