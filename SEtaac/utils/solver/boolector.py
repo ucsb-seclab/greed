@@ -9,16 +9,13 @@ class Boolector(Solver):
     """
 
     BW = Boolector()
+    bb = BW.Clone()
     BW.Set_opt(pyboolector.BTOR_OPT_INCREMENTAL, 1)
     BW.Set_opt(pyboolector.BTOR_OPT_MODEL_GEN, 1)
 
     BVSort_cache = dict()
     BVV_cache = dict()
     BVS_cache = dict()
-
-    ArrSort_cache = dict()
-    ArrV_cache = dict()
-    ArrS_cache = dict()
 
     @staticmethod
     def BVSort(width):
@@ -105,28 +102,13 @@ class Boolector(Solver):
 
     @staticmethod
     def Array(symbol, index_sort, value_sort):
-        if symbol not in Boolector.ArrV_cache:
-            if symbol not in Boolector.ArrSort_cache:
-                arr_type = Boolector.BW.ArraySort(index_sort, value_sort)
-                Boolector.ArrSort_cache[symbol] = arr_type
-            arr_v = Boolector.BW.Array(Boolector.ArrSort_cache[symbol], symbol=symbol)
-            Boolector.ArrV_cache[symbol] = arr_v
-            return arr_v
-        else:
-            return Boolector.ArrV_cache[symbol]
+        return Boolector.BW.Array(Boolector.BW.ArraySort(index_sort, value_sort), symbol=symbol)
 
     @staticmethod
     def ConstArray(symbol, index_sort, value_sort, default):
-        if symbol not in Boolector.ArrS_cache:
-            if symbol not in Boolector.ArrSort_cache:
-                arr_type = Boolector.BW.ArraySort(index_sort, value_sort)
-                Boolector.ArrSort_cache[symbol] = arr_type
-            res = Boolector.BW.ConstArray(Boolector.ArrSort_cache[symbol], default)
-            res.symbol = symbol
-            Boolector.ArrS_cache[symbol] = res
-            return res
-        else:
-            return Boolector.ArrS_cache[symbol]
+        res = Boolector.BW.ConstArray(Boolector.BW.ArraySort(index_sort, value_sort), default)
+        res.symbol = symbol
+        return res
 
     # CONDITIONAL OPERATIONS
 
@@ -136,6 +118,28 @@ class Boolector(Solver):
 
     # BOOLEAN OPERATIONS
 
+    #@staticmethod
+    #def Equal(a, b):
+    #    return Boolector.BW.Eq(a, b)
+
+    #@staticmethod
+    #def NotEqual(a, b):
+    #    return Boolector.BW.Ne(a, b)
+
+    #@staticmethod
+    #def Or(a, b):
+    #    return Boolector.BW.Or(a, b)
+
+    #@staticmethod
+    #def And(a, b):
+    #    return Boolector.BW.And(a, b)
+
+    #@staticmethod
+    #def Not(a):
+    #    return Boolector.BW.Not(a)
+
+    # BV OPERATIONS
+
     @staticmethod
     def Equal(a, b):
         return Boolector.BW.Eq(a, b)
@@ -143,20 +147,6 @@ class Boolector(Solver):
     @staticmethod
     def NotEqual(a, b):
         return Boolector.BW.Ne(a, b)
-
-    @staticmethod
-    def Or(a, b):
-        return Boolector.BW.Or(a, b)
-
-    @staticmethod
-    def And(a, b):
-        return Boolector.BW.And(a, b)
-
-    @staticmethod
-    def Not(a):
-        return Boolector.BW.Not(a)
-
-    # BV OPERATIONS
 
     @staticmethod
     def BV_Extract(start, end, bv):
