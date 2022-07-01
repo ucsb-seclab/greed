@@ -18,5 +18,6 @@ def is_true(cond, s=None):
 
 
 def translate_xid(expr, old_xid, new_xid):
-    print('WARNING: translate_xid might not work as expected')
+    if old_xid != new_xid:
+        raise Exception("NOT IMPLEMENTED")
     return expr
