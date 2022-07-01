@@ -16,7 +16,9 @@ def get_clean_solver():
 
 
 def ctx_or_symbolic(v, ctx, xid):
-    return ctx.get(v, BVS(f'{v}_{xid}', 256))
+    if v not in ctx:
+        ctx[v] = BVS(f'{v}_{xid}', 256)
+    return ctx[v]
 
 
 # TYPES
