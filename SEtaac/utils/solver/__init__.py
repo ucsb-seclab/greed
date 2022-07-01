@@ -5,7 +5,7 @@ from SEtaac.utils.solver.shortcuts import *
 
 
 def concrete(v):
-    print("concrete is NOT PROPERLY IMPLEMENTED. Please replace with Solver.is_concrete()")
+    print("WARNING: concrete is NOT PROPERLY IMPLEMENTED. Please replace with Solver.is_concrete()")
     return False
 
 
