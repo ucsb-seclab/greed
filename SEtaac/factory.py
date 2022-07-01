@@ -20,7 +20,7 @@ class Factory:
         state.pc = self.block('0x0').first_ins.id
         return state
 
-    def function(self, function_id: str) -> Block:
+    def function(self, function_id: str) -> "TAC_Function":
         return self.project.function_at.get(function_id, None)
 
     def block(self, block_id: str) -> Block:

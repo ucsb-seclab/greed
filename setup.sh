@@ -42,8 +42,6 @@ done
 echo "Creating alias run.py -> SEtaac.."
 ln -sf $SETAAC_DIR/scripts/run.py $VIRTUAL_ENV/bin/SEtaac
 
-echo $NO_GIGAHORSE
-
 if [ -z $NO_GIGAHORSE ]; then
   # compile gigahorse clients
   command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (https://souffle-lang.github.io/build, version 2.0.2 preferred)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
