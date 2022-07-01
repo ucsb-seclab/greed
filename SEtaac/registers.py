@@ -1,6 +1,3 @@
-from SEtaac.utils import concrete
-
-
 class SymbolicRegisters(dict):
     def __init__(self):
         super(SymbolicRegisters, self).__init__()

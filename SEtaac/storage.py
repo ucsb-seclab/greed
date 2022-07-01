@@ -1,4 +1,4 @@
-from SEtaac.utils import concrete, translate_xid
+from SEtaac.utils import translate_xid
 
 from SEtaac.utils.solver.shortcuts import *
 

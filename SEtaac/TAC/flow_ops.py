@@ -1,13 +1,11 @@
 import logging
 
-from SEtaac import utils
 from SEtaac import options
+from SEtaac import utils
 from SEtaac.utils.exceptions import VMSymbolicError
-from SEtaac.utils import concrete
+from SEtaac.utils.solver.shortcuts import *
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
-
-from SEtaac.utils.solver.shortcuts import *
 
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
            'TAC_Delegatecall', 'TAC_Staticcall', ]
@@ -58,9 +56,9 @@ class TAC_Jumpi(TAC_Statement):
         dest = target_bb.first_ins.id
         cond = self.condition_val
 
-        if concrete(cond):
+        if is_concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
-            if cond != 0:
+            if bv_unsigned_value(cond) != 0:
                 succ.pc = dest
                 return [succ]
             else:
