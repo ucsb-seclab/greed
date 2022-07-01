@@ -1,5 +1,7 @@
 from SEtaac.utils.solver.base import Solver
 
+SOLVER = Solver
+
 def set_solver(solver):
     global SOLVER
     SOLVER = solver

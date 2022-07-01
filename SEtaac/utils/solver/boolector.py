@@ -15,6 +15,9 @@ class Boolector:
     BVV_cache = dict()
     BVS_cache = dict()
 
+    ArrSort_cache = dict()
+    ArrV_cache = dict()
+    ArrS_cache = dict()
 
     @staticmethod
     def BVSort(width):
@@ -88,14 +91,35 @@ class Boolector:
         Boolector.BW.Simplify()
 
     @staticmethod
+    def get_clean_solver():
+        print('WARNING: resetting all assumptions')
+        Boolector.reset_assumptions()
+        return Boolector
+
+    @staticmethod
     def Array(symbol, index_sort, value_sort):
-        return Boolector.BW.Array(Boolector.BW.ArraySort(index_sort, value_sort), symbol=symbol)
+        if symbol not in Boolector.ArrV_cache:
+            if symbol not in Boolector.ArrSort_cache:
+                arr_type = Boolector.BW.ArraySort(index_sort, value_sort)
+                Boolector.ArrSort_cache[symbol] = arr_type
+            arr_v = Boolector.BW.Array(Boolector.ArrSort_cache[symbol], symbol=symbol)
+            Boolector.ArrV_cache[symbol] = arr_v
+            return arr_v
+        else:
+            return Boolector.ArrV_cache[symbol]
 
     @staticmethod
     def ConstArray(symbol, index_sort, value_sort, default):
-        res = Boolector.BW.ConstArray(Boolector.BW.ArraySort(index_sort, value_sort), default)
-        res.symbol = symbol
-        return res
+        if symbol not in Boolector.ArrS_cache:
+            if symbol not in Boolector.ArrSort_cache:
+                arr_type = Boolector.BW.ArraySort(index_sort, value_sort)
+                Boolector.ArrSort_cache[symbol] = arr_type
+            res = Boolector.BW.ConstArray(Boolector.ArrSort_cache[symbol], default)
+            res.symbol = symbol
+            Boolector.ArrS_cache[symbol] = res
+            return res
+        else:
+            return Boolector.ArrS_cache[symbol]
 
     # CONDITIONAL OPERATIONS
 
@@ -133,7 +157,10 @@ class Boolector:
 
     @staticmethod
     def BV_Concat(terms):
-        return Boolector.BW.Concat(terms)
+        res = Boolector.BW.Concat(terms[0], terms[1])
+        for i in range(2, len(terms)):
+            res = Boolector.BW.Concat(res, terms[i])
+        return res
 
     @staticmethod
     def BV_Add(a, b):
@@ -240,3 +267,9 @@ class Boolector:
     @staticmethod
     def Array_Select(arr, index):
         return Boolector.BW.Read(arr, index)
+
+    @staticmethod
+    def eval_one_array(array, length):
+        Boolector.is_sat()
+        return [int(Boolector.Array_Select(array, Boolector.BVV(i, 256)).assignment, 2) for i in
+                range(length)]
