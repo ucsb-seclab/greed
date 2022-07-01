@@ -121,7 +121,7 @@ def execute_trace(entry_state, trace):
 
 
 def main(args):
-    set_solver(Boolector)
+    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     if args.block:
