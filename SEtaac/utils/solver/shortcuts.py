@@ -1,7 +1,7 @@
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
-
-SOLVER = Bitwuzla
-
+#from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.boolector import Boolector
+#SOLVER = Bitwuzla
+SOLVER = Boolector
 
 def get_solver():
     # print('WARNING: resetting all assumptions')
