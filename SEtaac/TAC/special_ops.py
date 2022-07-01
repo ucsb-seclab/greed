@@ -1,5 +1,4 @@
 from SEtaac import utils
-from SEtaac.utils import is_true
 from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.utils.solver.shortcuts import *
 from .base import TAC_Statement
@@ -92,13 +91,14 @@ class TAC_Balance(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
+        s = get_clean_solver()
         if is_concrete(self.address_val):
             succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
-        elif is_true(utils.addr(self.address_val) == utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid))):
+        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):
             succ.registers[self.res1_var] = self.balance
-        elif is_true(utils.addr(self.address_val) == utils.addr(ctx_or_symbolic('ORIGIN', succ.ctx, succ.xid))):
+        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ORIGIN', succ.ctx, succ.xid)))):
             succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-ORIGIN', succ.ctx, succ.xid)
-        elif is_true(utils.addr(self.address_val) == utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid))):
+        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid)))):
             succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', succ.ctx, succ.xid)
         else:
             raise VMSymbolicError('balance of symbolic address (%s)' % str(self.address_val))
@@ -278,11 +278,12 @@ class TAC_Extcodesize(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
+        s = get_clean_solver()
         if is_concrete(self.address_val):
             succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
-        elif is_true(self.address_val == utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid))):
+        elif s.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):
             succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', succ.ctx, succ.xid)
-        elif is_true(self.address_val == utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid))):
+        elif s.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid)))):
             succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', succ.ctx, succ.xid)
         else:
             raise VMSymbolicError('codesize of symblic address')
