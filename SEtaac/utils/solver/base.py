@@ -226,6 +226,3 @@ class Solver:
     @staticmethod
     def eval_one_array(array, length):
         raise Exception("Not implemented")
-
-        Bitwuzla.is_sat()
-        return [int(Bitwuzla.BW.get_value_str(Array_Select(array, BVV(i, 256))), 2) for i in range(length)]

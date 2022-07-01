@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-import IPython
 import argparse
 import logging
+
 import networkx as nx
-from collections import defaultdict
-from SEtaac.utils.solver.shortcuts import get_clean_solver, set_solver
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
 
 from SEtaac import Project
 from SEtaac import options
-from SEtaac.utils import gen_exec_id, get_one_model, get_all_terminals
+from SEtaac.utils import gen_exec_id
+from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.shortcuts import set_solver
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
