@@ -1,8 +1,9 @@
 import pyboolector
 from pyboolector import Boolector
 
+from SEtaac.utils.solver.base import Solver
 
-class Boolector:
+class Boolector(Solver):
     """
     This is a singleton class, and all methods are static
     """
@@ -43,6 +44,12 @@ class Boolector:
         assert bv.bits
         return int(bv.bits, 2)
 
+    @staticmethod
+    def is_concrete(bv):
+        if type(bv) is pyboolector.BoolectorConstNode:
+            return True
+        else:
+            return False
 
     @staticmethod
     def is_sat():
