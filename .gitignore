@@ -405,3 +405,4 @@ tests/test_*/*
 !gigahorse_clients/lib/**.so
 
 bitwuzla/**
+boolector/**
