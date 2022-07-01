@@ -10,12 +10,16 @@ from SEtaac.utils.solver.shortcuts import *
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project):
+    def __init__(self, xid, project, partial_init=False):
         self.xid = xid
         self.project = project
         self.code = project.code
 
         self.uuid = gen_uuid()
+
+        if partial_init:
+            # this is only used when copying the state
+            return
 
         self._pc = None
         self.trace = list()
@@ -114,7 +118,7 @@ class SymbolicEVMState:
 
     def copy(self):
         # assume unchanged xid
-        new_state = SymbolicEVMState(self.xid, project=self.project)
+        new_state = SymbolicEVMState(self.xid, project=self.project, partial_init=True)
 
         new_state._pc = self._pc
         new_state.trace = list(self.trace)
@@ -128,11 +132,14 @@ class SymbolicEVMState:
 
         new_state.instruction_count = self.instruction_count
         new_state.halt = self.halt
+        new_state.revert = self.revert
         new_state.error = self.error
 
         new_state.gas = self.gas
         new_state.start_balance = self.start_balance
         new_state.balance = self.balance
+
+        new_state.ctx['CODESIZE-ADDRESS'] = self.ctx['CODESIZE-ADDRESS']
 
         new_state.constraints = list(self.constraints)
         new_state.sha_constraints = dict(self.sha_constraints)
