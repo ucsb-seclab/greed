@@ -198,7 +198,8 @@ class TAC_Calldatacopy(TAC_Statement):
         # succ.calldata_accesses.append(BV_Add(self.calldataOffset_val, self.size_val))
         if not is_concrete(self.calldataOffset_val):
             succ.constraints.append(BV_ULT(self.calldataOffset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
-        succ.constraints.append(BV_ULT(self.size_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
+        if not is_concrete(self.size_val):
+            succ.constraints.append(BV_ULT(self.size_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         for i in range(succ.MAX_CALLDATA_SIZE):
             destOffset_plus_i = BV_Add(self.destOffset_val, BVV(i, 256))
             calldataOffset_plus_i = BV_Add(self.calldataOffset_val, BVV(i, 256))
