@@ -56,7 +56,7 @@ class SymbolicEVMState:
         self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
         self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
         self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
-        self.calldata_accesses = [0]
+        # self.calldata_accesses = [0]
 
     @property
     def pc(self):
@@ -150,7 +150,7 @@ class SymbolicEVMState:
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
         new_state.calldata = self.calldata
         new_state.calldatasize = self.calldatasize
-        new_state.calldata_accesses = list(self.calldata_accesses)
+        # new_state.calldata_accesses = list(self.calldata_accesses)
 
         return new_state
 

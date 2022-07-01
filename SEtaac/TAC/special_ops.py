@@ -159,7 +159,7 @@ class TAC_Calldataload(TAC_Statement):
         succ = state
 
         succ.constraints.append(BV_UGE(succ.calldatasize, BV_Add(self.byte_offset_val, BVV(32, 256))))
-        succ.calldata_accesses.append(BV_Add(self.byte_offset_val, BVV(32, 256)))
+        # succ.calldata_accesses.append(BV_Add(self.byte_offset_val, BVV(32, 256)))
         if not is_concrete(self.byte_offset_val):
             succ.constraints.append(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         succ.registers[self.res1_var] = BV_Concat([Array_Select(succ.calldata, BV_Add(self.byte_offset_val, BVV(i, 256))) for i in range(32)])
@@ -195,7 +195,7 @@ class TAC_Calldatacopy(TAC_Statement):
         succ = state
 
         succ.constraints.append(BV_UGE(succ.calldatasize, BV_Add(self.calldataOffset_val, self.size_val)))
-        succ.calldata_accesses.append(BV_Add(self.calldataOffset_val, self.size_val))
+        # succ.calldata_accesses.append(BV_Add(self.calldataOffset_val, self.size_val))
         if not is_concrete(self.calldataOffset_val):
             succ.constraints.append(BV_ULT(self.calldataOffset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         succ.constraints.append(BV_ULT(self.size_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
@@ -604,7 +604,7 @@ class TAC_Selfdestruct(TAC_Statement):
         succ = state
 
         # todo: consider the target address
-        succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
+        # succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.halt = True
 
         return [succ]
