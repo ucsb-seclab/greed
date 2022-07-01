@@ -1,9 +1,6 @@
-from SEtaac.utils.solver.base import Solver
-
-import sys
-
-sys.path.insert(0, "/home/ilgris/repos/SEtaac/bitwuzla/build/lib/")
 import pybitwuzla
+
+from SEtaac.utils.solver.base import Solver
 
 
 class Bitwuzla(Solver):

@@ -1,13 +1,11 @@
 import logging
 
-from SEtaac import utils
 from SEtaac import options
+from SEtaac import utils
 from SEtaac.utils.exceptions import VMSymbolicError
-from SEtaac.utils import concrete
+from SEtaac.utils.solver.shortcuts import *
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
-
-from SEtaac.utils.solver.shortcuts import *
 
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
            'TAC_Delegatecall', 'TAC_Staticcall', ]
@@ -58,9 +56,9 @@ class TAC_Jumpi(TAC_Statement):
         dest = target_bb.first_ins.id
         cond = self.condition_val
 
-        if concrete(cond):
+        if is_concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
-            if cond != 0:
+            if bv_unsigned_value(cond) != 0:
                 succ.pc = dest
                 return [succ]
             else:
@@ -122,22 +120,23 @@ class TAC_BaseCall(TAC_Statement):
         retOffset_val = retOffset_val if retOffset_val is not None else self.retOffset_val
         retSize_val = retSize_val if retSize_val is not None else self.retSize_val
 
-        ostart = retOffset_val if concrete(retOffset_val) else retOffset_val
-        olen = retSize_val if concrete(retSize_val) else retSize_val
+        ostart = retOffset_val
+        olen = retSize_val
 
-        if concrete(address_val) and address_val <= 8:
-            if address_val == 4:
+        if is_concrete(address_val) and bv_unsigned_value(address_val) <= 8:
+            if bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
-                istart = argsOffset_val if concrete(argsOffset_val) else argsOffset_val
-                ilen = argsSize_val if concrete(argsSize_val) else argsSize_val
+                istart = argsOffset_val
+                ilen = argsSize_val
                 succ.memory.copy_return_data(istart, ilen, ostart, olen)
                 succ.registers[self.res1_var] = 1
             else:
                 raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
         else:
-            for i in range(olen):
-                succ.memory[ostart + i] = BVS(f'EXT_{succ.instruction_count}_{i}_{succ.xid}', 8)
-            log_address_val = address_val if concrete(address_val) else "<SYMBOLIC>"
+            assert is_concrete(ostart) and is_concrete(olen)
+            for i in range(bv_unsigned_value(olen)):
+                succ.memory[bv_unsigned_value(ostart) + i] = BVS(f'EXT_{succ.instruction_count}_{i}_{succ.xid}', 8)
+            log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
             logging.info(f"Calling contract {log_address_val} ({succ.instruction_count}_{succ.xid})")
             succ.registers[self.res1_var] = BVS(f'CALLRESULT_{succ.instruction_count}_{succ.xid}', 256)
 

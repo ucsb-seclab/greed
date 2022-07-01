@@ -1,20 +1,20 @@
-from SEtaac.utils import concrete, translate_xid
-
 from SEtaac.utils.solver.shortcuts import *
 
 
 class SymbolicStorage(object):
-    def __init__(self, xid: int):
+    def __init__(self, xid: int, partial_init=False):
+        if partial_init:
+            return
         self.base = Array(f'STORAGE_{xid}', BVSort(256), BVSort(256))
         self.storage = self.base
         self.accesses = list()
 
     def __getitem__(self, index):
-        self.accesses.append(('read', index if concrete(index) else index))
+        self.accesses.append(('read', index))
         return Array_Select(self.storage, index)
 
     def __setitem__(self, index, v):
-        self.accesses.append(('write', index if concrete(index) else index))
+        self.accesses.append(('write', index))
         self.storage = Array_Store(self.storage, index, v)
 
     @property
@@ -30,8 +30,10 @@ class SymbolicStorage(object):
         return [a for t, a in self.accesses]
 
     def copy(self, old_xid: int, new_xid: int):
-        new_storage = SymbolicStorage(new_xid)
-        new_storage.base = translate_xid(self.base, old_xid, new_xid)
-        new_storage.storage = translate_xid(self.storage, old_xid, new_xid)
-        new_storage.accesses = [(t, a if concrete(a) else translate_xid(a, old_xid, new_xid)) for t, a in self.accesses]
+        if old_xid != new_xid:
+            raise Exception("storage copy with different xid is not implemented. Please have a look")
+        new_storage = SymbolicStorage(new_xid, partial_init=True)
+        new_storage.base = self.base
+        new_storage.storage = self.storage
+        new_storage.accesses = self.accesses
         return new_storage
