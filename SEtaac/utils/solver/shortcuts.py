@@ -1,16 +1,22 @@
-#from SEtaac.utils.solver.bitwuzla import Bitwuzla
-from SEtaac.utils.solver.boolector import Boolector
-#SOLVER = Bitwuzla
-SOLVER = Boolector
+from SEtaac.utils.solver.base import Solver
 
-def get_solver():
-    # print('WARNING: resetting all assumptions')
-    SOLVER.reset_assumptions()
-    return SOLVER
+def set_solver(solver):
+    global SOLVER
+    SOLVER = solver
+
+
+def get_clean_solver():
+    global SOLVER
+    if SOLVER is Solver:
+        raise Exception("Please set a solver first (e.g., set_solver(Bitwuzla))")
+    return SOLVER.get_clean_solver()
 
 
 def ctx_or_symbolic(v, ctx, xid):
     return ctx.get(v, BVS(f'{v}_{xid}', 256))
+
+
+# TYPES
 
 
 def BVSort(width):
@@ -23,46 +29,6 @@ def BVV(value, width):
 
 def BVS(symbol, width):
     return SOLVER.BVS(symbol, width)
-
-
-def bv_unsigned_value(bv):
-    return SOLVER.bv_unsigned_value(bv)
-
-
-def is_sat():
-    return SOLVER.is_sat()
-
-
-def is_unsat():
-    return SOLVER.is_unsat()
-
-
-def push():
-    return SOLVER.push()
-
-
-def pop():
-    return SOLVER.pop()
-
-
-def add_assumption(formula):
-    return SOLVER.add_assumption(formula)
-
-
-def add_assumptions(formulas):
-    return SOLVER.add_assumptions(formulas)
-
-
-def reset_assumptions():
-    return SOLVER.reset_assumptions()
-
-
-def fixate_assumptions():
-    return SOLVER.fixate_assumptions()
-
-
-def simplify():
-    return SOLVER.simplify()
 
 
 def Array(symbol, index_sort, value_sort):
@@ -104,6 +70,14 @@ def Not(a):
 
 
 # BV OPERATIONS
+
+
+def bv_unsigned_value(bv):
+    return SOLVER.bv_unsigned_value(bv)
+
+
+def is_concrete(bv):
+    return SOLVER.is_concrete(bv)
 
 
 def BV_Extract(start, end, bv):

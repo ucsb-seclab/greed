@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-import IPython
 import argparse
 import logging
+
 import networkx as nx
-from collections import defaultdict
-from SEtaac.utils.solver.shortcuts import get_solver
 
 from SEtaac import Project
-from SEtaac.utils import gen_exec_id, get_one_model, eval_one_array, get_all_terminals
+from SEtaac import options
+from SEtaac.utils import gen_exec_id
+from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.shortcuts import set_solver
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
@@ -77,6 +78,7 @@ def find_paths_with_stmt(p, target_stmt):
     simgr = p.factory.simgr(entry_state=entry_state)
 
     try:
+        options.LAZY_SOLVES = True
         simgr.run(find=lambda s: s.curr_stmt == target_stmt,
                   prune=lambda s: not is_reachable(s, target_block),
                   find_all=True)
@@ -84,20 +86,21 @@ def find_paths_with_stmt(p, target_stmt):
         pass
 
     print('found! now getting to a STOP/RETURN...')
-    simgr.move(from_stash='found', to_stash='active')
-    simgr._stashes['deadended'] = []
-    simgr._stashes['pruned'] = []
-
-    target_stmts = [stmt for stmt in p.statement_at.values() if stmt.__internal_name__ in ['STOP', 'RETURN']]
-    target_blocks = [p.factory.block(stmt.block_id) for stmt in target_stmts]
-    try:
-        simgr.run(find=lambda s: s.curr_stmt in target_stmts,
-                  prune=lambda s: not any([is_reachable(s, target_block) for target_block in target_blocks]),
-                  find_all=True)
-    except KeyboardInterrupt:
-        pass
-
     return simgr.found
+    # simgr.move(from_stash='found', to_stash='active')
+    # simgr._stashes['deadended'] = []
+    # simgr._stashes['pruned'] = []
+    #
+    # target_stmts = [stmt for stmt in p.statement_at.values() if stmt.__internal_name__ in ['STOP', 'RETURN']]
+    # target_blocks = [p.factory.block(stmt.block_id) for stmt in target_stmts]
+    # try:
+    #     simgr.run(find=lambda s: s.curr_stmt in target_stmts,
+    #               prune=lambda s: not any([is_reachable(s, target_block) for target_block in target_blocks]),
+    #               find_all=True)
+    # except KeyboardInterrupt:
+    #     pass
+    #
+    # return simgr.found
 
 
 def execute_trace(entry_state, trace):
@@ -116,6 +119,7 @@ def execute_trace(entry_state, trace):
 
 
 def main(args):
+    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     if args.block:
@@ -139,17 +143,16 @@ def main(args):
 
     # todo: consider all critical paths
     critical_paths = find_paths_with_stmt(p, target_stmt)
-    # critical_path = critical_paths[0]
+    critical_path = critical_paths[0]
 
     # this is to hi-jack a call
     # found.curr_stmt.set_arg_val(found)
     # found.constraints.append(found.curr_stmt.address_val == 0x41414141)
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
-    # s = found.solver
-    # model = get_one_model(s)
-    # calldata = bytes(eval_one_array(model, found.calldata, model[found.calldatasize].as_long())).hex()
-    # print(f'CALLDATA: {calldata}')
+    solver = critical_path.solver
+    calldata = bytes(solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
+    print(f'CALLDATA: {calldata}')
 
     # # find storage offsets in constraints
     # critical_reads = dict()
