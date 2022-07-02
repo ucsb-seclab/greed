@@ -71,11 +71,8 @@ class TAC_Jumpi(TAC_Statement):
                 sat_false = True
             else:
                 # let's check if both branches are sat
-                s = get_clean_solver()
-                s.add_assumptions(succ.constraints)
-                sat_true = s.is_formula_sat(NotEqual(cond, BVV(0, 256)))
-                s.add_assumptions(succ.constraints)
-                sat_false = s.is_formula_sat(Equal(cond, BVV(0, 256)))
+                sat_true = succ.solver.is_formula_sat(NotEqual(cond, BVV(0, 256)))
+                sat_false = succ.solver.is_formula_sat(Equal(cond, BVV(0, 256)))
 
             if sat_true and sat_false:
                 # actually fork here
