@@ -1,232 +1,181 @@
+from contextlib import contextmanager
+
+
 class Solver:
     """
-    This is a singleton class, and all methods are static
+    This is a singleton class
     """
 
-    @staticmethod
-    def BVSort(width):
+    # def __init__(self):
+    #     self.solver = None
+    #     self.BVSort_cache = None
+    #     self.BVV_cache = None
+    #     self.BVS_cache = None
+
+    def BVSort(self, width):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BVV(value, width):
+    def BVV(self, value, width):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BVS(symbol, width):
+    def BVS(self, symbol, width):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def bv_unsigned_value(bv):
+    def bv_unsigned_value(self, bv):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def is_concrete(bv):
+    def is_concrete(self, bv):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def get_clean_solver():
+    def is_sat(self, ):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def is_sat():
+    def is_unsat(self, ):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def is_unsat():
+    def is_formula_sat(self, formula):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def is_formula_sat(formula):
+    def is_formula_unsat(self, formula):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def is_formula_unsat(formula):
+    def is_formula_true(self, formula):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def is_formula_true(formula):
+    def is_formula_false(self, formula):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def is_formula_false(formula):
+    def push(self, ):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def push():
+    def pop(self, ):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def pop():
+    def add_assertion(self, formula):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def add_assumption(formula):
+    def add_assertions(self, formulas):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def add_assumptions(formulas):
+    def reset_assumptions(self, ):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def reset_assumptions():
+    def fixate_assumptions(self, ):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def fixate_assumptions():
+    def simplify(self, ):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def simplify():
+    def Array(self, symbol, index_sort, value_sort):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def Array(symbol, index_sort, value_sort):
+    def ConstArray(self, symbol, index_sort, value_sort, default):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def ConstArray(symbol, index_sort, value_sort, default):
+    def If(self, cond, value_if_true, value_if_false):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def If(cond, value_if_true, value_if_false):
+    def Equal(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def Equal(a, b):
+    def NotEqual(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def NotEqual(a, b):
+    def Or(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def Or(a, b):
+    def And(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def And(a, b):
+    def Not(self, a):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def Not(a):
+    def BV_Extract(self, start, end, bv):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Extract(start, end, bv):
+    def BV_Concat(self, terms):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Concat(terms):
+    def BV_Add(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Add(a, b):
+    def BV_Sub(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Sub(a, b):
+    def BV_Mul(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Mul(a, b):
+    def BV_UDiv(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_UDiv(a, b):
+    def BV_SDiv(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_SDiv(a, b):
+    def BV_SMod(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_SMod(a, b):
+    def BV_SRem(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_SRem(a, b):
+    def BV_URem(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_URem(a, b):
+    def BV_Sign_Extend(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Sign_Extend(a, b):
+    def BV_Zero_Extend(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Zero_Extend(a, b):
+    def BV_UGE(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_UGE(a, b):
+    def BV_ULE(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_ULE(a, b):
+    def BV_UGT(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_UGT(a, b):
+    def BV_ULT(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_ULT(a, b):
+    def BV_SGE(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_SGE(a, b):
+    def BV_SLE(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_SLE(a, b):
+    def BV_SGT(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_SGT(a, b):
+    def BV_SLT(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_SLT(a, b):
+    def BV_And(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_And(a, b):
+    def BV_Or(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Or(a, b):
+    def BV_Xor(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Xor(a, b):
+    def BV_Not(self, a):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Not(a):
+    def BV_Shl(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Shl(a, b):
+    def BV_Shr(self, a, b):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def BV_Shr(a, b):
+    def Array_Store(self, arr, index, elem):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def Array_Store(arr, index, elem):
+    def Array_Select(self, arr, index):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def Array_Select(arr, index):
+    def eval_one_array(self, array, length):
         raise Exception("Not implemented")
 
-    @staticmethod
-    def eval_one_array(array, length):
-        raise Exception("Not implemented")
-
-    @staticmethod
-    def translate_xid(expr, old_xid, new_xid):
+    def translate_xid(self, expr, old_xid, new_xid):
         raise Exception("Not implemented")

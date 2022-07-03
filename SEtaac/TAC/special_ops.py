@@ -91,7 +91,7 @@ class TAC_Balance(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        s = get_clean_solver()
+        s = new_solver_context()
         if is_concrete(self.address_val):
             succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
         elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):
@@ -279,7 +279,7 @@ class TAC_Extcodesize(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        s = get_clean_solver()
+        s = new_solver_context()
         if is_concrete(self.address_val):
             succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
         elif s.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):

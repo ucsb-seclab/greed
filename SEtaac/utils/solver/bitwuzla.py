@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 import pybitwuzla
 
 from SEtaac.utils.solver.base import Solver
@@ -5,271 +7,211 @@ from SEtaac.utils.solver.base import Solver
 
 class Bitwuzla(Solver):
     """
-    This is a singleton class, and all methods are static
+    This is a singleton class
     """
 
-    BW = pybitwuzla.Bitwuzla()
+    def __init__(self):
+        # todo: force single instantiation
+        self.solver = pybitwuzla.Bitwuzla()
+        self.solver.set_option(pybitwuzla.Option.PRODUCE_MODELS, 1)
+        self.solver.set_option(pybitwuzla.Option.INCREMENTAL, True)
+        self.BVSort_cache = dict()
+        self.BVV_cache = dict()
+        self.BVS_cache = dict()
 
-    BW.set_option(pybitwuzla.Option.PRODUCE_MODELS, 1)
-    BW.set_option(pybitwuzla.Option.INCREMENTAL, True)
+    def BVSort(self, width):
+        if width not in self.BVSort_cache:
+            self.BVSort_cache[width] = self.solver.mk_bv_sort(width)
+        return self.BVSort_cache[width]
 
-    BVSort_cache = dict()
-    BVV_cache = dict()
-    BVS_cache = dict()
+    def BVV(self, value, width):
+        if (value, width) not in self.BVV_cache:
+            self.BVV_cache[(value, width)] = self.solver.mk_bv_value(self.BVSort(width), value)
+        return self.BVV_cache[(value, width)]
 
+    def BVS(self, symbol, width):
+        if (symbol, width) not in self.BVS_cache:
+            self.BVS_cache[(symbol, width)] = self.solver.mk_const(self.BVSort(width), symbol=symbol)
+        return self.BVS_cache[(symbol, width)]
 
-    @staticmethod
-    def BVSort(width):
-        if width not in Bitwuzla.BVSort_cache:
-            Bitwuzla.BVSort_cache[width] = Bitwuzla.BW.mk_bv_sort(width)
-        return Bitwuzla.BVSort_cache[width]
-
-    @staticmethod
-    def BVV(value, width):
-        if (value, width) not in Bitwuzla.BVV_cache:
-            Bitwuzla.BVV_cache[(value, width)] = Bitwuzla.BW.mk_bv_value(Bitwuzla.BVSort(width), value)
-        return Bitwuzla.BVV_cache[(value, width)]
-
-    @staticmethod
-    def BVS(symbol, width):
-        if (symbol, width) not in Bitwuzla.BVS_cache:
-            Bitwuzla.BVS_cache[(symbol, width)] = Bitwuzla.BW.mk_const(Bitwuzla.BVSort(width), symbol=symbol)
-        return Bitwuzla.BVS_cache[(symbol, width)]
-
-    @staticmethod
-    def bv_unsigned_value(bv):
+    def bv_unsigned_value(self, bv):
         assert bv.is_bv_value()
         return int(bv.dump()[2:], 2)
 
-    @staticmethod
-    def is_concrete(bv):
+    def is_concrete(self, bv):
         assert bv.is_bv(), "NOT IMPLEMENTED. This currently only supports BitVectors"
         return bv.is_bv_value()
 
-    @staticmethod
-    def get_clean_solver():
-        print('WARNING: resetting all assumptions')
-        Bitwuzla.reset_assumptions()
-        return Bitwuzla
+    def is_sat(self, ):
+        return self.solver.check_sat() == pybitwuzla.Result.SAT
 
-    @staticmethod
-    def is_sat():
-        return Bitwuzla.BW.check_sat() == pybitwuzla.Result.SAT
+    def is_unsat(self, ):
+        return self.solver.check_sat() == pybitwuzla.Result.UNSAT
 
-    @staticmethod
-    def is_unsat():
-        return Bitwuzla.BW.check_sat() == pybitwuzla.Result.UNSAT
-
-    @staticmethod
-    def is_formula_sat(formula):
-        Bitwuzla.push()
-        Bitwuzla.add_assumption(formula)
-        sat = Bitwuzla.is_sat()
-        Bitwuzla.pop()
+    def is_formula_sat(self, formula):
+        self.add_assumption(formula)
+        sat = self.is_sat()
 
         return sat
 
-    @staticmethod
-    def is_formula_unsat(formula):
-        Bitwuzla.push()
-        Bitwuzla.add_assumption(formula)
-        sat = Bitwuzla.is_unsat()
-        Bitwuzla.pop()
+    def is_formula_unsat(self, formula):
+        self.add_assumption(formula)
+        sat = self.is_unsat()
 
         return sat
 
-    @staticmethod
-    def is_formula_true(formula):
-        return Bitwuzla.is_formula_unsat(Bitwuzla.Not(formula))
+    def is_formula_true(self, formula):
+        return self.is_formula_unsat(self.Not(formula))
 
-    @staticmethod
-    def is_formula_false(formula):
-        return Bitwuzla.is_formula_unsat(formula)
+    def is_formula_false(self, formula):
+        return self.is_formula_unsat(formula)
 
-    @staticmethod
-    def push():
-        Bitwuzla.BW.push()
+    def push(self, ):
+        self.solver.push()
 
-    @staticmethod
-    def pop():
-        Bitwuzla.BW.pop()
+    def pop(self, ):
+        self.solver.pop()
 
-    @staticmethod
-    def add_assumption(formula):
-        # assumptions are discarded after each call to .check_sat
-        Bitwuzla.BW.assume_formula(formula)
+    def add_assertion(self, formula):
+        self.solver.assert_formula(formula)
 
-    @staticmethod
-    def add_assumptions(formulas):
-        Bitwuzla.BW.assume_formula(*formulas)
+    def add_assertions(self, formulas):
+        self.solver.assert_formula(*formulas)
 
-    @staticmethod
-    def reset_assumptions():
-        Bitwuzla.BW.reset_assumptions()
+    def add_assumption(self, formula):
+        # assumptions are discarded after each call to .check_sat, assertions are not
+        self.solver.assume_formula(formula)
 
-    @staticmethod
-    def fixate_assumptions():
-        Bitwuzla.BW.fixate_assumptions()
+    def add_assumptions(self, formulas):
+        self.solver.assume_formula(*formulas)
 
-    @staticmethod
-    def simplify():
-        Bitwuzla.BW.simplify()
+    def reset_assumptions(self, ):
+        self.solver.reset_assumptions()
 
-    @staticmethod
-    def Array(symbol, index_sort, value_sort):
-        return Bitwuzla.BW.mk_const(Bitwuzla.BW.mk_array_sort(index_sort, value_sort), symbol=symbol)
+    def fixate_assumptions(self, ):
+        self.solver.fixate_assumptions()
 
-    @staticmethod
-    def ConstArray(symbol, index_sort, value_sort, default):
-        res = Bitwuzla.BW.mk_const_array(Bitwuzla.BW.mk_array_sort(index_sort, value_sort), default)
+    def simplify(self, ):
+        self.solver.simplify()
+
+    def Array(self, symbol, index_sort, value_sort):
+        return self.solver.mk_const(self.solver.mk_array_sort(index_sort, value_sort), symbol=symbol)
+
+    def ConstArray(self, symbol, index_sort, value_sort, default):
+        res = self.solver.mk_const_array(self.solver.mk_array_sort(index_sort, value_sort), default)
         res.set_symbol(symbol)
         return res
 
     # CONDITIONAL OPERATIONS
 
-    @staticmethod
-    def If(cond, value_if_true, value_if_false):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.ITE, [cond, value_if_true, value_if_false])
+    def If(self, cond, value_if_true, value_if_false):
+        return self.solver.mk_term(pybitwuzla.Kind.ITE, [cond, value_if_true, value_if_false])
 
     # BOOLEAN OPERATIONS
 
-    @staticmethod
-    def Equal(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.EQUAL, [a, b])
+    def Equal(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.EQUAL, [a, b])
 
-    @staticmethod
-    def NotEqual(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.DISTINCT, [a, b])
+    def NotEqual(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.DISTINCT, [a, b])
 
-    @staticmethod
-    def Or(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.OR, [a, b])
+    def Or(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.OR, [a, b])
 
-    @staticmethod
-    def And(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.AND, [a, b])
+    def And(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.AND, [a, b])
 
-    @staticmethod
-    def Not(a):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.NOT, [a])
+    def Not(self, a):
+        return self.solver.mk_term(pybitwuzla.Kind.NOT, [a])
 
     # BV OPERATIONS
 
-    @staticmethod
-    def BV_Extract(start, end, bv):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_EXTRACT, [bv], [end, start])
+    def BV_Extract(self, start, end, bv):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_EXTRACT, [bv], [end, start])
 
-    @staticmethod
-    def BV_Concat(terms):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_CONCAT, terms)
+    def BV_Concat(self, terms):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_CONCAT, terms)
 
-    @staticmethod
-    def BV_Add(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_ADD, [a, b])
+    def BV_Add(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_ADD, [a, b])
 
-    @staticmethod
-    def BV_Sub(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SUB, [a, b])
+    def BV_Sub(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SUB, [a, b])
 
-    @staticmethod
-    def BV_Mul(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_MUL, [a, b])
+    def BV_Mul(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_MUL, [a, b])
 
-    @staticmethod
-    def BV_UDiv(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_UDIV, [a, b])
+    def BV_UDiv(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_UDIV, [a, b])
 
-    @staticmethod
-    def BV_SDiv(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SDIV, [a, b])
+    def BV_SDiv(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SDIV, [a, b])
 
-    @staticmethod
-    def BV_SMod(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SMOD, [a, b])
+    def BV_SMod(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SMOD, [a, b])
 
-    @staticmethod
-    def BV_SRem(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SREM, [a, b])
+    def BV_SRem(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SREM, [a, b])
 
-    @staticmethod
-    def BV_URem(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_UREM, [a, b])
+    def BV_URem(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_UREM, [a, b])
 
-    @staticmethod
-    def BV_Sign_Extend(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SIGN_EXTEND, [a], [b])
+    def BV_Sign_Extend(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SIGN_EXTEND, [a], [b])
 
-    @staticmethod
-    def BV_Zero_Extend(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_ZERO_EXTEND, [a], [b])
+    def BV_Zero_Extend(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_ZERO_EXTEND, [a], [b])
 
-    @staticmethod
-    def BV_UGE(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_UGE, [a, b])
+    def BV_UGE(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_UGE, [a, b])
 
-    @staticmethod
-    def BV_ULE(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_ULE, [a, b])
+    def BV_ULE(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_ULE, [a, b])
 
-    @staticmethod
-    def BV_UGT(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_UGT, [a, b])
+    def BV_UGT(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_UGT, [a, b])
 
-    @staticmethod
-    def BV_ULT(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_ULT, [a, b])
+    def BV_ULT(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_ULT, [a, b])
 
-    @staticmethod
-    def BV_SGE(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SGE, [a, b])
+    def BV_SGE(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SGE, [a, b])
 
-    @staticmethod
-    def BV_SLE(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SLE, [a, b])
+    def BV_SLE(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SLE, [a, b])
 
-    @staticmethod
-    def BV_SGT(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SGT, [a, b])
+    def BV_SGT(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SGT, [a, b])
 
-    @staticmethod
-    def BV_SLT(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SLT, [a, b])
+    def BV_SLT(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SLT, [a, b])
 
-    @staticmethod
-    def BV_And(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_AND, [a, b])
+    def BV_And(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_AND, [a, b])
 
-    @staticmethod
-    def BV_Or(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_OR, [a, b])
+    def BV_Or(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_OR, [a, b])
 
-    @staticmethod
-    def BV_Xor(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_XOR, [a, b])
+    def BV_Xor(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_XOR, [a, b])
 
-    @staticmethod
-    def BV_Not(a):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_NOT, [a])
+    def BV_Not(self, a):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_NOT, [a])
 
-    @staticmethod
-    def BV_Shl(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SHL, [a, b])
+    def BV_Shl(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SHL, [a, b])
 
-    @staticmethod
-    def BV_Shr(a, b):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.BV_SHR, [a, b])
+    def BV_Shr(self, a, b):
+        return self.solver.mk_term(pybitwuzla.Kind.BV_SHR, [a, b])
 
     # ARRAY OPERATIONS
 
-    @staticmethod
-    def Array_Store(arr, index, elem):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.ARRAY_STORE, [arr, index, elem])
+    def Array_Store(self, arr, index, elem):
+        return self.solver.mk_term(pybitwuzla.Kind.ARRAY_STORE, [arr, index, elem])
 
-    @staticmethod
-    def Array_Select(arr, index):
-        return Bitwuzla.BW.mk_term(pybitwuzla.Kind.ARRAY_SELECT, [arr, index])
+    def Array_Select(self, arr, index):
+        return self.solver.mk_term(pybitwuzla.Kind.ARRAY_SELECT, [arr, index])
 
-    @staticmethod
-    def eval_one_array(array, length):
-        Bitwuzla.is_sat()
-        return [int(Bitwuzla.BW.get_value_str(Bitwuzla.Array_Select(array, Bitwuzla.BVV(i, 256))), 2) for i in range(length)]
+    def eval_one_array(self, array, length):
+        self.is_sat()
+        return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]

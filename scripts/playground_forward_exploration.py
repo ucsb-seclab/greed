@@ -8,9 +8,7 @@ from SEtaac import Project
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
 from SEtaac.utils.solver.bitwuzla import Bitwuzla
-from SEtaac.utils.solver.boolector import Boolector
-
-from SEtaac.utils.solver.shortcuts import set_solver
+from SEtaac.utils.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
@@ -152,9 +150,9 @@ def main(args):
     # found.constraints.append(found.curr_stmt.address_val == 0x41414141)
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
-    solver = critical_path.solver
-    calldata = bytes(solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
-    print(f'CALLDATA: {calldata}')
+    with new_solver_context(critical_path) as solver:
+        calldata = bytes(solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
+        print(f'CALLDATA: {calldata}')
 
     # # find storage offsets in constraints
     # critical_reads = dict()

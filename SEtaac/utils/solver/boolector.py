@@ -1,272 +1,222 @@
 import pyboolector
-from pyboolector import Boolector
 
 from SEtaac.utils.solver.base import Solver
+
 
 class Boolector(Solver):
     """
     This is a singleton class, and all methods are static
     """
 
-    BW = Boolector()
-    bb = BW.Clone()
-    BW.Set_opt(pyboolector.BTOR_OPT_INCREMENTAL, 1)
-    BW.Set_opt(pyboolector.BTOR_OPT_MODEL_GEN, 1)
+    def __init__(self):
+        # todo: force single instantiation
+        self.solver = pyboolector.Boolector()
+        self.solver.Set_opt(pyboolector.BTOR_OPT_INCREMENTAL, 1)
+        self.solver.Set_opt(pyboolector.BTOR_OPT_MODEL_GEN, 1)
+        self.BVSort_cache = dict()
+        self.BVV_cache = dict()
+        self.BVS_cache = dict()
 
-    BVSort_cache = dict()
-    BVV_cache = dict()
-    BVS_cache = dict()
+    def BVSort(self, width):
+        if width not in self.BVSort_cache:
+            self.BVSort_cache[width] = self.solver.BitVecSort(width)
+        return self.BVSort_cache[width]
 
-    @staticmethod
-    def BVSort(width):
-        if width not in Boolector.BVSort_cache:
-            Boolector.BVSort_cache[width] = Boolector.BW.BitVecSort(width)
-        return Boolector.BVSort_cache[width]
+    def BVV(self, value, width):
+        if (value, width) not in self.BVV_cache:
+            self.BVV_cache[(value, width)] = self.solver.Const(value, width)
+        return self.BVV_cache[(value, width)]
 
-    @staticmethod
-    def BVV(value, width):
-        if (value, width) not in Boolector.BVV_cache:
-            Boolector.BVV_cache[(value, width)] = Boolector.BW.Const(value, width)
-        return Boolector.BVV_cache[(value, width)]
+    def BVS(self, symbol, width):
+        if (symbol, width) not in self.BVS_cache:
+            self.BVS_cache[(symbol, width)] = self.solver.Var(self.BVSort(width), symbol=symbol)
+        return self.BVS_cache[(symbol, width)]
 
-    @staticmethod
-    def BVS(symbol, width):
-        if (symbol, width) not in Boolector.BVS_cache:
-            Boolector.BVS_cache[(symbol, width)] = Boolector.BW.Var(Boolector.BVSort(width), symbol=symbol)
-        return Boolector.BVS_cache[(symbol, width)]
-
-
-    @staticmethod
-    def bv_unsigned_value(bv):
+    def bv_unsigned_value(self, bv):
         assert bv.bits
         return int(bv.bits, 2)
 
-    @staticmethod
-    def is_concrete(bv):
+    def is_concrete(self, bv):
         if type(bv) is pyboolector.BoolectorConstNode:
             return True
         else:
             return False
 
-    @staticmethod
-    def is_sat():
-        return Boolector.BW.Sat() == Boolector.BW.SAT
+    def is_sat(self, ):
+        return self.solver.Sat() == self.solver.SAT
 
-    @staticmethod
-    def is_unsat():
-        return Boolector.BW.Sat() == Boolector.BW.UNSAT
+    def is_unsat(self, ):
+        return self.solver.Sat() == self.solver.UNSAT
 
-    @staticmethod
-    def is_sat_formula(formula):
-        Boolector.push()
-        Boolector.add_assumption(formula)
-        sat = Boolector.is_sat()
-        Boolector.pop()
+    def is_sat_formula(self, formula):
+        self.push()
+        self.add_assertion(formula)
+        sat = self.is_sat()
+        self.pop()
 
         return sat
 
-    @staticmethod
-    def push():
-        Boolector.BW.Push()
+    def push(self, ):
+        self.solver.Push()
 
-    @staticmethod
-    def pop():
-        Boolector.BW.Pop()
+    def pop(self, ):
+        self.solver.Pop()
 
-    @staticmethod
-    def add_assumption(formula):
-        # assumptions are discarded after each call to .check_sat
-        Boolector.BW.Assume(formula)
+    def add_assertion(self, formula):
+        self.solver.Assert(formula)
 
-    @staticmethod
-    def add_assumptions(formulas):
-        Boolector.BW.Assume(*formulas)
+    def add_assertions(self, formulas):
+        self.solver.Assert(*formulas)
 
-    @staticmethod
-    def reset_assumptions():
-        Boolector.BW.Reset_assumptions()
+    def add_assumption(self, formula):
+        # assumptions are discarded after each call to .check_sat, assertions are not
+        self.solver.Assume(formula)
 
-    @staticmethod
-    def fixate_assumptions():
-        Boolector.BW.Fixate_assumptions()
+    def add_assumptions(self, formulas):
+        self.solver.Assume(*formulas)
 
-    @staticmethod
-    def simplify():
-        Boolector.BW.Simplify()
+    def reset_assumptions(self, ):
+        self.solver.Reset_assumptions()
 
-    @staticmethod
-    def get_clean_solver():
+    def fixate_assumptions(self, ):
+        self.solver.Fixate_assumptions()
+
+    def simplify(self, ):
+        self.solver.Simplify()
+
+    def new_solver_context(self, ):
         print('WARNING: resetting all assumptions')
-        Boolector.reset_assumptions()
+        self.reset_assumptions()
         return Boolector
 
-    @staticmethod
-    def Array(symbol, index_sort, value_sort):
-        return Boolector.BW.Array(Boolector.BW.ArraySort(index_sort, value_sort), symbol=symbol)
+    def Array(self, symbol, index_sort, value_sort):
+        return self.solver.Array(self.solver.ArraySort(index_sort, value_sort), symbol=symbol)
 
-    @staticmethod
-    def ConstArray(symbol, index_sort, value_sort, default):
-        res = Boolector.BW.ConstArray(Boolector.BW.ArraySort(index_sort, value_sort), default)
+    def ConstArray(self, symbol, index_sort, value_sort, default):
+        res = self.solver.ConstArray(self.solver.ArraySort(index_sort, value_sort), default)
         res.symbol = symbol
         return res
 
     # CONDITIONAL OPERATIONS
 
-    @staticmethod
-    def If(cond, value_if_true, value_if_false):
-        return Boolector.BW.Cond(cond, value_if_true, value_if_false)
+    def If(self, cond, value_if_true, value_if_false):
+        return self.solver.Cond(cond, value_if_true, value_if_false)
 
     # BOOLEAN OPERATIONS
 
-    #@staticmethod
-    #def Equal(a, b):
-    #    return Boolector.BW.Eq(a, b)
+    # def Equalself, (a, b):
+    #    return self.solver.Eq(a, b)
 
-    #@staticmethod
-    #def NotEqual(a, b):
-    #    return Boolector.BW.Ne(a, b)
+    # def NotEqualself, (a, b):
+    #    return self.solver.Ne(a, b)
 
-    #@staticmethod
-    #def Or(a, b):
-    #    return Boolector.BW.Or(a, b)
+    # def Orself, (a, b):
+    #    return self.solver.Or(a, b)
 
-    #@staticmethod
-    #def And(a, b):
-    #    return Boolector.BW.And(a, b)
+    # def Andself, (a, b):
+    #    return self.solver.And(a, b)
 
-    #@staticmethod
-    #def Not(a):
-    #    return Boolector.BW.Not(a)
+    # def Notself, (a):
+    #    return self.solver.Not(a)
 
     # BV OPERATIONS
 
-    @staticmethod
-    def Equal(a, b):
-        return Boolector.BW.Eq(a, b)
+    def Equal(self, a, b):
+        return self.solver.Eq(a, b)
 
-    @staticmethod
-    def NotEqual(a, b):
-        return Boolector.BW.Ne(a, b)
+    def NotEqual(self, a, b):
+        return self.solver.Ne(a, b)
 
-    @staticmethod
-    def BV_Extract(start, end, bv):
-        return Boolector.BW.Slice(bv, end, start)
+    def BV_Extract(self, start, end, bv):
+        return self.solver.Slice(bv, end, start)
 
-    @staticmethod
-    def BV_Concat(terms):
-        res = Boolector.BW.Concat(terms[0], terms[1])
+    def BV_Concat(self, terms):
+        res = self.solver.Concat(terms[0], terms[1])
         for i in range(2, len(terms)):
-            res = Boolector.BW.Concat(res, terms[i])
+            res = self.solver.Concat(res, terms[i])
         return res
 
-    @staticmethod
-    def BV_Add(a, b):
-        return Boolector.BW.Add(a, b)
+    def BV_Add(self, a, b):
+        return self.solver.Add(a, b)
 
-    @staticmethod
-    def BV_Sub(a, b):
-        return Boolector.BW.Sub(a, b)
+    def BV_Sub(self, a, b):
+        return self.solver.Sub(a, b)
 
-    @staticmethod
-    def BV_Mul(a, b):
-        return Boolector.BW.Mul(a, b)
+    def BV_Mul(self, a, b):
+        return self.solver.Mul(a, b)
 
-    @staticmethod
-    def BV_UDiv(a, b):
-        return Boolector.BW.Udiv(a, b)
+    def BV_UDiv(self, a, b):
+        return self.solver.Udiv(a, b)
 
-    @staticmethod
-    def BV_SDiv(a, b):
-        return Boolector.BW.Sdiv(a, b)
+    def BV_SDiv(self, a, b):
+        return self.solver.Sdiv(a, b)
 
-    @staticmethod
-    def BV_SMod(a, b):
-        return Boolector.BW.Smod(a, b)
+    def BV_SMod(self, a, b):
+        return self.solver.Smod(a, b)
 
-    @staticmethod
-    def BV_SRem(a, b):
-        return Boolector.BW.Srem(a, b)
+    def BV_SRem(self, a, b):
+        return self.solver.Srem(a, b)
 
-    @staticmethod
-    def BV_URem(a, b):
-        return Boolector.BW.Urem(a, b)
+    def BV_URem(self, a, b):
+        return self.solver.Urem(a, b)
 
-    @staticmethod
-    def BV_Sign_Extend(a, b):
-        return Boolector.BW.Sext(a, b)
+    def BV_Sign_Extend(self, a, b):
+        return self.solver.Sext(a, b)
 
-    @staticmethod
-    def BV_Zero_Extend(a, b):
-        return Boolector.BW.Uext(a, b)
+    def BV_Zero_Extend(self, a, b):
+        return self.solver.Uext(a, b)
 
-    @staticmethod
-    def BV_UGE(a, b):
-        return Boolector.BW.Ugte(a, b)
+    def BV_UGE(self, a, b):
+        return self.solver.Ugte(a, b)
 
-    @staticmethod
-    def BV_ULE(a, b):
-        return Boolector.BW.Ulte(a, b)
+    def BV_ULE(self, a, b):
+        return self.solver.Ulte(a, b)
 
-    @staticmethod
-    def BV_UGT(a, b):
-        return Boolector.BW.Ugt(a, b)
+    def BV_UGT(self, a, b):
+        return self.solver.Ugt(a, b)
 
-    @staticmethod
-    def BV_ULT(a, b):
-        return Boolector.BW.Ult(a, b)
+    def BV_ULT(self, a, b):
+        return self.solver.Ult(a, b)
 
-    @staticmethod
-    def BV_SGE(a, b):
-        return Boolector.BW.Sgte(a, b)
+    def BV_SGE(self, a, b):
+        return self.solver.Sgte(a, b)
 
-    @staticmethod
-    def BV_SLE(a, b):
-        return Boolector.BW.Slte(a, b)
+    def BV_SLE(self, a, b):
+        return self.solver.Slte(a, b)
 
-    @staticmethod
-    def BV_SGT(a, b):
-        return Boolector.BW.Sgt(a, b)
+    def BV_SGT(self, a, b):
+        return self.solver.Sgt(a, b)
 
-    @staticmethod
-    def BV_SLT(a, b):
-        return Boolector.BW.Slt(a, b)
+    def BV_SLT(self, a, b):
+        return self.solver.Slt(a, b)
 
-    @staticmethod
-    def BV_And(a, b):
-        return Boolector.BW.And(a, b)
+    def BV_And(self, a, b):
+        return self.solver.And(a, b)
 
-    @staticmethod
-    def BV_Or(a, b):
-        return Boolector.BW.Or(a, b)
+    def BV_Or(self, a, b):
+        return self.solver.Or(a, b)
 
-    @staticmethod
-    def BV_Xor(a, b):
-        return Boolector.BW.Xor(a, b)
+    def BV_Xor(self, a, b):
+        return self.solver.Xor(a, b)
 
-    @staticmethod
-    def BV_Not(a):
-        return Boolector.BW.Not(a)
+    def BV_Not(self, a):
+        return self.solver.Not(a)
 
-    @staticmethod
-    def BV_Shl(a, b):
-        return Boolector.BW.Sll(a, b)
+    def BV_Shl(self, a, b):
+        return self.solver.Sll(a, b)
 
-    @staticmethod
-    def BV_Shr(a, b):
-        return Boolector.BW.Srl(a, b)
+    def BV_Shr(self, a, b):
+        return self.solver.Srl(a, b)
 
     # ARRAY OPERATIONS
 
-    @staticmethod
-    def Array_Store(arr, index, elem):
-        return Boolector.BW.Write(arr, index, elem)
+    def Array_Store(self, arr, index, elem):
+        return self.solver.Write(arr, index, elem)
 
-    @staticmethod
-    def Array_Select(arr, index):
-        return Boolector.BW.Read(arr, index)
+    def Array_Select(self, arr, index):
+        return self.solver.Read(arr, index)
 
-    @staticmethod
-    def eval_one_array(array, length):
-        Boolector.is_sat()
-        return [int(Boolector.Array_Select(array, Boolector.BVV(i, 256)).assignment, 2) for i in
+    def eval_one_array(self, array, length):
+        self.is_sat()
+        return [int(self.Array_Select(array, self.BVV(i, 256)).assignment, 2) for i in
                 range(length)]
