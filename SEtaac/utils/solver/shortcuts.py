@@ -1,6 +1,7 @@
 from SEtaac.utils.solver.base import Solver
 
 _SOLVER = Solver()
+_num_contexts = 0
 
 
 def set_solver(solver):
@@ -15,6 +16,12 @@ class new_solver_context:
 
     def __enter__(self):
         global _SOLVER
+        global _num_contexts
+
+        if _num_contexts != 0:
+            raise Exception("Illegal nested context detected")
+        _num_contexts += 1
+
         _SOLVER.push()
 
         class SolverContext(_SOLVER.__class__):
@@ -57,7 +64,13 @@ class new_solver_context:
         return self.solver_context
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        global _SOLVER
+        global _num_contexts
+
+        _num_contexts -= 1
+
         _SOLVER.pop()
+
         self.solver_context.invalidate()
 
 
