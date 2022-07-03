@@ -14,7 +14,7 @@ while (( $# >= 1 )); do
     case $1 in
     -j) j=$2; shift; shift;;
     --path) SETAAC_DIR=$2; shift; shift;;
-    --no-gigahorse) NO_GIGAHORSE=$2; shift; shift;;
+    --no-gigahorse) NO_GIGAHORSE=TRUE; shift; shift;;
     *) break;
     esac;
 done
@@ -43,6 +43,8 @@ echo "Creating alias run.py -> SEtaac.."
 ln -sf $SETAAC_DIR/scripts/run.py $VIRTUAL_ENV/bin/SEtaac
 
 if [ -z $NO_GIGAHORSE ]; then
+  read -rsn1 -p "Setting up gigahorse.. Press any key to continue (ctrl-c to abort)"
+
   # compile gigahorse clients
   command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (https://souffle-lang.github.io/build, version 2.0.2 preferred)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
   dpkg -l | grep -q libboost-all-dev || { echo "${bold}${red}libboost-all-dev is not installed. Please install it before proceeding (e.g., sudo apt install libboost-all-dev)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
