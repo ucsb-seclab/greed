@@ -243,7 +243,7 @@ class Bitwuzla(Solver):
             self._sat_status = self.solver.check_sat()
         assert self._sat_status == pybitwuzla.Result.SAT
 
-        return self.solver.get_value_str(term)
+        return int(self.solver.get_value_str(term))
 
     def eval_one_array(self, array, length):
         if self._sat_status is None:
