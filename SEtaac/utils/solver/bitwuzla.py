@@ -5,6 +5,15 @@ import pybitwuzla
 from SEtaac.utils.solver.base import Solver
 
 
+def resets_sat_status(func):
+    def wrap(self, *args, **kwargs):
+        # reset internal sat_status after calling the target method
+        res = func(self, *args, **kwargs)
+        self._sat_status = None
+        return res
+    return wrap
+
+
 class Bitwuzla(Solver):
     """
     This is a singleton class
@@ -18,6 +27,8 @@ class Bitwuzla(Solver):
         self.BVSort_cache = dict()
         self.BVV_cache = dict()
         self.BVS_cache = dict()
+
+        self._sat_status = None
 
     def BVSort(self, width):
         if width not in self.BVSort_cache:
@@ -42,56 +53,71 @@ class Bitwuzla(Solver):
         assert bv.is_bv(), "NOT IMPLEMENTED. This currently only supports BitVectors"
         return bv.is_bv_value()
 
-    def is_sat(self, ):
-        return self.solver.check_sat() == pybitwuzla.Result.SAT
+    def is_sat(self):
+        # cache the last check_sat result so that we can check it when querying the solver's model, and we don't need
+        # to call check_sat (and thus generate a new and possibly inconsistent model) every time we need to eval a term
+        self._sat_status = self.solver.check_sat()
+        return self._sat_status == pybitwuzla.Result.SAT
 
-    def is_unsat(self, ):
-        return self.solver.check_sat() == pybitwuzla.Result.UNSAT
+    def is_unsat(self):
+        # cache the last check_sat result so that we can check it when querying the solver's model, and we don't need
+        # to call check_sat (and thus generate a new and possibly inconsistent model) every time we need to eval a term
+        self._sat_status = self.solver.check_sat()
+        return self._sat_status == pybitwuzla.Result.UNSAT
 
+    @resets_sat_status
     def is_formula_sat(self, formula):
         self.add_assumption(formula)
-        sat = self.is_sat()
+        return self.is_sat()
 
-        return sat
-
+    @resets_sat_status
     def is_formula_unsat(self, formula):
         self.add_assumption(formula)
-        sat = self.is_unsat()
+        return self.is_unsat()
 
-        return sat
-
+    @resets_sat_status
     def is_formula_true(self, formula):
         return self.is_formula_unsat(self.Not(formula))
 
+    @resets_sat_status
     def is_formula_false(self, formula):
         return self.is_formula_unsat(formula)
 
-    def push(self, ):
+    @resets_sat_status
+    def push(self):
         self.solver.push()
 
-    def pop(self, ):
+    @resets_sat_status
+    def pop(self):
         self.solver.pop()
 
+    @resets_sat_status
     def add_assertion(self, formula):
         self.solver.assert_formula(formula)
 
+    @resets_sat_status
     def add_assertions(self, formulas):
         self.solver.assert_formula(*formulas)
 
+    @resets_sat_status
     def add_assumption(self, formula):
         # assumptions are discarded after each call to .check_sat, assertions are not
         self.solver.assume_formula(formula)
 
+    @resets_sat_status
     def add_assumptions(self, formulas):
         self.solver.assume_formula(*formulas)
 
-    def reset_assumptions(self, ):
+    @resets_sat_status
+    def reset_assumptions(self):
         self.solver.reset_assumptions()
 
-    def fixate_assumptions(self, ):
+    @resets_sat_status
+    def fixate_assumptions(self):
         self.solver.fixate_assumptions()
 
-    def simplify(self, ):
+    @resets_sat_status
+    def simplify(self):
         self.solver.simplify()
 
     def Array(self, symbol, index_sort, value_sort):
@@ -212,6 +238,16 @@ class Bitwuzla(Solver):
     def Array_Select(self, arr, index):
         return self.solver.mk_term(pybitwuzla.Kind.ARRAY_SELECT, [arr, index])
 
+    def eval_one(self, term):
+        if self._sat_status is None:
+            self._sat_status = self.solver.check_sat()
+        assert self._sat_status == pybitwuzla.Result.SAT
+
+        return self.solver.get_value_str(term)
+
     def eval_one_array(self, array, length):
-        self.is_sat()
+        if self._sat_status is None:
+            self._sat_status = self.solver.check_sat()
+        assert self._sat_status == pybitwuzla.Result.SAT
+
         return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]

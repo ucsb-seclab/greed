@@ -174,6 +174,9 @@ class Solver:
     def Array_Select(self, arr, index):
         raise Exception("Not implemented")
 
+    def eval_one(self, term):
+        raise Exception("Not implemented")
+
     def eval_one_array(self, array, length):
         raise Exception("Not implemented")
 
