@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import argparse
+import itertools
 import logging
+from collections import defaultdict
 
 import networkx as nx
 
@@ -87,6 +89,7 @@ def find_paths_with_stmt(p, target_stmt):
 
     print('found! now getting to a STOP/RETURN...')
     return simgr.found
+    # todo: uncomment this part
     # simgr.move(from_stash='found', to_stash='active')
     # simgr._stashes['deadended'] = []
     # simgr._stashes['pruned'] = []
@@ -154,13 +157,47 @@ def main(args):
         calldata = bytes(solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
         print(f'CALLDATA: {calldata}')
 
-    # # find storage offsets in constraints
-    # critical_reads = dict()
-    # for t in get_all_terminals(s):
-    #     if t.decl().kind() == z3.Z3_OP_SELECT:
-    #         arr, idx = t.children()
-    #         if arr.decl() == found.storage.storage.decl():
-    #             critical_reads[idx.as_long()] = model.eval(arr[idx], model_completion=True).as_long()
+        # # find storage reads in critical path
+        # critical_reads = dict()
+        # for offset_term in critical_path.storage.reads:
+        #     if not is_concrete(offset_term):
+        #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
+        #     offset_concrete = bv_unsigned_value(offset_term)
+        #     critical_reads[offset_term] = offset_concrete
+        #
+        # # find writes to storage offsets in critical reads
+        # sstores = [s for s in p.statement_at.values() if s.__internal_name__ == 'SSTORE']
+        # interesting_sstores = defaultdict(list)
+        # for sstore in sstores:
+        #     offset_term = sstore.arg1_val
+        #     if not is_concrete(offset_term):
+        #         # solver.is_formula_sat(Equal(sstore.arg1_val, list(critical_reads.keys())[0]))
+        #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
+        #     # offset_concrete = bv_unsigned_value(offset_term)
+        #     interesting_sstores[offset_term].append(sstore)
+        #
+        # for offset_term in critical_reads:
+        #     num_offset_term_candidates = len(interesting_sstores[offset_term])
+        #     for i in range(num_offset_term_candidates + 1):
+        #         print(list(itertools.permutations(interesting_sstores[offset_term], i)))
+        #         # here get the paths, prepend the paths, set initial storage, and re-trace all. if not sat, continue with the next attempt
+        #         # probably need a nested loop for all paths for each sstore
+        #         # actually "sat" here means that storage[offset_term] is set correctly, then we can continue to the other offset_terms
+        #
+        #
+        # import IPython;
+        # IPython.embed();
+        # exit()
+
+
+
+    # try to 1) set storage to the initial storage and 2) iteratively prepend new path combinations to the critical
+    # path until we find one that's sat. With such approach, find a solution for each of the critical reads, one after
+    # the other
+
+    # score candidates for "how close to the solution" and "how many collisions with other storage offsets"
+
+
     #
     # # assume initial storage is all 0s
     # initial_storage = {idx: 0 for idx in critical_reads}
@@ -202,7 +239,7 @@ def main(args):
     # s_tmp.add(storage_writes['0x14a'][0]['value'] == target_storage[0])
     # s_tmp.check()
 
-    print('critical paths: ', critical_paths)
+    # print('critical paths: ', critical_paths)
     # IPython.embed()
 
 
