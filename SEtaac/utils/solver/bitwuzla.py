@@ -50,6 +50,7 @@ class Bitwuzla(Solver):
         return int(bv.dump()[2:], 2)
 
     def is_concrete(self, bv):
+        # FIXME We can remove this when we are sure this won't actually happen.
         assert bv.is_bv(), "NOT IMPLEMENTED. This currently only supports BitVectors"
         return bv.is_bv_value()
 

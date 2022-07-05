@@ -67,6 +67,6 @@ def run_test(target_dir, debug=False):
             parse_log(s)
 
         simgr.move(from_stash="found", to_stash="active")
-
+    import ipdb; ipdb.set_trace()
     if debug:
         IPython.embed()
