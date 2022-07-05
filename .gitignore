@@ -406,3 +406,5 @@ tests/test_*/*
 
 bitwuzla/**
 boolector/**
+
+*.dot
