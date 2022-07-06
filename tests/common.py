@@ -1,9 +1,12 @@
-import IPython
 import argparse
 import logging
 
+import IPython
+
 from SEtaac import Project, utils
 from SEtaac.utils import gen_exec_id
+from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.shortcuts import *
 
 
 def setup_logging():
@@ -34,7 +37,7 @@ def parse_log(state):
     # manually set arg_vals, since we didn't handle this statement yet
     log_stmt.set_arg_val(state)
 
-    if not (log_stmt.offset_val == 0 and log_stmt.size_val == 0):
+    if not (bv_unsigned_value(log_stmt.offset_val) == 0 and bv_unsigned_value(log_stmt.size_val) == 0):
         return
 
     # length_ptr = log_stmt.topic_val
@@ -43,7 +46,7 @@ def parse_log(state):
     # value_ptr = log_stmt.topic_val + 32
     # value = bytes(state.memory.read(value_ptr, length)).decode()
 
-    value = utils.int_to_big_endian(log_stmt.topic_val).decode().split('\x00')[0]
+    value = utils.int_to_big_endian(bv_unsigned_value(log_stmt.topic_val)).decode().split('\x00')[0]
 
     print(f"---> {value}")
     outcome, testname = value.split(":")
@@ -51,6 +54,7 @@ def parse_log(state):
 
 
 def run_test(target_dir, debug=False):
+    set_solver(Bitwuzla)
     p = Project(target_dir=target_dir)
 
     xid = gen_exec_id()

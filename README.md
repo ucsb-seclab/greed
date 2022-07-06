@@ -10,12 +10,16 @@ git clone git@github.com:ucsb-seclab/SEtaac.git
 mkvirtualenv SEtaac
 # Activate the virtual environment
 workon SEtaac
-# Install SEtaac (will run setup.sh)
+# Install SEtaac
 pip install -e SEtaac
+# Setup SEtaac and gigahorse
+./setup.sh
+# Setup the preferred solver (bitwuzla or boolector)
+./setup_bitwuzla.sh
 ```
 
 ### Usage
-First, the contract needs to be pre-processed with `gigahorse`. This can be done in three ways:
+First, the contract needs to be pre-processed with `gigahorse`. This can be done in two ways:
 ```bash
 # IMPORTANT: create a new folder 
 # Analyses will pollute the current working directory
@@ -26,10 +30,6 @@ cd /tmp/test_contract/
 cp <contract_source> contract.sol
 analyze_source.sh contract.sol
 
-# From the deployment bytecode
-cp <deployment_bytecode> contract.deployment.hex
-analyze_deployment_hex.sh contract.deployment.hex
-
 # From the contract bytecode
 cp <contract_bytecode> contract.hex
 analyze_contract_hex.sh contract.hex
@@ -39,7 +39,7 @@ decompile.sh contract.hex
 
 ```
 
-The source analysis only works on `x86_64` systems. The bytecode analyses work on both `aarch64` and `x86_64`. 
+The source analysis only works on `x86_64` systems. The bytecode analyses should work on any system where `gigahorse` can be properly compiled. 
 
 Finally, to run `SEtaac`:
 ```bash

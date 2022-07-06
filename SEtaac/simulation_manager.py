@@ -1,4 +1,6 @@
+import hashlib
 import logging
+import networkx
 import os
 import sys
 from typing import Callable
@@ -8,14 +10,75 @@ from SEtaac.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
 
+class SimgrViz(object):
+    def __init__(self):
+        self._simgGraph = networkx.DiGraph()
+        self.timestamp = 0
+        self._first_instruction = None
+
+    def get_state_hash(self, state):
+        h = hashlib.sha256()
+        h.update(str(state._pc).encode("utf-8"))
+        h.update(str(state.callstack).encode("utf-8"))
+        h.update(str(state.instruction_count).encode("utf-8"))
+        h.update(str(state.gas).encode("utf-8"))
+        h.update(str(state.constraints).encode("utf-8"))
+        h_hexdigest = h.hexdigest()
+        state._id = h_hexdigest
+        return str(h_hexdigest)
+
+    def add_node(self, state):
+        state_id = self.get_state_hash(state)
+        if state_id in self._simgGraph:
+            return state_id
+        self._simgGraph.add_node(state_id)
+        self._simgGraph.nodes[state_id]['timestamp'] = str(self.timestamp)
+        self._simgGraph.nodes[state_id]['pc'] = state.pc
+        self.timestamp += 1
+        return state_id
+    
+    def add_edge(self, new_state_id, parent_state_id):
+        self._simgGraph.add_edge(new_state_id, parent_state_id)
+
+    def dump_graph(self):
+        s = 'digraph g {\n'
+        s += '\tsplines=ortho;\n'
+        s += '\tnode[fontname="courier"];\n'
+
+        for node_id in self._simgGraph.nodes:
+            node = self._simgGraph.nodes[node_id]
+            
+            shape = 'box'       
+
+            s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
+            s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
+            s += '<br align="left"/>pc:{}'.format(node["pc"])
+            s += '<br align="left"/>>];\n'  
+        
+        s += '\n'
+        
+        for edge in self._simgGraph.edges:
+            start = edge[0][:10]
+            end = edge[1][:10]
+            s += '\t\"%s\" -> \"%s\";\n' % (end, start)
+        
+        s += '}'
+        
+        with open("./simgr_viz.dot", "w") as simgrviz_file:
+            simgrviz_file.write(s)
 
 class SimulationManager:
-    def __init__(self, entry_state: SymbolicEVMState, keep_predecessors: int = 0):
+    def __init__(self, entry_state: SymbolicEVMState, keep_predecessors: int = 0, debug=False):
         self.keep_predecessors = keep_predecessors
         self.error = list()
         self._halt = False
 
         self.insns_count = 0
+
+        self.debug = debug
+
+        if debug:
+            self.simgrViz = SimgrViz()
 
         # initialize empty stashes
         self._stashes = {
@@ -116,6 +179,9 @@ class SimulationManager:
 
         successors = list()
 
+        if self.debug:
+            parent_state_id = self.simgrViz.add_node(state)
+         
         try:
             successors += state.curr_stmt.handle(state)
         except Exception as e:
@@ -123,6 +189,11 @@ class SimulationManager:
             state.error = e
             state.halt = True
             successors += [state]
+
+        if self.debug:
+            for succ in successors:
+                child_state_id = self.simgrViz.add_node(succ)
+                self.simgrViz.add_edge(child_state_id, parent_state_id)
 
         return successors
 

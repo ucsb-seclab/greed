@@ -1,9 +1,9 @@
 import logging
-import z3
 
+from SEtaac import options
 from SEtaac import utils
 from SEtaac.utils.exceptions import VMSymbolicError
-from SEtaac.utils import concrete, is_sat, get_solver
+from SEtaac.utils.solver.shortcuts import *
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
@@ -21,7 +21,7 @@ class TAC_Jump(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        target_bb_id = hex(self.destination_val)
+        target_bb_id = hex(bv_unsigned_value(self.destination_val))
         curr_bb_id = succ.curr_stmt.block_id
         curr_bb = succ.project.factory.block(curr_bb_id)
         target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
@@ -45,7 +45,7 @@ class TAC_Jumpi(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        target_bb_id = hex(self.destination_val)
+        target_bb_id = hex(bv_unsigned_value(self.destination_val))
         curr_bb_id = succ.curr_stmt.block_id
         curr_bb = succ.project.factory.block(curr_bb_id)
         target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
@@ -56,20 +56,24 @@ class TAC_Jumpi(TAC_Statement):
         dest = target_bb.first_ins.id
         cond = self.condition_val
 
-        if concrete(cond):
+        if is_concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
-            if cond != 0:
+            if bv_unsigned_value(cond) != 0:
                 succ.pc = dest
                 return [succ]
             else:
                 succ.set_next_pc()
                 return [succ]
         else:
-            # let's check if both branches are sat
-            s = get_solver()
-            s.add(succ.constraints)
-            sat_true = is_sat(cond != 0, s)
-            sat_false = is_sat(cond == 0, s)
+            if options.LAZY_SOLVES:
+                # just collect the constraints
+                sat_true = True
+                sat_false = True
+            else:
+                # let's check if both branches are sat
+                with new_solver_context(state) as solver:
+                    sat_true = solver.is_formula_sat(NotEqual(cond, BVV(0, 256)))
+                    sat_false = solver.is_formula_sat(Equal(cond, BVV(0, 256)))
 
             if sat_true and sat_false:
                 # actually fork here
@@ -77,22 +81,22 @@ class TAC_Jumpi(TAC_Statement):
                 succ_false = succ
 
                 succ_true.pc = dest
-                succ_true.constraints.append(cond != 0)
+                succ_true.constraints.append(NotEqual(cond, BVV(0, 256)))
 
                 succ_false.set_next_pc()
-                succ_false.constraints.append(cond == 0)
+                succ_false.constraints.append(Equal(cond, BVV(0, 256)))
 
                 return [succ_true, succ_false]
             elif sat_true:
                 # if only the true branch is sat, jump
                 succ.pc = dest
-                succ.constraints.append(cond != 0)
+                succ.constraints.append(NotEqual(cond, BVV(0, 256)))
 
                 return [succ]
             elif sat_false:
                 # if only the false branch is sat, step to the fallthrough branch
                 succ.set_next_pc()
-                succ.constraints.append(cond == 0)
+                succ.constraints.append(Equal(cond, BVV(0, 256)))
 
                 return [succ]
             else:
@@ -115,24 +119,25 @@ class TAC_BaseCall(TAC_Statement):
         retOffset_val = retOffset_val if retOffset_val is not None else self.retOffset_val
         retSize_val = retSize_val if retSize_val is not None else self.retSize_val
 
-        ostart = retOffset_val if concrete(retOffset_val) else z3.simplify(retOffset_val)
-        olen = retSize_val if concrete(retSize_val) else z3.simplify(retSize_val)
+        ostart = retOffset_val
+        olen = retSize_val
 
-        if concrete(address_val) and address_val <= 8:
-            if address_val == 4:
+        if is_concrete(address_val) and bv_unsigned_value(address_val) <= 8:
+            if bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
-                istart = argsOffset_val if concrete(argsOffset_val) else z3.simplify(argsOffset_val)
-                ilen = argsSize_val if concrete(argsSize_val) else z3.simplify(argsSize_val)
+                istart = argsOffset_val
+                ilen = argsSize_val
                 succ.memory.copy_return_data(istart, ilen, ostart, olen)
                 succ.registers[self.res1_var] = 1
             else:
                 raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
         else:
-            for i in range(olen):
-                succ.memory[ostart + i] = z3.BitVec('EXT_%d_%d_%d' % (succ.instruction_count, i, succ.xid), 8)
-            log_address_val = address_val if concrete(address_val) else "<SYMBOLIC>"
-            logging.info("Calling contract %s (%d_%d)" % (log_address_val, succ.instruction_count, succ.xid))
-            succ.registers[self.res1_var] = z3.BitVec('CALLRESULT_%d_%d' % (succ.instruction_count, succ.xid), 256)
+            assert is_concrete(ostart) and is_concrete(olen)
+            for i in range(bv_unsigned_value(olen)):
+                succ.memory[bv_unsigned_value(ostart) + i] = BVS(f'EXT_{succ.instruction_count}_{i}_{succ.xid}', 8)
+            log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
+            logging.info(f"Calling contract {log_address_val} ({succ.instruction_count}_{succ.xid})")
+            succ.registers[self.res1_var] = BVS(f'CALLRESULT_{succ.instruction_count}_{succ.xid}', 256)
 
         succ.set_next_pc()
         return [succ]
@@ -155,7 +160,7 @@ class TAC_Call(TAC_BaseCall):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.constraints.append(z3.UGE(succ.balance, self.value_val))
+        succ.constraints.append(BV_UGE(succ.balance, self.value_val))
         succ.balance -= self.value_val
 
         return self._handle(succ, value_val=self.value_val)

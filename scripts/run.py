@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-import IPython
 import argparse
 import logging
-import z3
+
+import IPython
 
 from SEtaac import Project
 from SEtaac.utils import gen_exec_id
+from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
@@ -13,6 +15,7 @@ log = logging.getLogger("SEtaac")
 
 
 def main(args):
+    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     xid = gen_exec_id()
@@ -23,8 +26,8 @@ def main(args):
         log.info(f"Setting CALLDATA to a concrete value: {args.calldata}")
         calldata_int = int(args.calldata, 16)
         calldata_bytes = calldata_int.to_bytes(length=(calldata_int.bit_length() + 7) // 8, byteorder='big')
-        entry_state.calldata = [z3.BitVecVal(b, 256) for b in calldata_bytes]
-        entry_state.calldatasize = z3.BitVecVal(len(calldata_bytes), 256)
+        entry_state.calldata = [BVV(b, 256) for b in calldata_bytes]
+        entry_state.calldatasize = BVV(len(calldata_bytes), 256)
         if len(calldata_bytes) > 256:
             log.error("CALLDATA longer than the current max length (256 bytes)")
             exit(1)

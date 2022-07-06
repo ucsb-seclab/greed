@@ -1,3 +1,5 @@
+from SEtaac.utils.solver.shortcuts import *
+
 TT256 = 2 ** 256
 TT256M1 = 2 ** 256 - 1
 TT255 = 2 ** 255
@@ -5,7 +7,7 @@ SECP256K1P = 2 ** 256 - 4294968273
 
 
 def addr(expr):
-    return expr & (2 ** 160 - 1)
+    return BV_And(expr, BVV(2 ** 160 - 1, 256))
 
 
 def big_endian_to_int(x):

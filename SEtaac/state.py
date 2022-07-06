@@ -1,21 +1,25 @@
 import datetime
-import z3
 from collections import defaultdict
 
-from SEtaac import utils
+from SEtaac.utils import gen_uuid
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
 from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
+from SEtaac.utils.solver.shortcuts import *
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project):
+    def __init__(self, xid, project, partial_init=False):
         self.xid = xid
         self.project = project
         self.code = project.code
 
-        self.uuid = utils.gen_uuid()
+        self.uuid = gen_uuid()
+
+        if partial_init:
+            # this is only used when copying the state
+            return
 
         self._pc = None
         self.trace = list()
@@ -32,10 +36,12 @@ class SymbolicEVMState:
         self.revert = False
         self.error = None
 
-        self.gas = z3.BitVec('GAS_%d' % self.xid, 256)
-        self.start_balance = z3.BitVec('BALANCE_%d' % self.xid, 256)
+        self.gas = BVS(f'GAS_{self.xid}', 256)
+        self.start_balance = BVS(f'BALANCE_{self.xid}', 256)
         self.balance = self.start_balance
-        self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+
+        callvalue = ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+        self.balance = BV_Add(self.balance, callvalue)
 
         self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
@@ -47,10 +53,10 @@ class SymbolicEVMState:
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
         self.MAX_CALLDATA_SIZE = 256
-        self.calldata = z3.Array('CALLDATA_%d' % self.xid, z3.BitVecSort(256), z3.BitVecSort(8))
-        self.calldatasize = z3.BitVec('CALLDATASIZE_%d' % self.xid, 256)
-        self.constraints.append(self.calldatasize < self.MAX_CALLDATA_SIZE + 1)
-        self.calldata_accesses = [0]
+        self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+        self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+        self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+        # self.calldata_accesses = [0]
 
     @property
     def pc(self):
@@ -63,13 +69,6 @@ class SymbolicEVMState:
     @property
     def curr_stmt(self):
         return self.project.factory.statement(self._pc)
-
-    @property
-    def solver(self):
-        s = utils.get_solver()
-        s.add(self.constraints)
-        # s.add(self.sha_constraints)
-        return s
 
     def set_next_pc(self):
         try:
@@ -105,14 +104,14 @@ class SymbolicEVMState:
 
         self.start_balance = state.balance
         self.balance = self.start_balance
-        self.balance += utils.ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
+        self.balance += ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
         self.constraints = state.constraints
         self.sha_constraints = state.sha_constraints
 
     def copy(self):
         # assume unchanged xid
-        new_state = SymbolicEVMState(self.xid, project=self.project)
+        new_state = SymbolicEVMState(self.xid, project=self.project, partial_init=True)
 
         new_state._pc = self._pc
         new_state.trace = list(self.trace)
@@ -126,11 +125,14 @@ class SymbolicEVMState:
 
         new_state.instruction_count = self.instruction_count
         new_state.halt = self.halt
+        new_state.revert = self.revert
         new_state.error = self.error
 
         new_state.gas = self.gas
         new_state.start_balance = self.start_balance
         new_state.balance = self.balance
+
+        new_state.ctx['CODESIZE-ADDRESS'] = self.ctx['CODESIZE-ADDRESS']
 
         new_state.constraints = list(self.constraints)
         new_state.sha_constraints = dict(self.sha_constraints)
@@ -141,7 +143,7 @@ class SymbolicEVMState:
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
         new_state.calldata = self.calldata
         new_state.calldatasize = self.calldatasize
-        new_state.calldata_accesses = list(self.calldata_accesses)
+        # new_state.calldata_accesses = list(self.calldata_accesses)
 
         return new_state
 
