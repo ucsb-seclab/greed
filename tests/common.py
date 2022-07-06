@@ -65,5 +65,7 @@ def run_test(target_dir, debug=False):
 
         simgr.move(from_stash="found", to_stash="active")
 
+    assert not any([s.error for s in simgr.states]), f"Simulation Manager has errored states: {simgr}"
+
     if debug:
         IPython.embed()
