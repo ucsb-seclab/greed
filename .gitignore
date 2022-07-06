@@ -383,7 +383,7 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/osx,windows,linux,pycharm+all,sublimetext,python,visualstudiocode
 
 ### Project specific ###
-tests/test_*/*
+tests/*/**
 !tests/test_*/contract.sol
 !tests/test_*/contract.hex
 !tests/test_*/contract.tac
