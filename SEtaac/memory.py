@@ -12,6 +12,9 @@ class SymbolicMemory(object):
         self.read_count = 0
 
     def __getitem__(self, index):
+        if isinstance(index, slice):
+            raise Exception("SLICE READ NOT IMPLEMENTED. Please have a look")
+            # import IPython; IPython.embed(); exit()
         self.read_count += 1
         v = Array_Select(self.memory, index)
         return v

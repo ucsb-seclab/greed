@@ -23,7 +23,7 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.memory.extend(self.offset_val, self.size_val)
+        mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
         mm = succ.memory.read(self.offset_val, self.size_val)
         if all(is_concrete(m) for m in mm):
             data = utils.bytearray_to_bytestr(mm)
