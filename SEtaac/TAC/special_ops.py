@@ -23,8 +23,13 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
-        mm = succ.memory.read(self.offset_val, self.size_val)
+        if not is_concrete(self.size_val):
+            raise Exception("SHA3 with symbolic size_val not implemented. Please have a look")
+
+        mm = list()
+        for i in range(bv_unsigned_value(self.size_val)):
+            mm.append(succ.memory[BV_Add(self.offset_val, i)])
+
         if all(is_concrete(m) for m in mm):
             data = utils.bytearray_to_bytestr(mm)
             succ.registers[self.res1_var] = utils.big_endian_to_int(utils.sha3(data))
