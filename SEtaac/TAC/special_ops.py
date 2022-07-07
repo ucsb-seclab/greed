@@ -21,35 +21,34 @@ class TAC_Sha3(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise Exception("NOT IMPLEMENTED. Please have a look")
+        succ = state
 
-        # succ = state
-        #
-        # succ.memory.extend(self.offset_val, self.size_val)
-        # mm = succ.memory.read(self.offset_val, self.size_val)
-        # if not isinstance(mm, SymRead) and all(concrete(m) for m in mm):
-        #     data = utils.bytearray_to_bytestr(mm)
-        #     succ.registers[self.res1_var] = utils.big_endian_to_int(utils.sha3(data))
-        # else:
-        #     if not isinstance(mm, SymRead):
-        #         sha_data = BV_Concat([m for m in mm])
-        #         for k, v in succ.sha_constraints.items():
-        #             if isinstance(v, SymRead):
-        #                 continue
-        #             if v.size() == sha_data.size() and is_true(v == sha_data):
-        #                 sha = k
-        #                 break
-        #         else:
-        #             sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
-        #             succ.sha_constraints[sha] = sha_data
-        #     else:
-        #         sha_data = mm
-        #         sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
-        #         succ.sha_constraints[sha] = sha_data
-        #     succ.registers[self.res1_var] = sha
-        #
-        # succ.set_next_pc()
-        # return [succ]
+        succ.memory.extend(self.offset_val, self.size_val)
+        mm = succ.memory.read(self.offset_val, self.size_val)
+        if all(is_concrete(m) for m in mm):
+            data = utils.bytearray_to_bytestr(mm)
+            succ.registers[self.res1_var] = utils.big_endian_to_int(utils.sha3(data))
+        else:
+            raise Exception("SYMBOLIC SHA3 NOT IMPLEMENTED. Please have a look")
+            # if not isinstance(mm, SymRead):
+            #     sha_data = BV_Concat([m for m in mm])
+            #     for k, v in succ.sha_constraints.items():
+            #         if isinstance(v, SymRead):
+            #             continue
+            #         if v.size() == sha_data.size() and is_true(v == sha_data):
+            #             sha = k
+            #             break
+            #     else:
+            #         sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+            #         succ.sha_constraints[sha] = sha_data
+            # else:
+            #     sha_data = mm
+            #     sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+            #     succ.sha_constraints[sha] = sha_data
+            # succ.registers[self.res1_var] = sha
+
+        succ.set_next_pc()
+        return [succ]
 
 
 class TAC_Stop(TAC_Statement):
