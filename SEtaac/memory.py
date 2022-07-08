@@ -7,6 +7,9 @@ class SymbolicMemory(object):
     def __init__(self, partial_init=False):
         if partial_init:
             return
+
+        # Memory addresses every byte with a 256bits addresses.
+        # Memory always start clean whenever a smart contract is executed.  
         self.memory = ConstArray('MEMORY', BVSort(256), BVSort(8), BVV(0, 8))
         self.write_count = 0
         self.read_count = 0
