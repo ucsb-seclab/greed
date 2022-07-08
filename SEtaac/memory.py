@@ -42,3 +42,8 @@ class SymbolicMemory(object):
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
         return new_memory
+
+
+class SymRead:
+    # this is here just as a placeholder for now
+    pass
