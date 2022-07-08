@@ -81,10 +81,10 @@ class Solver:
     def NotEqual(self, a, b):
         raise Exception("Not implemented")
 
-    def Or(self, terms):
+    def Or(self, *terms):
         raise Exception("Not implemented")
 
-    def And(self, terms):
+    def And(self, *terms):
         raise Exception("Not implemented")
 
     def Not(self, a):

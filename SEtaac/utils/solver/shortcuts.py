@@ -121,12 +121,12 @@ def NotEqual(a, b):
     return _SOLVER.NotEqual(a, b)
 
 
-def Or(terms):
-    return _SOLVER.Or(terms)
+def Or(*terms):
+    return _SOLVER.Or(*terms)
 
 
-def And(terms):
-    return _SOLVER.And(terms)
+def And(*terms):
+    return _SOLVER.And(*terms)
 
 
 def Not(a):
