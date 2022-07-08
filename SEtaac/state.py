@@ -10,7 +10,7 @@ from SEtaac.storage import SymbolicStorage
 from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+
 
 class SymbolicEVMState:
     def __init__(self, xid, project, partial_init=False):

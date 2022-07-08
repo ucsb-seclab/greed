@@ -10,7 +10,7 @@ from SEtaac.state import SymbolicEVMState
 from SEtaac import options
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+
 
 class SimgrViz(object):
     def __init__(self):
