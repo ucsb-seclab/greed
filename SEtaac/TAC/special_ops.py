@@ -198,16 +198,29 @@ class TAC_Calldatacopy(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.constraints.append(BV_UGE(succ.calldatasize, BV_Add(self.calldataOffset_val, self.size_val)))
-        # succ.calldata_accesses.append(BV_Add(self.calldataOffset_val, self.size_val))
-        if not is_concrete(self.calldataOffset_val):
-            succ.constraints.append(BV_ULT(self.calldataOffset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
-        if not is_concrete(self.size_val):
-            succ.constraints.append(BV_ULT(self.size_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
+        calldatacopy_end_offset = BV_Add(self.calldataOffset_val, self.size_val)
+
+        # the actual calldatasize needs to be greater or equal than the end offset of this calldatacopy
+        succ.constraints.append(BV_UGE(succ.calldatasize, calldatacopy_end_offset))
+
+        # the end offset of this calldatacopy needs to be lower than MAX_CALLDATA_SIZE
+        if not is_concrete(self.calldataOffset_val) or not is_concrete(self.size_val):
+            succ.constraints.append(BV_ULT(calldatacopy_end_offset, BVV(succ.MAX_CALLDATA_SIZE, 256)))
+
+        # if size is concrete we can copy byte by byte --> note: this seem to never happen
+        if is_concrete(self.size_val):
+            for i in range(bv_unsigned_value(self.size_val)):
+                bv_i = BVV(i, 256)
+                destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
+                calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
+                succ.memory[destOffset_plus_i] = Array_Select(succ.calldata, calldataOffset_plus_i)
+
+        # otherwise we need to (this is somewhat abusing array theory and over-complicating the memory/constraints)
         for i in range(succ.MAX_CALLDATA_SIZE):
-            destOffset_plus_i = BV_Add(self.destOffset_val, BVV(i, 256))
-            calldataOffset_plus_i = BV_Add(self.calldataOffset_val, BVV(i, 256))
-            succ.memory[destOffset_plus_i] = If(BV_ULT(self.size_val, BVV(i, 256)),
+            bv_i = BVV(i, 256)
+            destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
+            calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
+            succ.memory[destOffset_plus_i] = If(BV_UGE(BVV(i, 256), self.size_val),
                                                 succ.memory[destOffset_plus_i],
                                                 Array_Select(succ.calldata, calldataOffset_plus_i))
 
