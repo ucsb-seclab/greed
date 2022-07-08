@@ -51,6 +51,8 @@ class SymbolicEVMState:
         self.constraints = list()
         self.sha_constraints = dict()
 
+        self.term_to_sha_map = dict()
+
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
@@ -144,6 +146,8 @@ class SymbolicEVMState:
 
         new_state.constraints = list(self.constraints)
         new_state.sha_constraints = dict(self.sha_constraints)
+
+        new_state.term_to_sha_map = dict(self.term_to_sha_map)
 
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp
