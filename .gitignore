@@ -407,4 +407,6 @@ tests/*/**
 bitwuzla/**
 boolector/**
 
+./bitwuzla
+
 *.dot

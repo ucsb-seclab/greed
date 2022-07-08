@@ -56,7 +56,7 @@ class SimgrViz(object):
             s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
             s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
             s += '<br align="left"/>pc:{}'.format(node["pc"])
-            s += '<br align="left"/>csts:{}'.format(node["csts"])
+            #s += '<br align="left"/>csts:{}'.format(node["csts"])
             s += '<br align="left"/>>];\n'  
         
         s += '\n'
@@ -72,7 +72,7 @@ class SimgrViz(object):
             simgrviz_file.write(s)
 
 class SimulationManager:
-    def __init__(self, entry_state: SymbolicEVMState, keep_predecessors: int = 0, debug=False):
+    def __init__(self, entry_state: SymbolicEVMState, keep_predecessors: int = 0, debug=options.SIMGRVIZ):
         self.keep_predecessors = keep_predecessors
         self.error = list()
         self._halt = False
@@ -194,6 +194,10 @@ class SimulationManager:
     def single_step_state(self, state: SymbolicEVMState):
         log.debug('Stepping {}'.format(state))
         log.debug(state.curr_stmt)
+
+        if state.pc == "0x12":
+            import ipdb; ipdb.set_trace()
+
         old_pc = state.pc 
 
         successors = list()
