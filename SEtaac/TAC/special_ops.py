@@ -213,7 +213,6 @@ class TAC_Calldatacopy(TAC_Statement):
 
         # if size is concrete we can copy byte by byte --> note: this seem to never happen
         if is_concrete(self.size_val):
-            import ipdb; ipdb.set_trace()
             for i in range(bv_unsigned_value(self.size_val)):
                 bv_i = BVV(i, 256)
                 destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
@@ -222,7 +221,6 @@ class TAC_Calldatacopy(TAC_Statement):
 
         # otherwise we need to (this is somewhat abusing array theory and over-complicating the memory/constraints)
         for i in range(succ.MAX_CALLDATA_SIZE):
-            import ipdb; ipdb.set_trace()
             bv_i = BVV(i, 256)
             destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
             calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
