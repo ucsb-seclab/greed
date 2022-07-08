@@ -173,6 +173,14 @@ class SimulationManager:
             new_active += successors
         self._stashes['active'] = new_active
 
+        # migrate common constraints to solver
+        # todo: this is a very hacky way to use incremental solving as much as possible
+        common_constraints = set.intersection(*[set(s.constraints) for s in self.active])
+        from SEtaac.utils.solver.shortcuts import _SOLVER
+        _SOLVER.add_assertions(list(common_constraints))
+        for s in self.states:
+            s.constraints = list(set(s.constraints)-common_constraints)
+
     def single_step_state(self, state: SymbolicEVMState):
         log.debug('Stepping {}'.format(state))
         log.debug(state.curr_stmt)
