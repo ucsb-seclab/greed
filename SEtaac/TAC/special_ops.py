@@ -300,15 +300,15 @@ class TAC_Extcodesize(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        s = new_solver_context()
-        if is_concrete(self.address_val):
-            succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
-        elif s.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):
-            succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', succ.ctx, succ.xid)
-        elif s.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid)))):
-            succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', succ.ctx, succ.xid)
-        else:
-            raise VMSymbolicError('codesize of symblic address')
+        with new_solver_context() as solver:
+            if is_concrete(self.address_val):
+                succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
+            elif solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):
+                succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', succ.ctx, succ.xid)
+            elif solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid)))):
+                succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', succ.ctx, succ.xid)
+            else:
+                raise VMSymbolicError('codesize of symblic address')
 
         succ.set_next_pc()
         return [succ]
