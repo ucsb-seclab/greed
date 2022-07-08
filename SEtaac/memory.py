@@ -52,10 +52,11 @@ class SymbolicMemory(object):
         new_memory.read_count = self.read_count
         return new_memory
 
+
 # Represents a full symbolic read over memory
 class SymRead:
-    def __init__(self, memory, start, size):
+    def __init__(self, memory, start, end):
         self.memory = memory
         self.start = start
         self.end = end
-        self.size = BV_Add(BV_Sub(self.end, self.start), BVV(1,256))
+        self.size = BV_Add(BV_Sub(self.end, self.start), BVV(1, 256))
