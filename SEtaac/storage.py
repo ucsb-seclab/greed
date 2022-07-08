@@ -1,6 +1,10 @@
 from SEtaac.utils.solver.shortcuts import *
 
 
+# TODO fetch the valid storage addresses from the blockchain
+# to simplify the constraints resolution related to storage 
+# accesses (when you have symbolic reads the address need to be there,
+# if you access an uninitialized storage element, this is a BUG.)
 class SymbolicStorage(object):
     def __init__(self, xid: int, partial_init=False):
         if partial_init:

@@ -39,10 +39,6 @@ class TAC_Sha3(TAC_Statement):
                 for k, v in succ.sha_constraints.items():
                     if isinstance(v, SymRead):
                         # todo: also here we might be able to find an equivalent entry
-                        # IDEA: we might want to check if any writes is potentially overlapping 
-                        #       with an entry in the sha_constraints table, if yes, then the sha 
-                        #       might be different than before, otherwise, it must be the same as 
-                        #       none touched that part of the memory.
                         continue
                     # todo: most probably there's no such thing as .size()
                     if v.size() == sha_data.size() and solver.is_formula_true(Equal(v, sha_data)):
