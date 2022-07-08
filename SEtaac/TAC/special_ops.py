@@ -1,4 +1,5 @@
 from SEtaac import utils
+from SEtaac.memory import SymRead
 from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.utils.solver.shortcuts import *
 from .base import TAC_Statement
@@ -23,32 +24,37 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        # if not is_concrete(self.size_val):
-        #     raise Exception("SHA3 with symbolic size_val not implemented. Please have a look")
-
         mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
 
-        if all(is_concrete(m) for m in mm):
-            data = utils.bytearray_to_bytestr(mm)
-            succ.registers[self.res1_var] = utils.big_endian_to_int(utils.sha3(data))
+        if isinstance(mm, SymRead):
+            # fully SYMBOLIC read
+            # todo: here we can actually figure that two symbolic reads are equivalent
+            sha_data = mm
+            sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+            succ.sha_constraints[sha] = sha_data
+        elif any(not is_concrete(m) for m in mm):
+            # read size is concrete, but some values in memory are symbolic
+            with new_solver_context(succ) as solver:
+                sha_data = BV_Concat([m for m in mm])
+                for k, v in succ.sha_constraints.items():
+                    if isinstance(v, SymRead):
+                        # todo: also here we might be able to find an equivalent entry
+                        continue
+                    # todo: most probably there's no such thing as .size()
+                    if v.size() == sha_data.size() and solver.is_formula_true(Equal(v, sha_data)):
+                        sha = k
+                        break
+                else:
+                    sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+                    succ.sha_constraints[sha] = sha_data
         else:
-            raise Exception("SYMBOLIC SHA3 NOT IMPLEMENTED. Please have a look")
-            # if not isinstance(mm, SymRead):
-            #     sha_data = BV_Concat([m for m in mm])
-            #     for k, v in succ.sha_constraints.items():
-            #         if isinstance(v, SymRead):
-            #             continue
-            #         if v.size() == sha_data.size() and is_true(v == sha_data):
-            #             sha = k
-            #             break
-            #     else:
-            #         sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
-            #         succ.sha_constraints[sha] = sha_data
-            # else:
-            #     sha_data = mm
-            #     sha = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
-            #     succ.sha_constraints[sha] = sha_data
-            # succ.registers[self.res1_var] = sha
+            # fully CONCRETE read
+            data = utils.bytearray_to_bytestr(mm)
+            sha_concrete = utils.big_endian_to_int(utils.sha3(data))
+            sha = BVV(sha_concrete, 256)
+
+        # todo: add constraint that if value is equal, then sha is equal (IMPLY)
+        succ.registers[self.res1_var] = sha
 
         succ.set_next_pc()
         return [succ]
