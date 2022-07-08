@@ -42,6 +42,10 @@ def is_reachable(state_a, block_b):
     factory = state_a.project.factory
     callgraph = state_a.project.callgraph
 
+    # filter untainted blocks
+    if not block_b.taint:
+        return False
+
     block_a = factory.block(state_a.curr_stmt.block_id)
     if is_reachable_without_returns(block_a, block_b, factory, callgraph):
         # this is the simple case, no need to look at the callstack
@@ -143,6 +147,10 @@ def main(args):
     elif not target_block:
         print('Block not found.')
         exit(1)
+
+    target_block.taint = True
+    for ancestor in target_block.ancestors:
+        ancestor.taint = True
 
     # todo: consider all critical paths
     critical_paths = find_paths_with_stmt(p, target_stmt)

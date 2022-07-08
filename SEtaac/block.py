@@ -29,6 +29,8 @@ class Block(object):
 
         self._acyclic_subgraph = None
 
+        self.taint = False
+
     @property
     def succ(self):
         if self._succ is None:
