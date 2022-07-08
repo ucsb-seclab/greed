@@ -20,8 +20,7 @@ class SymbolicMemory(object):
                     vv.append(Array_Select(self.memory, BV_Add(index.start, BVV(i, 256))))
                 return vv
             else:
-                return SymRead()
-                # raise Exception("SYMBOLIC SLICE READ NOT IMPLEMENTED. Please have a look")
+                return SymRead(self.memory, index.start, index.stop)
         else:
             v = Array_Select(self.memory, index)
             return v
@@ -50,7 +49,10 @@ class SymbolicMemory(object):
         new_memory.read_count = self.read_count
         return new_memory
 
-
+# Represents a full symbolic read over memory
 class SymRead:
-    # this is here just as a placeholder for now
-    pass
+    def __init__(self, memory, start, size):
+        self.memory = memory
+        self.start = start
+        self.end = end
+        self.size = BV_Add(BV_Sub(self.end, self.start), BVV(1,256))
