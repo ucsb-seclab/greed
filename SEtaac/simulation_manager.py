@@ -195,9 +195,6 @@ class SimulationManager:
         log.debug('Stepping {}'.format(state))
         log.debug(state.curr_stmt)
 
-        if state.pc == "0x12":
-            import ipdb; ipdb.set_trace()
-
         old_pc = state.pc 
 
         successors = list()
