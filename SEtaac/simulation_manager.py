@@ -7,6 +7,7 @@ from typing import Callable
 
 from SEtaac.utils.exceptions import VMException
 from SEtaac.state import SymbolicEVMState
+from SEtaac import options
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -176,14 +177,19 @@ class SimulationManager:
             new_active += successors
         self._stashes['active'] = new_active
 
-        # migrate common constraints to solver
-        # todo: this is a very hacky way to use incremental solving as much as possible
-        common_constraints = set.intersection(*[set(s.constraints) for s in self.active])
-        from SEtaac.utils.solver.shortcuts import _SOLVER
-        # Common constraints are becoming 
-        _SOLVER.add_assertions(list(common_constraints))
-        for s in self.states:
-            s.constraints = list(set(s.constraints)-common_constraints)
+        if options.CACHE_COMMON_CONSTRAINTS:
+            # TODO/WARNING: this can introduce unexpected side effects related to 
+            # the interaction between the solver state and the exploration techniques being 
+            # employed. 
+
+            # migrate common constraints to solver
+            # todo: this is a very hacky way to use incremental solving as much as possible
+            common_constraints = set.intersection(*[set(s.constraints) for s in self.active])
+            from SEtaac.utils.solver.shortcuts import _SOLVER
+            # Common constraints are becoming assertions
+            _SOLVER.add_assertions(list(common_constraints))
+            for s in self.states:
+                s.constraints = list(set(s.constraints)-common_constraints)
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug('Stepping {}'.format(state))
