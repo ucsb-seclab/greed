@@ -1,4 +1,5 @@
 import datetime
+import logging
 from collections import defaultdict
 
 from SEtaac.utils import gen_uuid
@@ -8,6 +9,8 @@ from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
 from SEtaac.utils.solver.shortcuts import *
 
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 class SymbolicEVMState:
     def __init__(self, xid, project, partial_init=False):
@@ -54,6 +57,7 @@ class SymbolicEVMState:
 
         self.MAX_CALLDATA_SIZE = 256
         self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+
         self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
         self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
         # self.calldata_accesses = [0]
@@ -84,10 +88,13 @@ class SymbolicEVMState:
 
         # case 1: middle of the block
         if remaining_stmts:
+            log.debug("Next stmt is {}".format(remaining_stmts[0].id))
             return remaining_stmts[0].id
         elif len(curr_bb.succ) == 0:
+            log.debug("Next stmt is NONE")
             raise VMNoSuccessors
         elif len(curr_bb.succ) == 1:
+            log.debug("Next stmt is {}".format(curr_bb.succ[0].first_ins.id))
             return curr_bb.succ[0].first_ins.id
         elif len(curr_bb.succ) == 2:
             #  case 3: end of the block and two targets
@@ -95,6 +102,7 @@ class SymbolicEVMState:
             #  The handler (e.g., JUMPI) has already created the state at the jump target.
 
             fallthrough_bb = curr_bb.fallthrough_edge
+            log.debug("Next stmt is {}".format(fallthrough_bb.first_ins.id))
             return fallthrough_bb.first_ins.id
         else:
             raise VMUnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))

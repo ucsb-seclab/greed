@@ -114,6 +114,7 @@ class TAC_Statement(Aliased):
                     succ.registers[var] = self.res_vals[var]
 
                 succ.set_next_pc()
+
                 return [succ]
 
             # otherwise, execute the actual handler

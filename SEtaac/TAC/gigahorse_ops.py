@@ -117,8 +117,8 @@ class TAC_Const(TAC_Statement):
         succ = state
 
         succ.registers[self.res1_var] = self.res1_val
-
         succ.set_next_pc()
+        
         return [succ]
 
 

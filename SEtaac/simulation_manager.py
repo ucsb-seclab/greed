@@ -9,6 +9,7 @@ from SEtaac.utils.exceptions import VMException
 from SEtaac.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 class SimgrViz(object):
     def __init__(self):
@@ -18,11 +19,11 @@ class SimgrViz(object):
 
     def get_state_hash(self, state):
         h = hashlib.sha256()
-        h.update(str(state._pc).encode("utf-8"))
+        h.update(str(state.pc).encode("utf-8"))
         h.update(str(state.callstack).encode("utf-8"))
         h.update(str(state.instruction_count).encode("utf-8"))
         h.update(str(state.gas).encode("utf-8"))
-        h.update(str(state.constraints).encode("utf-8"))
+        h.update('\n'.join([x for x in state.registers.keys()]).encode("utf-8"))
         h_hexdigest = h.hexdigest()
         state._id = h_hexdigest
         return str(h_hexdigest)
@@ -34,6 +35,7 @@ class SimgrViz(object):
         self._simgGraph.add_node(state_id)
         self._simgGraph.nodes[state_id]['timestamp'] = str(self.timestamp)
         self._simgGraph.nodes[state_id]['pc'] = state.pc
+        self._simgGraph.nodes[state_id]['csts'] = '\n'.join([str(x.dump()) for x in state.constraints])
         self.timestamp += 1
         return state_id
     
@@ -53,6 +55,7 @@ class SimgrViz(object):
             s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
             s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
             s += '<br align="left"/>pc:{}'.format(node["pc"])
+            s += '<br align="left"/>csts:{}'.format(node["csts"])
             s += '<br align="left"/>>];\n'  
         
         s += '\n'
@@ -177,6 +180,7 @@ class SimulationManager:
         # todo: this is a very hacky way to use incremental solving as much as possible
         common_constraints = set.intersection(*[set(s.constraints) for s in self.active])
         from SEtaac.utils.solver.shortcuts import _SOLVER
+        # Common constraints are becoming 
         _SOLVER.add_assertions(list(common_constraints))
         for s in self.states:
             s.constraints = list(set(s.constraints)-common_constraints)
@@ -184,6 +188,7 @@ class SimulationManager:
     def single_step_state(self, state: SymbolicEVMState):
         log.debug('Stepping {}'.format(state))
         log.debug(state.curr_stmt)
+        old_pc = state.pc 
 
         successors = list()
 
@@ -201,8 +206,8 @@ class SimulationManager:
         if self.debug:
             for succ in successors:
                 child_state_id = self.simgrViz.add_node(succ)
+                log.debug("Stepping {} produced {}".format(old_pc, succ._pc))
                 self.simgrViz.add_edge(child_state_id, parent_state_id)
-
         return successors
 
     def run(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
