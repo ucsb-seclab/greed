@@ -12,12 +12,19 @@ class SymbolicMemory(object):
         self.read_count = 0
 
     def __getitem__(self, index):
-        if isinstance(index, slice):
-            raise Exception("SLICE READ NOT IMPLEMENTED. Please have a look")
-            # import IPython; IPython.embed(); exit()
         self.read_count += 1
-        v = Array_Select(self.memory, index)
-        return v
+        if isinstance(index, slice):
+            if is_concrete(index.start) and is_concrete(index.stop):
+                vv = list()
+                for i in range(bv_unsigned_value(index.stop) - bv_unsigned_value(index.start)):
+                    vv.append(Array_Select(self.memory, BV_Add(index.start, BVV(i, 256))))
+                return vv
+            else:
+                return SymRead()
+                # raise Exception("SYMBOLIC SLICE READ NOT IMPLEMENTED. Please have a look")
+        else:
+            v = Array_Select(self.memory, index)
+            return v
 
     def __setitem__(self, index, v):
         self.write_count += 1
