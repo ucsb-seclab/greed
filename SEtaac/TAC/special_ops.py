@@ -30,17 +30,16 @@ class TAC_Sha3(TAC_Statement):
             # fully SYMBOLIC read
             # loop through the previously computed sha3s
             with new_solver_context(succ) as solver:
-                for value, sha in succ.term_to_sha_map.items():
+                for term, sha in succ.term_to_sha_map.items():
                     # check if two symbolic reads are equivalent
-                    if not isinstance(value, SymRead):
+                    if not isinstance(term, SymRead):
                         # it is very hard to compare fully symbolic reads with partially symbolic (or concrete) reads,
                         # so we just assume them to be "potentially different"
                         continue
-                    elif solver.is_formula_true(And(Equal(value.start, mm.start),
-                                                    Equal(value.end, mm.end),
-                                                    Equal(value.memory, mm.memory))):
+                    elif solver.is_formula_true(And(Equal(term.start, mm.start),
+                                                    Equal(term.end, mm.end),
+                                                    Equal(term.memory, mm.memory))):
                         # return previously computed sha3
-                        # print('return previously computed sha3')
                         sha_result = sha
                         break
                 else:
@@ -49,18 +48,20 @@ class TAC_Sha3(TAC_Statement):
                     sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
                     succ.term_to_sha_map[mm] = sha_result
                     # todo: add constraint equal/equal different/different
+
+                    # for term, sha in succ.term_to_sha_map.items():
+                    #     if not isinstance(term, SymRead):
+
         elif any(not is_concrete(m) for m in mm):
             # read size is concrete, but some values in memory are symbolic
             with new_solver_context(succ) as solver:
                 sha_data = BV_Concat([m for m in mm])
                 # loop through the previously computed sha3s
-                for value, sha in succ.term_to_sha_map.items():
-                    # check if two symbolic reads are equivalent
-                    if isinstance(value, SymRead):
-                        # it is very hard to compare fully symbolic reads with partially symbolic (or concrete) reads,
-                        # so we just assume them to be "potentially different"
+                for term, sha in succ.term_to_sha_map.items():
+                    if isinstance(term, SymRead):
+                        # again, we don't compare fully symbolic reads with others
                         continue
-                    elif solver.is_formula_true(Equal(value, sha_data)):
+                    elif solver.is_formula_true(Equal(term, sha_data)):
                         # return previously computed sha3
                         sha_result = sha
                         break
@@ -71,14 +72,21 @@ class TAC_Sha3(TAC_Statement):
                     # todo: add constraint equal/equal different/different
         else:
             # fully CONCRETE read
-            sha_data = utils.bytearray_to_bytestr([bv_unsigned_value(m) for m in mm])
-            sha_concrete = utils.big_endian_to_int(utils.sha3(sha_data))
-            sha_result = BVV(sha_concrete, 256)
+            sha_data = BV_Concat([m for m in mm])
+            for term, sha in succ.term_to_sha_map.items():
+                if is_concrete(term) and bv_unsigned_value(term) == bv_unsigned_value(sha_data):
+                    # return previously computed sha3
+                    sha_result = sha
+                    break
+            else:
+                # return fresh sha3
+                sha_data_concrete = utils.bytearray_to_bytestr([bv_unsigned_value(m) for m in mm])
+                sha_concrete = utils.big_endian_to_int(utils.sha3(sha_data_concrete))
+                sha_result = BVV(sha_concrete, 256)
 
-            # todo: this could be a duplicate (i.e., same concrete value, different term from Concat)
-            succ.term_to_sha_map[BV_Concat([m for m in mm])] = sha_result
+                succ.term_to_sha_map[sha_data] = sha_result
 
-        # todo: add constraint equal/equal different/different
+                # todo: add constraint equal/equal different/different
         succ.registers[self.res1_var] = sha_result
 
         succ.set_next_pc()
