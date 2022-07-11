@@ -15,8 +15,8 @@ class Factory:
     def simgr(self, entry_state: SymbolicEVMState) -> SimulationManager:
         return SimulationManager(entry_state=entry_state)
 
-    def entry_state(self, xid: str) -> SymbolicEVMState:
-        state = SymbolicEVMState(xid=xid, project=self.project)
+    def entry_state(self, xid: str, ctx:dict) -> SymbolicEVMState:
+        state = SymbolicEVMState(xid=xid, project=self.project, ctx=ctx)
         state.pc = self.block('0x0').first_ins.id
         return state
 

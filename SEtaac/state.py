@@ -11,9 +11,8 @@ from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
-
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False):
+    def __init__(self, xid, project, partial_init=False, ctx=dict()):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -30,7 +29,7 @@ class SymbolicEVMState:
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
         self.registers = SymbolicRegisters()
-        self.ctx = dict()
+        self.ctx = ctx
 
         self.callstack = list()
 
@@ -58,12 +57,61 @@ class SymbolicEVMState:
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
         self.MAX_CALLDATA_SIZE = 256
-        self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
 
-        self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-        self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
-        # self.calldata_accesses = [0]
+        if "CALLDATA" not in self.ctx:
+            # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
+            self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+            self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+        else:
+            # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
+            # for instance: "CALLDATA" = ["0x1546138954SSSS81923899"]. There are 2 symbolic bytes represented by SSSS.
+            calldata_arg = self.ctx['CALLDATA']
+            assert(type(self.ctx['CALLDATA'])== str)
+            calldata_arg = calldata_arg.replace("0x",'')
+            self.calldata = []
 
+            # Parsing the CALLDATA
+
+            # Since we have a string as input, we divide byte by byte here.
+            calldata_bytes = [calldata_arg[i:i+2] for i in range(0,len(calldata_arg),2)]
+            calldata_index = 0
+            for cb in calldata_bytes:
+                if cb == 'SS': # special char to instruct for a symbolic byte
+                    self.calldata.append(BVS(f'CALLDATA_BYTE_{calldata_index}',8))
+                else:
+                    self.calldata.append(BVV(int(cb), 8))
+                calldata_index += 1
+
+            if "CALLDATASIZE" in self.ctx:
+                # If the CALLDATASIZE provided matches with the amount of data provided in CALLDATA we just use that
+                # CALLDATASIZE is an `int` representing the number of BYTES in the CALLDATA
+                if self.ctx["CALLDATASIZE"] == len(calldata_bytes):
+                    # Let's keep the symbol to see it in the constraints :)
+                    self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+                    # Pre-constraining it to the len of the CALLDATA
+                    self.constraints.append(Equal(self.calldatasize, BVV(len(calldata_bytes), 256)))
+                elif self.ctx["CALLDATASIZE"] > len(calldata_bytes):
+                    # CALLDATASIZE is bigger than size(CALLDATA), we set the rest of the CALLDATA as symbolic
+                    calldatasize_arg = self.ctx["CALLDATASIZE"]
+                    self.calldatasize = BVV(calldatasize_arg, 256)
+                    # CALLDATASIZE is the provided number
+                    self.constraints.append(Equal(self.calldatasize, BVV(calldatasize_arg), 256))
+                    # Setting the rest of the CALLDATA to an SMT Array
+                    self.calldata.append(Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8)))
+                else:
+                    log.fatal("Provided CALLDATASIZE must be greater than CALLDATA bytes")
+                    raise Exception
+            else:
+                # We set a symbolic CALLDATASIZE setting appropiate constraints
+                self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+                # CALLDATASIZE is always less than the MAX_CALLDATA_SIZE
+                self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+                # CALLDATASIZE is at >= than the provided CALLDATA bytes
+                self.constraints.append(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
+                # The rest of the CALLDATA will be symbolic
+                self.calldata.append(Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8)))
+            
     @property
     def pc(self):
         return self._pc
