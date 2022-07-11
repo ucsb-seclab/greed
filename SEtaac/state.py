@@ -90,8 +90,9 @@ class SymbolicEVMState:
 
             if "CALLDATASIZE" in self.ctx:
                 # If the CALLDATASIZE provided matches with the amount of data provided in CALLDATA we just use that
-                # CALLDATASIZE is an `int` representing the number of BYTES in the CALLDATA
+                # CALLDATASIZE is an `int` representing the number of BITS in the CALLDATA
                 if self.ctx["CALLDATASIZE"] == len(calldata_bytes):
+                    #import ipdb; ipdb.set_trace()
                     # Let's keep the symbol to see it in the constraints :)
                     self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
                     # Pre-constraining it to the len of the CALLDATA

@@ -35,7 +35,7 @@ class SimgrViz(object):
             return state_id
         self._simgGraph.add_node(state_id)
         self._simgGraph.nodes[state_id]['timestamp'] = str(self.timestamp)
-        self._simgGraph.nodes[state_id]['pc'] = state.pc
+        #self._simgGraph.nodes[state_id]['pc'] = state.pc
         self._simgGraph.nodes[state_id]['csts'] = '\n'.join([str(x.dump()) for x in state.constraints])
         self.timestamp += 1
         return state_id
@@ -55,8 +55,8 @@ class SimgrViz(object):
 
             s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
             s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
-            s += '<br align="left"/>pc:{}'.format(node["pc"])
-            #s += '<br align="left"/>csts:{}'.format(node["csts"])
+            #s += '<br align="left"/>pc:{}'.format(node["pc"])
+            s += '<br align="left"/>csts:{}'.format(node["csts"])
             s += '<br align="left"/>>];\n'  
         
         s += '\n'
@@ -196,7 +196,7 @@ class SimulationManager:
         log.debug(state.curr_stmt)
 
         old_pc = state.pc 
-        
+
         successors = list()
 
         if self.debug:

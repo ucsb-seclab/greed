@@ -28,7 +28,7 @@ class TAC_Sha3(TAC_Statement):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state
-
+        
         mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
 
         if isinstance(mm, SymRead):
