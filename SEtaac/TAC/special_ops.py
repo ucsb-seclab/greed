@@ -202,10 +202,9 @@ class TAC_Calldataload(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
+        # WARNING: According to the EVM specification if your CALLDATA is less than 32 bytes, you read zeroes.
         succ = state
-
-        succ.constraints.append(BV_UGE(succ.calldatasize, BV_Add(self.byte_offset_val, BVV(32, 256))))
-        # succ.calldata_accesses.append(BV_Add(self.byte_offset_val, BVV(32, 256)))
+        #succ.calldata_accesses.append(BV_Add(self.byte_offset_val, BVV(32, 256)))
         if not is_concrete(self.byte_offset_val):
             succ.constraints.append(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         succ.registers[self.res1_var] = BV_Concat([Array_Select(succ.calldata, BV_Add(self.byte_offset_val, BVV(i, 256))) for i in range(32)])

@@ -60,7 +60,7 @@ class SymbolicEVMState:
 
         # CALLDATA is always defined as an Array
         #self.calldata = SymbolicMemory(tag='CALLDATA_%d' % self.xid)
-        self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+        self.calldata = ConstArray('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8), BVV(0, 8))
 
         if "CALLDATA" not in self.ctx:
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
