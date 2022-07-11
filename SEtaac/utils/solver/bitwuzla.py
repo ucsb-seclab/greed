@@ -142,11 +142,11 @@ class Bitwuzla(Solver):
     def NotEqual(self, a, b):
         return self.solver.mk_term(pybitwuzla.Kind.DISTINCT, [a, b])
 
-    def Or(self, a, b):
-        return self.solver.mk_term(pybitwuzla.Kind.OR, [a, b])
+    def Or(self, *terms):
+        return self.solver.mk_term(pybitwuzla.Kind.OR, *terms)
 
-    def And(self, a, b):
-        return self.solver.mk_term(pybitwuzla.Kind.AND, [a, b])
+    def And(self, *terms):
+        return self.solver.mk_term(pybitwuzla.Kind.AND, *terms)
 
     def Not(self, a):
         return self.solver.mk_term(pybitwuzla.Kind.NOT, [a])
