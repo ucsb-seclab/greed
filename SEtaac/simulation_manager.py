@@ -196,7 +196,7 @@ class SimulationManager:
         log.debug(state.curr_stmt)
 
         old_pc = state.pc 
-
+        
         successors = list()
 
         if self.debug:

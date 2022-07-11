@@ -161,7 +161,7 @@ class TAC_Call(TAC_BaseCall):
         succ = state
 
         succ.constraints.append(BV_UGE(succ.balance, self.value_val))
-        succ.balance -= self.value_val
+        succ.balance = BV_Sub(succ.balance, self.value_val)
 
         return self._handle(succ, value_val=self.value_val)
 
