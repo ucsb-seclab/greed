@@ -29,6 +29,12 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
         
+        # HACK-SHORTCUT
+        sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+        succ.registers[self.res1_var] = sha_result
+        succ.set_next_pc()
+        return [succ]
+
         mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
 
         if isinstance(mm, SymRead):

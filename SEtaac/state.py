@@ -89,20 +89,20 @@ class SymbolicEVMState:
                 calldata_index += 1
 
             if "CALLDATASIZE" in self.ctx:
+                calldatasize_arg = self.ctx["CALLDATASIZE"]
                 # If the CALLDATASIZE provided matches with the amount of data provided in CALLDATA we just use that
                 # CALLDATASIZE is an `int` representing the number of BITS in the CALLDATA
-                if self.ctx["CALLDATASIZE"] == len(calldata_bytes):
+                if calldatasize_arg == len(calldata_bytes):
                     #import ipdb; ipdb.set_trace()
                     # Let's keep the symbol to see it in the constraints :)
                     self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
                     # Pre-constraining it to the len of the CALLDATA
                     self.constraints.append(Equal(self.calldatasize, BVV(len(calldata_bytes), 256)))
-                elif self.ctx["CALLDATASIZE"] > len(calldata_bytes):
+                elif calldatasize_arg > len(calldata_bytes):
                     # CALLDATASIZE is bigger than size(CALLDATA), we set the rest of the CALLDATA as symbolic
-                    calldatasize_arg = self.ctx["CALLDATASIZE"]
                     self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
                     # CALLDATASIZE is the provided number
-                    self.constraints.append(Equal(self.calldatasize, BVV(calldatasize_arg, 256)))
+                    self.constraints.append(BV_UGE(self.calldatasize, BVV(calldatasize_arg, 256)))
                 else:
                     log.fatal("Provided CALLDATASIZE must be greater than CALLDATA bytes")
                     raise Exception
