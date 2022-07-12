@@ -11,8 +11,9 @@ from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
+
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False, ctx=dict()):
+    def __init__(self, xid, project, partial_init=False, ctx=None):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -29,7 +30,7 @@ class SymbolicEVMState:
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
         self.registers = SymbolicRegisters()
-        self.ctx = ctx
+        self.ctx = ctx or dict()
 
         self.callstack = list()
 
