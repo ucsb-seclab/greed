@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False, ctx=None):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -30,7 +30,7 @@ class SymbolicEVMState:
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
         self.registers = SymbolicRegisters()
-        self.ctx = ctx or dict()
+        self.ctx = dict()
 
         self.callstack = list()
 
@@ -60,18 +60,17 @@ class SymbolicEVMState:
         self.MAX_CALLDATA_SIZE = 256
 
         # CALLDATA is always defined as an Array
-        #self.calldata = SymbolicMemory(tag='CALLDATA_%d' % self.xid)
         self.calldata = ConstArray('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8), BVV(0, 8))
 
-        if "CALLDATA" not in self.ctx:
+        if "CALLDATA" not in init_ctx:
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
         else:
             # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
             # for instance: "CALLDATA" = ["0x1546138954SSSS81923899"]. There are 2 symbolic bytes represented by SSSS.
-            calldata_arg = self.ctx['CALLDATA']
-            assert(type(self.ctx['CALLDATA'])== str)
+            calldata_arg = init_ctx['CALLDATA']
+            assert(type(init_ctx['CALLDATA'])== str)
             calldata_arg = calldata_arg.replace("0x",'')
 
             # Parsing the CALLDATA
@@ -89,8 +88,8 @@ class SymbolicEVMState:
                     self.calldata = Array_Store(self.calldata, BVV(calldata_index,256), BVV(int(cb,16), 8))
                 calldata_index += 1
 
-            if "CALLDATASIZE" in self.ctx:
-                calldatasize_arg = self.ctx["CALLDATASIZE"]
+            if "CALLDATASIZE" in init_ctx:
+                calldatasize_arg = init_ctx["CALLDATASIZE"]
                 # If the CALLDATASIZE provided matches with the amount of data provided in CALLDATA we just use that
                 # CALLDATASIZE is an `int` representing the number of BITS in the CALLDATA
                 if calldatasize_arg == len(calldata_bytes):
