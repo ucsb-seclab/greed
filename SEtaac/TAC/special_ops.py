@@ -600,7 +600,7 @@ class TAC_Create(TAC_Statement):
         #succ.balance -= self.value_val
         #succ.registers[self.res1_var] = utils.addr(
         #    z3.BitVec('EXT_CREATE_%d_%d' % (succ.instruction_count, succ.xid), 256))
-        l.fatal("CREATE NOT implemented")
+        log.fatal("CREATE NOT implemented")
         succ.set_next_pc()
         return [succ]
 
@@ -624,7 +624,7 @@ class TAC_Create2(TAC_Statement):
         # todo: this is deployed at a deterministic address
         #succ.registers[self.res1_var] = utils.addr(
         #    z3.BitVec('EXT_CREATE2_%d_%d' % (succ.instruction_count, succ.xid), 256))
-        l.fatal("{} NOT implemented".format(self.__internal_name__))
+        log.fatal("{} NOT implemented".format(self.__internal_name__))
         succ.set_next_pc()
         return [succ]
 
@@ -671,7 +671,7 @@ class TAC_Selfdestruct(TAC_Statement):
 
         # todo: consider the target address
         # succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
-        l.fatal("{} NOT implemented".format(self.__internal_name__))
+        log.fatal("{} NOT implemented".format(self.__internal_name__))
         succ.halt = True
 
         return [succ]
