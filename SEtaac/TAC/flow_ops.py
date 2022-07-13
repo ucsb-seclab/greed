@@ -81,22 +81,22 @@ class TAC_Jumpi(TAC_Statement):
                 succ_false = succ
 
                 succ_true.pc = dest
-                succ_true.constraints.append(NotEqual(cond, BVV(0, 256)))
+                succ_true.add_constraint(NotEqual(cond, BVV(0, 256)))
 
                 succ_false.set_next_pc()
-                succ_false.constraints.append(Equal(cond, BVV(0, 256)))
+                succ_false.add_constraint(Equal(cond, BVV(0, 256)))
 
                 return [succ_true, succ_false]
             elif sat_true:
                 # if only the true branch is sat, jump
                 succ.pc = dest
-                succ.constraints.append(NotEqual(cond, BVV(0, 256)))
+                succ.add_constraint(NotEqual(cond, BVV(0, 256)))
 
                 return [succ]
             elif sat_false:
                 # if only the false branch is sat, step to the fallthrough branch
                 succ.set_next_pc()
-                succ.constraints.append(Equal(cond, BVV(0, 256)))
+                succ.add_constraint(Equal(cond, BVV(0, 256)))
 
                 return [succ]
             else:
@@ -160,7 +160,7 @@ class TAC_Call(TAC_BaseCall):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.constraints.append(BV_UGE(succ.balance, self.value_val))
+        succ.add_constraint(BV_UGE(succ.balance, self.value_val))
         succ.balance = BV_Sub(succ.balance, self.value_val)
 
         return self._handle(succ, value_val=self.value_val)

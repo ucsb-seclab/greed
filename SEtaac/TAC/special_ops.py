@@ -106,7 +106,7 @@ class TAC_Stop(TAC_Statement):
         succ = state
 
         # todo: implement revert
-        # succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
+        # succ.add_constraint(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.halt = True
 
         return [succ]
@@ -206,7 +206,7 @@ class TAC_Calldataload(TAC_Statement):
         succ = state
         #succ.calldata_accesses.append(BV_Add(self.byte_offset_val, BVV(32, 256)))
         if not is_concrete(self.byte_offset_val):
-            succ.constraints.append(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
+            succ.add_constraint(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         succ.registers[self.res1_var] = BV_Concat([Array_Select(succ.calldata, BV_Add(self.byte_offset_val, BVV(i, 256))) for i in range(32)])
 
         succ.set_next_pc()
@@ -242,11 +242,11 @@ class TAC_Calldatacopy(TAC_Statement):
         calldatacopy_end_offset = BV_Add(self.calldataOffset_val, self.size_val)
 
         # the actual calldatasize needs to be greater or equal than the end offset of this calldatacopy
-        succ.constraints.append(BV_UGE(succ.calldatasize, calldatacopy_end_offset))
+        succ.add_constraint(BV_UGE(succ.calldatasize, calldatacopy_end_offset))
 
         # the end offset of this calldatacopy needs to be lower than MAX_CALLDATA_SIZE
         if not is_concrete(self.calldataOffset_val) or not is_concrete(self.size_val):
-            succ.constraints.append(BV_ULT(calldatacopy_end_offset, BVV(succ.MAX_CALLDATA_SIZE, 256)))
+            succ.add_constraint(BV_ULT(calldatacopy_end_offset, BVV(succ.MAX_CALLDATA_SIZE, 256)))
 
         # if size is concrete we can copy byte by byte --> note: this seem to never happen
         if is_concrete(self.size_val):
@@ -449,8 +449,8 @@ class TAC_Timestamp(TAC_Statement):
 
         ts = ctx_or_symbolic('TIMESTAMP', succ.ctx, succ.xid)
         if not is_concrete(ts):
-            succ.constraints.append(BV_UGE(ts, succ.min_timestamp))
-            succ.constraints.append(BV_ULE(ts, succ.max_timestamp))
+            succ.add_constraint(BV_UGE(ts, succ.min_timestamp))
+            succ.add_constraint(BV_ULE(ts, succ.max_timestamp))
         succ.registers[self.res1_var] = ts
 
         succ.set_next_pc()
@@ -581,7 +581,7 @@ class TAC_Revert(TAC_Statement):
 
         if not is_concrete(self.offset_val) or not is_concrete(self.size_val):
             raise VMSymbolicError('symbolic memory index')
-        # succ.constraints.append(BV_Or(*(BV_ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
+        # succ.add_constraint(BV_Or(*(BV_ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.revert = True
         succ.halt = True
 
@@ -602,7 +602,7 @@ class TAC_Create(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        #succ.constraints.append(z3.UGE(succ.balance, self.value_val))
+        #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
         #succ.balance -= self.value_val
         #succ.registers[self.res1_var] = utils.addr(
         #    z3.BitVec('EXT_CREATE_%d_%d' % (succ.instruction_count, succ.xid), 256))
@@ -625,7 +625,7 @@ class TAC_Create2(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        #succ.constraints.append(z3.UGE(succ.balance, self.value_val))
+        #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
         #succ.balance -= self.value_val
         # todo: this is deployed at a deterministic address
         #succ.registers[self.res1_var] = utils.addr(
@@ -676,7 +676,7 @@ class TAC_Selfdestruct(TAC_Statement):
         succ = state
 
         # todo: consider the target address
-        # succ.constraints.append(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
+        # succ.add_constraint(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         log.fatal("{} NOT implemented".format(self.__internal_name__))
         succ.halt = True
 

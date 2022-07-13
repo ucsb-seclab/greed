@@ -9,11 +9,13 @@ from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
 from SEtaac.utils.solver.shortcuts import *
 
+from SEtaac.options import *
+
 log = logging.getLogger(__name__)
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False, init_ctx=None):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -31,6 +33,10 @@ class SymbolicEVMState:
         self.storage = SymbolicStorage(self.xid)
         self.registers = SymbolicRegisters()
         self.ctx = dict()
+
+        # We want every state to have an individual set
+        # of options.
+        self.options = options or list()
 
         self.callstack = list()
 
@@ -161,6 +167,12 @@ class SymbolicEVMState:
 
         self.constraints = state.constraints
         self.sha_constraints = state.sha_constraints
+    
+    def add_constraint(self, constraint):
+        # Here you can inspect the constraints being added to the state.
+        if STATE_STOP_AT_ADDCONSTRAINT in self.options:
+            import ipdb; ipdb.set_trace()
+        self.constraints.append(constraint)
 
     def copy(self):
         # assume unchanged xid
@@ -173,6 +185,7 @@ class SymbolicEVMState:
         new_state.storage = self.storage.copy(self.xid, self.xid)
         new_state.registers = self.registers.copy()
         new_state.ctx = dict(self.ctx)
+        new_state.options = list(self.options)
 
         new_state.callstack = list(self.callstack)
 
@@ -198,6 +211,7 @@ class SymbolicEVMState:
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
         new_state.calldata = self.calldata
         new_state.calldatasize = self.calldatasize
+        
         # new_state.calldata_accesses = list(self.calldata_accesses)
 
         return new_state
