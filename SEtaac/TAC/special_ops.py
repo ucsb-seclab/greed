@@ -306,9 +306,10 @@ class TAC_Codecopy(TAC_Statement):
         if is_concrete(self.destOffset_val) and is_concrete(self.offset_val) and is_concrete(self.size_val):
             for i in range(bv_unsigned_value(self.size_val)):
                 if bv_unsigned_value(self.offset_val) + i < len(succ.code):
-                    succ.memory[bv_unsigned_value(self.destOffset_val) + i] = succ.code[bv_unsigned_value(self.offset_val) + i]
+                    code_at_i = succ.code[bv_unsigned_value(self.offset_val) + i]
+                    succ.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(code_at_i, 8)
                 else:
-                    succ.memory[bv_unsigned_value(self.destOffset_val) + i] = 0
+                    succ.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(0, 8)
         else:
             raise VMSymbolicError('Symbolic code index @ %s' % succ.pc)
 
