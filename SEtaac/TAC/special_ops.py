@@ -15,8 +15,8 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Codesize', 'TAC_Codecopy', 'TAC_Gasprice', 'TAC_Extcodesize', 'TAC_Extcodecopy',
            'TAC_Returndatasize', 'TAC_Returndatacopy', 'TAC_Extcodehash', 'TAC_Blockhash', 'TAC_Coinbase',
            'TAC_Timestamp', 'TAC_Number', 'TAC_Difficulty', 'TAC_Chainid', 'TAC_Gaslimit', 'TAC_Selfbalance',
-           'TAC_Basefee', 'TAC_Create', 'TAC_Create2', 'TAC_Revert', 'TAC_Pc', 'TAC_Invalid', 'TAC_Selfdestruct',
-           'TAC_Stop', 'TAC_Gas']
+           'TAC_Basefee', 'TAC_Create', 'TAC_Create2', 'TAC_Return', 'TAC_Revert', 'TAC_Pc', 'TAC_Invalid',
+           'TAC_Selfdestruct', 'TAC_Stop', 'TAC_Gas']
 
 
 class TAC_Sha3(TAC_Statement):
@@ -555,6 +555,18 @@ class TAC_Basefee(TAC_Statement):
         succ.set_next_pc()
         return [succ]
 
+
+class TAC_Return(TAC_Statement):
+    __internal_name__ = "RETURN"
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: SymbolicEVMState):
+        succ = state
+
+        # todo: there's probably something more to handle here
+        succ.halt = True
+
+        return [succ]
 
 class TAC_Revert(TAC_Statement):
     __internal_name__ = "REVERT"
