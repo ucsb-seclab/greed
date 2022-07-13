@@ -59,61 +59,54 @@ class SymbolicEVMState:
 
         self.MAX_CALLDATA_SIZE = 256
 
-        # CALLDATA is always defined as an Array
-        self.calldata = ConstArray('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8), BVV(0, 8))
-
-        if "CALLDATA" not in init_ctx:
-            # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
-            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-            self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
-        else:
+        init_ctx = init_ctx or dict()
+        if "CALLDATA" in init_ctx:
             # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
             # for instance: "CALLDATA" = ["0x1546138954SSSS81923899"]. There are 2 symbolic bytes represented by SSSS.
-            calldata_arg = init_ctx['CALLDATA']
-            assert(type(init_ctx['CALLDATA'])== str)
-            calldata_arg = calldata_arg.replace("0x",'')
+            assert isinstance(init_ctx['CALLDATA'], str), "Wrong type for CALLDATA initial context"
 
-            # Parsing the CALLDATA
-            # Since we have a string as input, we divide byte by byte here.
-            calldata_bytes = [calldata_arg[i:i+2] for i in range(0,len(calldata_arg),2)]
-            calldata_index = 0
-            for cb in calldata_bytes:
-                calldata_index_bvv = BVV(calldata_index,256)
-                if cb == 'SS': # special char to instruct for a symbolic byte
-                    #self.calldata[calldata_index_bvv] = BVS(f'CALLDATA_BYTE_{calldata_index}',8)
-                    self.calldata = Array_Store(self.calldata, BVV(calldata_index,256), BVS(f'CALLDATA_BYTE_{calldata_index}',8))
-                else:
-                    #self.calldata[calldata_index_bvv] = BVV(int(cb,16), 8)'
-                    log.debug("Initializing CALLDATA at {}".format(calldata_index))
-                    self.calldata = Array_Store(self.calldata, BVV(calldata_index,256), BVV(int(cb,16), 8))
-                calldata_index += 1
+            # Parse the CALLDATA (divide the input string byte by byte)
+            calldata_raw = init_ctx['CALLDATA'].replace("0x", '')
+            calldata_bytes = [calldata_raw[i:i + 2] for i in range(0, len(calldata_raw), 2)]
 
+            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             if "CALLDATASIZE" in init_ctx:
-                calldatasize_arg = init_ctx["CALLDATASIZE"]
-                # If the CALLDATASIZE provided matches with the amount of data provided in CALLDATA we just use that
-                # CALLDATASIZE is an `int` representing the number of BITS in the CALLDATA
-                if calldatasize_arg == len(calldata_bytes):
-                    #import ipdb; ipdb.set_trace()
-                    # Let's keep the symbol to see it in the constraints :)
-                    self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-                    # Pre-constraining it to the len of the CALLDATA
-                    self.constraints.append(Equal(self.calldatasize, BVV(len(calldata_bytes), 256)))
-                elif calldatasize_arg > len(calldata_bytes):
-                    # CALLDATASIZE is bigger than size(CALLDATA), we set the rest of the CALLDATA as symbolic
-                    self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-                    # CALLDATASIZE is the provided number
-                    self.constraints.append(BV_UGE(self.calldatasize, BVV(calldatasize_arg, 256)))
-                else:
-                    log.fatal("Provided CALLDATASIZE must be greater than CALLDATA bytes")
-                    raise Exception
+                # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
+                self.constraints.append(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
+
+                # CALLDATA is a ConstArray, accesses out of bound are zeroes
+                self.calldata = ConstArray('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8), BVV(0, 8))
+
+                assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
+                if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
+                    # CALLDATASIZE is bigger than size(CALLDATA), we set the unspecified CALLDATA as symbolic
+                    for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
+                        self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
             else:
-                # We set a symbolic CALLDATASIZE setting appropiate constraints
-                self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-                # CALLDATASIZE is always less than the MAX_CALLDATA_SIZE
+                # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
+                self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+                # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
-                # CALLDATASIZE is at >= than the provided CALLDATA bytes
+                # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
                 self.constraints.append(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
-            
+
+            for index, cb in enumerate(calldata_bytes):
+                if cb == 'SS':
+                    # special sequence for symbolic bytes
+                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
+                else:
+                    log.debug("Initializing CALLDATA at {}".format(index))
+                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVV(int(cb, 16), 8))
+
+        else:
+            # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
+            self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+
+            # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
+            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+            # CALLDATASIZE < MAX_CALLDATA_SIZE
+            self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+
     @property
     def pc(self):
         return self._pc
