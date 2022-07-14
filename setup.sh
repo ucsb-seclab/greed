@@ -55,12 +55,24 @@ if [ -z $NO_GIGAHORSE ]; then
   cd $GIGAHORSE_DIR/souffle-addon
   make &> /dev/null || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
   cd $SETAAC_DIR
-  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/logic/main.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build main.dl_compiled${normal}"; exit 1; }
-  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/clients/main.dl_compiled
-  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/main.dl_compiled.cpp
+
+  # main
+  echo "Compiling main.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/logic/main.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build main.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/clients/main.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/main.dl_compiled.cpp &&
+  echo "Successfully compiled main.dl.."
+
+
+  # function inliner
+  echo "Compiling function_inliner.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/function_inliner.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build function_inliner.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.cpp &&
+  echo "Successfully compiled function_inliner.dl.."
 
   # link our clients into gigahorse-toolkit
-  echo "Linking clients into gigahorse-toolkit.."
+  echo "Linking clients into gigahorse-toolchain.."
   for client in $SETAAC_DIR/gigahorse_clients/{*.dl_compiled,*.py,lib} $SETAAC_DIR/gigahorse_clients/lib; do
     ln -sf $client $SETAAC_DIR/gigahorse-toolchain/clients/
   done
