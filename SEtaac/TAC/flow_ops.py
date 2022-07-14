@@ -21,18 +21,7 @@ class TAC_Jump(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        target_bb_id = hex(bv_unsigned_value(self.destination_val))
-        curr_bb_id = succ.curr_stmt.block_id
-        curr_bb = succ.project.factory.block(curr_bb_id)
-        target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
-
-        if not target_bb:
-            target_bb = succ.project.factory.block(target_bb_id)
-
-        dest = target_bb.first_ins.id
-
-        succ.pc = dest
-
+        succ.set_next_pc()
         return [succ]
 
 
