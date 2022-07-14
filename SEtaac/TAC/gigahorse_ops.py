@@ -59,7 +59,7 @@ class TAC_Callprivate(TAC_Statement):
 
         # push stack frame
         try:
-            saved_return_pc = succ.get_next_pc()
+            saved_return_pc = succ.get_fallthrough_pc()
         except VMNoSuccessors:
             fake_exit_bb = succ.project.factory.block('fake_exit')
             saved_return_pc = fake_exit_bb.statements[0].id

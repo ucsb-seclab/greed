@@ -34,7 +34,7 @@ class TAC_Jumpi(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        dest = succ.get_next_pc(fallthrough=False)
+        dest = succ.get_non_fallthrough_pc()
         cond = self.condition_val
 
         if is_concrete(cond):

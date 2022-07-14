@@ -128,26 +128,22 @@ class SymbolicEVMState:
 
     def set_next_pc(self):
         try:
-            self.pc = self.get_next_pc()
+            self.pc = self.get_fallthrough_pc()
         except VMNoSuccessors:
             self.halt = True
 
     # index: where to start
     # size: the amount of bytes to read, default 1.
-    def dbg_read_memory(self, index, size:1):
+    def dbg_read_memory(self, index, size=1):
         # WARNING: THIS IS JUST AN API EXPOSED TO USER,
         #          DO NOT USE IT INTERNALLY.
         assert(type(index) is int)
-        return BV_Concat(self.memory[BVV(index,256):BVV(index+size,256)])
-    
-    def get_next_pc(self, fallthrough=True):
-        # get block
+        return BV_Concat(self.memory[BVV(index, 256):BVV(index+size, 256)])
+
+    def get_fallthrough_pc(self):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
         remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
-
-        if fallthrough is False:
-            assert len(curr_bb.succ) == 2
 
         # case 1: middle of the block
         if remaining_stmts:
@@ -161,22 +157,29 @@ class SymbolicEVMState:
             return curr_bb.succ[0].first_ins.id
         elif len(curr_bb.succ) == 2:
             #  case 3: end of the block and two targets
-            #  we need to set the fallthrough to the state.
-            #  The handler (e.g., JUMPI) has already created the state at the jump target.
-
             fallthrough_bb = curr_bb.fallthrough_edge
 
-            if fallthrough is True:
-                next_stmt = fallthrough_bb.first_ins.id
-            else:
-                all_non_fallthrough_bbs = [bb for bb in curr_bb.succ if bb != fallthrough_bb]
-                assert len(all_non_fallthrough_bbs) == 1
-                non_fallthrough_bb = all_non_fallthrough_bbs[0]
-                next_stmt = non_fallthrough_bb.first_ins.id
-            log.debug("Next stmt is {}".format(next_stmt))
-            return next_stmt
+            log.debug("Next stmt is {}".format(fallthrough_bb.first_ins.id))
+            return fallthrough_bb.first_ins.id
         else:
             raise VMUnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
+
+    def get_non_fallthrough_pc(self):
+        curr_bb = self.project.factory.block(self.curr_stmt.block_id)
+        stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
+        remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
+
+        assert len(remaining_stmts) == 0, "Cannot jump in the middle of a block"
+        assert len(curr_bb.succ) == 2, f"{len(curr_bb.succ)} successors for block {curr_bb}"
+
+        fallthrough_bb = curr_bb.fallthrough_edge
+
+        all_non_fallthrough_bbs = [bb for bb in curr_bb.succ if bb != fallthrough_bb]
+        assert len(all_non_fallthrough_bbs) == 1
+        non_fallthrough_bb = all_non_fallthrough_bbs[0]
+
+        log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))
+        return non_fallthrough_bb.first_ins.id
 
     def import_context(self, state: "SymbolicEVMState"):
         self.storage = state.storage
