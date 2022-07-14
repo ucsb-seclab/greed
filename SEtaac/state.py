@@ -9,11 +9,13 @@ from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
 from SEtaac.utils.solver.shortcuts import *
 
+from SEtaac.options import *
+
 log = logging.getLogger(__name__)
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -31,6 +33,10 @@ class SymbolicEVMState:
         self.storage = SymbolicStorage(self.xid)
         self.registers = SymbolicRegisters()
         self.ctx = dict()
+
+        # We want every state to have an individual set
+        # of options.
+        self.options = options or list()
 
         self.callstack = list()
 
@@ -58,11 +64,54 @@ class SymbolicEVMState:
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
         self.MAX_CALLDATA_SIZE = 256
-        self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
 
-        self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-        self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
-        # self.calldata_accesses = [0]
+        init_ctx = init_ctx or dict()
+        if "CALLDATA" in init_ctx:
+            # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
+            # for instance: "CALLDATA" = ["0x1546138954SSSS81923899"]. There are 2 symbolic bytes represented by SSSS.
+            assert isinstance(init_ctx['CALLDATA'], str), "Wrong type for CALLDATA initial context"
+
+            # Parse the CALLDATA (divide the input string byte by byte)
+            calldata_raw = init_ctx['CALLDATA'].replace("0x", '')
+            calldata_bytes = [calldata_raw[i:i + 2] for i in range(0, len(calldata_raw), 2)]
+
+            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+            if "CALLDATASIZE" in init_ctx:
+                # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
+                self.constraints.append(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
+
+                # CALLDATA is a ConstArray, accesses out of bound are zeroes
+                self.calldata = ConstArray('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8), BVV(0, 8))
+
+                assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
+                if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
+                    # CALLDATASIZE is bigger than size(CALLDATA), we set the unspecified CALLDATA as symbolic
+                    for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
+                        self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
+            else:
+                # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
+                self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+                # CALLDATASIZE < MAX_CALLDATA_SIZE
+                self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+                # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
+                self.constraints.append(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
+
+            for index, cb in enumerate(calldata_bytes):
+                if cb == 'SS':
+                    # special sequence for symbolic bytes
+                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
+                else:
+                    log.debug("Initializing CALLDATA at {}".format(index))
+                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVV(int(cb, 16), 8))
+
+        else:
+            # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
+            self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+
+            # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
+            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+            # CALLDATASIZE < MAX_CALLDATA_SIZE
+            self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
 
     @property
     def pc(self):
@@ -118,6 +167,12 @@ class SymbolicEVMState:
 
         self.constraints = state.constraints
         self.sha_constraints = state.sha_constraints
+    
+    def add_constraint(self, constraint):
+        # Here you can inspect the constraints being added to the state.
+        if STATE_STOP_AT_ADDCONSTRAINT in self.options:
+            import ipdb; ipdb.set_trace()
+        self.constraints.append(constraint)
 
     def copy(self):
         # assume unchanged xid
@@ -130,6 +185,7 @@ class SymbolicEVMState:
         new_state.storage = self.storage.copy(self.xid, self.xid)
         new_state.registers = self.registers.copy()
         new_state.ctx = dict(self.ctx)
+        new_state.options = list(self.options)
 
         new_state.callstack = list(self.callstack)
 
@@ -155,6 +211,7 @@ class SymbolicEVMState:
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
         new_state.calldata = self.calldata
         new_state.calldatasize = self.calldatasize
+        
         # new_state.calldata_accesses = list(self.calldata_accesses)
 
         return new_state

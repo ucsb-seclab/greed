@@ -91,7 +91,7 @@ def find_paths_with_stmt(p, target_stmt):
     except KeyboardInterrupt:
         pass
 
-    print('found! now getting to a STOP/RETURN...')
+    #print('found! now getting to a STOP/RETURN...')
     return simgr.found
     # todo: uncomment this part
     # simgr.move(from_stash='found', to_stash='active')
@@ -154,6 +154,9 @@ def main(args):
 
     # todo: consider all critical paths
     critical_paths = find_paths_with_stmt(p, target_stmt)
+    if not critical_paths:
+        log.fatal('No paths found')
+        exit()
     critical_path = critical_paths[0]
 
     # this is to hi-jack a call

@@ -5,7 +5,7 @@ from SEtaac.utils.exceptions import VMNoSuccessors
 from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.solver.shortcuts import bv_unsigned_value
 
-__all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Return', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
+__all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
 log = logging.getLogger(__name__)
 
@@ -90,10 +90,6 @@ class TAC_Returnprivate(TAC_Statement):
 
         succ.pc = saved_return_pc
         return [succ]
-
-
-class TAC_Return(TAC_Returnprivate):
-    __internal_name__ = "RETURN"
 
 
 class TAC_Phi(TAC_Statement):
