@@ -50,7 +50,7 @@ class TAC_Sha3(TAC_Statement):
                 else:
                     # return fresh sha3
                     # print('return fresh sha3')
-                    sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+                    sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}')
                     succ.term_to_sha_map[mm] = sha_result
                     # todo: add constraint equal/equal different/different
 

@@ -131,6 +131,10 @@ class SymbolicEVMState:
         except VMNoSuccessors:
             self.halt = True
 
+    def read_memory(self, index:int):
+        assert(type(index) is int)
+        return self.memory[BVV(index,256)]
+
     def get_next_pc(self):
         # get block
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
