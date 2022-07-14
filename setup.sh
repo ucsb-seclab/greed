@@ -43,14 +43,15 @@ echo "Creating alias run.py -> SEtaac.."
 ln -sf $SETAAC_DIR/scripts/run.py $VIRTUAL_ENV/bin/SEtaac
 
 if [ -z $NO_GIGAHORSE ]; then
+  echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
   read -rsn1 -p "Setting up gigahorse.. Press any key to continue (ctrl-c to abort)"
+  echo 
 
   # compile gigahorse clients
   command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (https://souffle-lang.github.io/build, version 2.0.2 preferred)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
   dpkg -l | grep -q libboost-all-dev || { echo "${bold}${red}libboost-all-dev is not installed. Please install it before proceeding (e.g., sudo apt install libboost-all-dev)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
 
   echo "Compiling gigahorse clients. This will take some time.."
-  echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
 
   cd $GIGAHORSE_DIR/souffle-addon
   make &> /dev/null || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
