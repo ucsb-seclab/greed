@@ -58,6 +58,7 @@ class SymbolicEVMState:
         self.sha_constraints = dict()
 
         self.term_to_sha_map = dict()
+        self.sha_to_term_map = dict()
 
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
@@ -131,10 +132,14 @@ class SymbolicEVMState:
         except VMNoSuccessors:
             self.halt = True
 
-    def read_memory(self, index:int):
+    # index: where to start
+    # size: the amount of bytes to read, default 1.
+    def dbg_read_memory(self, index, size:1):
+        # WARNING: THIS IS JUST AN API EXPOSED TO USER,
+        #          DO NOT USE IT INTERNALLY.
         assert(type(index) is int)
-        return self.memory[BVV(index,256)]
-
+        return BV_Concat(self.memory[BVV(index,256):BVV(index+size,256)])
+    
     def get_next_pc(self):
         # get block
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
@@ -208,6 +213,7 @@ class SymbolicEVMState:
         new_state.sha_constraints = dict(self.sha_constraints)
 
         new_state.term_to_sha_map = dict(self.term_to_sha_map)
+        new_state.sha_to_term_map = dict(self.sha_to_term_map)
 
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp

@@ -9,6 +9,7 @@ from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Callvalue', 'TAC_Calldataload', 'TAC_Calldatasize', 'TAC_Calldatacopy',
@@ -30,8 +31,10 @@ class TAC_Sha3(TAC_Statement):
         succ = state
 
         mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
+        log.debug("Found a SHA3 operation")
 
         if isinstance(mm, SymRead):
+            log.debug("SHA3 is operating over full symbolic memory")
             # fully SYMBOLIC read
             # loop through the previously computed sha3s
             with new_solver_context(succ) as solver:
@@ -46,12 +49,15 @@ class TAC_Sha3(TAC_Statement):
                                                     Equal(term.memory, mm.memory))):
                         # return previously computed sha3
                         sha_result = sha
+                        log.debug("SHA3 is equivalent to {}".format(sha.dump()))
                         break
                 else:
                     # return fresh sha3
-                    # print('return fresh sha3')
-                    sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}')
+                    new_sha = f'SHA3_{succ.instruction_count}_{succ.xid}'
+                    sha_result = BVS(new_sha,256)
+                    log.debug("Returning a fresh SHA3:{}".format(sha_result.dump()))
                     succ.term_to_sha_map[mm] = sha_result
+                    succ.sha_to_term_map[sha_result] = sha_data
                     # todo: add constraint equal/equal different/different
 
                     # for term, sha in succ.term_to_sha_map.items():
@@ -67,29 +73,37 @@ class TAC_Sha3(TAC_Statement):
                         # again, we don't compare fully symbolic reads with others
                         continue
                     elif solver.is_formula_true(Equal(term, sha_data)):
+                        log.debug("SHA3 is equivalent to {}".format(sha.dump()))
                         # return previously computed sha3
                         sha_result = sha
                         break
                 else:
                     # return fresh sha3
-                    sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+                    new_sha = f'SHA3_{succ.instruction_count}_{succ.xid}'
+                    sha_result = BVS(new_sha, 256)
+                    log.debug("Returning a fresh SHA3:{}".format(sha_result.dump()))
                     succ.term_to_sha_map[sha_data] = sha_result
+                    succ.sha_to_term_map[sha_result] = sha_data
                     # todo: add constraint equal/equal different/different
         else:
             # fully CONCRETE read
+            log.debug("Full concrete read for SHA3")
             sha_data = BV_Concat([m for m in mm])
             for term, sha in succ.term_to_sha_map.items():
                 if is_concrete(term) and bv_unsigned_value(term) == bv_unsigned_value(sha_data):
                     # return previously computed sha3
+                    log.debug("SHA3 is equivalent to {}".format(sha.dump()))
                     sha_result = sha
                     break
             else:
                 # return fresh sha3
+                log.debug("Computing SHA3 for concrete memory")
                 sha_data_concrete = utils.bytearray_to_bytestr([bv_unsigned_value(m) for m in mm])
                 sha_concrete = utils.big_endian_to_int(utils.sha3(sha_data_concrete))
                 sha_result = BVV(sha_concrete, 256)
 
                 succ.term_to_sha_map[sha_data] = sha_result
+                succ.sha_to_term_map[sha_result] = sha_data
 
                 # todo: add constraint equal/equal different/different
         succ.registers[self.res1_var] = sha_result
