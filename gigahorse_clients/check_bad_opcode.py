@@ -32,6 +32,9 @@ def main():
         if PRINT_UNRESOLVED_OPERATORS:
             for x in UNRESOLVED_OPS:
                 print(x)
+    else:
+        print("No bad opcodes detected")
+
 
 if __name__ == "__main__":
     main()
