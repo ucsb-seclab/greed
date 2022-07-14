@@ -14,15 +14,22 @@ from opcodes import *
 PRINT_UNRESOLVED_OPERATORS = True 
 UNRESOLVED_OPS = []
 
+
 def check_statement(stmt: Statement):
+    if stmt.op == "JUMP":
+        # function inlining translates CALLPRIVATE to JUMP with multiple arguments (which is not a bad opcode)
+        return
+
     if stmt.op in OPCODES.keys():
         if len(stmt.operands) != OPCODES[stmt.op].pop:
             UNRESOLVED_OPS.append((stmt.ident, stmt.op, len(stmt.operands), OPCODES[stmt.op].pop))
+
 
 def check(blocks, functions):
     for block_id, block in blocks.items():
         for statement in block.statements:
             check_statement(statement)
+
 
 def main():    
     blocks, functions = construct_cfg()
