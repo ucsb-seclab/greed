@@ -47,7 +47,7 @@ for i in $(seq 1 $INLINING_ROUNDS); do
 done
 
 echo "Running guards.dl"
-LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/guards.dl_compiled -F facts || { echo "${bold}${red}Failed to run guards.dl_compiled${normal}"; exit 1; }
+LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/guards.dl_compiled || { echo "${bold}${red}Failed to run guards.dl_compiled${normal}"; exit 1; }
 
 echo "Running visualizeout.py (to compute .tac output)"
 $GIGAHORSE_DIR/clients/visualizeout.py || { echo "${bold}${red}Failed to run visualizeout.py${normal}"; exit 1; }
