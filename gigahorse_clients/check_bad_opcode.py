@@ -37,7 +37,7 @@ def main():
         exit(0)
 
     if len(unresolved_ops_unreachable) != 0:
-        print(f"[!!!] WARNING | There are {len(unresolved_ops_unreachable)} UNREACHABLE unresolved ops")
+        print(f"There are {len(unresolved_ops_unreachable)} UNREACHABLE unresolved ops")
         if PRINT_UNRESOLVED_OPS_UNREACHABLE:
             for x in unresolved_ops_unreachable:
                 print(x)
