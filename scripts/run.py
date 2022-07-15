@@ -6,7 +6,6 @@ import IPython
 
 from SEtaac import Project
 from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
 from SEtaac.utils.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
@@ -15,7 +14,6 @@ log = logging.getLogger("SEtaac")
 
 
 def main(args):
-    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     xid = gen_exec_id()

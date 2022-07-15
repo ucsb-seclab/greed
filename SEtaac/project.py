@@ -1,8 +1,11 @@
 import logging
+
 import networkx as nx
 
 from SEtaac.TAC.TAC_parser import TAC_parser
 from SEtaac.factory import Factory
+from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
@@ -14,6 +17,9 @@ class Project(object):
             self.code = contract_file.read()
 
         self.factory = Factory(project=self)
+
+        # set the default solver
+        set_solver(Bitwuzla)
 
         tac_parser = TAC_parser(self.factory, target_dir)
         self.statement_at = tac_parser.parse_statements()
