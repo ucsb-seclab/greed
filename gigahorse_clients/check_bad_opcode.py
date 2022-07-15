@@ -32,11 +32,16 @@ def main():
                     # not reachable
                     unresolved_ops_unreachable.append((statement.id, opcode, actual_args, expected_args))
 
+    if len(unresolved_ops+unresolved_ops_unreachable) == 0:
+        print("No bad opcodes detected")
+        exit(0)
+
     if len(unresolved_ops_unreachable) != 0:
         print(f"[!!!] WARNING | There are {len(unresolved_ops_unreachable)} UNREACHABLE unresolved ops")
         if PRINT_UNRESOLVED_OPS_UNREACHABLE:
             for x in unresolved_ops_unreachable:
                 print(x)
+        exit(0)
 
     if len(unresolved_ops) != 0:
         print(f"[!!!] WARNING | There are {len(unresolved_ops)} REACHABLE unresolved ops")
@@ -44,10 +49,6 @@ def main():
             for x in unresolved_ops:
                 print(x)
         exit(1)
-
-    if len(unresolved_ops+unresolved_ops_unreachable):
-        print("No bad opcodes detected")
-        exit(0)
 
 
 if __name__ == "__main__":
