@@ -72,6 +72,13 @@ if [ -z $NO_GIGAHORSE ]; then
   mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.cpp &&
   echo "Successfully compiled function_inliner.dl.."
 
+  # guards analysis
+  echo "Compiling guards.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/guards.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build guards.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp $GIGAHORSE_DIR/clients/guards.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/guards.dl_compiled.cpp &&
+  echo "Successfully compiled guards.dl.."
+
   command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
   solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; }
 else

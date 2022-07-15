@@ -31,17 +31,23 @@ if [ ! -f $GIGAHORSE_DIR/clients/main.dl_compiled ]; then
 elif [ ! -f $GIGAHORSE_DIR/clients/function_inliner.dl_compiled ]; then
   echo "Can't find function_inliner.dl_compiled (something went wrong in setup.sh)"
   exit 1
+elif [ ! -f $GIGAHORSE_DIR/clients/guards.dl_compiled ]; then
+  echo "Can't find guards.dl_compiled (something went wrong in setup.sh)"
+  exit 1
 fi
 
+echo "Running main.dl"
 $GIGAHORSE_DIR/generatefacts $HEX_FILE facts &&
 LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/main.dl_compiled -F facts || { echo "${bold}${red}Failed to run main.dl_compiled${normal}"; exit 1; }
 
 echo "Running $INLINING_ROUNDS of inlining (override with --rounds)"
-
 for i in $(seq 1 $INLINING_ROUNDS); do
   echo "Running inlining round $i.."
   LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/function_inliner.dl_compiled || { echo "${bold}${red}Failed to run function_inliner.dl_compiled${normal}"; exit 1; }
 done
+
+echo "Running guards.dl"
+LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/guards.dl_compiled -F facts || { echo "${bold}${red}Failed to run guards.dl_compiled${normal}"; exit 1; }
 
 echo "Running visualizeout.py (to compute .tac output)"
 $GIGAHORSE_DIR/clients/visualizeout.py || { echo "${bold}${red}Failed to run visualizeout.py${normal}"; exit 1; }
