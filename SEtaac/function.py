@@ -8,8 +8,9 @@ from SEtaac.factory import Factory
 
 
 class TAC_Function:
-    def __init__(self, id: str, name: str, public: bool, blocks: List[Block], arguments: List[str]):
+    def __init__(self, id: str, signature: str, name: str, public: bool, blocks: List[Block], arguments: List[str]):
         self.id = id
+        self.signature = signature
         self.name = name
         self.public = public
         self.blocks = blocks

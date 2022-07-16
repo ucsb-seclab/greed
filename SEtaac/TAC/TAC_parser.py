@@ -152,12 +152,14 @@ class TAC_parser:
             func_id = tac_block_function[block_id]
             is_public = func_id in tac_func_id_to_public or func_id == '0x0'
             is_fallback = tac_func_id_to_public.get(func_id, None) == '0x0'
+            signature = tac_func_id_to_public.get(func_id, None)
             high_level_name = 'fallback()' if is_fallback else tac_high_level_func_name[func_id]
+
             formals = [var for var, _ in sorted(tac_formal_args[func_id], key=lambda x: x[1])]
 
             blocks = [self.factory.block(id) for id in tac_function_blocks[func_id]]
 
-            function = TAC_Function(block_id, high_level_name, is_public, blocks, formals)
+            function = TAC_Function(block_id, signature, high_level_name, is_public, blocks, formals)
             function.cfg = function.build_cfg(self.factory, tac_block_succ)
             functions[func_id] = function
 
