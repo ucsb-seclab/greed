@@ -169,7 +169,8 @@ class SimulationManager:
                 self._stashes[from_stash].remove(s)
                 self._stashes[to_stash].append(s)
 
-    def step(self):
+    def step(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
+            prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
         log.debug('-' * 30)
         new_active = list()
         for state in self.active:
@@ -177,19 +178,26 @@ class SimulationManager:
             new_active += successors
         self._stashes['active'] = new_active
 
-        if options.CACHE_COMMON_CONSTRAINTS:
-            # TODO/WARNING: this can introduce unexpected side effects related to 
-            # the interaction between the solver state and the exploration techniques being 
-            # employed. 
+        self.insns_count += 1
 
-            # migrate common constraints to solver
-            # todo: this is a very hacky way to use incremental solving as much as possible
-            common_constraints = set.intersection(*[set(s.constraints) for s in self.active])
-            from SEtaac.utils.solver.shortcuts import _SOLVER
-            # Common constraints are becoming assertions
-            _SOLVER.add_assertions(list(common_constraints))
-            for s in self.states:
-                s.constraints = list(set(s.constraints)-common_constraints)
+        self.move(from_stash='active', to_stash='found', filter_func=find)
+        self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
+        self.move(from_stash='active', to_stash='pruned', filter_func=prune)
+
+
+        # if options.CACHE_COMMON_CONSTRAINTS:
+        #     # TODO/WARNING: this can introduce unexpected side effects related to
+        #     # the interaction between the solver state and the exploration techniques being
+        #     # employed.
+        #
+        #     # migrate common constraints to solver
+        #     # todo: this is a very hacky way to use incremental solving as much as possible
+        #     common_constraints = set.intersection(*[set(s.constraints) for s in self.active])
+        #     from SEtaac.utils.solver.shortcuts import _SOLVER
+        #     # Common constraints are becoming assertions
+        #     _SOLVER.add_assertions(list(common_constraints))
+        #     for s in self.states:
+        #         s.constraints = list(set(s.constraints)-common_constraints)
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug('Stepping {}'.format(state))
@@ -235,12 +243,7 @@ class SimulationManager:
                 elif self._halt:
                     break
 
-                self.step()
-                self.insns_count += 1
-
-                self.move(from_stash='active', to_stash='found', filter_func=find)
-                self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
-                self.move(from_stash='active', to_stash='pruned', filter_func=prune)
+                self.step(find, prune)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
