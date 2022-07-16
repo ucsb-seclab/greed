@@ -1,21 +1,20 @@
 import datetime
 import logging
-from collections import defaultdict
+from copy import copy
 
-from SEtaac.utils import gen_uuid
-from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
+from SEtaac.options import *
 from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
+from SEtaac.utils import gen_uuid
+from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.solver.shortcuts import *
-
-from SEtaac.options import *
 
 log = logging.getLogger(__name__)
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=256):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -64,7 +63,7 @@ class SymbolicEVMState:
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
-        self.MAX_CALLDATA_SIZE = 256
+        self.MAX_CALLDATA_SIZE = max_calldatasize
 
         init_ctx = init_ctx or dict()
         if "CALLDATA" in init_ctx:
