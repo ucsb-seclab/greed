@@ -21,7 +21,7 @@ class SymbolicMemory(object):
                 vv = list()
                 for i in range(bv_unsigned_value(index.stop) - bv_unsigned_value(index.start)):
                     vv.append(Array_Select(self.memory, BV_Add(index.start, BVV(i, 256))))
-                return vv
+                return BV_Concat(vv)
             else:
                 return SymRead(self.memory, index.start, index.stop)
         else:

@@ -29,10 +29,10 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
+        sha_data = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
         log.debug("Found a SHA3 operation")
 
-        if isinstance(mm, SymRead):
+        if isinstance(sha_data, SymRead):
             log.debug("SHA3 is operating over full symbolic memory")
             # fully SYMBOLIC read
             # loop through the previously computed sha3s
@@ -43,9 +43,9 @@ class TAC_Sha3(TAC_Statement):
                         # it is very hard to compare fully symbolic reads with partially symbolic (or concrete) reads,
                         # so we just assume them to be "potentially different"
                         continue
-                    elif solver.is_formula_true(And(Equal(term.start, mm.start),
-                                                    Equal(term.end, mm.end),
-                                                    Equal(term.memory, mm.memory))):
+                    elif solver.is_formula_true(And(Equal(term.start, sha_data.start),
+                                                    Equal(term.end, sha_data.end),
+                                                    Equal(term.memory, sha_data.memory))):
                         # return previously computed sha3
                         sha_result = sha
                         log.debug("SHA3 is equivalent to {}".format(sha.dump()))
@@ -55,17 +55,16 @@ class TAC_Sha3(TAC_Statement):
                     new_sha = f'SHA3_{succ.instruction_count}_{succ.xid}'
                     sha_result = BVS(new_sha,256)
                     log.debug("Returning a fresh SHA3:{}".format(sha_result.dump()))
-                    succ.term_to_sha_map[mm] = sha_result
+                    succ.term_to_sha_map[sha_data] = sha_result
                     succ.sha_to_term_map[sha_result] = sha_data
                     # todo: add constraint equal/equal different/different
 
                     # for term, sha in succ.term_to_sha_map.items():
                     #     if not isinstance(term, SymRead):
 
-        elif any(not is_concrete(m) for m in mm):
+        elif not is_concrete(sha_data):
             # read size is concrete, but some values in memory are symbolic
             with new_solver_context(succ) as solver:
-                sha_data = BV_Concat([m for m in mm])
                 # loop through the previously computed sha3s
                 for term, sha in succ.term_to_sha_map.items():
                     if isinstance(term, SymRead):
@@ -87,7 +86,6 @@ class TAC_Sha3(TAC_Statement):
         else:
             # fully CONCRETE read
             log.debug("Full concrete read for SHA3")
-            sha_data = BV_Concat([m for m in mm])
             for term, sha in succ.term_to_sha_map.items():
                 if is_concrete(term) and bv_unsigned_value(term) == bv_unsigned_value(sha_data):
                     # return previously computed sha3
