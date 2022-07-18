@@ -228,8 +228,10 @@ class TAC_Calldataload(TAC_Statement):
             succ.add_constraint(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         
         calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.gen_uuid()}", 256)
+
         succ.add_constraint(Equal(calldataload_res,
-                                  BV_Concat([Array_Select(succ.calldata, BV_Add(self.byte_offset_val, BVV(i, 256))) for i in range(32)])))
+                                  succ.calldata[self.byte_offset_val:BV_Add(self.byte_offset_val, BVV(32, 256))]))
+
         succ.registers[self.res1_var] = calldataload_res
 
         log.debug("CALLDATALOAD:" +
@@ -281,7 +283,7 @@ class TAC_Calldatacopy(TAC_Statement):
                 bv_i = BVV(i, 256)
                 destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
                 calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
-                succ.memory[destOffset_plus_i] = Array_Select(succ.calldata, calldataOffset_plus_i)
+                succ.memory[destOffset_plus_i] = succ.calldata[calldataOffset_plus_i]
 
         # otherwise we need to (this is somewhat abusing array theory and over-complicating the memory/constraints)
         for i in range(succ.MAX_CALLDATA_SIZE):
@@ -290,7 +292,7 @@ class TAC_Calldatacopy(TAC_Statement):
             calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
             succ.memory[destOffset_plus_i] = If(BV_UGE(BVV(i, 256), self.size_val),
                                                 succ.memory[destOffset_plus_i],
-                                                Array_Select(succ.calldata, calldataOffset_plus_i))
+                                                succ.calldata[calldataOffset_plus_i])
 
         succ.set_next_pc()
         return [succ]

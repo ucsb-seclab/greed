@@ -6,6 +6,7 @@ from SEtaac.memory import SymbolicMemory
 from SEtaac.options import *
 from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
+from SEtaac.calldata import SymbolicCalldata
 from SEtaac.utils import gen_uuid
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.solver.shortcuts import *
@@ -81,16 +82,16 @@ class SymbolicEVMState:
                 self.constraints.append(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 # CALLDATA is a ConstArray, accesses out of bound are zeroes
-                self.calldata = ConstArray('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8), BVV(0, 8))
+                self.calldata = SymbolicCalldata(xid=self.xid, default=BVV(0, 8))
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
                 if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
                     # CALLDATASIZE is bigger than size(CALLDATA), we set the unspecified CALLDATA as symbolic
                     for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
-                        self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
+                        self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
                 # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-                self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+                self.calldata = SymbolicCalldata(xid=self.xid)
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
@@ -99,14 +100,14 @@ class SymbolicEVMState:
             for index, cb in enumerate(calldata_bytes):
                 if cb == 'SS':
                     # special sequence for symbolic bytes
-                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
+                    self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
                 else:
                     log.debug("Initializing CALLDATA at {}".format(index))
-                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVV(int(cb, 16), 8))
+                    self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
 
         else:
             # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-            self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+            self.calldata = SymbolicCalldata(xid=self.xid)
 
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
@@ -232,7 +233,7 @@ class SymbolicEVMState:
         new_state.max_timestamp = self.max_timestamp
 
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
-        new_state.calldata = self.calldata
+        new_state.calldata = self.calldata.copy()
         new_state.calldatasize = self.calldatasize
         
         # new_state.calldata_accesses = list(self.calldata_accesses)

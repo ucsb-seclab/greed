@@ -153,7 +153,7 @@ def main(args):
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
     with new_solver_context(critical_path) as solver:
-        calldata = bytes(solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
+        calldata = bytes(solver.eval_one_array(critical_path.calldata.base, critical_path.MAX_CALLDATA_SIZE)).hex()
         print(f'CALLDATA: {calldata}')
 
         # # find storage reads in critical path
