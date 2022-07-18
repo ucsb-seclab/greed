@@ -65,10 +65,9 @@ def main(args):
 
         # find out what offsets contain basic types (can be zero)
         with new_solver_context(successful_state) as solver:
-            for i in range((mininum_calldatasize-4)//32):
-                print(i)
-                # bytes_i_is_zero = Equal(Array_Select(successful_state.calldata, BVV(i, 256)), BVV(0, 8))
-                # print(i, solver.is_formula_sat(bytes_i_is_zero))
+            for i in range(4, mininum_calldatasize-32):
+                bytes_i_is_zero = Equal(successful_state.calldata.readn(BVV(i, 256), 32), BVV(0, 256))
+                print(i, solver.is_formula_sat(bytes_i_is_zero))
 
         # now generate ABIs that add up to (mininum_calldatasize - 4) bytes
 

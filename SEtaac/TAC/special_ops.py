@@ -29,7 +29,7 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        sha_data = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
+        sha_data = succ.memory.readn(self.offset_val, self.size_val)
         log.debug("Found a SHA3 operation")
 
         if isinstance(sha_data, SymRead):
@@ -230,7 +230,7 @@ class TAC_Calldataload(TAC_Statement):
         calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.gen_uuid()}", 256)
 
         succ.add_constraint(Equal(calldataload_res,
-                                  succ.calldata[self.byte_offset_val:BV_Add(self.byte_offset_val, BVV(32, 256))]))
+                                  succ.calldata.readn(self.byte_offset_val, 32)))
 
         succ.registers[self.res1_var] = calldataload_res
 

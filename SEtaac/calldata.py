@@ -14,19 +14,22 @@ class SymbolicCalldata(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            if is_concrete(index.start) and is_concrete(index.stop):
-                vv = list()
-                for i in range(bv_unsigned_value(index.stop) - bv_unsigned_value(index.start)):
-                    vv.append(Array_Select(self.base, BV_Add(index.start, BVV(i, 256))))
-                return BV_Concat(vv)
-            else:
-                raise Exception("Symbolic read on CALLDATA not implemented")
+            raise Exception("slice read on CALLDATA not implemented")
         else:
             v = Array_Select(self.base, index)
             return v
 
     def __setitem__(self, index, v):
         self.base = Array_Store(self.base, index, v)
+
+    def readn(self, index, n):
+        if n == 1:
+            return self[index]
+        else:
+            vv = list()
+            for i in range(n):
+                vv.append(self[BV_Add(index, BVV(i, 256))])
+            return BV_Concat(vv)
 
     def copy(self):
         new_calldata = SymbolicCalldata(xid=self.xid, partial_init=True)

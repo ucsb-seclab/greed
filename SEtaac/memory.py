@@ -17,13 +17,7 @@ class SymbolicMemory(object):
     def __getitem__(self, index):
         self.read_count += 1
         if isinstance(index, slice):
-            if is_concrete(index.start) and is_concrete(index.stop):
-                vv = list()
-                for i in range(bv_unsigned_value(index.stop) - bv_unsigned_value(index.start)):
-                    vv.append(Array_Select(self.memory, BV_Add(index.start, BVV(i, 256))))
-                return BV_Concat(vv)
-            else:
-                return SymRead(self.memory, index.start, index.stop)
+            raise Exception("slice read on MEMORY not implemented")
         else:
             v = Array_Select(self.memory, index)
             return v
@@ -31,6 +25,17 @@ class SymbolicMemory(object):
     def __setitem__(self, index, v):
         self.write_count += 1
         self.memory = Array_Store(self.memory, index, v)
+
+    def readn(self, index, n):
+        if not is_concrete(n):
+            return SymRead(self.memory, index, BV_Add(index, BVV(n, 256)))
+        elif n == 1:
+            return self[index]
+        else:
+            vv = list()
+            for i in range(n):
+                vv.append(self[BV_Add(index, BVV(i, 256))])
+            return BV_Concat(vv)
 
     def copy_return_data(self, istart, ilen, ostart, olen):
         raise Exception("NOT IMPLEMENTED. Please have a look")
