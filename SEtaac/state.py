@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=256):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -63,7 +63,7 @@ class SymbolicEVMState:
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
-        self.MAX_CALLDATA_SIZE = max_calldatasize
+        self.MAX_CALLDATA_SIZE = max_calldatasize or 256
 
         init_ctx = init_ctx or dict()
         if "CALLDATA" in init_ctx:
