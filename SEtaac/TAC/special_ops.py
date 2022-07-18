@@ -214,14 +214,30 @@ class TAC_Calldataload(TAC_Statement):
     __aliases__ = {'byte_offset_var': 'arg1_var', 'byte_offset_val': 'arg1_val',
                    'calldata_var': 'res_var', 'calldata_val': 'res_val'}
 
+    @staticmethod
+    def gen_uuid():
+        if "uuid" not in TAC_Calldataload.gen_uuid.__dict__:
+            TAC_Calldataload.gen_uuid.uuid = 0
+        else:
+            TAC_Calldataload.gen_uuid.uuid += 1
+        return TAC_Calldataload.gen_uuid.uuid
+
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         # WARNING: According to the EVM specification if your CALLDATA is less than 32 bytes, you read zeroes.
         succ = state
-        #succ.calldata_accesses.append(BV_Add(self.byte_offset_val, BVV(32, 256)))
+        
         if not is_concrete(self.byte_offset_val):
             succ.add_constraint(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
-        succ.registers[self.res1_var] = BV_Concat([Array_Select(succ.calldata, BV_Add(self.byte_offset_val, BVV(i, 256))) for i in range(32)])
+        
+        calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.gen_uuid()}", 256)
+        succ.add_constraint(Equal(calldataload_res,
+                                  BV_Concat([Array_Select(succ.calldata, BV_Add(self.byte_offset_val, BVV(i, 256))) for i in range(32)])))
+        succ.registers[self.res1_var] = calldataload_res
+
+        log.debug("CALLDATALOAD:" +
+                  str({v: bv_unsigned_value(k) if is_concrete(k) else "<SYMBOL>" for v, k in self.arg_vals.items()}) +
+                  f" --> {{{self.res1_var}: {bv_unsigned_value(succ.registers[self.res1_var]) if is_concrete(succ.registers[self.res1_var]) else '<SYMBOL>'}}}")
 
         succ.set_next_pc()
         return [succ]
@@ -593,8 +609,8 @@ class TAC_Revert(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if not is_concrete(self.offset_val) or not is_concrete(self.size_val):
-            raise VMSymbolicError('symbolic memory index')
+        # if not is_concrete(self.offset_val) or not is_concrete(self.size_val):
+        #     raise VMSymbolicError('symbolic memory index')
         # succ.add_constraint(BV_Or(*(BV_ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.revert = True
         succ.halt = True
