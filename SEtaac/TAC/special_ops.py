@@ -27,9 +27,9 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
+        raise Exception("SHA3 not implemented")
         sha_data = succ.memory.readn(self.offset_val, self.size_val)
         log.debug("Found a SHA3 operation")
-        raise Exception("SHA3 not implemented")
         
         '''
         if isinstance(sha_data, SymRead):
@@ -268,13 +268,11 @@ class TAC_Calldatacopy(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
         
-        index_in_range = And(BV_UGE(succ.memory.lambda_index, self.destOffset_val),
-                             BV_ULT(succ.memory.lambda_index, BV_Add(self.destOffset_val, 
-                                                                     self.size_val)
-                                   )
+        index_in_range = And([BV_UGE(succ.memory.lambda_index, self.destOffset_val),
+                             BV_ULT(succ.memory.lambda_index, BV_Add(self.destOffset_val, self.size_val))]
                             )
 
-        calldata_index = BV_Add(BV_Sub(seld.lambda_index, self.destOffset_val), self.calldataOffset_val)
+        calldata_index = BV_Add(BV_Sub(succ.memory.lambda_index, self.destOffset_val), self.calldataOffset_val)
 
         succ.memory.lambda_memory_read = If(index_in_range, 
                                             succ.calldata[calldata_index], 
