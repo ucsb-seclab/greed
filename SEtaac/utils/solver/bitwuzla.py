@@ -66,6 +66,9 @@ class Bitwuzla(Solver):
         self._sat_status = self.solver.check_sat()
         return self._sat_status == pybitwuzla.Result.UNSAT
 
+    def substitute_terms(self, formula, substitute_map):
+        return self.solver.substitute(formula, substitute_map)
+
     @resets_sat_status
     def is_formula_sat(self, formula):
         self.add_assumption(formula)
