@@ -264,44 +264,23 @@ class TAC_Calldatacopy(TAC_Statement):
         'size_var': 'arg3_var', 'size_val': 'arg3_val',
     }
 
-    lambda_terms_counter = 0
-
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        
-        raise Exception("CALLDATACOPY not implemented") 
-
         succ = state
-
-        calldatacopy_end_offset = BV_Add(self.calldataOffset_val, self.size_val)
-
-        # the actual calldatasize needs to be greater or equal than the end offset of this calldatacopy
-        succ.add_constraint(BV_UGE(succ.calldatasize, calldatacopy_end_offset))
-
-        # the end offset of this calldatacopy needs to be lower than MAX_CALLDATA_SIZE
-        if not is_concrete(self.calldataOffset_val) or not is_concrete(self.size_val):
-            succ.add_constraint(BV_ULT(calldatacopy_end_offset, BVV(succ.MAX_CALLDATA_SIZE, 256)))
-
-        # if size is concrete we can copy byte by byte --> note: this seem to never happen
-        if is_concrete(self.size_val):
-            for i in range(bv_unsigned_value(self.size_val)):
-                bv_i = BVV(i, 256)
-                destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
-                calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
-                succ.memory[destOffset_plus_i] = succ.calldata[calldataOffset_plus_i]
-
-        # Otherwise we'll apply the axiom of the copy(infinite).
         
-        for i in range(succ.MAX_CALLDATA_SIZE):
-            bv_i = BVV(i, 256)
-            destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
-            calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
-            succ.memory[destOffset_plus_i] = If(BV_UGE(BVV(i, 256), self.size_val),
-                                                succ.memory[destOffset_plus_i],
-                                                succ.calldata[calldataOffset_plus_i])
-        
-        self.lambda_terms_counter+=1
+        index_in_range = And(BV_UGE(succ.memory.lambda_index, self.destOffset_val),
+                             BV_ULT(succ.memory.lambda_index, BV_Add(self.destOffset_val, 
+                                                                     self.size_val)
+                                   )
+                            )
+
+        calldata_index = BV_Add(BV_Sub(seld.lambda_index, self.destOffset_val), self.calldataOffset_val)
+
+        succ.memory.lambda_memory_read = If(index_in_range, 
+                                            succ.calldata[calldata_index], 
+                                            succ.memory.lambda_memory_read)
         succ.set_next_pc()
+        
         return [succ]
 
 
