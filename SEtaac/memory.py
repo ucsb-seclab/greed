@@ -19,16 +19,18 @@ class SymbolicMemory(object):
         if isinstance(index, slice):
             raise Exception("slice read on MEMORY not implemented")
         else:
-            v = Array_Select(self.memory, index)
-            return v
+            t = substitute_terms(self.lambda_memory_read, {self.lambda_index: index})
+            return t 
 
     def __setitem__(self, index, v):
         self.write_count += 1
-        self.memory = Array_Store(self.memory, index, v)
-
+        self.lambda_memory_read = If(Equal(self.lambda_index, index), v, self.lambda_memory_read)
+ 
     def readn(self, index, n):
         if not is_concrete(n):
-            return SymRead(self.memory, index, BV_Add(index, BVV(n, 256)))
+            # As of now we are not using it (should never be called), 
+            # hence, we are not implementing it.
+            raise Exception("readn with symbolic length not implemented")
         elif n == 1:
             return self[index]
         else:
@@ -52,16 +54,8 @@ class SymbolicMemory(object):
         if old_xid != new_xid:
             raise Exception("memory copy with different xid is not implemented. Please have a look")
         new_memory = SymbolicMemory(partial_init=True)
-        new_memory.memory = self.memory
+        new_memory.lambda_index = self.lambda_index
+        new_memory.lambda_memory_read = self.lambda_memory_read
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
         return new_memory
-
-
-# Represents a full symbolic read over memory
-class SymRead:
-    def __init__(self, memory, start, end):
-        self.memory = memory
-        self.start = start
-        self.end = end
-        self.size = BV_Add(BV_Sub(self.end, self.start), BVV(1, 256))

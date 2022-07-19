@@ -2,7 +2,6 @@
 import logging
 
 from SEtaac import utils
-from SEtaac.memory import SymRead
 from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.utils.solver.shortcuts import *
 from .base import TAC_Statement
@@ -30,7 +29,9 @@ class TAC_Sha3(TAC_Statement):
 
         sha_data = succ.memory.readn(self.offset_val, self.size_val)
         log.debug("Found a SHA3 operation")
-
+        raise Exception("SHA3 not implemented")
+        
+        '''
         if isinstance(sha_data, SymRead):
             log.debug("SHA3 is operating over full symbolic memory")
             # fully SYMBOLIC read
@@ -103,7 +104,7 @@ class TAC_Sha3(TAC_Statement):
 
                 # todo: add constraint equal/equal different/different
         succ.registers[self.res1_var] = sha_result
-
+        '''
         succ.set_next_pc()
         return [succ]
 
