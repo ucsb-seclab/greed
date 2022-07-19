@@ -18,7 +18,6 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Basefee', 'TAC_Create', 'TAC_Create2', 'TAC_Return', 'TAC_Revert', 'TAC_Pc', 'TAC_Invalid',
            'TAC_Selfdestruct', 'TAC_Stop', 'TAC_Gas']
 
-
 class TAC_Sha3(TAC_Statement):
     __internal_name__ = "SHA3"
     __aliases__ = {'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
@@ -264,8 +263,13 @@ class TAC_Calldatacopy(TAC_Statement):
         'size_var': 'arg3_var', 'size_val': 'arg3_val',
     }
 
+    lambda_terms_counter = 0
+
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
+        
+        raise Exception("CALLDATACOPY not implemented") 
+
         succ = state
 
         calldatacopy_end_offset = BV_Add(self.calldataOffset_val, self.size_val)
@@ -285,7 +289,8 @@ class TAC_Calldatacopy(TAC_Statement):
                 calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
                 succ.memory[destOffset_plus_i] = succ.calldata[calldataOffset_plus_i]
 
-        # otherwise we need to (this is somewhat abusing array theory and over-complicating the memory/constraints)
+        # Otherwise we'll apply the axiom of the copy(infinite).
+        
         for i in range(succ.MAX_CALLDATA_SIZE):
             bv_i = BVV(i, 256)
             destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
@@ -293,7 +298,8 @@ class TAC_Calldatacopy(TAC_Statement):
             succ.memory[destOffset_plus_i] = If(BV_UGE(BVV(i, 256), self.size_val),
                                                 succ.memory[destOffset_plus_i],
                                                 succ.calldata[calldataOffset_plus_i])
-
+        
+        self.lambda_terms_counter+=1
         succ.set_next_pc()
         return [succ]
 
