@@ -31,11 +31,11 @@ class SymbolicMemory(object):
             # As of now we are not using it (should never be called), 
             # hence, we are not implementing it.
             raise Exception("readn with symbolic length not implemented")
-        elif n == 1:
+        elif bv_unsigned_value(n) == 1:
             return self[index]
         else:
             vv = list()
-            for i in range(n):
+            for i in range(bv_unsigned_value(n)):
                 vv.append(self[BV_Add(index, BVV(i, 256))])
             return BV_Concat(vv)
 

@@ -23,11 +23,15 @@ class SymbolicCalldata(object):
         self.base = Array_Store(self.base, index, v)
 
     def readn(self, index, n):
-        if n == 1:
+        if not is_concrete(n):
+            # As of now we are not using it (should never be called),
+            # hence, we are not implementing it.
+            raise Exception("readn with symbolic length not implemented")
+        elif bv_unsigned_value(n) == 1:
             return self[index]
         else:
             vv = list()
-            for i in range(n):
+            for i in range(bv_unsigned_value(n)):
                 vv.append(self[BV_Add(index, BVV(i, 256))])
             return BV_Concat(vv)
 

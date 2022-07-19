@@ -230,7 +230,7 @@ class TAC_Calldataload(TAC_Statement):
         calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.gen_uuid()}", 256)
 
         succ.add_constraint(Equal(calldataload_res,
-                                  succ.calldata.readn(self.byte_offset_val, 32)))
+                                  succ.calldata.readn(self.byte_offset_val, BVV(32, 256))))
 
         succ.registers[self.res1_var] = calldataload_res
 

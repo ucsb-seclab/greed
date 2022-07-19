@@ -52,9 +52,7 @@ class TAC_Mload(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        mm = [succ.memory[BV_Add(self.offset_val, BVV(i, 256))] for i in range(32)]
-        v = BV_Concat([m for m in mm])
-        succ.registers[self.res1_var] = v
+        succ.registers[self.res1_var] = succ.memory.readn(self.offset_val, BVV(32, 256))
 
         succ.set_next_pc()
         return [succ]
