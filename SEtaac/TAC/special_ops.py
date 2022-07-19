@@ -29,9 +29,11 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        mm = succ.memory[self.offset_val:BV_Add(self.offset_val, self.size_val)]
+        sha_data = succ.memory.readn(self.offset_val, self.size_val)
+        log.debug("Found a SHA3 operation")
 
-        if isinstance(mm, SymRead):
+        if isinstance(sha_data, SymRead):
+            log.debug("SHA3 is operating over full symbolic memory")
             # fully SYMBOLIC read
             # loop through the previously computed sha3s
             with new_solver_context(succ) as solver:
@@ -41,55 +43,64 @@ class TAC_Sha3(TAC_Statement):
                         # it is very hard to compare fully symbolic reads with partially symbolic (or concrete) reads,
                         # so we just assume them to be "potentially different"
                         continue
-                    elif solver.is_formula_true(And(Equal(term.start, mm.start),
-                                                    Equal(term.end, mm.end),
-                                                    Equal(term.memory, mm.memory))):
+                    elif solver.is_formula_true(And(Equal(term.start, sha_data.start),
+                                                    Equal(term.end, sha_data.end),
+                                                    Equal(term.memory, sha_data.memory))):
                         # return previously computed sha3
                         sha_result = sha
+                        log.debug("SHA3 is equivalent to {}".format(sha.dump()))
                         break
                 else:
                     # return fresh sha3
-                    # print('return fresh sha3')
-                    sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
-                    succ.term_to_sha_map[mm] = sha_result
+                    new_sha = f'SHA3_{succ.instruction_count}_{succ.xid}'
+                    sha_result = BVS(new_sha,256)
+                    log.debug("Returning a fresh SHA3:{}".format(sha_result.dump()))
+                    succ.term_to_sha_map[sha_data] = sha_result
+                    succ.sha_to_term_map[sha_result] = sha_data
                     # todo: add constraint equal/equal different/different
 
                     # for term, sha in succ.term_to_sha_map.items():
                     #     if not isinstance(term, SymRead):
 
-        elif any(not is_concrete(m) for m in mm):
+        elif not is_concrete(sha_data):
             # read size is concrete, but some values in memory are symbolic
             with new_solver_context(succ) as solver:
-                sha_data = BV_Concat([m for m in mm])
                 # loop through the previously computed sha3s
                 for term, sha in succ.term_to_sha_map.items():
                     if isinstance(term, SymRead):
                         # again, we don't compare fully symbolic reads with others
                         continue
                     elif solver.is_formula_true(Equal(term, sha_data)):
+                        log.debug("SHA3 is equivalent to {}".format(sha.dump()))
                         # return previously computed sha3
                         sha_result = sha
                         break
                 else:
                     # return fresh sha3
-                    sha_result = BVS(f'SHA3_{succ.instruction_count}_{succ.xid}', 256)
+                    new_sha = f'SHA3_{succ.instruction_count}_{succ.xid}'
+                    sha_result = BVS(new_sha, 256)
+                    log.debug("Returning a fresh SHA3:{}".format(sha_result.dump()))
                     succ.term_to_sha_map[sha_data] = sha_result
+                    succ.sha_to_term_map[sha_result] = sha_data
                     # todo: add constraint equal/equal different/different
         else:
             # fully CONCRETE read
-            sha_data = BV_Concat([m for m in mm])
+            log.debug("Full concrete read for SHA3")
             for term, sha in succ.term_to_sha_map.items():
                 if is_concrete(term) and bv_unsigned_value(term) == bv_unsigned_value(sha_data):
                     # return previously computed sha3
+                    log.debug("SHA3 is equivalent to {}".format(sha.dump()))
                     sha_result = sha
                     break
             else:
                 # return fresh sha3
+                log.debug("Computing SHA3 for concrete memory")
                 sha_data_concrete = utils.bytearray_to_bytestr([bv_unsigned_value(m) for m in mm])
                 sha_concrete = utils.big_endian_to_int(utils.sha3(sha_data_concrete))
                 sha_result = BVV(sha_concrete, 256)
 
                 succ.term_to_sha_map[sha_data] = sha_result
+                succ.sha_to_term_map[sha_result] = sha_data
 
                 # todo: add constraint equal/equal different/different
         succ.registers[self.res1_var] = sha_result
@@ -200,14 +211,32 @@ class TAC_Calldataload(TAC_Statement):
     __aliases__ = {'byte_offset_var': 'arg1_var', 'byte_offset_val': 'arg1_val',
                    'calldata_var': 'res_var', 'calldata_val': 'res_val'}
 
+    @staticmethod
+    def gen_uuid():
+        if "uuid" not in TAC_Calldataload.gen_uuid.__dict__:
+            TAC_Calldataload.gen_uuid.uuid = 0
+        else:
+            TAC_Calldataload.gen_uuid.uuid += 1
+        return TAC_Calldataload.gen_uuid.uuid
+
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         # WARNING: According to the EVM specification if your CALLDATA is less than 32 bytes, you read zeroes.
         succ = state
-        #succ.calldata_accesses.append(BV_Add(self.byte_offset_val, BVV(32, 256)))
+        
         if not is_concrete(self.byte_offset_val):
             succ.add_constraint(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
-        succ.registers[self.res1_var] = BV_Concat([Array_Select(succ.calldata, BV_Add(self.byte_offset_val, BVV(i, 256))) for i in range(32)])
+        
+        calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.gen_uuid()}", 256)
+
+        succ.add_constraint(Equal(calldataload_res,
+                                  succ.calldata.readn(self.byte_offset_val, 32)))
+
+        succ.registers[self.res1_var] = calldataload_res
+
+        log.debug("CALLDATALOAD:" +
+                  str({v: bv_unsigned_value(k) if is_concrete(k) else "<SYMBOL>" for v, k in self.arg_vals.items()}) +
+                  f" --> {{{self.res1_var}: {bv_unsigned_value(succ.registers[self.res1_var]) if is_concrete(succ.registers[self.res1_var]) else '<SYMBOL>'}}}")
 
         succ.set_next_pc()
         return [succ]
@@ -254,7 +283,7 @@ class TAC_Calldatacopy(TAC_Statement):
                 bv_i = BVV(i, 256)
                 destOffset_plus_i = BV_Add(self.destOffset_val, bv_i)
                 calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
-                succ.memory[destOffset_plus_i] = Array_Select(succ.calldata, calldataOffset_plus_i)
+                succ.memory[destOffset_plus_i] = succ.calldata[calldataOffset_plus_i]
 
         # otherwise we need to (this is somewhat abusing array theory and over-complicating the memory/constraints)
         for i in range(succ.MAX_CALLDATA_SIZE):
@@ -263,7 +292,7 @@ class TAC_Calldatacopy(TAC_Statement):
             calldataOffset_plus_i = BV_Add(self.calldataOffset_val, bv_i)
             succ.memory[destOffset_plus_i] = If(BV_UGE(BVV(i, 256), self.size_val),
                                                 succ.memory[destOffset_plus_i],
-                                                Array_Select(succ.calldata, calldataOffset_plus_i))
+                                                succ.calldata[calldataOffset_plus_i])
 
         succ.set_next_pc()
         return [succ]
@@ -579,8 +608,8 @@ class TAC_Revert(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        if not is_concrete(self.offset_val) or not is_concrete(self.size_val):
-            raise VMSymbolicError('symbolic memory index')
+        # if not is_concrete(self.offset_val) or not is_concrete(self.size_val):
+        #     raise VMSymbolicError('symbolic memory index')
         # succ.add_constraint(BV_Or(*(BV_ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         succ.revert = True
         succ.halt = True

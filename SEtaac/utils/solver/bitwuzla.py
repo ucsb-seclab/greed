@@ -239,13 +239,15 @@ class Bitwuzla(Solver):
     def Array_Select(self, arr, index):
         return self.solver.mk_term(pybitwuzla.Kind.ARRAY_SELECT, [arr, index])
 
-    def eval_one(self, term):
+    def eval_one(self, term, cast_to="int"):
         if self._sat_status is None:
             self._sat_status = self.solver.check_sat()
         assert self._sat_status == pybitwuzla.Result.SAT
-
-        return int(self.solver.get_value_str(term))
-
+        if cast_to == "int":
+            return int(self.solver.get_value_str(term))
+        else:
+            return self.solver.get_value_str(term)
+ 
     def eval_one_array(self, array, length):
         if self._sat_status is None:
             self._sat_status = self.solver.check_sat()

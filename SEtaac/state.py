@@ -1,21 +1,21 @@
 import datetime
 import logging
-from collections import defaultdict
+from copy import copy
 
-from SEtaac.utils import gen_uuid
-from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.memory import SymbolicMemory
+from SEtaac.options import *
 from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
+from SEtaac.calldata import SymbolicCalldata
+from SEtaac.utils import gen_uuid
+from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.solver.shortcuts import *
-
-from SEtaac.options import *
 
 log = logging.getLogger(__name__)
 
 
 class SymbolicEVMState:
-    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -58,12 +58,13 @@ class SymbolicEVMState:
         self.sha_constraints = dict()
 
         self.term_to_sha_map = dict()
+        self.sha_to_term_map = dict()
 
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
-        self.MAX_CALLDATA_SIZE = 256
+        self.MAX_CALLDATA_SIZE = max_calldatasize or 256
 
         init_ctx = init_ctx or dict()
         if "CALLDATA" in init_ctx:
@@ -81,16 +82,16 @@ class SymbolicEVMState:
                 self.constraints.append(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 # CALLDATA is a ConstArray, accesses out of bound are zeroes
-                self.calldata = ConstArray('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8), BVV(0, 8))
+                self.calldata = SymbolicCalldata(xid=self.xid, default=BVV(0, 8))
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
                 if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
                     # CALLDATASIZE is bigger than size(CALLDATA), we set the unspecified CALLDATA as symbolic
                     for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
-                        self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
+                        self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
                 # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-                self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+                self.calldata = SymbolicCalldata(xid=self.xid)
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
@@ -99,14 +100,14 @@ class SymbolicEVMState:
             for index, cb in enumerate(calldata_bytes):
                 if cb == 'SS':
                     # special sequence for symbolic bytes
-                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVS(f'CALLDATA_BYTE_{index}', 8))
+                    self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
                 else:
                     log.debug("Initializing CALLDATA at {}".format(index))
-                    self.calldata = Array_Store(self.calldata, BVV(index, 256), BVV(int(cb, 16), 8))
+                    self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
 
         else:
             # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-            self.calldata = Array('CALLDATA_%d' % self.xid, BVSort(256), BVSort(8))
+            self.calldata = SymbolicCalldata(xid=self.xid)
 
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
@@ -127,12 +128,19 @@ class SymbolicEVMState:
 
     def set_next_pc(self):
         try:
-            self.pc = self.get_next_pc()
+            self.pc = self.get_fallthrough_pc()
         except VMNoSuccessors:
             self.halt = True
 
-    def get_next_pc(self):
-        # get block
+    # index: where to start
+    # size: the amount of bytes to read, default 1.
+    def dbg_read_memory(self, index, size=1):
+        # WARNING: THIS IS JUST AN API EXPOSED TO USER,
+        #          DO NOT USE IT INTERNALLY.
+        assert(type(index) is int)
+        return BV_Concat(self.memory[BVV(index, 256):BVV(index+size, 256)])
+
+    def get_fallthrough_pc(self):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
         remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
@@ -149,14 +157,29 @@ class SymbolicEVMState:
             return curr_bb.succ[0].first_ins.id
         elif len(curr_bb.succ) == 2:
             #  case 3: end of the block and two targets
-            #  we need to set the fallthrough to the state.
-            #  The handler (e.g., JUMPI) has already created the state at the jump target.
-
             fallthrough_bb = curr_bb.fallthrough_edge
+
             log.debug("Next stmt is {}".format(fallthrough_bb.first_ins.id))
             return fallthrough_bb.first_ins.id
         else:
             raise VMUnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
+
+    def get_non_fallthrough_pc(self):
+        curr_bb = self.project.factory.block(self.curr_stmt.block_id)
+        stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
+        remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
+
+        assert len(remaining_stmts) == 0, "Cannot jump in the middle of a block"
+        assert len(curr_bb.succ) == 2, f"{len(curr_bb.succ)} successors for block {curr_bb}"
+
+        fallthrough_bb = curr_bb.fallthrough_edge
+
+        all_non_fallthrough_bbs = [bb for bb in curr_bb.succ if bb != fallthrough_bb]
+        assert len(all_non_fallthrough_bbs) == 1
+        non_fallthrough_bb = all_non_fallthrough_bbs[0]
+
+        log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))
+        return non_fallthrough_bb.first_ins.id
 
     def import_context(self, state: "SymbolicEVMState"):
         self.storage = state.storage
@@ -204,12 +227,13 @@ class SymbolicEVMState:
         new_state.sha_constraints = dict(self.sha_constraints)
 
         new_state.term_to_sha_map = dict(self.term_to_sha_map)
+        new_state.sha_to_term_map = dict(self.sha_to_term_map)
 
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp
 
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
-        new_state.calldata = self.calldata
+        new_state.calldata = self.calldata.copy()
         new_state.calldatasize = self.calldatasize
         
         # new_state.calldata_accesses = list(self.calldata_accesses)

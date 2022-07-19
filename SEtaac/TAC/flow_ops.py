@@ -21,18 +21,7 @@ class TAC_Jump(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        target_bb_id = hex(bv_unsigned_value(self.destination_val))
-        curr_bb_id = succ.curr_stmt.block_id
-        curr_bb = succ.project.factory.block(curr_bb_id)
-        target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
-
-        if not target_bb:
-            target_bb = succ.project.factory.block(target_bb_id)
-
-        dest = target_bb.first_ins.id
-
-        succ.pc = dest
-
+        succ.set_next_pc()
         return [succ]
 
 
@@ -45,15 +34,7 @@ class TAC_Jumpi(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        target_bb_id = hex(bv_unsigned_value(self.destination_val))
-        curr_bb_id = succ.curr_stmt.block_id
-        curr_bb = succ.project.factory.block(curr_bb_id)
-        target_bb = succ.project.factory.block(target_bb_id + curr_bb.function.id)
-
-        if not target_bb:
-            target_bb = succ.project.factory.block(target_bb_id)
-
-        dest = target_bb.first_ins.id
+        dest = succ.get_non_fallthrough_pc()
         cond = self.condition_val
 
         if is_concrete(cond):
@@ -134,7 +115,7 @@ class TAC_BaseCall(TAC_Statement):
         else:
             assert is_concrete(ostart) and is_concrete(olen)
             for i in range(bv_unsigned_value(olen)):
-                succ.memory[bv_unsigned_value(ostart) + i] = BVS(f'EXT_{succ.instruction_count}_{i}_{succ.xid}', 8)
+                succ.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{succ.instruction_count}_{i}_{succ.xid}', 8)
             log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
             logging.info(f"Calling contract {log_address_val} ({succ.instruction_count}_{succ.xid})")
             succ.registers[self.res1_var] = BVS(f'CALLRESULT_{succ.instruction_count}_{succ.xid}', 256)

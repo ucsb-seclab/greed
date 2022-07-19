@@ -25,4 +25,4 @@ fi
 SOLC_VERSION=0.8.7 solc --bin-runtime $SOURCE_FILE | sed "1,/Binary of the runtime part:/d" | tr -d '\n' > contract.hex
 
 # analyze deployment hex
-$SETAAC_DIR/scripts/analyze_contract_hex.sh contract.hex
+$SETAAC_DIR/scripts/analyze_contract_hex.sh --file contract.hex

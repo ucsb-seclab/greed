@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 import argparse
-import itertools
 import logging
-from collections import defaultdict
 
 import networkx as nx
 
 from SEtaac import Project
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
 from SEtaac.utils.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
@@ -126,7 +123,6 @@ def execute_trace(entry_state, trace):
 
 
 def main(args):
-    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     if args.block:
@@ -165,7 +161,7 @@ def main(args):
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
     with new_solver_context(critical_path) as solver:
-        calldata = bytes(solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
+        calldata = bytes(solver.eval_one_array(critical_path.calldata.base, critical_path.MAX_CALLDATA_SIZE)).hex()
         print(f'CALLDATA: {calldata}')
 
         # # find storage reads in critical path

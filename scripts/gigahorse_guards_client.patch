@@ -1,0 +1,11 @@
+diff --git a/clientlib/guards.dl b/clientlib/guards.dl
+index f0f43d4..f15310a 100644
+--- a/clientlib/guards.dl
++++ b/clientlib/guards.dl
+@@ -1,5 +1,6 @@
+ #pragma once
+ 
++#include "decompiler_imports.dl"
+ #include "memory_modeling/memory_modeling.dl"
+ #include "data_structures.dl"
+ #include "flows.dl"

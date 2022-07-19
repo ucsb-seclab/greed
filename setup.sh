@@ -43,30 +43,56 @@ echo "Creating alias run.py -> SEtaac.."
 ln -sf $SETAAC_DIR/scripts/run.py $VIRTUAL_ENV/bin/SEtaac
 
 if [ -z $NO_GIGAHORSE ]; then
+  echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
   read -rsn1 -p "Setting up gigahorse.. Press any key to continue (ctrl-c to abort)"
+  echo
+
+  # apply patches
+  cd $GIGAHORSE_DIR
+  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_guards_client.patch
+  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
+  cd $SETAAC_DIR
 
   # compile gigahorse clients
   command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (https://souffle-lang.github.io/build, version 2.0.2 preferred)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
   dpkg -l | grep -q libboost-all-dev || { echo "${bold}${red}libboost-all-dev is not installed. Please install it before proceeding (e.g., sudo apt install libboost-all-dev)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
 
   echo "Compiling gigahorse clients. This will take some time.."
-  echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
 
   cd $GIGAHORSE_DIR/souffle-addon
   make &> /dev/null || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
   cd $SETAAC_DIR
-  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/logic/main.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build main.dl_compiled${normal}"; exit 1; }
-  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/clients/main.dl_compiled
-  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/main.dl_compiled.cpp
 
-  # link our clients into gigahorse-toolkit
-  echo "Linking clients into gigahorse-toolkit.."
-  for client in $SETAAC_DIR/gigahorse_clients/{*.dl_compiled,*.py,lib} $SETAAC_DIR/gigahorse_clients/lib; do
-    ln -sf $client $SETAAC_DIR/gigahorse-toolchain/clients/
-  done
+  # main
+  echo "Compiling main.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/logic/main.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build main.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/clients/main.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/main.dl_compiled.cpp &&
+  echo "Successfully compiled main.dl.."
+
+
+  # function inliner
+  echo "Compiling function_inliner.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/function_inliner.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build function_inliner.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.cpp &&
+  echo "Successfully compiled function_inliner.dl.."
+
+  # guards analysis
+  echo "Compiling guards.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/guards.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build guards.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp $GIGAHORSE_DIR/clients/guards.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/guards.dl_compiled.cpp &&
+  echo "Successfully compiled guards.dl.."
 
   command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
   solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; }
 else
   true
 fi
+
+# link our clients into gigahorse-toolkit
+echo "Linking clients into gigahorse-toolchain.."
+for client in $SETAAC_DIR/gigahorse_clients/{*.dl_compiled,*.py,lib} $SETAAC_DIR/gigahorse_clients/lib; do
+  ln -sf $client $SETAAC_DIR/gigahorse-toolchain/clients/
+done
