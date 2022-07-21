@@ -60,9 +60,6 @@ class new_solver_context:
 
         if self._state is not None:
             self.solver_context.add_assertions(self._state.constraints)
-            self.solver_context.add_assertions(self._state.memory.mem_constraints)
-            self.solver_context.add_assertions(self._state.calldata.mem_constraints)
-            self.solver_context.add_assertions(self._state.storage.mem_constraints)
 
         return self.solver_context
 

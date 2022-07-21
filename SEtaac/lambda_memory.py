@@ -102,8 +102,8 @@ class LambdaMemory(UUID):
         self.value_sort = value_sort
         self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), value_sort)
 
-        self.lambda_mem_constraint = LambdaConstraint()
-        self.mem_constraints = list()
+        self.lambda_constraint = LambdaConstraint()
+        self.constraints = list()
 
         if default is not None:
             # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
@@ -118,7 +118,7 @@ class LambdaMemory(UUID):
         self.read_count += 1
 
         # instantiate and add lambda constraints
-        self.mem_constraints += self.lambda_mem_constraint.instantiate(index)
+        self.constraints += self.lambda_constraint.instantiate(index)
 
         return Array_Select(self._base, index)
 
@@ -143,29 +143,29 @@ class LambdaMemory(UUID):
         old_base = self._base
         self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
 
-        self.lambda_mem_constraint = LambdaMemsetConstraint(old_base, start, value, size, self._base,
-                                                            parent=self.lambda_mem_constraint)
+        self.lambda_constraint = LambdaMemsetConstraint(old_base, start, value, size, self._base,
+                                                        parent=self.lambda_constraint)
 
     def memsetinfinite(self, start, value):
         old_base = self._base
         self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
 
-        self.lambda_mem_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self._base,
-                                                                    parent=self.lambda_mem_constraint)
+        self.lambda_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self._base,
+                                                                parent=self.lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
         old_base = self._base
         self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
 
-        self.lambda_mem_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self._base,
-                                                             parent=self.lambda_mem_constraint)
+        self.lambda_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self._base,
+                                                         parent=self.lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
         old_base = self._base
         self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
 
-        self.lambda_mem_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
-                                                                     parent=self.lambda_mem_constraint)
+        self.lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
+                                                                 parent=self.lambda_constraint)
 
     def copy_return_data(self, istart, ilen, ostart, olen):
         raise Exception("NOT IMPLEMENTED. Please have a look")
@@ -184,8 +184,8 @@ class LambdaMemory(UUID):
         new_memory = LambdaMemory(partial_init=True)
         new_memory.tag = self.tag
         new_memory._base = self._base
-        new_memory.lambda_mem_constraint = self.lambda_mem_constraint
-        new_memory.mem_constraints = list(self.mem_constraints)
+        new_memory.lambda_constraint = self.lambda_constraint
+        new_memory.constraints = list(self.constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
         return new_memory

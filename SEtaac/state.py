@@ -50,7 +50,7 @@ class SymbolicEVMState(UUID):
 
         self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
-        self.constraints = list()
+        self.path_constraints = list()
         self.sha_constraints = dict()
 
         self.term_to_sha_map = dict()
@@ -75,7 +75,7 @@ class SymbolicEVMState(UUID):
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             if "CALLDATASIZE" in init_ctx:
                 # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
-                self.constraints.append(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
+                self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 # CALLDATA is a ConstArray, accesses out of bound are zeroes
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8))
@@ -89,9 +89,9 @@ class SymbolicEVMState(UUID):
                 # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8))
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
-                self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+                self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
-                self.constraints.append(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
+                self.add_constraint(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
 
             for index, cb in enumerate(calldata_bytes):
                 if cb == 'SS':
@@ -108,7 +108,7 @@ class SymbolicEVMState(UUID):
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             # CALLDATASIZE < MAX_CALLDATA_SIZE
-            self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+            self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
 
     @property
     def pc(self):
@@ -184,14 +184,18 @@ class SymbolicEVMState(UUID):
         self.balance = self.start_balance
         self.balance += ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
 
-        self.constraints = state.constraints
+        self.path_constraints = state.path_constraints
         self.sha_constraints = state.sha_constraints
+
+    @property
+    def constraints(self):
+        return self.path_constraints + self.memory.constraints + self.calldata.constraints + self.storage.constraints
     
     def add_constraint(self, constraint):
         # Here you can inspect the constraints being added to the state.
         if STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
-        self.constraints.append(constraint)
+        self.path_constraints.append(constraint)
 
     def copy(self):
         # assume unchanged xid
@@ -219,7 +223,7 @@ class SymbolicEVMState(UUID):
 
         new_state.ctx['CODESIZE-ADDRESS'] = self.ctx['CODESIZE-ADDRESS']
 
-        new_state.constraints = list(self.constraints)
+        new_state.path_constraints = list(self.path_constraints)
         new_state.sha_constraints = dict(self.sha_constraints)
 
         new_state.term_to_sha_map = dict(self.term_to_sha_map)
