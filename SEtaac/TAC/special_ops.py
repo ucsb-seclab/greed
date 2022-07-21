@@ -267,16 +267,9 @@ class TAC_Calldatacopy(TAC_Statement):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         succ = state
-        
-        index_in_range = And([BV_UGE(succ.memory.lambda_index, self.destOffset_val),
-                             BV_ULT(succ.memory.lambda_index, BV_Add(self.destOffset_val, self.size_val))]
-                            )
 
-        calldata_index = BV_Add(BV_Sub(succ.memory.lambda_index, self.destOffset_val), self.calldataOffset_val)
+        succ.memory.memcopy(self.destOffset_val, succ.calldata.base, self.calldataOffset_val, self.size_val)
 
-        succ.memory.lambda_memory_read = If(index_in_range, 
-                                            succ.calldata[calldata_index], 
-                                            succ.memory.lambda_memory_read)
         succ.set_next_pc()
         
         return [succ]

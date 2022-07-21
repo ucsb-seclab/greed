@@ -1,43 +1,193 @@
 from SEtaac.utils.solver.shortcuts import *
 
 
+class LambdaConstraint:
+    def instantiate(self, index):
+        return []
+
+
+class LambdaMemsetConstraint:
+    def __init__(self, array, start, value, size, new_array, parent):
+        self.array = array
+        self.start = start
+        self.value = value
+        self.size = size
+
+        self.new_array = new_array
+        self.parent = parent
+
+    def instantiate(self, index):
+        index_in_range = BV_And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
+        instance = Equal(Array_Select(self.new_array, index),
+                         If(index_in_range,
+                            self.value,
+                            Array_Select(self.array, index)))
+
+        return [instance] + self.parent.instantiate(index)
+
+
+class LambdaMemsetInfiniteConstraint:
+    def __init__(self, array, start, value, new_array, parent):
+        self.array = array
+        self.start = start
+        self.value = value
+
+        self.new_array = new_array
+        self.parent = parent
+
+    def instantiate(self, index):
+        index_in_range = BV_ULE(self.start, index)
+        instance = Equal(Array_Select(self.new_array, index),
+                         If(index_in_range,
+                            self.value,
+                            Array_Select(self.array, index)))
+
+        return [instance] + self.parent.instantiate(index)
+
+
+class LambdaMemcopyConstraint:
+    def __init__(self, array, start, source, source_start, size, new_array, parent):
+        self.array = array
+        self.start = start
+        self.source = source
+        self.source_start = source_start
+        self.size = size
+
+        self.new_array = new_array
+        self.parent = parent
+
+    def instantiate(self, index):
+        index_in_range = BV_And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
+        shift_to_source_offset = BV_Sub(self.source_start, self.start)
+        instance = Equal(Array_Select(self.new_array, index),
+                         If(index_in_range,
+                            Array_Select(self.source, BV_Add(index, shift_to_source_offset)),
+                            Array_Select(self.array, index)))
+
+        return [instance] + self.parent.instantiate(index)
+
+
+class LambdaMemcopyInfiniteConstraint:
+    def __init__(self, array, start, source, source_start, new_array, parent):
+        self.array = array
+        self.start = start
+        self.source = source
+        self.source_start = source_start
+
+        self.new_array = new_array
+        self.parent = parent
+
+    def instantiate(self, index):
+        index_in_range = BV_ULE(self.start, index)
+        shift_to_source_offset = BV_Sub(self.source_start, self.start)
+        instance = Equal(Array_Select(self.new_array, index),
+                         If(index_in_range,
+                            Array_Select(self.source, BV_Add(index, shift_to_source_offset)),
+                            Array_Select(self.array, index)))
+
+        return [instance] + self.parent.instantiate(index)
+
+
+class LambdaEqualityConstraint:
+    def __init__(self, array, new_array, parent):
+        self.array = array
+        self.new_array = new_array
+        self.parent = parent
+
+    def instantiate(self, index):
+        instance = Equal(Array_Select(self.new_array, index),
+                         Array_Select(self.array, index))
+
+        return [instance] + self.parent.instantiate(index)
+
+
 class SymbolicMemory(object):
-    MAX_SYMBOLIC_WRITE_SIZE = 256
+
+    @staticmethod
+    def gen_uuid():
+        if "uuid" not in SymbolicMemory.gen_uuid.__dict__:
+            SymbolicMemory.gen_uuid.uuid = 0
+        else:
+            SymbolicMemory.gen_uuid.uuid += 1
+        return SymbolicMemory.gen_uuid.uuid
 
     def __init__(self, partial_init=False, tag='MEMORY'):
         if partial_init:
-            return  
+            return
 
-        self.lambda_index = BVS("LAMBDA_INDEX", 256)
-        self.lambda_memory_read = BVV(0,8)
+        self.tag = tag
+        self.base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+
+        self.lambda_mem_constraint = LambdaConstraint()
+        self.mem_constraints = list()
+
+        # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
+        self.memsetinfinite(BVV(0, 256), BVV(0, 8))
 
         self.write_count = 0
         self.read_count = 0
 
     def __getitem__(self, index):
+        assert not isinstance(index, slice), "slice memory read not implemented"
+
         self.read_count += 1
-        if isinstance(index, slice):
-            raise Exception("slice read on MEMORY not implemented")
-        else:
-            t = substitute_terms(self.lambda_memory_read, {self.lambda_index: index})
-            return t 
+
+        # instantiate and add lambda constraints
+        self.mem_constraints += self.lambda_mem_constraint.instantiate(index)
+
+        return Array_Select(self.base, index)
 
     def __setitem__(self, index, v):
         self.write_count += 1
-        self.lambda_memory_read = If(Equal(self.lambda_index, index), v, self.lambda_memory_read)
- 
+
+        if not isinstance(self.lambda_mem_constraint, (LambdaConstraint, LambdaEqualityConstraint)):
+            old_base = self.base
+            self.base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+
+            self.lambda_mem_constraint = LambdaEqualityConstraint(old_base, self.base,
+                                                                  parent=self.lambda_mem_constraint)
+
+        self.base = Array_Store(self.base, index, v)
+
     def readn(self, index, n):
-        if not is_concrete(n):
-            # As of now we are not using it (should never be called), 
-            # hence, we are not implementing it.
-            raise Exception("readn with symbolic length not implemented")
-        elif bv_unsigned_value(n) == 1:
+        assert is_concrete(n), "readn with symbolic length not implemented"
+        assert bv_unsigned_value(n) != 0, "invalid readn with length=0"
+
+        if bv_unsigned_value(n) == 1:
             return self[index]
         else:
             vv = list()
             for i in range(bv_unsigned_value(n)):
                 vv.append(self[BV_Add(index, BVV(i, 256))])
             return BV_Concat(vv)
+
+    def memset(self, start, value, size):
+        old_base = self.base
+        self.base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+
+        self.lambda_mem_constraint = LambdaMemsetConstraint(old_base, start, value, size, self.base,
+                                                            parent=self.lambda_mem_constraint)
+
+    def memsetinfinite(self, start, value):
+        old_base = self.base
+        self.base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+
+        self.lambda_mem_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self.base,
+                                                                    parent=self.lambda_mem_constraint)
+
+    def memcopy(self, start, source, source_start, size):
+        old_base = self.base
+        self.base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+
+        self.lambda_mem_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self.base,
+                                                             parent=self.lambda_mem_constraint)
+
+    def memcopyinfinite(self, start, source, source_start):
+        old_base = self.base
+        self.base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+
+        self.lambda_mem_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self.base,
+                                                                     parent=self.lambda_mem_constraint)
 
     def copy_return_data(self, istart, ilen, ostart, olen):
         raise Exception("NOT IMPLEMENTED. Please have a look")
@@ -54,8 +204,10 @@ class SymbolicMemory(object):
         if old_xid != new_xid:
             raise Exception("memory copy with different xid is not implemented. Please have a look")
         new_memory = SymbolicMemory(partial_init=True)
-        new_memory.lambda_index = self.lambda_index
-        new_memory.lambda_memory_read = self.lambda_memory_read
+        new_memory.tag = self.tag
+        new_memory.base = self.base
+        new_memory.lambda_mem_constraint = self.lambda_mem_constraint
+        new_memory.mem_constraints = list(self.mem_constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
         return new_memory
