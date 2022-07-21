@@ -45,7 +45,6 @@ class SimgrViz(object):
 
     def dump_graph(self):
         s = 'digraph g {\n'
-        s += '\tsplines=ortho;\n'
         s += '\tnode[fontname="courier"];\n'
 
         for node_id in self._simgGraph.nodes:
