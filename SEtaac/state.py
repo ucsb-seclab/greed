@@ -27,7 +27,7 @@ class SymbolicEVMState(UUID):
         self._pc = None
         self.trace = list()
 
-        self.memory = LambdaMemory()
+        self.memory = LambdaMemory(default=BVV(0, 8))
         self.storage = SymbolicStorage(self.xid)
         self.registers = dict()
         self.ctx = dict()

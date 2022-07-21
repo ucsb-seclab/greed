@@ -93,7 +93,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
 
 class LambdaMemory(UUID):
 
-    def __init__(self, partial_init=False, tag='MEMORY'):
+    def __init__(self, partial_init=False, tag='MEMORY', default=None):
         if partial_init:
             return
 
@@ -103,8 +103,9 @@ class LambdaMemory(UUID):
         self.lambda_mem_constraint = LambdaConstraint()
         self.mem_constraints = list()
 
-        # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
-        self.memsetinfinite(BVV(0, 256), BVV(0, 8))
+        if default is not None:
+            # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
+            self.memsetinfinite(BVV(0, 256), default)
 
         self.write_count = 0
         self.read_count = 0
