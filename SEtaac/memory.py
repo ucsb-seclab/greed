@@ -61,7 +61,8 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         shift_to_source_offset = BV_Sub(self.source_start, self.start)
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,
-                            Array_Select(self.source, BV_Add(index, shift_to_source_offset)),
+                            # memcopy source is of type "memory", don't access directly as an array
+                            self.source[BV_Add(index, shift_to_source_offset)],
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)
@@ -82,7 +83,8 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         shift_to_source_offset = BV_Sub(self.source_start, self.start)
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,
-                            Array_Select(self.source, BV_Add(index, shift_to_source_offset)),
+                            # memcopy source is of type "memory", don't access directly as an array
+                            self.source[BV_Add(index, shift_to_source_offset)],
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)

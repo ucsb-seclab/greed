@@ -268,7 +268,7 @@ class TAC_Calldatacopy(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         succ = state
 
-        succ.memory.memcopy(self.destOffset_val, succ.calldata.base, self.calldataOffset_val, self.size_val)
+        succ.memory.memcopy(self.destOffset_val, succ.calldata, self.calldataOffset_val, self.size_val)
 
         succ.set_next_pc()
         
