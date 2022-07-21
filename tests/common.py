@@ -51,7 +51,6 @@ def parse_log(state):
 
 
 def run_test(target_dir, debug=False):
-    set_solver(Bitwuzla)
     p = Project(target_dir=target_dir)
 
     xid = gen_exec_id()

@@ -14,7 +14,6 @@ log = logging.getLogger("SEtaac")
 
 
 def main(args):
-    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     # pick a function
