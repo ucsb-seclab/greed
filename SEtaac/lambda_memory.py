@@ -93,12 +93,14 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
 
 class LambdaMemory(UUID):
 
-    def __init__(self, tag="UNTAGGED_LAMBDA_MEMORY", partial_init=False, default=None):
+    def __init__(self, tag=None, value_sort=None, default=None, partial_init=False):
         if partial_init:
             return
+        assert tag is not None and value_sort is not None, "Invalid LambdaMemory initialization"
 
         self.tag = tag
-        self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+        self.value_sort = value_sort
+        self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), value_sort)
 
         self.lambda_mem_constraint = LambdaConstraint()
         self.mem_constraints = list()
