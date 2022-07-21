@@ -6,7 +6,7 @@ class LambdaConstraint:
         return []
 
 
-class LambdaMemsetConstraint:
+class LambdaMemsetConstraint(LambdaConstraint):
     def __init__(self, array, start, value, size, new_array, parent):
         self.array = array
         self.start = start
@@ -26,7 +26,7 @@ class LambdaMemsetConstraint:
         return [instance] + self.parent.instantiate(index)
 
 
-class LambdaMemsetInfiniteConstraint:
+class LambdaMemsetInfiniteConstraint(LambdaConstraint):
     def __init__(self, array, start, value, new_array, parent):
         self.array = array
         self.start = start
@@ -45,7 +45,7 @@ class LambdaMemsetInfiniteConstraint:
         return [instance] + self.parent.instantiate(index)
 
 
-class LambdaMemcopyConstraint:
+class LambdaMemcopyConstraint(LambdaConstraint):
     def __init__(self, array, start, source, source_start, size, new_array, parent):
         self.array = array
         self.start = start
@@ -67,7 +67,7 @@ class LambdaMemcopyConstraint:
         return [instance] + self.parent.instantiate(index)
 
 
-class LambdaMemcopyInfiniteConstraint:
+class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
     def __init__(self, array, start, source, source_start, new_array, parent):
         self.array = array
         self.start = start
@@ -84,19 +84,6 @@ class LambdaMemcopyInfiniteConstraint:
                          If(index_in_range,
                             Array_Select(self.source, BV_Add(index, shift_to_source_offset)),
                             Array_Select(self.array, index)))
-
-        return [instance] + self.parent.instantiate(index)
-
-
-class LambdaEqualityConstraint:
-    def __init__(self, array, new_array, parent):
-        self.array = array
-        self.new_array = new_array
-        self.parent = parent
-
-    def instantiate(self, index):
-        instance = Equal(Array_Select(self.new_array, index),
-                         Array_Select(self.array, index))
 
         return [instance] + self.parent.instantiate(index)
 
@@ -139,13 +126,6 @@ class SymbolicMemory(object):
 
     def __setitem__(self, index, v):
         self.write_count += 1
-
-        if not isinstance(self.lambda_mem_constraint, (LambdaConstraint, LambdaEqualityConstraint)):
-            old_base = self.base
-            self.base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
-
-            self.lambda_mem_constraint = LambdaEqualityConstraint(old_base, self.base,
-                                                                  parent=self.lambda_mem_constraint)
 
         self.base = Array_Store(self.base, index, v)
 
