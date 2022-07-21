@@ -8,8 +8,8 @@ def gen_exec_id():
 
 class UUID(object):
     def gen_uuid(self):
-        if "uuid" not in self.__dict__:
-            self.uuid = 0
+        if "uuid" not in self.__class__.__dict__:
+            self.__class__.uuid = 0
         else:
-            self.uuid += 1
-        return self.uuid
+            self.__class__.uuid += 1
+        return self.__class__.uuid
