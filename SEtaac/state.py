@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from SEtaac.memory import SymbolicMemory
+from SEtaac.memory import LambdaMemory
 from SEtaac.options import *
 from SEtaac.storage import SymbolicStorage
 from SEtaac.calldata import SymbolicCalldata
@@ -27,7 +27,7 @@ class SymbolicEVMState:
         self._pc = None
         self.trace = list()
 
-        self.memory = SymbolicMemory()
+        self.memory = LambdaMemory()
         self.storage = SymbolicStorage(self.xid)
         self.registers = dict()
         self.ctx = dict()

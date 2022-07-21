@@ -90,15 +90,15 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         return [instance] + self.parent.instantiate(index)
 
 
-class SymbolicMemory(object):
+class LambdaMemory(object):
 
     @staticmethod
     def gen_uuid():
-        if "uuid" not in SymbolicMemory.gen_uuid.__dict__:
-            SymbolicMemory.gen_uuid.uuid = 0
+        if "uuid" not in LambdaMemory.gen_uuid.__dict__:
+            LambdaMemory.gen_uuid.uuid = 0
         else:
-            SymbolicMemory.gen_uuid.uuid += 1
-        return SymbolicMemory.gen_uuid.uuid
+            LambdaMemory.gen_uuid.uuid += 1
+        return LambdaMemory.gen_uuid.uuid
 
     def __init__(self, partial_init=False, tag='MEMORY'):
         if partial_init:
@@ -185,7 +185,7 @@ class SymbolicMemory(object):
     def copy(self, old_xid, new_xid):
         if old_xid != new_xid:
             raise Exception("memory copy with different xid is not implemented. Please have a look")
-        new_memory = SymbolicMemory(partial_init=True)
+        new_memory = LambdaMemory(partial_init=True)
         new_memory.tag = self.tag
         new_memory._base = self._base
         new_memory.lambda_mem_constraint = self.lambda_mem_constraint
