@@ -1,10 +1,8 @@
 import datetime
 import logging
-from copy import copy
 
 from SEtaac.memory import SymbolicMemory
 from SEtaac.options import *
-from SEtaac.registers import SymbolicRegisters
 from SEtaac.storage import SymbolicStorage
 from SEtaac.calldata import SymbolicCalldata
 from SEtaac.utils import gen_uuid
@@ -31,7 +29,7 @@ class SymbolicEVMState:
 
         self.memory = SymbolicMemory()
         self.storage = SymbolicStorage(self.xid)
-        self.registers = SymbolicRegisters()
+        self.registers = dict()
         self.ctx = dict()
 
         # We want every state to have an individual set
@@ -206,7 +204,7 @@ class SymbolicEVMState:
 
         new_state.memory = self.memory.copy(self.xid, self.xid)
         new_state.storage = self.storage.copy(self.xid, self.xid)
-        new_state.registers = self.registers.copy()
+        new_state.registers = dict(self.registers)
         new_state.ctx = dict(self.ctx)
         new_state.options = list(self.options)
 
