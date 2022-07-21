@@ -93,7 +93,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
 
 class LambdaMemory(UUID):
 
-    def __init__(self, partial_init=False, tag='MEMORY', default=None):
+    def __init__(self, tag="UNTAGGED_LAMBDA_MEMORY", partial_init=False, default=None):
         if partial_init:
             return
 

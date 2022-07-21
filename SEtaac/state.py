@@ -1,8 +1,7 @@
 import datetime
 import logging
 
-from SEtaac.calldata import SymbolicCalldata
-from SEtaac.memory import LambdaMemory
+from SEtaac.lambda_memory import LambdaMemory
 from SEtaac.options import *
 from SEtaac.storage import SymbolicStorage
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
@@ -27,7 +26,7 @@ class SymbolicEVMState(UUID):
         self._pc = None
         self.trace = list()
 
-        self.memory = LambdaMemory(default=BVV(0, 8))
+        self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", default=BVV(0, 8))
         self.storage = SymbolicStorage(self.xid)
         self.registers = dict()
         self.ctx = dict()
@@ -80,7 +79,7 @@ class SymbolicEVMState(UUID):
                 self.constraints.append(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 # CALLDATA is a ConstArray, accesses out of bound are zeroes
-                self.calldata = SymbolicCalldata(xid=self.xid, default=BVV(0, 8))
+                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", default=BVV(0, 8))
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
                 if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
@@ -89,7 +88,7 @@ class SymbolicEVMState(UUID):
                         self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
                 # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-                self.calldata = SymbolicCalldata(xid=self.xid)
+                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}")
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
@@ -105,7 +104,7 @@ class SymbolicEVMState(UUID):
 
         else:
             # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-            self.calldata = SymbolicCalldata(xid=self.xid)
+            self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}")
 
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
@@ -231,7 +230,7 @@ class SymbolicEVMState(UUID):
         new_state.max_timestamp = self.max_timestamp
 
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
-        new_state.calldata = self.calldata.copy()
+        new_state.calldata = self.calldata.copy(self.xid, self.xid)
         new_state.calldatasize = self.calldatasize
         
         # new_state.calldata_accesses = list(self.calldata_accesses)
