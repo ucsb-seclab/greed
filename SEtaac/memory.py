@@ -1,3 +1,4 @@
+from SEtaac.utils.extra import UUID
 from SEtaac.utils.solver.shortcuts import *
 
 
@@ -90,15 +91,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         return [instance] + self.parent.instantiate(index)
 
 
-class LambdaMemory(object):
-
-    @staticmethod
-    def gen_uuid():
-        if "uuid" not in LambdaMemory.gen_uuid.__dict__:
-            LambdaMemory.gen_uuid.uuid = 0
-        else:
-            LambdaMemory.gen_uuid.uuid += 1
-        return LambdaMemory.gen_uuid.uuid
+class LambdaMemory(UUID):
 
     def __init__(self, partial_init=False, tag='MEMORY'):
         if partial_init:

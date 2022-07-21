@@ -1,24 +1,24 @@
 import datetime
 import logging
 
+from SEtaac.calldata import SymbolicCalldata
 from SEtaac.memory import LambdaMemory
 from SEtaac.options import *
 from SEtaac.storage import SymbolicStorage
-from SEtaac.calldata import SymbolicCalldata
-from SEtaac.utils import gen_uuid
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
+from SEtaac.utils.extra import UUID
 from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
 
-class SymbolicEVMState:
+class SymbolicEVMState(UUID):
     def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None):
         self.xid = xid
         self.project = project
         self.code = project.code
 
-        self.uuid = gen_uuid()
+        self.uuid = self.gen_uuid()
 
         if partial_init:
             # this is only used when copying the state

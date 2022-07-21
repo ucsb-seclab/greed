@@ -1,11 +1,11 @@
-
 import logging
 
 from SEtaac import utils
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
+from SEtaac.utils.extra import UUID
 from SEtaac.utils.solver.shortcuts import *
-from .base import TAC_Statement
-from ..state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
 
@@ -206,18 +206,10 @@ class TAC_Callvalue(TAC_Statement):
         return [succ]
 
 
-class TAC_Calldataload(TAC_Statement):
+class TAC_Calldataload(TAC_Statement, UUID):
     __internal_name__ = "CALLDATALOAD"
     __aliases__ = {'byte_offset_var': 'arg1_var', 'byte_offset_val': 'arg1_val',
                    'calldata_var': 'res_var', 'calldata_val': 'res_val'}
-
-    @staticmethod
-    def gen_uuid():
-        if "uuid" not in TAC_Calldataload.gen_uuid.__dict__:
-            TAC_Calldataload.gen_uuid.uuid = 0
-        else:
-            TAC_Calldataload.gen_uuid.uuid += 1
-        return TAC_Calldataload.gen_uuid.uuid
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -227,7 +219,7 @@ class TAC_Calldataload(TAC_Statement):
         if not is_concrete(self.byte_offset_val):
             succ.add_constraint(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         
-        calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.gen_uuid()}", 256)
+        calldataload_res = BVS(f"CALLDATALOAD_{self.gen_uuid()}", 256)
 
         succ.add_constraint(Equal(calldataload_res,
                                   succ.calldata.readn(self.byte_offset_val, BVV(32, 256))))
