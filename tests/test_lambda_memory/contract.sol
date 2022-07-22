@@ -11,7 +11,7 @@ contract TestMemory {
 
     // memOffset: where to copy the calldata in memory 
     // cdataOffset: where to copy from 
-    // size: the amount of 32 bytes slot to copy 
+    // size: the amount of bytes to copy from calldata 
     // unknown_index: where to do the 'store over copy' operation
     // unknown_val: what to store at 'unknown_index'
     // expects: the list of 32 bytes slots we expect to read with the load over memcpy
