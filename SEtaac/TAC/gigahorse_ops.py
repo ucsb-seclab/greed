@@ -16,7 +16,6 @@ class TAC_Throw(TAC_Statement):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         state.halt = True
-
         return [state]
 
 
@@ -52,7 +51,6 @@ class TAC_Callprivate(TAC_Statement):
 
         # jump to target
         state.pc = dest
-
         return [state]
 
 
@@ -71,7 +69,6 @@ class TAC_Returnprivate(TAC_Statement):
             state.registers[callprivate_return_var] = state.registers[returnprivate_arg]
 
         state.pc = saved_return_pc
-
         return [state]
 
 
@@ -82,7 +79,6 @@ class TAC_Phi(TAC_Statement):
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         state.set_next_pc()
-
         return [state]
 
 
@@ -94,7 +90,6 @@ class TAC_Const(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         state.registers[self.res1_var] = self.res1_val
         state.set_next_pc()
-
         return [state]
 
 
@@ -104,5 +99,4 @@ class TAC_Nop(TAC_Statement):
     # @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         state.set_next_pc()
-
         return [state]

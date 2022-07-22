@@ -67,13 +67,11 @@ class TAC_Jumpi(TAC_Statement):
                 # if only the true branch is sat, jump
                 state.pc = dest
                 state.add_constraint(NotEqual(cond, BVV(0, 256)))
-
                 return [state]
             elif sat_false:
                 # if only the false branch is sat, step to the fallthrough branch
                 state.set_next_pc()
                 state.add_constraint(Equal(cond, BVV(0, 256)))
-
                 return [state]
             else:
                 # nothing is sat
