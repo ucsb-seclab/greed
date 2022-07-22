@@ -33,6 +33,9 @@ class Solver:
     def is_unsat(self, ):
         raise Exception("Not implemented")
 
+    def substitute_terms(self, formula, substitute_map):
+        raise Exception("Not implemented")
+
     def is_formula_sat(self, formula):
         raise Exception("Not implemented")
 

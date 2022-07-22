@@ -1,26 +1,22 @@
 import datetime
 import logging
-from copy import copy
 
-from SEtaac.memory import SymbolicMemory
+from SEtaac.lambda_memory import LambdaMemory
 from SEtaac.options import *
-from SEtaac.registers import SymbolicRegisters
-from SEtaac.storage import SymbolicStorage
-from SEtaac.calldata import SymbolicCalldata
-from SEtaac.utils import gen_uuid
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
+from SEtaac.utils.extra import UUID
 from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
 
-class SymbolicEVMState:
+class SymbolicEVMState(UUID):
     def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None):
         self.xid = xid
         self.project = project
         self.code = project.code
 
-        self.uuid = gen_uuid()
+        self.uuid = self.gen_uuid()
 
         if partial_init:
             # this is only used when copying the state
@@ -29,9 +25,9 @@ class SymbolicEVMState:
         self._pc = None
         self.trace = list()
 
-        self.memory = SymbolicMemory()
-        self.storage = SymbolicStorage(self.xid)
-        self.registers = SymbolicRegisters()
+        self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8))
+        self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256))
+        self.registers = dict()
         self.ctx = dict()
 
         # We want every state to have an individual set
@@ -54,11 +50,10 @@ class SymbolicEVMState:
 
         self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
-        self.constraints = list()
-        self.sha_constraints = dict()
+        self.path_constraints = list()
+        self.ackermann_constraints = list()
 
-        self.term_to_sha_map = dict()
-        self.sha_to_term_map = dict()
+        self.sha_observed = list()
 
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
@@ -79,10 +74,10 @@ class SymbolicEVMState:
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             if "CALLDATASIZE" in init_ctx:
                 # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
-                self.constraints.append(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
+                self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 # CALLDATA is a ConstArray, accesses out of bound are zeroes
-                self.calldata = SymbolicCalldata(xid=self.xid, default=BVV(0, 8))
+                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8))
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
                 if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
@@ -91,11 +86,11 @@ class SymbolicEVMState:
                         self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
                 # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-                self.calldata = SymbolicCalldata(xid=self.xid)
+                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8))
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
-                self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+                self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
-                self.constraints.append(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
+                self.add_constraint(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
 
             for index, cb in enumerate(calldata_bytes):
                 if cb == 'SS':
@@ -107,12 +102,12 @@ class SymbolicEVMState:
 
         else:
             # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
-            self.calldata = SymbolicCalldata(xid=self.xid)
+            self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8))
 
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             # CALLDATASIZE < MAX_CALLDATA_SIZE
-            self.constraints.append(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+            self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
 
     @property
     def pc(self):
@@ -181,21 +176,23 @@ class SymbolicEVMState:
         log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))
         return non_fallthrough_bb.first_ins.id
 
-    def import_context(self, state: "SymbolicEVMState"):
-        self.storage = state.storage
+    @property
+    def sha_constraints(self):
+        constraints = list(self.ackermann_constraints)
+        for sha in self.sha_observed:
+            constraints += sha.constraints
+        return constraints
 
-        self.start_balance = state.balance
-        self.balance = self.start_balance
-        self.balance += ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
-
-        self.constraints = state.constraints
-        self.sha_constraints = state.sha_constraints
+    @property
+    def constraints(self):
+        return self.path_constraints + self.memory.constraints + self.calldata.constraints + \
+               self.storage.constraints + self.sha_constraints
     
     def add_constraint(self, constraint):
         # Here you can inspect the constraints being added to the state.
         if STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
-        self.constraints.append(constraint)
+        self.path_constraints.append(constraint)
 
     def copy(self):
         # assume unchanged xid
@@ -206,7 +203,7 @@ class SymbolicEVMState:
 
         new_state.memory = self.memory.copy(self.xid, self.xid)
         new_state.storage = self.storage.copy(self.xid, self.xid)
-        new_state.registers = self.registers.copy()
+        new_state.registers = dict(self.registers)
         new_state.ctx = dict(self.ctx)
         new_state.options = list(self.options)
 
@@ -223,20 +220,17 @@ class SymbolicEVMState:
 
         new_state.ctx['CODESIZE-ADDRESS'] = self.ctx['CODESIZE-ADDRESS']
 
-        new_state.constraints = list(self.constraints)
-        new_state.sha_constraints = dict(self.sha_constraints)
+        new_state.path_constraints = list(self.path_constraints)
+        new_state.ackermann_constraints = list(self.ackermann_constraints)
 
-        new_state.term_to_sha_map = dict(self.term_to_sha_map)
-        new_state.sha_to_term_map = dict(self.sha_to_term_map)
+        new_state.sha_observed = list(self.sha_observed)
 
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp
 
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
-        new_state.calldata = self.calldata.copy()
+        new_state.calldata = self.calldata.copy(self.xid, self.xid)
         new_state.calldatasize = self.calldatasize
-        
-        # new_state.calldata_accesses = list(self.calldata_accesses)
 
         return new_state
 

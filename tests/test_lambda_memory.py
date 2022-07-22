@@ -50,11 +50,23 @@ def parse_log(state):
     assert outcome == "success", f"{testname} failed"
 
 
-def run_test(target_dir, debug=False):
-    p = Project(target_dir=target_dir)
+'''
+CALLDATA generated with:
 
+from eth_abi import encode_abi
+encode_abi(['uint256', 'uint256', 'uint256', 'uint256', 'bytes32', 'bytes32[]'],[256, 224, 64, 0, b'\x45', [b'\xff', b'\xff']]).hex()
+
+'''
+def run_test(debug=False):
+    set_solver(Bitwuzla)
+    p = Project(target_dir='./test_lambda_memory')
+    
     xid = gen_exec_id()
-    entry_state = p.factory.entry_state(xid=xid)
+        
+    # SHA("test_1(uint256,uint256,uint256,uint256,bytes32,bytes32[])")
+    data = '000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000450000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000002ff00000000000000000000000000000000000000000000000000000000000000ff00000000000000000000000000000000000000000000000000000000000000'
+    init_ctx = {"CALLDATA": "0x28a3ceac" + data}
+    entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=512)
     simgr = p.factory.simgr(entry_state=entry_state)
 
     while len(simgr.active) > 0:
@@ -68,3 +80,6 @@ def run_test(target_dir, debug=False):
 
     if debug:
         IPython.embed()
+
+if __name__ == "__main__":
+    run_test()

@@ -80,6 +80,13 @@ def ctx_or_symbolic(v, ctx, xid):
     return ctx[v]
 
 
+# GENERIC OPS
+
+
+def substitute_terms(formula, substitute_map):
+    return _SOLVER.substitute_terms(formula, substitute_map)
+
+
 # TYPES
 
 

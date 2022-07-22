@@ -6,9 +6,10 @@ def gen_exec_id():
     return gen_exec_id.xid
 
 
-def gen_uuid():
-    if "uuid" not in gen_uuid.__dict__:
-        gen_uuid.uuid = 0
-    else:
-        gen_uuid.uuid += 1
-    return gen_uuid.uuid
+class UUID(object):
+    def gen_uuid(self):
+        if "uuid" not in self.__class__.__dict__:
+            self.__class__.uuid = 0
+        else:
+            self.__class__.uuid += 1
+        return self.__class__.uuid

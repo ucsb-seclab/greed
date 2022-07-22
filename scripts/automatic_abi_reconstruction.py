@@ -14,7 +14,6 @@ log = logging.getLogger("SEtaac")
 
 
 def main(args):
-    set_solver(Bitwuzla)
     p = Project(target_dir=args.target)
 
     # pick a function
@@ -68,7 +67,7 @@ def main(args):
                 if current_offset in known_types:
                     current_offset += known_types[current_offset][1]
 
-                bv_current_offset = successful_state.calldata.readn(BVV(current_offset, 256), 32)
+                bv_current_offset = successful_state.calldata.readn(BVV(current_offset, 256), BVV(32, 256))
 
                 # 1) check if the current offset is a basic element
                 current_offset_is_basic = solver.is_formula_sat(
