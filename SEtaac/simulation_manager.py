@@ -200,8 +200,7 @@ class SimulationManager:
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(state.curr_stmt)
 
-        old_pc = state.pc 
-
+        old_pc = state.pc
         successors = list()
 
         if self.debug:

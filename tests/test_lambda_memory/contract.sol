@@ -48,6 +48,7 @@ contract TestMemory {
             revert();
         }
         
+        assembly {log1(0, 0, "success:test_1")}
     }
 
     /*
