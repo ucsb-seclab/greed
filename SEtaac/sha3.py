@@ -1,10 +1,14 @@
 from SEtaac.lambda_memory import LambdaMemory
+from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 
 
 class Sha3(LambdaMemory):
+    uuid_generator = UUIDGenerator()
+
     def __init__(self, memory, start, size):
-        self.uuid = self.gen_uuid()
+        self.uuid = Sha3.uuid_generator.next()
+        self.ackermann_uuid_generator = UUIDGenerator()
         super().__init__(tag=f"SHA3_{self.uuid}_MEMORY", value_sort=BVSort(8), default=BVV(0, 8))
         self.symbol = BVS(f"SHA3_{self.uuid}", 256)
 
@@ -20,7 +24,7 @@ class Sha3(LambdaMemory):
         assert isinstance(other, Sha3)
 
         # we need a unique common symbol to "scan" both arrays and then ensure that they cannot be different
-        ackermann_index = BVS(f"ACKERMANN_INDEX_{self.gen_uuid()}_SHA3_{self.uuid}", 256)
+        ackermann_index = BVS(f"ACKERMANN_INDEX_{self.ackermann_uuid_generator.next()}_SHA3_{self.uuid}", 256)
 
         sha_data_len_is_equal = Equal(self.size, other.size)
         sha_data_is_different_for_some_index = NotEqual(self[ackermann_index], other[ackermann_index])

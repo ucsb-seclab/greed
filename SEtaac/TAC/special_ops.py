@@ -2,11 +2,11 @@ import logging
 
 from SEtaac import utils
 from SEtaac.TAC.base import TAC_Statement
+from SEtaac.sha3 import Sha3
 from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
-from SEtaac.utils.extra import UUID
+from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
-from SEtaac.sha3 import Sha3
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Selfdestruct', 'TAC_Stop', 'TAC_Gas']
 
 
-class TAC_Sha3(TAC_Statement, UUID):
+class TAC_Sha3(TAC_Statement):
     __internal_name__ = "SHA3"
     __aliases__ = {'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
                    'size_var': 'arg2_var', 'size_val': 'arg2_val',
@@ -137,7 +137,9 @@ class TAC_Callvalue(TAC_Statement):
         return [succ]
 
 
-class TAC_Calldataload(TAC_Statement, UUID):
+class TAC_Calldataload(TAC_Statement):
+    uuid_generator = UUIDGenerator()
+
     __internal_name__ = "CALLDATALOAD"
     __aliases__ = {'byte_offset_var': 'arg1_var', 'byte_offset_val': 'arg1_val',
                    'calldata_var': 'res_var', 'calldata_val': 'res_val'}
@@ -150,7 +152,7 @@ class TAC_Calldataload(TAC_Statement, UUID):
         if not is_concrete(self.byte_offset_val):
             succ.add_constraint(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
         
-        calldataload_res = BVS(f"CALLDATALOAD_{self.gen_uuid()}", 256)
+        calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.uuid_generator.next()}", 256)
 
         succ.add_constraint(Equal(calldataload_res,
                                   succ.calldata.readn(self.byte_offset_val, BVV(32, 256))))

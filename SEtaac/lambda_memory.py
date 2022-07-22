@@ -1,4 +1,4 @@
-from SEtaac.utils.extra import UUID
+from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 
 
@@ -91,7 +91,8 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         return [instance] + self.parent.instantiate(index)
 
 
-class LambdaMemory(UUID):
+class LambdaMemory:
+    uuid_generator = UUIDGenerator()
 
     def __init__(self, tag=None, value_sort=None, default=None, partial_init=False):
         if partial_init:
@@ -100,7 +101,7 @@ class LambdaMemory(UUID):
 
         self.tag = tag
         self.value_sort = value_sort
-        self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), value_sort)
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), value_sort)
 
         self.lambda_constraint = LambdaConstraint()
         self.constraints = list()
@@ -141,28 +142,28 @@ class LambdaMemory(UUID):
 
     def memset(self, start, value, size):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemsetConstraint(old_base, start, value, size, self._base,
                                                         parent=self.lambda_constraint)
 
     def memsetinfinite(self, start, value):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self._base,
                                                                 parent=self.lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self._base,
                                                          parent=self.lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{self.gen_uuid()}", BVSort(256), BVSort(8))
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
                                                                  parent=self.lambda_constraint)
