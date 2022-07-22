@@ -29,7 +29,12 @@ class Aliased(object):
 class TAC_Statement(Aliased):
     __internal_name__ = None
 
-    def __init__(self, block_id: str, stmt_id: str, uses: List[str], defs: List[str], values: Mapping[str, str]):
+    def __init__(self, block_id: str, stmt_id: str, uses: List[str] = None, defs: List[str] = None,
+                 values: Mapping[str, str] = None):
+        uses = uses or list()
+        defs = defs or list()
+        values = values or list()
+
         self.block_id = block_id
         self.id = stmt_id
 
