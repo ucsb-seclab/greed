@@ -85,6 +85,13 @@ if [ -z $NO_GIGAHORSE ]; then
   mv $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/guards.dl_compiled.cpp &&
   echo "Successfully compiled guards.dl.."
 
+  # loops analysis
+  echo "Compiling loops_semantics.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/loops_semantics.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build loops_semantics.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.cpp &&
+  echo "Successfully compiled loops_semantics.dl.."
+
   command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
   solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; }
 else

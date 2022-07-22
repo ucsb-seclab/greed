@@ -57,6 +57,9 @@ class TAC_Statement(Aliased):
             if v:
                 self.res_vals[x] = BVV(int(v, 16), 256)
 
+        self.inLoop = False
+        self.loopExecs = 0
+
         self.process_args()
 
     def process_args(self):

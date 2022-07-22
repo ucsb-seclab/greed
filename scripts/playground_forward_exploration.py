@@ -13,6 +13,7 @@ LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger("SEtaac")
 
+unfold_loops = 2
 
 def is_reachable_without_returns(block_a, block_b, factory, callgraph):
     function_a = block_a.function
@@ -36,6 +37,13 @@ def is_reachable_without_returns(block_a, block_b, factory, callgraph):
 
 
 def is_reachable(state_a, block_b):
+    # loop breaker
+    if state_a.curr_stmt.inLoop:
+        if state_a.curr_stmt.loopExecs > unfold_loops:
+            print("loop!")
+            return False
+        else:
+            state_a.curr_stmt.loopExecs += 1
     factory = state_a.project.factory
     callgraph = state_a.project.callgraph
 
@@ -88,6 +96,7 @@ def find_paths_with_stmt(p, target_stmt):
     except KeyboardInterrupt:
         pass
 
+    import ipdb; ipdb.set_trace()
     #print('found! now getting to a STOP/RETURN...')
     return simgr.found
     # todo: uncomment this part
@@ -150,6 +159,9 @@ def main(args):
 
     # todo: consider all critical paths
     critical_paths = find_paths_with_stmt(p, target_stmt)
+
+
+
     if not critical_paths:
         log.fatal('No paths found')
         exit()

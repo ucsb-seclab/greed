@@ -84,6 +84,9 @@ class TAC_parser:
                     phimap[v_old] = phimap[v_new]
                     fixpoint = False
 
+        for stmt_id, block in load_csv(f"{self.target_dir}/StatementInStructuredLoop.csv"):
+            statements.get(stmt_id).inLoop = True
+
         # rewrite statements
         for stmt in statements.values():
             if stmt.__internal_name__ == "PHI":
