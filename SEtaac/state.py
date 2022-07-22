@@ -51,10 +51,9 @@ class SymbolicEVMState(UUID):
         self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
         self.path_constraints = list()
-        self.sha_constraints = dict()
+        self.ackermann_constraints = list()
 
-        self.term_to_sha_map = dict()
-        self.sha_to_term_map = dict()
+        self.sha_observed = list()
 
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
@@ -177,19 +176,17 @@ class SymbolicEVMState(UUID):
         log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))
         return non_fallthrough_bb.first_ins.id
 
-    def import_context(self, state: "SymbolicEVMState"):
-        self.storage = state.storage
-
-        self.start_balance = state.balance
-        self.balance = self.start_balance
-        self.balance += ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
-
-        self.path_constraints = state.path_constraints
-        self.sha_constraints = state.sha_constraints
+    @property
+    def sha_constraints(self):
+        constraints = list(self.ackermann_constraints)
+        for sha in self.sha_observed:
+            constraints += sha.constraints
+        return constraints
 
     @property
     def constraints(self):
-        return self.path_constraints + self.memory.constraints + self.calldata.constraints + self.storage.constraints
+        return self.path_constraints + self.memory.constraints + self.calldata.constraints + \
+               self.storage.constraints + self.sha_constraints
     
     def add_constraint(self, constraint):
         # Here you can inspect the constraints being added to the state.
@@ -224,10 +221,9 @@ class SymbolicEVMState(UUID):
         new_state.ctx['CODESIZE-ADDRESS'] = self.ctx['CODESIZE-ADDRESS']
 
         new_state.path_constraints = list(self.path_constraints)
-        new_state.sha_constraints = dict(self.sha_constraints)
+        new_state.ackermann_constraints = list(self.ackermann_constraints)
 
-        new_state.term_to_sha_map = dict(self.term_to_sha_map)
-        new_state.sha_to_term_map = dict(self.sha_to_term_map)
+        new_state.sha_observed = list(self.sha_observed)
 
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp
