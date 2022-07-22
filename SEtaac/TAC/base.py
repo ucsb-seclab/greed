@@ -29,9 +29,7 @@ class Aliased(object):
 class TAC_Statement(Aliased):
     __internal_name__ = None
 
-    def __init__(self, block_id: str, stmt_id: str, uses: List[str] = [], defs: List[str] = [],
-                 values: Mapping[str, str] = {}):
-        super().__init__()
+    def __init__(self, block_id: str, stmt_id: str, uses: List[str], defs: List[str], values: Mapping[str, str]):
         self.block_id = block_id
         self.id = stmt_id
 
@@ -47,12 +45,12 @@ class TAC_Statement(Aliased):
         self.res_vals = {v: values.get(v, None) for v in defs}
         self.num_ress = len(self.res_vars)
 
-        # cast arg_vals to int
+        # cast arg_vals to bvv
         for x, v in self.arg_vals.items():
             if v:
                 self.arg_vals[x] = BVV(int(v, 16), 256)
 
-        # cast res_vals to int
+        # cast res_vals to bvv
         for x, v in self.res_vals.items():
             if v:
                 self.res_vals[x] = BVV(int(v, 16), 256)
@@ -94,7 +92,7 @@ class TAC_Statement(Aliased):
         # log.debug(f"{self.arg_vals, self.res_vals}")
 
     @staticmethod
-    def handler_without_side_effects(func: Callable[[SymbolicEVMState], List[SymbolicEVMState]]):
+    def handler_without_side_effects(func: Callable[["TAC_Statement", SymbolicEVMState], List[SymbolicEVMState]]):
         """
         Decorator that executes the basic functionalities for handlers without side effects
         (can just read and return statically computed results).
@@ -124,7 +122,7 @@ class TAC_Statement(Aliased):
         return wrap
 
     @staticmethod
-    def handler_with_side_effects(func: Callable[[SymbolicEVMState], List[SymbolicEVMState]]):
+    def handler_with_side_effects(func: Callable[["TAC_Statement", SymbolicEVMState], List[SymbolicEVMState]]):
         """
         Decorator that executes the basic functionalities for handlers with side effects
         (can't just read and return statically computed results).
