@@ -7,8 +7,7 @@ from SEtaac.utils.solver.shortcuts import *
 from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
-__all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
-           'TAC_Delegatecall', 'TAC_Staticcall', ]
+__all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode', 'TAC_Delegatecall', 'TAC_Staticcall', ]
 
 log = logging.getLogger(__name__)
 
@@ -19,10 +18,8 @@ class TAC_Jump(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Jumpi(TAC_Statement):
