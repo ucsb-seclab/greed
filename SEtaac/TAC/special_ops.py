@@ -27,17 +27,15 @@ class TAC_Sha3(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        new_sha = Sha3(state.memory, self.offset_val, self.size_val)
+        for sha in state.sha_observed:
+            state.ackermann_constraints += new_sha.instantiate_ackermann_constraints(sha)
+        state.sha_observed.append(new_sha)
 
-        new_sha = Sha3(succ.memory, self.offset_val, self.size_val)
-        for sha in succ.sha_observed:
-            succ.ackermann_constraints += new_sha.instantiate_ackermann_constraints(sha)
-        succ.sha_observed.append(new_sha)
+        state.registers[self.res1_var] = new_sha.symbol
 
-        succ.registers[self.res1_var] = new_sha.symbol
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Stop(TAC_Statement):
@@ -45,13 +43,11 @@ class TAC_Stop(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         # todo: implement revert
         # succ.add_constraint(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
-        succ.halt = True
+        state.halt = True
 
-        return [succ]
+        return [state]
 
 
 class TAC_Address(TAC_Statement):
@@ -60,12 +56,10 @@ class TAC_Address(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('ADDRESS', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Balance(TAC_Statement):
@@ -77,22 +71,20 @@ class TAC_Balance(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         s = new_solver_context()
         if is_concrete(self.address_val):
-            succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
-        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):
-            succ.registers[self.res1_var] = self.balance
-        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ORIGIN', succ.ctx, succ.xid)))):
-            succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-ORIGIN', succ.ctx, succ.xid)
-        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid)))):
-            succ.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', succ.ctx, succ.xid)
+            state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
+        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
+            state.registers[self.res1_var] = self.balance
+        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ORIGIN', state.ctx, state.xid)))):
+            state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-ORIGIN', state.ctx, state.xid)
+        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
+            state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', state.ctx, state.xid)
         else:
             raise VMSymbolicError('balance of symbolic address (%s)' % str(self.address_val))
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Origin(TAC_Statement):
@@ -101,12 +93,10 @@ class TAC_Origin(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('ORIGIN', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('ORIGIN', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Caller(TAC_Statement):
@@ -115,12 +105,10 @@ class TAC_Caller(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('CALLER', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('CALLER', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Callvalue(TAC_Statement):
@@ -129,12 +117,10 @@ class TAC_Callvalue(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('CALLVALUE', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('CALLVALUE', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Calldataload(TAC_Statement):
@@ -147,24 +133,22 @@ class TAC_Calldataload(TAC_Statement):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         # WARNING: According to the EVM specification if your CALLDATA is less than 32 bytes, you read zeroes.
-        succ = state
-        
         if not is_concrete(self.byte_offset_val):
-            succ.add_constraint(BV_ULT(self.byte_offset_val, BVV(succ.MAX_CALLDATA_SIZE, 256)))
+            state.add_constraint(BV_ULT(self.byte_offset_val, BVV(state.MAX_CALLDATA_SIZE, 256)))
         
         calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.uuid_generator.next()}", 256)
 
-        succ.add_constraint(Equal(calldataload_res,
-                                  succ.calldata.readn(self.byte_offset_val, BVV(32, 256))))
+        state.add_constraint(Equal(calldataload_res,
+                                  state.calldata.readn(self.byte_offset_val, BVV(32, 256))))
 
-        succ.registers[self.res1_var] = calldataload_res
+        state.registers[self.res1_var] = calldataload_res
 
         log.debug("CALLDATALOAD:" +
                   str({v: bv_unsigned_value(k) if is_concrete(k) else "<SYMBOL>" for v, k in self.arg_vals.items()}) +
-                  f" --> {{{self.res1_var}: {bv_unsigned_value(succ.registers[self.res1_var]) if is_concrete(succ.registers[self.res1_var]) else '<SYMBOL>'}}}")
+                  f" --> {{{self.res1_var}: {bv_unsigned_value(state.registers[self.res1_var]) if is_concrete(state.registers[self.res1_var]) else '<SYMBOL>'}}}")
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Calldatasize(TAC_Statement):
@@ -173,12 +157,10 @@ class TAC_Calldatasize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = state.calldatasize
 
-        succ.registers[self.res1_var] = succ.calldatasize
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Calldatacopy(TAC_Statement):
@@ -191,13 +173,10 @@ class TAC_Calldatacopy(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.memory.memcopy(self.destOffset_val, state.calldata, self.calldataOffset_val, self.size_val)
 
-        succ.memory.memcopy(self.destOffset_val, succ.calldata, self.calldataOffset_val, self.size_val)
-
-        succ.set_next_pc()
-        
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Codesize(TAC_Statement):
@@ -208,12 +187,10 @@ class TAC_Codesize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = len(state.code)
 
-        succ.registers[self.res1_var] = len(succ.code)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Codecopy(TAC_Statement):
@@ -226,20 +203,18 @@ class TAC_Codecopy(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         if is_concrete(self.destOffset_val) and is_concrete(self.offset_val) and is_concrete(self.size_val):
             for i in range(bv_unsigned_value(self.size_val)):
-                if bv_unsigned_value(self.offset_val) + i < len(succ.code):
-                    code_at_i = succ.code[bv_unsigned_value(self.offset_val) + i]
-                    succ.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(code_at_i, 8)
+                if bv_unsigned_value(self.offset_val) + i < len(state.code):
+                    code_at_i = state.code[bv_unsigned_value(self.offset_val) + i]
+                    state.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(code_at_i, 8)
                 else:
-                    succ.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(0, 8)
+                    state.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(0, 8)
         else:
-            raise VMSymbolicError('Symbolic code index @ %s' % succ.pc)
+            raise VMSymbolicError('Symbolic code index @ %s' % state.pc)
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Gasprice(TAC_Statement):
@@ -250,12 +225,10 @@ class TAC_Gasprice(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('GASPRICE', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('GASPRICE', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Extcodesize(TAC_Statement):
@@ -267,20 +240,18 @@ class TAC_Extcodesize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         with new_solver_context() as solver:
             if is_concrete(self.address_val):
-                succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), succ.ctx, succ.xid)
-            elif solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', succ.ctx, succ.xid)))):
-                succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', succ.ctx, succ.xid)
-            elif solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', succ.ctx, succ.xid)))):
-                succ.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', succ.ctx, succ.xid)
+                state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
+            elif solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
+                state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', state.ctx, state.xid)
+            elif solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
+                state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', state.ctx, state.xid)
             else:
                 raise VMSymbolicError('codesize of symblic address')
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Extcodecopy(TAC_Statement):
@@ -342,14 +313,12 @@ class TAC_Blockhash(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         if not is_concrete(self.blockNumber_val):
             raise VMSymbolicError('symbolic blockhash index')
-        succ.registers[self.res1_var] = ctx_or_symbolic('BLOCKHASH[%d]' % bv_unsigned_value(self.blockNumber_val), succ.ctx, succ.xid)
+        state.registers[self.res1_var] = ctx_or_symbolic('BLOCKHASH[%d]' % bv_unsigned_value(self.blockNumber_val), state.ctx, state.xid)
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Coinbase(TAC_Statement):
@@ -360,12 +329,10 @@ class TAC_Coinbase(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('COINBASE', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('COINBASE', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Timestamp(TAC_Statement):
@@ -376,16 +343,14 @@ class TAC_Timestamp(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        ts = ctx_or_symbolic('TIMESTAMP', succ.ctx, succ.xid)
+        ts = ctx_or_symbolic('TIMESTAMP', state.ctx, state.xid)
         if not is_concrete(ts):
-            succ.add_constraint(BV_UGE(ts, succ.min_timestamp))
-            succ.add_constraint(BV_ULE(ts, succ.max_timestamp))
-        succ.registers[self.res1_var] = ts
+            state.add_constraint(BV_UGE(ts, state.min_timestamp))
+            state.add_constraint(BV_ULE(ts, state.max_timestamp))
+        state.registers[self.res1_var] = ts
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Number(TAC_Statement):
@@ -396,12 +361,10 @@ class TAC_Number(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('NUMBER', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('NUMBER', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Difficulty(TAC_Statement):
@@ -412,12 +375,10 @@ class TAC_Difficulty(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('DIFFICULTY', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('DIFFICULTY', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Gaslimit(TAC_Statement):
@@ -428,12 +389,10 @@ class TAC_Gaslimit(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = ctx_or_symbolic('GASLIMIT', state.ctx, state.xid)
 
-        succ.registers[self.res1_var] = ctx_or_symbolic('GASLIMIT', succ.ctx, succ.xid)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Chainid(TAC_Statement):
@@ -444,14 +403,12 @@ class TAC_Chainid(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         chainid = {'mainnet': 1, 'ropsten': 3, 'rinkeby': 4, 'goerli': 5, 'kotti': 6, 'classic': 61, 'mordor': 63,
                    'astor': 212, 'dev': 2018}
-        succ.registers[self.res1_var] = chainid['mainnet']
+        state.registers[self.res1_var] = chainid['mainnet']
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Selfbalance(TAC_Statement):
@@ -462,12 +419,10 @@ class TAC_Selfbalance(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = state.balance
 
-        succ.registers[self.res1_var] = succ.balance
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Basefee(TAC_Statement):
@@ -478,13 +433,11 @@ class TAC_Basefee(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         # todo: if the current block is known, this is known
-        succ.registers[self.res1_var] = ctx_or_symbolic('BASEFEE', succ.ctx, succ.xid)
+        state.registers[self.res1_var] = ctx_or_symbolic('BASEFEE', state.ctx, state.xid)
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Return(TAC_Statement):
@@ -492,12 +445,11 @@ class TAC_Return(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         # todo: there's probably something more to handle here
-        succ.halt = True
+        state.halt = True
 
-        return [succ]
+        return [state]
+
 
 class TAC_Revert(TAC_Statement):
     __internal_name__ = "REVERT"
@@ -508,16 +460,14 @@ class TAC_Revert(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         # if not is_concrete(self.offset_val) or not is_concrete(self.size_val):
         #     raise VMSymbolicError('symbolic memory index')
         # succ.add_constraint(BV_Or(*(BV_ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
-        succ.revert = True
-        succ.halt = True
+        state.revert = True
+        state.halt = True
 
         # succ.set_next_pc()
-        return [succ]
+        return [state]
 
 
 class TAC_Create(TAC_Statement):
@@ -531,15 +481,14 @@ class TAC_Create(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
         #succ.balance -= self.value_val
         #succ.registers[self.res1_var] = utils.addr(
         #    z3.BitVec('EXT_CREATE_%d_%d' % (succ.instruction_count, succ.xid), 256))
         log.fatal("CREATE NOT implemented")
-        succ.set_next_pc()
-        return [succ]
+
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Create2(TAC_Statement):
@@ -554,16 +503,15 @@ class TAC_Create2(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
         #succ.balance -= self.value_val
         # todo: this is deployed at a deterministic address
         #succ.registers[self.res1_var] = utils.addr(
         #    z3.BitVec('EXT_CREATE2_%d_%d' % (succ.instruction_count, succ.xid), 256))
         log.fatal("{} NOT implemented".format(self.__internal_name__))
-        succ.set_next_pc()
-        return [succ]
+
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Pc(TAC_Statement):
@@ -577,11 +525,9 @@ class TAC_Pc(TAC_Statement):
         # todo: this pc will most probably be different from what the evm expects
         raise VMException("PC not available if executing TAC")
 
-        # succ = state
-        # succ.registers[self.res_var] = succ.pc
-
-        # succ.set_next_pc()
-        # return [succ]
+        # state.registers[self.res_var] = state.pc
+        # state.set_next_pc()
+        # return [state]
 
 
 class TAC_Invalid(TAC_Statement):
@@ -589,11 +535,9 @@ class TAC_Invalid(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.halt = True
 
-        succ.halt = True
-
-        return [succ]
+        return [state]
 
 
 class TAC_Selfdestruct(TAC_Statement):
@@ -604,14 +548,12 @@ class TAC_Selfdestruct(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         # todo: consider the target address
         # succ.add_constraint(z3.Or(*(z3.ULE(succ.calldatasize, access) for access in succ.calldata_accesses)))
         log.fatal("{} NOT implemented".format(self.__internal_name__))
-        succ.halt = True
+        state.halt = True
 
-        return [succ]
+        return [state]
 
 
 class TAC_Gas(TAC_Statement):
@@ -622,7 +564,7 @@ class TAC_Gas(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-        succ.registers[self.res1_var] = ctx_or_symbolic('GAS_%x' % succ.instruction_count, succ.ctx, succ.xid)        
-        succ.set_next_pc()
-        return [succ]
+        state.registers[self.res1_var] = ctx_or_symbolic('GAS_%x' % state.instruction_count, state.ctx, state.xid)
+
+        state.set_next_pc()
+        return [state]
