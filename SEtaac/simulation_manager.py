@@ -203,6 +203,9 @@ class SimulationManager:
         old_pc = state.pc
         successors = list()
 
+        if state.pc == '0x10b':
+            import ipdb; ipdb.set_trace()
+    
         if self.debug:
             parent_state_id = self.simgrViz.add_node(state)
          
