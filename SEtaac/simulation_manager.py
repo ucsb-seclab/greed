@@ -198,6 +198,7 @@ class SimulationManager:
         #         s.constraints = list(set(s.constraints)-common_constraints)
 
     def single_step_state(self, state: SymbolicEVMState):
+        log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
         old_pc = state.pc
@@ -217,7 +218,6 @@ class SimulationManager:
         if self.debug:
             for succ in successors:
                 child_state_id = self.simgrViz.add_node(succ)
-                log.debug("Stepping {} produced {}".format(old_pc, succ._pc))
                 self.simgrViz.add_edge(child_state_id, parent_state_id)
         return successors
 
