@@ -182,19 +182,24 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
 
 
-        # if options.CACHE_COMMON_CONSTRAINTS:
-        #     # TODO/WARNING: this can introduce unexpected side effects related to
-        #     # the interaction between the solver state and the exploration techniques being
-        #     # employed.
-        #
-        #     # migrate common constraints to solver
-        #     # todo: this is a very hacky way to use incremental solving as much as possible
-        #     common_constraints = set.intersection(*[set(s.constraints) for s in self.active])
-        #     from SEtaac.utils.solver.shortcuts import _SOLVER
-        #     # Common constraints are becoming assertions
-        #     _SOLVER.add_assertions(list(common_constraints))
-        #     for s in self.states:
-        #         s.constraints = list(set(s.constraints)-common_constraints)
+        if options.CACHE_COMMON_CONSTRAINTS:
+            # TODO/WARNING: this can introduce unexpected side effects related to
+            # the interaction between the solver state and the exploration techniques being
+            # employed.
+        
+            # migrate common constraints to solver
+            # todo: this is a very hacky way to use incremental solving as much as possible
+            csts_sets = []
+            for s in self.active:
+                csts_sets.append(set(s.constraints))
+
+            if csts_sets != []:
+                common_constraints = set.intersection(*csts_sets)
+                from SEtaac.utils.solver.shortcuts import _SOLVER
+                # Common constraints are becoming assertions
+                _SOLVER.add_assertions(list(common_constraints))
+                #for s in self.states:
+                #    s.path_constraints = list(set(s.constraints)-common_constraints)
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(f"Stepping {state}")

@@ -10,7 +10,7 @@ LAZY_SOLVES = False
 CACHE_COMMON_CONSTRAINTS = False
 
 # Debugging options
-SIMGRVIZ = True
+SIMGRVIZ = False
 
 
 # STATE OPTIONS

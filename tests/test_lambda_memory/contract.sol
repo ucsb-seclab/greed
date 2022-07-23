@@ -37,8 +37,6 @@ contract TestMemory {
             }
         }
 
-        
-        
         // Modify one of the bytes in memory 
         // (store over memcpy)
         uint256 newMemOffset = memOffset+unknown_index;
@@ -62,12 +60,59 @@ contract TestMemory {
             } 
         }
 
+        // Checking if we can read over the previous stores.
         for(uint z=0; z<slots; z++){
             if(mload(memOffset+z*32) != 0x0000000000000000000000000000000000000000000000000000000000000046){
                 assembly{log1(0,0, "error:test_1: load/store fail 2")}
                 revert();
             }
         }
+
+        // Copying again with calldatacopy
+        assembly{
+            calldatacopy(memOffset, cdataOffset, size)
+        }
+
+        memOffset += 4;
+
+        // Checking if we still have the original array here! 
+        for(uint w=0; w<slots; w++){
+            if(mload(memOffset+w*32) != expects[w]){
+                assembly{log1(0,0, "error:test_1: load/memcpy fail 2")}
+                revert();
+            }
+        }
+
+        // Overwriting all but the last byte
+        uint xx = 0;
+        for(xx=0; xx<slots-1; xx++){
+            uint256 newIndex = memOffset+xx*32;
+            assembly{
+                mstore(newIndex, 0x55)
+            } 
+        }
+
+        // Overwriting last but one byte
+        uint xy = 0;
+        for(xy=0; xy<slots-2; xy++){
+            uint256 newIndex = memOffset+xy*32;
+            assembly{
+                mstore(newIndex, 0x65)
+            } 
+        }
+        
+        if(mload(memOffset+xx*32) != expects[slots-1] && mload(memOffset+xx-1*32) != 0x0000000000000000000000000000000000000000000000000000000000000055 ){
+            assembly{log1(0,0, "error:test_1: load/store fail 3")}
+            revert();
+        }
+
+        if(mload(memOffset+xx*32) != expects[slots-1] && mload(memOffset+xy*32) != expects[slots-2] && 
+                    mload(memOffset+xx-1*32) != 0x0000000000000000000000000000000000000000000000000000000000000055 && 
+                            mload(memOffset+xy-2*32) != 0x0000000000000000000000000000000000000000000000000000000000000065){
+            assembly{log1(0,0, "error:test_1: load/store fail 4")}
+            revert();
+        }
+
         assembly {log1(0, 0, "success:test_1")}
     }
 

@@ -136,8 +136,15 @@ class LambdaMemory:
         self.write_count = 0
         self.read_count = 0
 
+        self.read_indexes = {}
+
     def __getitem__(self, index):
         assert not isinstance(index, slice), "slice memory read not implemented"
+
+        #if str(index.dump()) in self.read_indexes.keys():
+        #    self.read_indexes[str(index.dump())]+=1
+        #else:
+        #    self.read_indexes[str(index.dump())] = 1
 
         self.read_count += 1        
         # instantiate and add lambda constraints
@@ -214,4 +221,6 @@ class LambdaMemory:
         new_memory.constraints = list(self.constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
+
+        new_memory.read_indexes = self.read_indexes
         return new_memory

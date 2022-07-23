@@ -6,15 +6,12 @@ import IPython
 from SEtaac import Project, utils
 from SEtaac.utils import gen_exec_id
 from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac import options
 from SEtaac.utils.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger("SEtaac")
-
-
-log.setLevel("DEBUG")
-
 
 def parse_log(state):
     log_stmt = state.curr_stmt
@@ -52,7 +49,7 @@ def print_cst(state):
     print("Number of constraints over storage is: {}".format(len(state.storage.constraints)))
     import ipdb; ipdb.set_trace()
 
-def run_test(debug=True):
+def run_test(debug=False):
     
     set_solver(Bitwuzla)
     p = Project(target_dir='./test_lambda_memory')
@@ -73,11 +70,11 @@ def run_test(debug=True):
     #entry_state.add_breakpoint("0x12b",print_cst)
     #entry_state.add_breakpoint("0x22b0x106",print_cst)
     #entry_state.add_breakpoint("0x22b0x1af",print_cst)
-    entry_state.add_breakpoint("0x1b9", print_cst)
+    #entry_state.add_breakpoint("0x1b9", print_cst)
 
     simgr = p.factory.simgr(entry_state=entry_state)
 
-    
+    options.CACHE_COMMON_CONSTRAINTS = True    
     while len(simgr.active) > 0:
         simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")
         for s in simgr.found:
