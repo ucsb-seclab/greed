@@ -3,12 +3,16 @@ from SEtaac.utils.solver.shortcuts import *
 
 
 class LambdaConstraint:
+    def __init__(self):
+        self.following_writes = list()
+
     def instantiate(self, index):
         return []
 
 
 class LambdaMemsetConstraint(LambdaConstraint):
     def __init__(self, array, start, value, size, new_array, parent):
+        super().__init__()
         self.array = array
         self.start = start
         self.value = value
@@ -18,6 +22,9 @@ class LambdaMemsetConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
+        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+            return []
+
         index_in_range = BV_And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,
@@ -29,6 +36,7 @@ class LambdaMemsetConstraint(LambdaConstraint):
 
 class LambdaMemsetInfiniteConstraint(LambdaConstraint):
     def __init__(self, array, start, value, new_array, parent):
+        super().__init__()
         self.array = array
         self.start = start
         self.value = value
@@ -37,6 +45,9 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
+        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+            return []
+
         index_in_range = BV_ULE(self.start, index)
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,
@@ -48,6 +59,7 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
 
 class LambdaMemcopyConstraint(LambdaConstraint):
     def __init__(self, array, start, source, source_start, size, new_array, parent):
+        super().__init__()
         self.array = array
         self.start = start
         self.source = source
@@ -58,6 +70,9 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
+        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+            return []
+
         index_in_range = BV_And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
         shift_to_source_offset = BV_Sub(self.source_start, self.start)
         instance = Equal(Array_Select(self.new_array, index),
@@ -71,6 +86,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
 
 class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
     def __init__(self, array, start, source, source_start, new_array, parent):
+        super().__init__()
         self.array = array
         self.start = start
         self.source = source
@@ -80,6 +96,9 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
+        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+            return []
+
         index_in_range = BV_ULE(self.start, index)
         shift_to_source_offset = BV_Sub(self.source_start, self.start)
         instance = Equal(Array_Select(self.new_array, index),
@@ -125,6 +144,9 @@ class LambdaMemory:
 
     def __setitem__(self, index, v):
         self.write_count += 1
+
+        if is_concrete(index):
+            self.lambda_constraint.following_writes.append(bv_unsigned_value(index))
 
         self._base = Array_Store(self._base, index, v)
 
