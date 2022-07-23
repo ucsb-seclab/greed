@@ -252,8 +252,9 @@ class Bitwuzla(Solver):
             return self.solver.get_value_str(term)
  
     def eval_one_array(self, array, length):
-        if self._sat_status is None:
-            self._sat_status = self.solver.check_sat()
-        assert self._sat_status == pybitwuzla.Result.SAT
-
-        return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]
+        raise Exception("this doesn't work for now because it does not consider the side effects of memory reads")
+        # if self._sat_status is None:
+        #     self._sat_status = self.solver.check_sat()
+        # assert self._sat_status == pybitwuzla.Result.SAT
+        #
+        # return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]

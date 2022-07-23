@@ -71,7 +71,8 @@ def run_test(debug=True):
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=600)
 
     #entry_state.add_breakpoint("0x12b",print_cst)
-    
+    #entry_state.add_breakpoint("0x22b0x106",print_cst)
+    #entry_state.add_breakpoint("0x22b0x1af",print_cst)
     entry_state.add_breakpoint("0x1b9", print_cst)
 
     simgr = p.factory.simgr(entry_state=entry_state)

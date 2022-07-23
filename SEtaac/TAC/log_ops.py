@@ -30,12 +30,8 @@ class TAC_Log(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        # succ.memory.extend(self.offset_val, self.size_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Log0(TAC_Log):
