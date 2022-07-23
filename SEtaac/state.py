@@ -79,7 +79,6 @@ class SymbolicEVMState:
                 # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
                 self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
-                # CALLDATA is a ConstArray, accesses out of bound are zeroes
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8))
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
@@ -88,7 +87,6 @@ class SymbolicEVMState:
                     for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
                         self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
-                # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8))
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
@@ -104,7 +102,6 @@ class SymbolicEVMState:
                     self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
 
         else:
-            # CALLDATA is an Array (not ConstArray), accesses out of bound are indistinguishable in this case
             self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8))
 
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
