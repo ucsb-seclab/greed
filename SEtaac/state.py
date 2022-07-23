@@ -37,6 +37,7 @@ class SymbolicEVMState(UUID):
         self.callstack = list()
 
         self.instruction_count = 0
+        self.breakpoints = {}
         self.halt = False
         self.revert = False
         self.error = None
@@ -196,6 +197,12 @@ class SymbolicEVMState(UUID):
         if STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
         self.path_constraints.append(constraint)
+    
+    def add_breakpoint(self, stmt_id, func=None):
+        if not func:
+            def justStop(state):
+                import ipdb; ipdb.set_trace()
+        self.breakpoints[stmt_id] = func
 
     def copy(self):
         # assume unchanged xid
@@ -213,6 +220,7 @@ class SymbolicEVMState(UUID):
         new_state.callstack = list(self.callstack)
 
         new_state.instruction_count = self.instruction_count
+        new_state.breakpoints = self.breakpoints
         new_state.halt = self.halt
         new_state.revert = self.revert
         new_state.error = self.error

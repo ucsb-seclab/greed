@@ -1,6 +1,10 @@
+import logging 
+
 from SEtaac.utils.extra import UUID
 from SEtaac.utils.solver.shortcuts import *
 
+log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 class LambdaConstraint:
     def instantiate(self, index):
@@ -115,8 +119,7 @@ class LambdaMemory(UUID):
     def __getitem__(self, index):
         assert not isinstance(index, slice), "slice memory read not implemented"
 
-        self.read_count += 1
-
+        self.read_count += 1        
         # instantiate and add lambda constraints
         self.constraints += self.lambda_constraint.instantiate(index)
 

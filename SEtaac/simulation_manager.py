@@ -49,8 +49,7 @@ class SimgrViz(object):
         for node_id in self._simgGraph.nodes:
             node = self._simgGraph.nodes[node_id]
             
-            shape = 'box'       
-
+            shape = 'box'
             s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
             s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
             s += '<br align="left"/>pc:{}'.format(node["pc"])
@@ -198,9 +197,15 @@ class SimulationManager:
         #         s.constraints = list(set(s.constraints)-common_constraints)
 
     def single_step_state(self, state: SymbolicEVMState):
+        log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
         old_pc = state.pc
+
+        if state.pc in state.breakpoints.keys():
+            log.warning("⚡ Triggered breakpoint at {}".format(state.pc))
+            state.breakpoints[state.pc](state)
+
         successors = list()
     
         if self.debug:
@@ -217,7 +222,6 @@ class SimulationManager:
         if self.debug:
             for succ in successors:
                 child_state_id = self.simgrViz.add_node(succ)
-                log.debug("Stepping {} produced {}".format(old_pc, succ._pc))
                 self.simgrViz.add_edge(child_state_id, parent_state_id)
         return successors
 
