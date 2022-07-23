@@ -2,6 +2,11 @@ import z3
 
 from SEtaac.utils.solver.base import Solver
 
+def simplify_result(func):
+    def wrapper(*args, **kwargs):
+        res = func(*args, **kwargs)
+        return z3.simplify(res)
+    return wrapper
 
 class Z3(Solver):
     """
@@ -33,7 +38,7 @@ class Z3(Solver):
         return int(bv.as_binary_string(), 2)
 
     def is_concrete(self, bv):
-        return z3.is_const(bv)
+        return z3.is_bv_value(bv)
 
     def is_sat(self, ):
         return self.solver.check() == z3.sat
@@ -41,7 +46,7 @@ class Z3(Solver):
     def is_unsat(self, ):
         return self.solver.check() == z3.unsat
 
-    def is_sat_formula(self, formula):
+    def is_formula_sat(self, formula):
         self.push()
         self.add_assertion(formula)
         sat = self.is_sat()
@@ -75,9 +80,8 @@ class Z3(Solver):
     def fixate_assumptions(self, ):
         raise Exception
 
-    def simplify(self, ):
-        # We need to pass a specific formula to simplify
-        raise Exception
+    def simplify(self, formula):
+        return z3.simplify(formula)
 
     def new_solver_context(self, ):
         return Z3
@@ -90,6 +94,7 @@ class Z3(Solver):
 
     # CONDITIONAL OPERATIONS
 
+    @simplify_result
     def If(self, cond, value_if_true, value_if_false):
         return z3.If(cond, value_if_true, value_if_false)
 
@@ -113,92 +118,120 @@ class Z3(Solver):
     # BV OPERATIONS
 
     def Equal(self, a, b):
-        return z3.eq(a, b)
+        return z3.BitVecRef.__eq__(a,b)
 
     def NotEqual(self, a, b):
-        return z3.is_not(z3.eq(a, b))
+        return z3.BitVecRef.__ne__(a,b)
 
+    @simplify_result
     def BV_Extract(self, start, end, bv):
         # Z3 extract is (start_offset, length, symbol)
-        return z3.Extract(start, (end-start), bv)
+        return z3.Extract(end, start, bv)
 
+    @simplify_result
     def BV_Concat(self, terms):
         res = z3.Concat(terms[0], terms[1])
         for i in range(2, len(terms)):
             res = z3.Concat(res, terms[i])
         return res
 
+    @simplify_result
     def BV_Add(self, a, b):
-        return a + b
+        return z3.BitVecRef.__add__(a,b)
 
+    @simplify_result
     def BV_Sub(self, a, b):
-        return a - b
+        return z3.BitVecRef.__sub__(a,b)
 
+    @simplify_result
     def BV_Mul(self, a, b):
-        return a * b
+        return z3.BitVecRef.__mul__(a,b)
 
+    @simplify_result
     def BV_UDiv(self, a, b):
         return z3.UDiv(a, b)
 
+    @simplify_result
     def BV_SDiv(self, a, b):
-        return a / b
+        return z3.BitVecRef.__div__(a,b)
 
+    @simplify_result
     def BV_SMod(self, a, b):
-        return a % b 
+        return z3.BitVecRef.__mod__(a,b)
 
+    @simplify_result
     def BV_SRem(self, a, b):
         return z3.SRem(a,b)
 
+    @simplify_result
     def BV_URem(self, a, b):
         return z3.URem(a, b)
 
+    @simplify_result
     def BV_Sign_Extend(self, a, b):
-        return z3.SignExt(a, b)
+        # First argument MUST be an integer according to Z3py
+        return z3.SignExt(self.bv_unsigned_value(a), self.BVV(b,256))
 
+    @simplify_result
     def BV_Zero_Extend(self, a, b):
-        return z3.ZeroExt(a, b)
+        # First argument MUST be an integer according to Z3py
+        return z3.ZeroExt(self.bv_unsigned_value(a), self.BVV(b,256))
 
+    @simplify_result
     def BV_UGE(self, a, b):
         return z3.UGE(a, b)
 
+    @simplify_result
     def BV_ULE(self, a, b):
         return z3.ULE(a, b)
 
+    @simplify_result
     def BV_UGT(self, a, b):
         return z3.UGT(a, b)
 
+    @simplify_result
     def BV_ULT(self, a, b):
         return z3.ULT(a, b)
 
+    @simplify_result
     def BV_SGE(self, a, b):
-        return a >= b
+        return z3.BitVecRef.__ge__(a,b)
 
+    @simplify_result
     def BV_SLE(self, a, b):
-        return a <= b
+        return z3.BitVecRef.__le__(a,b)
 
+    @simplify_result
     def BV_SGT(self, a, b):
-        return a > b
+        return z3.BitVecRef.__gt__(a,b)
 
+    @simplify_result
     def BV_SLT(self, a, b):
-        return a < b
+        return z3.BitVecRef.__lt__(a,b)
 
+    @simplify_result
     def BV_And(self, a, b):
         return z3.And(a, b)
 
+    @simplify_result
     def BV_Or(self, a, b):
         return z3.Or(a, b)
 
+    @simplify_result
     def BV_Xor(self, a, b):
         return z3.Xor(a, b)
 
+    @simplify_result
     def BV_Not(self, a):
         return z3.Not(a)
 
+    @simplify_result
     def BV_Shl(self, a, b):
-        return a >> b
+        return z3.BitVecRef.__lshift__(a,b)
 
+    @simplify_result
     def BV_Shr(self, a, b):
-        return a << b
+        return z3.BitVecRef.__rshift__(a,b)
 
     # ARRAY OPERATIONS
 

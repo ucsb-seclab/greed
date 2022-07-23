@@ -5,6 +5,7 @@ import networkx as nx
 from SEtaac.TAC.TAC_parser import TAC_parser
 from SEtaac.factory import Factory
 from SEtaac.utils.solver.bitwuzla import Bitwuzla
+from SEtaac.utils.solver.z3 import Z3
 from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
