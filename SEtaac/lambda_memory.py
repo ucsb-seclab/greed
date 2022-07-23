@@ -26,11 +26,7 @@ class LambdaMemsetConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        
-        print("Index: {} | Following writes: {}".format(index.dump(), self.following_writes))
-
         if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
-            print("Skipping instantiation")
             return []
 
         index_in_range = BV_And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -53,9 +49,7 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        print("Index: {} | Following writes: {}".format(index.dump(), self.following_writes))
         if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
-            print("Skipping instantiation")
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -80,9 +74,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        print("Index: {} | Following writes: {}".format(index.dump(), self.following_writes))
         if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
-            print("Skipping instantiation")
             return []
 
         index_in_range = BV_And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -108,9 +100,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        print("Index: {} | Following writes: {}".format(index.dump(), self.following_writes))
         if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
-            print("Skipping instantiation")
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -159,7 +149,6 @@ class LambdaMemory:
         self.write_count += 1
 
         if is_concrete(index):
-            print(f"Writing at index {bv_unsigned_value(index)}")
             self.lambda_constraint.following_writes.append(bv_unsigned_value(index))
 
         self._base = Array_Store(self._base, index, v)
