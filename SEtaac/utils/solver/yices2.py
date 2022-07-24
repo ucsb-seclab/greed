@@ -166,6 +166,7 @@ class Yices2(Solver):
     def Array(self, symbol, index_sort: YicesTypeBV, value_sort: YicesTypeBV) -> YicesTermArray:
         assert isinstance(index_sort, YicesTypeBV)
         assert isinstance(value_sort, YicesTypeBV)
+        # WARNING: in yices apparently arrays are functions
         array_type = yices.Types.new_function_type([index_sort], value_sort)
         yices_id = yices.Terms.new_variable(array_type, name=symbol)
         return YicesTermArray(yices_id=yices_id, name=symbol)
@@ -371,16 +372,19 @@ class Yices2(Solver):
 
     # ARRAY OPERATIONS
 
-    def Array_Store(self, arr: YicesTermArray, index: YicesTermBV, elem: YicesTermBV):
+    def Array_Store(self, arr: YicesTermArray, index: YicesTermBV, elem: YicesTermBV) -> YicesTermArray:
         assert isinstance(arr, YicesTermArray)
         assert isinstance(index, YicesTermBV)
         assert isinstance(elem, YicesTermBV)
+        # WARNING: in yices apparently arrays are functions
         yices_id = yices.Terms.update(arr, [index], elem)
         return YicesTermArray(yices_id=yices_id)
 
-    # def Array_Select(self, arr, index):
-    #     import IPython; IPython.embed(); exit()
-    #     return self.solver.mk_term(pybitwuzla.Kind.ARRAY_SELECT, [arr, index])
+    def Array_Select(self, arr: YicesTermArray, index: YicesTermBV) -> YicesTermBV:
+        assert isinstance(arr, YicesTermArray)
+        assert isinstance(index, YicesTermBV)
+        yices_id = yices.Terms.application(arr, [index])
+        return YicesTermBV(yices_id=yices_id)
 
     # def eval_one(self, term, cast_to="int"):
     #     if self._sat_status is None:
