@@ -195,19 +195,22 @@ class Yices2(Solver):
         yices_id = yices.Terms.bvneq_atom(a, b)
         return YicesTermBool(yices_id=yices_id)
 
-    # def Or(self, *terms: List[YicesTermBool]) -> YicesTermBool:
-    #     for term in terms:
-    #         assert isinstance(term, YicesTermBool)
-    #     return yices.Terms.bvor(terms)
-    #
-    # def And(self, *terms: List[YicesTermBool]) -> YicesTermBool:
-    #     for term in terms:
-    #         assert isinstance(term, YicesTermBool)
-    #     return yices.Terms.bvand(terms)
-    #
-    # def Not(self, a: YicesTermBool) -> YicesTermBool:
-    #     assert isinstance(a, YicesTermBool)
-    #     return yices.Terms.bvnot(a)
+    def Or(self, *terms: List[YicesTermBool]) -> YicesTermBool:
+        for term in terms:
+            assert isinstance(term, YicesTermBool)
+        yices_id = yices.Terms.yor(terms)
+        return YicesTermBool(yices_id=yices_id)
+
+    def And(self, *terms: List[YicesTermBool]) -> YicesTermBool:
+        for term in terms:
+            assert isinstance(term, YicesTermBool)
+        yices_id = yices.Terms.yand(terms)
+        return YicesTermBool(yices_id=yices_id)
+
+    def Not(self, a: YicesTermBool) -> YicesTermBool:
+        assert isinstance(a, YicesTermBool)
+        yices_id = yices.Terms.ynot(a)
+        return YicesTermBool(yices_id=yices_id)
 
     # BV OPERATIONS
 
@@ -218,9 +221,12 @@ class Yices2(Solver):
         yices_id = yices.Terms.bvextract(bv, start, end)
         return YicesTermBV(yices_id=yices_id)
 
-    # def BV_Concat(self, terms):
-    #     return self.solver.mk_term(pybitwuzla.Kind.BV_CONCAT, terms)
-    #
+    def BV_Concat(self, terms: List[YicesTermBV]) -> YicesTermBV:
+        for term in terms:
+            assert isinstance(term, YicesTermBV)
+        yices_id = yices.Terms.bvconcat(terms)
+        return YicesTermBV(yices_id=yices_id)
+
     def BV_Add(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
