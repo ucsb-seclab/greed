@@ -95,7 +95,9 @@ class Yices2(Solver):
         assert isinstance(value, int)
         assert isinstance(width, int)
         if (value, width) not in self.BVV_cache:
-            yices_id = yices.Terms.bvconst_integer(width, value)
+            # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
+            # yices_id = yices.Terms.bvconst_integer(width, value)
+            yices_id = yices.Terms.parse_bvbin(format(value, '#0258b')[2:])
             self.BVV_cache[(value, width)] = YicesTermBV(yices_id=yices_id, value=value)
         return self.BVV_cache[(value, width)]
 
