@@ -171,6 +171,9 @@ class Solver:
     def BV_Shr(self, a, b):
         raise Exception("Not implemented")
 
+    def BV_Sar(self, a, b):
+        raise Exception("Not implemented")
+
     def Array_Store(self, arr, index, elem):
         raise Exception("Not implemented")
 

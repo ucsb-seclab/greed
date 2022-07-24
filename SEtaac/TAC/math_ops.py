@@ -355,16 +355,7 @@ class TAC_Sar(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        # (n&msb) | (n>>shift)
-        msb_set = BV_Extract(255, 255, self.arg2_val)
-        shift_mask = BV_Shr(BVV(2**256-1, 256), self.shift_val)
-
-        shifted = BV_Shr(self.arg2_val, self.shift_val)
-        res = If(msb_set,
-                 BV_Or(shifted, BV_Not(shift_mask)),
-                 BV_And(shifted, shift_mask))
-
-        state.registers[self.res1_var] = res
+        state.registers[self.res1_var] = BV_Sar(self.arg2_val, self.arg1_val)
 
         state.set_next_pc()
         return [state]

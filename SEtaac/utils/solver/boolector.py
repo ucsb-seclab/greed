@@ -208,6 +208,18 @@ class Boolector(Solver):
     def BV_Shr(self, a, b):
         return self.solver.Srl(a, b)
 
+    def BV_Sar(self, a, b):
+        # (n&msb) | (n>>shift)
+        msb_set = self.BV_Extract(255, 255, a)
+        shift_mask = self.BV_Shr(self.BVV(2 ** 256 - 1, 256), b)
+
+        shifted = self.BV_Shr(a, b)
+        res = self.If(msb_set,
+                      self.BV_Or(shifted, self.BV_Not(shift_mask)),
+                      self.BV_And(shifted, shift_mask))
+
+        return res
+
     # ARRAY OPERATIONS
 
     def Array_Store(self, arr, index, elem):
