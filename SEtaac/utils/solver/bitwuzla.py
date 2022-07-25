@@ -156,6 +156,9 @@ class Bitwuzla(Solver):
 
     # BV OPERATIONS
 
+    def bv_size(self, bv):
+        return bv.get_sort().bv_get_size()
+
     def BV_Extract(self, start, end, bv):
         return self.solver.mk_term(pybitwuzla.Kind.BV_EXTRACT, [bv], [end, start])
 

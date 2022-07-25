@@ -53,6 +53,9 @@ class Z3(Solver):
         self.pop()
 
         return sat
+    
+    def bv_size(self, bv):
+        return bv.size()
 
     def push(self, ):
         # Create a Z3 backtracking point
@@ -100,26 +103,28 @@ class Z3(Solver):
 
     # BOOLEAN OPERATIONS
 
-    # def Equalself, (a, b):
-    #    return self.solver.Eq(a, b)
+    #def Equal(self, a, b):
+    #    return self.solver.mk_term(pybitwuzla.Kind.EQUAL, [a, b])
 
-    # def NotEqualself, (a, b):
-    #    return self.solver.Ne(a, b)
+    #def NotEqual(self, a, b):
+    #    return self.solver.mk_term(pybitwuzla.Kind.DISTINCT, [a, b])
 
-    # def Orself, (a, b):
-    #    return self.solver.Or(a, b)
+    def Or(self, *terms):
+        return z3.Or(*terms)
 
-    # def Andself, (a, b):
-    #    return self.solver.And(a, b)
+    def And(self, *terms):
+        return z3.And(*terms)
 
-    # def Notself, (a):
-    #    return self.solver.Not(a)
+    def Not(self, term):
+        return z3.Not(term)
 
     # BV OPERATIONS
 
+    @simplify_result
     def Equal(self, a, b):
         return z3.BitVecRef.__eq__(a,b)
-
+    
+    @simplify_result
     def NotEqual(self, a, b):
         return z3.BitVecRef.__ne__(a,b)
 
@@ -169,13 +174,11 @@ class Z3(Solver):
 
     @simplify_result
     def BV_Sign_Extend(self, a, b):
-        # First argument MUST be an integer according to Z3py
-        return z3.SignExt(self.bv_unsigned_value(a), self.BVV(b,256))
+        return z3.SignExt(b,a)
 
     @simplify_result
     def BV_Zero_Extend(self, a, b):
-        # First argument MUST be an integer according to Z3py
-        return z3.ZeroExt(self.bv_unsigned_value(a), self.BVV(b,256))
+        return z3.ZeroExt(b,a)
 
     @simplify_result
     def BV_UGE(self, a, b):
@@ -211,19 +214,19 @@ class Z3(Solver):
 
     @simplify_result
     def BV_And(self, a, b):
-        return z3.And(a, b)
+        return z3.BitVecRef.__and__(a,b)
 
     @simplify_result
     def BV_Or(self, a, b):
-        return z3.Or(a, b)
+        return z3.BitVecRef.__or__(a,b)
 
     @simplify_result
     def BV_Xor(self, a, b):
-        return z3.Xor(a, b)
+        return z3.BitVecRef.__xor__(a,b)
 
     @simplify_result
     def BV_Not(self, a):
-        return z3.Not(a)
+        return z3.BitVecRef.__invert__(a)
 
     @simplify_result
     def BV_Shl(self, a, b):

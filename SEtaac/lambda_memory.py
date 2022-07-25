@@ -77,7 +77,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
             return []
 
-        index_in_range = BV_And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
+        index_in_range = And([BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size))])
         shift_to_source_offset = BV_Sub(self.source_start, self.start)
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,

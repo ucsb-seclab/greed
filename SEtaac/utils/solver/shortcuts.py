@@ -146,6 +146,9 @@ def Not(a):
 def bv_unsigned_value(bv):
     return _SOLVER.bv_unsigned_value(bv)
 
+def bv_size(bv):
+    return _SOLVER.bv_size(bv)
+
 
 def is_concrete(bv):
     return _SOLVER.is_concrete(bv)
