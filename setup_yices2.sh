@@ -45,8 +45,8 @@ VIRTUAL_ENV_BIN=$VIRTUAL_ENV/bin
 VIRTUAL_ENV_LIB=`echo $VIRTUAL_ENV/lib/python3.*/site-packages`
 
 # finally, link bitwuzla/build/lib/ to the virtualenv's site-packages dir
-ln -sf $SETAAC_DIR/yices2/build/aarch64-unknown-linux-gnu-release/bin/* $VIRTUAL_ENV_BIN/
-ln -sf $SETAAC_DIR/yices2/build/aarch64-unknown-linux-gnu-release/lib/* $VIRTUAL_ENV_LIB/
+ln -sf $SETAAC_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
+ln -sf $SETAAC_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
 cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
 
 # clone the yices2 repo
