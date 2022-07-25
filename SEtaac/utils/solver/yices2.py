@@ -98,7 +98,8 @@ class Yices2(Solver):
             self.BVS_cache[(symbol, width)] = YicesTermBV(yices_id=yices_id, name=symbol)
         return self.BVS_cache[(symbol, width)]
 
-    def bv_unsigned_value(self, bv):
+    def bv_unsigned_value(self, bv: YicesTypeBV) -> int:
+        assert isinstance(bv, YicesTypeBV)
         assert self.is_concrete(bv), "Invalid bv_unsigned_value of non constant bitvector"
 
         # works, but yices.Terms.bv_const_value(bv) could be a cleaner (though slower) option
