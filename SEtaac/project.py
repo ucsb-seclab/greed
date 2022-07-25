@@ -20,7 +20,7 @@ class Project(object):
         self.factory = Factory(project=self)
 
         # set the default solver
-        set_solver(Bitwuzla)
+        set_solver(Z3)
 
         tac_parser = TAC_parser(self.factory, target_dir)
         self.statement_at = tac_parser.parse_statements()

@@ -30,7 +30,7 @@ class Sha3(LambdaMemory):
         sha_data_is_different_for_some_index = NotEqual(self[ackermann_index], other[ackermann_index])
         sha_data_is_equal_for_all_indices = Not(sha_data_is_different_for_some_index)
 
-        return [If(BV_And(sha_data_len_is_equal, sha_data_is_equal_for_all_indices),
+        return [If(And(sha_data_len_is_equal, sha_data_is_equal_for_all_indices),
                    Equal(self.symbol, other.symbol),
                    NotEqual(self.symbol, other.symbol)),
                 BV_ULT(ackermann_index, self.size)]

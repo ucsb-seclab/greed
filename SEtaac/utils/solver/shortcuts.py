@@ -258,6 +258,10 @@ def BV_Shr(a, b):
     return _SOLVER.BV_Shr(a, b)
 
 
+def BV_Sar(a, b):
+    return _SOLVER.BV_Sar(a, b)
+
+
 # ARRAY OPERATIONS
 
 

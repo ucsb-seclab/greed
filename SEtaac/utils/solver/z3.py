@@ -236,6 +236,23 @@ class Z3(Solver):
     def BV_Shr(self, a, b):
         return z3.BitVecRef.__rshift__(a,b)
 
+    @simplify_result
+    def BV_Sar(self, a, b):
+        # (n&msb) | (n>>shift)
+        '''
+        msb_set = self.BV_Extract(255, 255, a)
+        shift_mask = self.BV_Shr(self.BVV(2 ** 256 - 1, 256), b)
+
+        shifted = self.BV_Shr(a, b)
+        res = self.If(msb_set,
+                      self.BV_Or(shifted, self.BV_Not(shift_mask)),
+                      self.BV_And(shifted, shift_mask))
+        '''
+        res_shift1 = self.BV_Shr(a, b)
+        res_shift2 = self.BV_Extract(0, 255-self.bv_unsigned_value(b),res_shift1)
+        res = self.BV_Sign_Extend(res_shift2, 256-self.bv_size(res_shift2))
+        return res
+
     # ARRAY OPERATIONS
 
     def Array_Store(self, arr, index, elem):

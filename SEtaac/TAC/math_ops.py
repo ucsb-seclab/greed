@@ -313,15 +313,14 @@ class TAC_Byte(TAC_Statement):
         if is_concrete(self.offset_val):
             if bv_unsigned_value(self.offset_val) >= 32:
                 state.registers[self.res1_var] = BVV(0, 256)
+            elif is_concrete(self.arg2_val):
+                res = bv_unsigned_value(self.arg2_val) // 256 ** (31 - bv_unsigned_value(self.offset_val))
+                state.registers[self.res1_var] = BVV(res, 256)
             else:
-                if is_concrete(self.arg2_val):
-                    res = bv_unsigned_value(self.arg2_val) // 256 ** (31 - bv_unsigned_value(self.offset_val))
-                    state.registers[self.res1_var] = BVV(res, 256)
-                else:
-                    start = (31 - bv_unsigned_value(self.offset_val)) * 8
-                    end = (31 - bv_unsigned_value(self.offset_val)) * 8 + 7
-                    v = BV_Extract(start, end, self.arg2_val)
-                    state.registers[self.res1_var] = BV_Zero_Extend(v, 256 - 8)
+                start = (31 - bv_unsigned_value(self.offset_val)) * 8
+                end = (31 - bv_unsigned_value(self.offset_val)) * 8 + 7
+                v = BV_Extract(start, end, self.arg2_val)
+                state.registers[self.res1_var] = BV_Zero_Extend(v, 256 - 8)
         else:
             raise VMSymbolicError('symbolic byte-index not supported')
 
@@ -359,22 +358,7 @@ class TAC_Sar(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        # (n&msb) | (n>>shift)
-        
-        res_shift1 = BV_Shr(self.arg2_val, self.shift_val)
-        res_shift2 = BV_Extract(0, 255-bv_unsigned_value(self.shift_val),res_shift1)
-        res_shift3 = BV_Sign_Extend(res_shift2, 256-bv_size(res_shift2))
-
-        #res = If(BV_ULT(self.shift_val, BVV(256,256)), 
-        #                res_shift,
-        #                If(BV_UGE(self.arg2_val, BVV(0,256)), 
-        #                          BVV(0,256), 
-        #                          BVV(-1,256)
-        #                  ))
-
-        #import ipdb; ipdb.set_trace()
-        #res = BV_Shr(self.arg2_val, self.shift_val)
-        state.registers[self.res1_var] = res_shift3
+        state.registers[self.res1_var] = BV_Sar(self.arg2_val, self.arg1_val)
 
         state.set_next_pc()
         return [state]
