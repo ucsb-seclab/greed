@@ -168,7 +168,7 @@ class Yices2(Solver):
         assert isinstance(value_sort, YicesTypeBV)
         # WARNING: in yices apparently arrays are functions
         array_type = yices.Types.new_function_type([index_sort], value_sort)
-        yices_id = yices.Terms.new_variable(array_type, name=symbol)
+        yices_id = yices.Terms.new_uninterpreted_term(array_type, name=symbol)
         return YicesTermArray(yices_id=yices_id, name=symbol)
 
     # CONDITIONAL OPERATIONS
