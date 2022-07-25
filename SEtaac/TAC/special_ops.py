@@ -71,17 +71,17 @@ class TAC_Balance(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        s = new_solver_context()
-        if is_concrete(self.address_val):
-            state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
-        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
-            state.registers[self.res1_var] = self.balance
-        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ORIGIN', state.ctx, state.xid)))):
-            state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-ORIGIN', state.ctx, state.xid)
-        elif s.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
-            state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', state.ctx, state.xid)
-        else:
-            raise VMSymbolicError('balance of symbolic address (%s)' % str(self.address_val))
+        with new_solver_context(state) as solver:
+            if is_concrete(self.address_val):
+                state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
+            elif solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
+                state.registers[self.res1_var] = self.balance
+            elif solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ORIGIN', state.ctx, state.xid)))):
+                state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-ORIGIN', state.ctx, state.xid)
+            elif solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
+                state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', state.ctx, state.xid)
+            else:
+                raise VMSymbolicError('balance of symbolic address (%s)' % str(self.address_val))
 
         state.set_next_pc()
         return [state]
@@ -240,7 +240,7 @@ class TAC_Extcodesize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        with new_solver_context() as solver:
+        with new_solver_context(state) as solver:
             if is_concrete(self.address_val):
                 state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
             elif solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
