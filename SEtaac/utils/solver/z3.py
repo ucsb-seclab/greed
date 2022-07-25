@@ -15,6 +15,7 @@ class Z3(Solver):
 
     def __init__(self):
         z3.set_param('rewriter.blast_select_store', True)
+        z3.set_param('rewriter.sort_store', True)
         self.solver = z3.SolverFor('QF_ABV')
         self.BVSort_cache = dict()
         self.BVV_cache = dict()

@@ -50,8 +50,10 @@ def print_cst(state):
     import ipdb; ipdb.set_trace()
 
 def run_test(debug=True):
-    
-    set_solver(Bitwuzla)
+
+    options.CACHE_COMMON_CONSTRAINTS = True
+    options.SOLVER = options.SOLVER_Z3
+
     p = Project(target_dir='./test_lambda_memory')
     
     xid = gen_exec_id()
@@ -74,7 +76,7 @@ def run_test(debug=True):
 
     simgr = p.factory.simgr(entry_state=entry_state)
     #log.setLevel(logging.DEBUG)
-    options.CACHE_COMMON_CONSTRAINTS = True    
+
     while len(simgr.active) > 0:
         simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")
         for s in simgr.found:
