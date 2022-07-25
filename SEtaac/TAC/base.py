@@ -94,7 +94,9 @@ class TAC_Statement(Aliased):
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)
 
-        # log.debug(f"{self.arg_vals, self.res_vals}")
+        # args = {k:bv_unsigned_value(v) if v and is_concrete(v) else '<SYMBOL>' for k, v in self.arg_vals.items()}
+        # ress = {k:bv_unsigned_value(v) if v and is_concrete(v) else '<SYMBOL>' for k, v in self.res_vals.items()}
+        # log.debug(f"{args, ress}")
 
     @staticmethod
     def handler_without_side_effects(func: Callable[["TAC_Statement", SymbolicEVMState], List[SymbolicEVMState]]):

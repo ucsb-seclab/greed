@@ -181,7 +181,6 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
 
-
         if options.CACHE_COMMON_CONSTRAINTS:
             # TODO/WARNING: this can introduce unexpected side effects related to
             # the interaction between the solver state and the exploration techniques being
@@ -200,6 +199,7 @@ class SimulationManager:
                 _SOLVER.add_assertions(list(common_constraints))
                 #for s in self.states:
                 #    s.path_constraints = list(set(s.constraints)-common_constraints)
+
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(f"Stepping {state}")

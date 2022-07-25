@@ -97,7 +97,7 @@ class Yices2(Solver):
         if (value, width) not in self.BVV_cache:
             # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
             # yices_id = yices.Terms.bvconst_integer(width, value)
-            yices_id = yices.Terms.parse_bvbin(format(value, '#0258b')[2:])
+            yices_id = yices.Terms.parse_bvbin(format(value % (2**width), f'#0{width+2}b')[2:])
             self.BVV_cache[(value, width)] = YicesTermBV(yices_id=yices_id, value=value)
         return self.BVV_cache[(value, width)]
 
