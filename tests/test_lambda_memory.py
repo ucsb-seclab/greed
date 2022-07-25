@@ -49,10 +49,10 @@ def print_cst(state):
     print("Number of constraints over storage is: {}".format(len(state.storage.constraints)))
     import ipdb; ipdb.set_trace()
 
-def run_test(debug=True):
+def run_test(debug=False):
 
     options.CACHE_COMMON_CONSTRAINTS = True
-    options.SOLVER = options.SOLVER_Z3
+    # options.SOLVER = options.SOLVER_YICES2
 
     p = Project(target_dir='./test_lambda_memory')
     
