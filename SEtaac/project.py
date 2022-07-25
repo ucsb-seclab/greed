@@ -6,6 +6,7 @@ from SEtaac.TAC.TAC_parser import TAC_parser
 from SEtaac.factory import Factory
 from SEtaac.utils.solver.bitwuzla import Bitwuzla
 from SEtaac.utils.solver.z3 import Z3
+from SEtaac.utils.solver.boolector import Boolector
 from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ class Project(object):
         self.factory = Factory(project=self)
 
         # set the default solver
-        set_solver(Z3)
+        set_solver(Bitwuzla)
 
         tac_parser = TAC_parser(self.factory, target_dir)
         self.statement_at = tac_parser.parse_statements()

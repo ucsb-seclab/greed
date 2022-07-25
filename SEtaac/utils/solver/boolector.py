@@ -48,7 +48,7 @@ class Boolector(Solver):
     def is_unsat(self, ):
         return self.solver.Sat() == self.solver.UNSAT
 
-    def is_sat_formula(self, formula):
+    def is_formula_sat(self, formula):
         self.push()
         self.add_assertion(formula)
         sat = self.is_sat()
@@ -104,20 +104,20 @@ class Boolector(Solver):
 
     # BOOLEAN OPERATIONS
 
-    # def Equalself, (a, b):
-    #    return self.solver.Eq(a, b)
+    def Equal(self, a, b):
+       return self.solver.Eq(a, b)
 
-    # def NotEqualself, (a, b):
-    #    return self.solver.Ne(a, b)
+    def NotEqual(self, a, b):
+       return self.solver.Ne(a, b)
 
-    # def Orself, (a, b):
-    #    return self.solver.Or(a, b)
+    def Or(self, a, b):
+       return self.solver.Or(a, b)
 
-    # def Andself, (a, b):
-    #    return self.solver.And(a, b)
+    def And(self, a, b):
+        return self.solver.And(a, b)
 
-    # def Notself, (a):
-    #    return self.solver.Not(a)
+    def Not(self, a):
+       return self.solver.Not(a)
 
     # BV OPERATIONS
 

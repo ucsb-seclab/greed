@@ -49,7 +49,7 @@ def print_cst(state):
     print("Number of constraints over storage is: {}".format(len(state.storage.constraints)))
     import ipdb; ipdb.set_trace()
 
-def run_test(debug=False):
+def run_test(debug=True):
     
     set_solver(Bitwuzla)
     p = Project(target_dir='./test_lambda_memory')
@@ -73,7 +73,7 @@ def run_test(debug=False):
     #entry_state.add_breakpoint("0x1b9", print_cst)
 
     simgr = p.factory.simgr(entry_state=entry_state)
-
+    #log.setLevel(logging.DEBUG)
     options.CACHE_COMMON_CONSTRAINTS = True    
     while len(simgr.active) > 0:
         simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")
