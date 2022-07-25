@@ -5,15 +5,6 @@ import yices
 from SEtaac.utils.solver.base import Solver
 
 
-def resets_sat_status(func):
-    def wrap(self, *args, **kwargs):
-        # reset internal sat_status after calling the target method
-        res = func(self, *args, **kwargs)
-        self._sat_status = None
-        return res
-    return wrap
-
-
 class YicesTerm:
     def __init__(self, yices_id, name=None, value=None):
         self.id = yices_id
@@ -82,8 +73,6 @@ class Yices2(Solver):
         self.BVV_cache = dict()
         self.BVS_cache = dict()
 
-        self._sat_status = None
-
     def BVSort(self, width: int) -> YicesTypeBV:
         assert isinstance(width, int)
         if width not in self.BVSort_cache:
@@ -122,44 +111,36 @@ class Yices2(Solver):
     def is_sat(self) -> bool:
         # cache the last check_sat result so that we can check it when querying the solver's model, and we don't need
         # to call check_sat (and thus generate a new and possibly inconsistent model) every time we need to eval a term
-        self._sat_status = self.solver.check_context()
-        return self._sat_status == yices.Status.SAT
+        status = self.solver.check_context()
+        return status == yices.Status.SAT
 
     def is_unsat(self) -> bool:
         # cache the last check_sat result so that we can check it when querying the solver's model, and we don't need
         # to call check_sat (and thus generate a new and possibly inconsistent model) every time we need to eval a term
-        self._sat_status = self.solver.check_context()
-        return self._sat_status == yices.Status.UNSAT
+        status = self.solver.check_context()
+        return status == yices.Status.UNSAT
 
-    @resets_sat_status
     def is_formula_sat(self, formula: YicesTerm) -> bool:
         return self.solver.check_context_with_assumptions(None, [formula]) == yices.Status.SAT
 
-    @resets_sat_status
     def is_formula_unsat(self, formula: YicesTerm) -> bool:
         return self.solver.check_context_with_assumptions(None, [formula]) == yices.Status.UNSAT
 
-    @resets_sat_status
     def is_formula_true(self, formula: YicesTerm) -> bool:
         return self.is_formula_unsat(self.Not(formula))
 
-    @resets_sat_status
     def is_formula_false(self, formula: YicesTerm) -> bool:
         return self.is_formula_unsat(formula)
 
-    @resets_sat_status
     def push(self):
         self.solver.push()
 
-    @resets_sat_status
     def pop(self):
         self.solver.pop()
 
-    @resets_sat_status
     def add_assertion(self, formula):
         self.solver.assert_formula(formula)
 
-    @resets_sat_status
     def add_assertions(self, formulas):
         self.solver.assert_formulas(formulas)
 
@@ -393,9 +374,7 @@ class Yices2(Solver):
         return YicesTermBV(yices_id=yices_id)
 
     # def eval_one(self, term, cast_to="int"):
-    #     if self._sat_status is None:
-    #         self._sat_status = self.solver.check_sat()
-    #     assert self._sat_status == pybitwuzla.Result.SAT
+    #     assert self.is_sat()
     #     if cast_to == "int":
     #         return int(self.solver.get_value_str(term))
     #     else:
@@ -403,8 +382,6 @@ class Yices2(Solver):
     #
     # def eval_one_array(self, array, length):
     #     raise Exception("this doesn't work for now because it does not consider the side effects of memory reads")
-    #     # if self._sat_status is None:
-    #     #     self._sat_status = self.solver.check_sat()
-    #     # assert self._sat_status == pybitwuzla.Result.SAT
+    #     # assert self.is_sat()
     #     #
     #     # return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]
