@@ -14,12 +14,28 @@ class Z3(Solver):
     """
 
     def __init__(self):
-        z3.set_param('rewriter.blast_select_store', True)
-        z3.set_param('rewriter.sort_store', True)
+        self._config_z3()
         self.solver = z3.SolverFor('QF_ABV')
         self.BVSort_cache = dict()
         self.BVV_cache = dict()
         self.BVS_cache = dict()
+    
+    def _config_z3(self):
+        # SEE HERE THE LIST OF POSSIBLE CONFIGURATIONS
+        # https://pythonmana.com/2022/04/202204161602015923.html
+
+        z3.set_param('rewriter.blast_select_store', True)
+        z3.set_param('rewriter.sort_store', True)
+        z3.set_param('rewriter.expand_nested_stores', True)
+        z3.set_param('rewriter.expand_select_ite', True)
+        z3.set_param('rewriter.expand_store_eq', True)
+        z3.set_param('rewriter.pull_cheap_ite', True)
+        z3.set_param('rewriter.bv_ite2id', True)
+        
+        #z3.set_param('rewriter.rewrite_patterns', True)
+        #z3.set_param('rewriter.cache_all', True)
+        
+        return
 
     def BVSort(self, width):
         if width not in self.BVSort_cache:
@@ -111,12 +127,15 @@ class Z3(Solver):
     #def NotEqual(self, a, b):
     #    return self.solver.mk_term(pybitwuzla.Kind.DISTINCT, [a, b])
 
+    @simplify_result
     def Or(self, *terms):
         return z3.Or(*terms)
 
+    @simplify_result
     def And(self, *terms):
         return z3.And(*terms)
 
+    @simplify_result
     def Not(self, term):
         return z3.Not(term)
 
@@ -257,9 +276,11 @@ class Z3(Solver):
 
     # ARRAY OPERATIONS
 
+    @simplify_result
     def Array_Store(self, arr, index, elem):
         return z3.Store(arr, index, elem)
 
+    @simplify_result
     def Array_Select(self, arr, index):
         return z3.Select(arr, index)
 
