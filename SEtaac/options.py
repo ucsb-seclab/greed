@@ -24,5 +24,5 @@ SOLVER_YICES2 = "YICES2"
 SOLVER_Z3 = "Z3"
 SOLVER_BOOLECTOR = "BOOLECTOR"
 
-# Default is Bitwuzla 
+# Default is Yices2
 SOLVER = SOLVER_YICES2

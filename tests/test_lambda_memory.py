@@ -51,7 +51,7 @@ def print_cst(state):
 
 def run_test(debug=False):
 
-    options.CACHE_COMMON_CONSTRAINTS = True
+    options.CACHE_COMMON_CONSTRAINTS = False
     # options.SOLVER = options.SOLVER_YICES2
 
     p = Project(target_dir='./test_lambda_memory')
