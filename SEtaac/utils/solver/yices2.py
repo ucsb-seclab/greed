@@ -69,34 +69,24 @@ class Yices2(Solver):
         cfg.default_config_for_logic('QF_ABV')
         self.solver = yices.Context(cfg)
 
-        self.BVSort_cache = dict()
-        self.BVV_cache = dict()
-        self.BVS_cache = dict()
-
     def BVSort(self, width: int) -> YicesTypeBV:
         assert isinstance(width, int)
-        if width not in self.BVSort_cache:
-            yices_id = yices.Types.bv_type(width)
-            self.BVSort_cache[width] = YicesTypeBV(yices_id=yices_id, name=f"BV{width}")
-        return self.BVSort_cache[width]
+        yices_id = yices.Types.bv_type(width)
+        return YicesTypeBV(yices_id=yices_id, name=f"BV{width}")
 
     def BVV(self, value: int, width: int) -> YicesTermBV:
         assert isinstance(value, int)
         assert isinstance(width, int)
-        if (value, width) not in self.BVV_cache:
-            # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
-            # yices_id = yices.Terms.bvconst_integer(width, value)
-            yices_id = yices.Terms.parse_bvbin(format(value % (2**width), f'#0{width+2}b')[2:])
-            self.BVV_cache[(value, width)] = YicesTermBV(yices_id=yices_id, value=value)
-        return self.BVV_cache[(value, width)]
+        # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
+        # yices_id = yices.Terms.bvconst_integer(width, value)
+        yices_id = yices.Terms.parse_bvbin(format(value % (2**width), f'#0{width+2}b')[2:])
+        return YicesTermBV(yices_id=yices_id, value=value)
 
     def BVS(self, symbol: str, width: int) -> YicesTermBV:
         assert isinstance(symbol, str)
         assert isinstance(width, int)
-        if (symbol, width) not in self.BVS_cache:
-            yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width), name=symbol)
-            self.BVS_cache[(symbol, width)] = YicesTermBV(yices_id=yices_id, name=symbol)
-        return self.BVS_cache[(symbol, width)]
+        yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width), name=symbol)
+        return YicesTermBV(yices_id=yices_id, name=symbol)
 
     def bv_unsigned_value(self, bv: YicesTermBV) -> int:
         assert isinstance(bv, YicesTermBV)
