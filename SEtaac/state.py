@@ -54,7 +54,6 @@ class SymbolicEVMState:
         self.ctx['CODESIZE-ADDRESS'] = len(self.code)
 
         self.path_constraints = list()
-        self.ackermann_constraints = list()
 
         self.sha_observed = list()
 
@@ -178,7 +177,7 @@ class SymbolicEVMState:
 
     @property
     def sha_constraints(self):
-        constraints = list(self.ackermann_constraints)
+        constraints = list()
         for sha in self.sha_observed:
             constraints += sha.constraints
         return constraints
@@ -228,7 +227,6 @@ class SymbolicEVMState:
         new_state.ctx['CODESIZE-ADDRESS'] = self.ctx['CODESIZE-ADDRESS']
 
         new_state.path_constraints = list(self.path_constraints)
-        new_state.ackermann_constraints = list(self.ackermann_constraints)
 
         new_state.sha_observed = list(self.sha_observed)
 

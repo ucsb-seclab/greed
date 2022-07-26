@@ -29,7 +29,7 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         new_sha = Sha3(state.memory, self.offset_val, self.size_val)
         for sha in state.sha_observed:
-            state.ackermann_constraints += new_sha.instantiate_ackermann_constraints(sha)
+            new_sha.instantiate_ackermann_constraints(sha)
         state.sha_observed.append(new_sha)
 
         state.registers[self.res1_var] = new_sha.symbol

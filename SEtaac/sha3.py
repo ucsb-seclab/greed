@@ -52,8 +52,8 @@ class Sha3(LambdaMemory):
         #           NotEqual(self.symbol, other.symbol)),
         #        BV_ULT(ackermann_index, self.size)]
 
-        return [If(Equal(self.symbol, other.symbol), 
-                        And(sha_data_is_equal_for_all_indices, sha_data_len_is_equal), 
-                        Or(sha_data_is_different_for_some_index, 
-                           NotEqual(self.size, other.size))),
-                   BV_ULT(ackermann_index, self.size)]
+        self.constraints += [If(Equal(self.symbol, other.symbol),
+                                And(sha_data_is_equal_for_all_indices, sha_data_len_is_equal),
+                                Or(sha_data_is_different_for_some_index,
+                                   NotEqual(self.size, other.size))),
+                             BV_ULT(ackermann_index, self.size)]
