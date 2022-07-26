@@ -34,8 +34,6 @@ class TAC_Sha3(TAC_Statement):
 
         state.registers[self.res1_var] = new_sha.symbol
         
-        import ipdb; ipdb.set_trace()
-        
         state.set_next_pc()
         return [state]
 
