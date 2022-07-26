@@ -103,12 +103,12 @@ class Yices2(Solver):
         assert self.is_concrete(bv), "Invalid bv_unsigned_value of non constant bitvector"
 
         # works, but yices.Terms.bv_const_value(bv) could be a cleaner (though slower) option
-        res_str = yices.Terms.to_string(bv, width=-1)
+        res_str = yices.Terms.to_string(bv.id, width=-1)
         return int(res_str[2:], 2)
 
     def is_concrete(self, bv: YicesTermBV) -> bool:
         assert isinstance(bv, YicesTermBV)
-        return yices.Terms.constructor(bv) == yices.Constructor.BV_CONSTANT
+        return yices.Terms.constructor(bv.id) == yices.Constructor.BV_CONSTANT
 
     def is_sat(self) -> bool:
         # cache the last check_sat result so that we can check it when querying the solver's model, and we don't need
@@ -122,17 +122,21 @@ class Yices2(Solver):
         status = self.solver.check_context()
         return status == yices.Status.UNSAT
 
-    def is_formula_sat(self, formula: YicesTerm) -> bool:
-        return self.solver.check_context_with_assumptions(None, [formula]) == yices.Status.SAT
+    def is_formula_sat(self, formula: YicesTermBool) -> bool:
+        assert isinstance(formula, YicesTermBool)
+        return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.SAT
 
-    def is_formula_unsat(self, formula: YicesTerm) -> bool:
-        return self.solver.check_context_with_assumptions(None, [formula]) == yices.Status.UNSAT
+    def is_formula_unsat(self, formula: YicesTermBool) -> bool:
+        assert isinstance(formula, YicesTermBool)
+        return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.UNSAT
 
-    def is_formula_true(self, formula: YicesTerm) -> bool:
-        return self.is_formula_unsat(self.Not(formula))
+    def is_formula_true(self, formula: YicesTermBool) -> bool:
+        assert isinstance(formula, YicesTermBool)
+        return self.is_formula_unsat(self.Not(formula).id)
 
-    def is_formula_false(self, formula: YicesTerm) -> bool:
-        return self.is_formula_unsat(formula)
+    def is_formula_false(self, formula: YicesTermBool) -> bool:
+        assert isinstance(formula, YicesTermBool)
+        return self.is_formula_unsat(formula.id)
 
     def push(self):
         self.solver.push()
@@ -140,17 +144,17 @@ class Yices2(Solver):
     def pop(self):
         self.solver.pop()
 
-    def add_assertion(self, formula):
-        self.solver.assert_formula(formula)
+    def add_assertion(self, formula: YicesTermBool):
+        self.solver.assert_formula(formula.id)
 
-    def add_assertions(self, formulas):
-        self.solver.assert_formulas(formulas)
+    def add_assertions(self, formulas: List[YicesTermBool]):
+        self.solver.assert_formulas([formula.id for formula in formulas])
 
     def Array(self, symbol, index_sort: YicesTypeBV, value_sort: YicesTypeBV) -> YicesTermArray:
         assert isinstance(index_sort, YicesTypeBV)
         assert isinstance(value_sort, YicesTypeBV)
         # WARNING: in yices apparently arrays are functions
-        array_type = yices.Types.new_function_type([index_sort], value_sort)
+        array_type = yices.Types.new_function_type([index_sort.id], value_sort.id)
         yices_id = yices.Terms.new_uninterpreted_term(array_type, name=symbol)
         return YicesTermArray(yices_id=yices_id, name=symbol)
 
@@ -161,7 +165,7 @@ class Yices2(Solver):
         assert isinstance(value_if_true, YicesTerm)
         assert isinstance(value_if_false, YicesTerm)
         assert type(value_if_true) == type(value_if_false)
-        yices_id = yices.Terms.ite(cond, value_if_true, value_if_false)
+        yices_id = yices.Terms.ite(cond.id, value_if_true.id, value_if_false.id)
         return value_if_true.__class__(yices_id=yices_id)
 
     # BOOLEAN OPERATIONS
@@ -169,30 +173,30 @@ class Yices2(Solver):
     def Equal(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bveq_atom(a, b)
+        yices_id = yices.Terms.bveq_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def NotEqual(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvneq_atom(a, b)
-        return YicesTermBool(yices_id=yices_id)
-
-    def Or(self, *terms: List[YicesTermBool]) -> YicesTermBool:
-        for term in terms:
-            assert isinstance(term, YicesTermBool)
-        yices_id = yices.Terms.yor(terms)
+        yices_id = yices.Terms.bvneq_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def And(self, *terms: List[YicesTermBool]) -> YicesTermBool:
         for term in terms:
             assert isinstance(term, YicesTermBool)
-        yices_id = yices.Terms.yand(terms)
+        yices_id = yices.Terms.yand([term.id for term in terms])
+        return YicesTermBool(yices_id=yices_id)
+
+    def Or(self, *terms: List[YicesTermBool]) -> YicesTermBool:
+        for term in terms:
+            assert isinstance(term, YicesTermBool)
+        yices_id = yices.Terms.yor([term.id for term in terms])
         return YicesTermBool(yices_id=yices_id)
 
     def Not(self, a: YicesTermBool) -> YicesTermBool:
         assert isinstance(a, YicesTermBool)
-        yices_id = yices.Terms.ynot(a)
+        yices_id = yices.Terms.ynot(a.id)
         return YicesTermBool(yices_id=yices_id)
 
     # BV OPERATIONS
@@ -201,162 +205,162 @@ class Yices2(Solver):
         assert isinstance(start, int)
         assert isinstance(end, int)
         assert isinstance(bv, YicesTermBV)
-        yices_id = yices.Terms.bvextract(bv, start, end)
+        yices_id = yices.Terms.bvextract(bv.id, start, end)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Concat(self, terms: List[YicesTermBV]) -> YicesTermBV:
         for term in terms:
             assert isinstance(term, YicesTermBV)
-        yices_id = yices.Terms.bvconcat(terms)
+        yices_id = yices.Terms.bvconcat([term.id for term in terms])
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Add(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvadd(a, b)
+        yices_id = yices.Terms.bvadd(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Sub(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvsub(a, b)
+        yices_id = yices.Terms.bvsub(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Mul(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvmul(a, b)
+        yices_id = yices.Terms.bvmul(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_UDiv(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvdiv(a, b)
+        yices_id = yices.Terms.bvdiv(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_SDiv(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvsdiv(a, b)
+        yices_id = yices.Terms.bvsdiv(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_SMod(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvsmod(a, b)
+        yices_id = yices.Terms.bvsmod(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_SRem(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvsrem(a, b)
+        yices_id = yices.Terms.bvsrem(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_URem(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvrem(a, b)
+        yices_id = yices.Terms.bvrem(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Sign_Extend(self, a: YicesTermBV, b: int) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, int)
-        yices_id = yices.Terms.sign_extend(a, b)
+        yices_id = yices.Terms.sign_extend(a.id, b)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Zero_Extend(self, a: YicesTermBV, b: int) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, int)
-        yices_id = yices.Terms.zero_extend(a, b)
+        yices_id = yices.Terms.zero_extend(a.id, b)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_UGE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvge_atom(a, b)
+        yices_id = yices.Terms.bvge_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_ULE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvle_atom(a, b)
+        yices_id = yices.Terms.bvle_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_UGT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvgt_atom(a, b)
+        yices_id = yices.Terms.bvgt_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_ULT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvlt_atom(a, b)
+        yices_id = yices.Terms.bvlt_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_SGE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvsge_atom(a, b)
+        yices_id = yices.Terms.bvsge_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_SLE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvsle_atom(a, b)
+        yices_id = yices.Terms.bvsle_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_SGT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvsgt_atom(a, b)
+        yices_id = yices.Terms.bvsgt_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_SLT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvslt_atom(a, b)
+        yices_id = yices.Terms.bvslt_atom(a.id, b.id)
         return YicesTermBool(yices_id=yices_id)
 
     def BV_And(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvand([a, b])
+        yices_id = yices.Terms.bvand([a.id, b.id])
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Or(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvor([a, b])
+        yices_id = yices.Terms.bvor([a.id, b.id])
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Xor(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvxor([a, b])
+        yices_id = yices.Terms.bvxor([a.id, b.id])
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Not(self, a: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
-        yices_id = yices.Terms.bvnot(a)
+        yices_id = yices.Terms.bvnot(a.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Shl(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvshl(a, b)
+        yices_id = yices.Terms.bvshl(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Shr(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvlshr(a, b)
+        yices_id = yices.Terms.bvlshr(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     def BV_Sar(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV)
         assert isinstance(b, YicesTermBV)
-        yices_id = yices.Terms.bvashr(a, b)
+        yices_id = yices.Terms.bvashr(a.id, b.id)
         return YicesTermBV(yices_id=yices_id)
 
     # ARRAY OPERATIONS
@@ -366,13 +370,13 @@ class Yices2(Solver):
         assert isinstance(index, YicesTermBV)
         assert isinstance(elem, YicesTermBV)
         # WARNING: in yices apparently arrays are functions
-        yices_id = yices.Terms.update(arr, [index], elem)
+        yices_id = yices.Terms.update(arr.id, [index.id], elem.id)
         return YicesTermArray(yices_id=yices_id)
 
     def Array_Select(self, arr: YicesTermArray, index: YicesTermBV) -> YicesTermBV:
         assert isinstance(arr, YicesTermArray)
         assert isinstance(index, YicesTermBV)
-        yices_id = yices.Terms.application(arr, [index])
+        yices_id = yices.Terms.application(arr.id, [index.id])
         return YicesTermBV(yices_id=yices_id)
 
     # def eval_one(self, term, cast_to="int"):
