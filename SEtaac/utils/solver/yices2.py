@@ -98,15 +98,16 @@ class Yices2(Solver):
             self.BVS_cache[(symbol, width)] = YicesTermBV(yices_id=yices_id, name=symbol)
         return self.BVS_cache[(symbol, width)]
 
-    def bv_unsigned_value(self, bv: YicesTypeBV) -> int:
-        assert isinstance(bv, YicesTypeBV)
+    def bv_unsigned_value(self, bv: YicesTermBV) -> int:
+        assert isinstance(bv, YicesTermBV)
         assert self.is_concrete(bv), "Invalid bv_unsigned_value of non constant bitvector"
 
         # works, but yices.Terms.bv_const_value(bv) could be a cleaner (though slower) option
         res_str = yices.Terms.to_string(bv, width=-1)
         return int(res_str[2:], 2)
 
-    def is_concrete(self, bv):
+    def is_concrete(self, bv: YicesTermBV) -> bool:
+        assert isinstance(bv, YicesTermBV)
         return yices.Terms.constructor(bv) == yices.Constructor.BV_CONSTANT
 
     def is_sat(self) -> bool:
