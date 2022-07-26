@@ -33,7 +33,9 @@ class TAC_Sha3(TAC_Statement):
         state.sha_observed.append(new_sha)
 
         state.registers[self.res1_var] = new_sha.symbol
-
+        
+        import ipdb; ipdb.set_trace()
+        
         state.set_next_pc()
         return [state]
 
