@@ -36,9 +36,13 @@ contract TestMemory {
         if(mem_data == deadbeef_b){
 
             // If we are here, sha_res should be fixed to the address 
-            // that loads 0xdeadbeef from storage 
-
-            assembly {log1(0, 0, "success:test_lamb_sha_mem1")}
+            // that loads 0xdeadbeef from storage
+            if(sha_res != test_address){
+                assembly {log1(0, 0, "error:test_lamb_sha_mem1")}
+                revert();
+            } else {
+                assembly {log1(0, 0, "success:test_lamb_sha_mem1")}
+            }
 
             // Now, if we overwrite that storage location we 
             // shouldn't be able to say that the two are equal! 
