@@ -32,10 +32,11 @@ contract TestMemory {
         uint slots = size/32;
         for(uint i=0; i<slots; i++){
             if(mload(memOffset+i*32) != expects[i]){
-                assembly{log1(0,0, "error:test_1: load/memcpy fail")}
+                assembly{log1(0,0, "error:load_over_memcopy")}
                 revert();
             }
         }
+        assembly{log1(0,0, "success:load_over_memcopy")}
 
         // Modify one of the bytes in memory 
         // (store over memcpy)
@@ -47,9 +48,10 @@ contract TestMemory {
         // (load over store over memcpy)
         // This is very fast to solve.
         if(mload(newMemOffset) != unknown_val){
-            assembly{log1(0,0, "error:test_1: load/store fail")}
+            assembly{log1(0,0, "error:load_over_store")}
             revert();
         }
+        assembly{log1(0,0, "success:load_over_store")}
 
         
         // write over all the memcpy done before
@@ -63,10 +65,11 @@ contract TestMemory {
         // Checking if we can read over the previous stores.
         for(uint z=0; z<slots; z++){
             if(mload(memOffset+z*32) != 0x0000000000000000000000000000000000000000000000000000000000000046){
-                assembly{log1(0,0, "error:test_1: load/store fail 2")}
+                assembly{log1(0,0, "error:load_over_store_all")}
                 revert();
             }
         }
+        assembly{log1(0,0, "success:load_over_store_all")}
 
         // Copying again with calldatacopy
         assembly{
@@ -78,10 +81,11 @@ contract TestMemory {
         // Checking if we still have the original array here! 
         for(uint w=0; w<slots; w++){
             if(mload(memOffset+w*32) != expects[w]){
-                assembly{log1(0,0, "error:test_1: load/memcpy fail 2")}
+                assembly{log1(0,0, "error:load_after_calldatacopy")}
                 revert();
             }
         }
+        assembly{log1(0,0, "success:load_after_calldatacopy")}
 
         // Overwriting all but the last byte
         uint xx = 0;
@@ -102,17 +106,19 @@ contract TestMemory {
         }
         
         if(mload(memOffset+xx*32) != expects[slots-1] && mload(memOffset+xx-1*32) != 0x0000000000000000000000000000000000000000000000000000000000000055 ){
-            assembly{log1(0,0, "error:test_1: load/store fail 3")}
+            assembly{log1(0,0, "error:load_after_calldatacopy2")}
             revert();
         }
+        assembly{log1(0,0, "success:load_after_calldatacopy2")}
 
         if(mload(memOffset+xx*32) != expects[slots-1] && mload(memOffset+xy*32) != expects[slots-2] && 
                     mload(memOffset+xx-1*32) != 0x0000000000000000000000000000000000000000000000000000000000000055 && 
                             mload(memOffset+xy-2*32) != 0x0000000000000000000000000000000000000000000000000000000000000065){
-            assembly{log1(0,0, "error:test_1: load/store fail 4")}
+            assembly{log1(0,0, "error:load_after_calldatacopy3")}
             revert();
         }
+        assembly{log1(0,0, "success:load_after_calldatacopy3")}
 
-        assembly {log1(0, 0, "success:test_1")}
+        assembly {log1(0, 0, "success:")}
     }
 }
