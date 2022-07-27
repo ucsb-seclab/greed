@@ -41,8 +41,13 @@ class Sha3(LambdaMemory):
         for i in range(self.max_size):
             bounded_bytes_are_equal.append(Equal(self[BVV(i, 256)], other[BVV(i, 256)]))
 
+        sha_equal = Equal(self.symbol, other.symbol)
+        sha_not_equal = NotEqual(self.symbol, other.symbol)
+        sha_distance = BV_Sub(self.symbol, other.symbol)
+        sha_distance_more_than_x = BV_SGT(sha_distance, BVV(options.MIN_SHA_DISTANCE, 256))
+
         bounded_ackermann_constraint = If(And(*([sha_data_len_is_equal] + bounded_bytes_are_equal)),
-                                          Equal(self.symbol, other.symbol),
-                                          NotEqual(self.symbol, other.symbol))
+                                          sha_equal,
+                                          And(sha_not_equal, sha_distance_more_than_x))
 
         self.add_constraint(bounded_ackermann_constraint)

@@ -9,6 +9,7 @@ LAZY_SOLVES = False
 # Solver options
 CACHE_COMMON_CONSTRAINTS = False
 MAX_SHA_SIZE = 256
+MIN_SHA_DISTANCE = 2**20
 
 # Debugging options
 SIMGRVIZ = False
