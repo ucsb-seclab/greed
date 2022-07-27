@@ -47,7 +47,6 @@ def parse_log(state):
 
     print(f"---> {value}")
     outcome, testname = value.split(":")
-    import ipdb; ipdb.set_trace()
     assert outcome == "success", f"{testname} failed"
     return outcome, testname
 

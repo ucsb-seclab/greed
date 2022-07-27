@@ -36,9 +36,8 @@ class SimgrViz(object):
         self._simgGraph.add_node(state_id)
         self._simgGraph.nodes[state_id]['timestamp'] = str(self.timestamp)
         self._simgGraph.nodes[state_id]['pc'] = state.pc
-        if state.curr_stmt.__internal_name__ == "LOG1":
-            import ipdb; ipdb.set_trace()
-            self._simgGraph.nodes[state_id]['log'] = state.curr_stmt.arg2_val
+        #if state.curr_stmt.__internal_name__ == "LOG1":
+        #    self._simgGraph.nodes[state_id]['log'] = state.curr_stmt.arg2_val
         #self._simgGraph.nodes[state_id]['csts'] = '\n'.join([str(x.dump()) for x in state.constraints])
         self.timestamp += 1
         return state_id
