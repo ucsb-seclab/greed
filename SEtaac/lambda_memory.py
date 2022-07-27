@@ -139,14 +139,21 @@ class LambdaMemory:
         self.write_count = 0
         self.read_count = 0
 
+    def add_constraint(self, formula):
+        self.constraints.append(formula)
+        self.state.solver.add_assertion(formula)
+
+    def add_constraints(self, formulas):
+        self.constraints += formulas
+        self.state.solver.add_assertions(formulas)
+
     def __getitem__(self, index):
         assert not isinstance(index, slice), "slice memory read not implemented"
 
         self.read_count += 1        
         # instantiate and add lambda constraints
         new_constraints = self.lambda_constraint.instantiate(index)
-        self.constraints += new_constraints
-        self.state.solver.add_assertions(new_constraints)
+        self.add_constraints(new_constraints)
 
         return Array_Select(self._base, index)
 

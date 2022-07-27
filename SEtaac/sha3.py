@@ -22,7 +22,7 @@ class Sha3(LambdaMemory):
 
         # limit max size to max_size
         self.max_size = options.MAX_SHA_SIZE
-        self.constraints.append(BV_ULE(self.size, BVV(self.max_size, 256)))
+        self.add_constraint(BV_ULE(self.size, BVV(self.max_size, 256)))
 
         # Let's start to copy at offset 0 of this lambda memory (it's _base) the amount 
         # of bytes 'size' starting from 'start'
@@ -45,4 +45,4 @@ class Sha3(LambdaMemory):
                                           Equal(self.symbol, other.symbol),
                                           NotEqual(self.symbol, other.symbol))
 
-        self.constraints.append(bounded_ackermann_constraint)
+        self.add_constraint(bounded_ackermann_constraint)
