@@ -32,11 +32,12 @@ contract TestMemory {
         uint slots = size/32;
         for(uint i=0; i<slots; i++){
             if(mload(memOffset+i*32) != expects[i]){
-                assembly{log1(0,0, "error:test_1: load/memcpy fail")}
+                assembly{log1(0,0, "error:test_load_over_memcopy")}
                 revert();
             }
         }
 
-        assembly {log1(0, 0, "success:test_1")}
+        assembly {log1(0, 0, "success:test_load_over_memcopy")}
+        assembly {log1(0, 0, "success:")}
     }
 }
