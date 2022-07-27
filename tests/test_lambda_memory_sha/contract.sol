@@ -15,8 +15,6 @@ contract TestMemory {
     }
 
     function test_1(string calldata _name) public{
-        
-        bool can_be_equal = false;
 
         // this is the keccak of the "test_address" string
         uint256 test_address = 0xcf0b1b5014de87f401af85ff4516711708f22a5140af0526c338de218bd6b126;
@@ -36,10 +34,6 @@ contract TestMemory {
 
         // We can only check if this is possible, NOT that this MUST happen.
         if(mem_data == deadbeef_b){
-            can_be_equal = true;
-        }
-
-        if(can_be_equal == true){
 
             // If we are here, sha_res should be fixed to the address 
             // that loads 0xdeadbeef from storage 
@@ -58,21 +52,31 @@ contract TestMemory {
             if(mem_data == deadbeef_b){
                 assembly {log1(0, 0, "error:test_lamb_sha_mem2")}
                 revert();
+            } else {
+                assembly {log1(0, 0, "success:test_lamb_sha_mem2")}
             }
-            
+
+
+            if(mem_data != cafebabe_b){
+                assembly {log1(0, 0, "error:test_lamb_sha_mem3")}
+                revert();
+            } else {
+                assembly {log1(0, 0, "success:test_lamb_sha_mem3")}
+            }
+
+
             // Now, since sha_res should be fixed (it was loading 0xdeadbeef before)
             // I should be able to verify that I cannot load 0xdeadbeef anymore
-            else{
-                // Try to load from the address calculated from user.
-                mem_data = sload(sha_res);
-                if(mem_data == deadbeef_b){
-                    assembly {log1(0, 0, "error:test_lamb_sha_mem3")}
-                    revert();
-                }else{
-                assembly {log1(0, 0, "success:test_lamb_sha_mem2")}
-                assembly {log1(0, 0, "success:")}
-                }
-            }           
+
+            // Try to load from the address calculated from user.
+            mem_data = sload(sha_res);
+            if(mem_data == deadbeef_b){
+                assembly {log1(0, 0, "error:test_lamb_sha_mem4")}
+                revert();
+            }else{
+            assembly {log1(0, 0, "success:test_lamb_sha_mem4")}
+            assembly {log1(0, 0, "success:")}
+            }
         }            
     }
 }
