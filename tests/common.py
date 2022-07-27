@@ -58,6 +58,10 @@ def run_test(target_dir, debug=False):
     entry_state = p.factory.entry_state(xid=xid)
     simgr = p.factory.simgr(entry_state=entry_state)
 
+    run_test_simgr(simgr, debug=debug)
+
+
+def run_test_simgr(simgr, debug=False):
     outcome = testname = None
     while len(simgr.active) > 0:
         simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")

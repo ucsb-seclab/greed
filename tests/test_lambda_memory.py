@@ -59,19 +59,7 @@ def run_test(target_dir, debug=False):
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=600)
     simgr = p.factory.simgr(entry_state=entry_state)
 
-    outcome = testname = None
-    while len(simgr.active) > 0:
-        simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")
-        for s in simgr.found:
-            outcome, testname = common.parse_log(s)
-
-        simgr.move(from_stash="found", to_stash="active")
-
-    assert not any([s.error for s in simgr.states]), f"Simulation Manager has errored states: {simgr}"
-    assert outcome == "success" and testname == "", f"Simulation Manager did not reach final success state: {simgr}"
-
-    if debug:
-        IPython.embed()
+    common.run_test_simgr(simgr, debug=debug)
 
 
 def test_lambda_memory():
