@@ -71,6 +71,7 @@ class Yices2(Solver):
         cfg = yices.Config()
         cfg.default_config_for_logic('QF_ABV')
         self.solver = yices.Context(cfg)
+        self.assertions = list()
 
     def BVSort(self, width: int) -> YicesTypeBV:
         assert isinstance(width, int)
@@ -139,9 +140,11 @@ class Yices2(Solver):
 
     def add_assertion(self, formula: YicesTermBool):
         self.solver.assert_formula(formula.id)
+        self.assertions.append(formula)
 
     def add_assertions(self, formulas: List[YicesTermBool]):
         self.solver.assert_formulas([formula.id for formula in formulas])
+        self.assertions += formulas
 
     def Array(self, symbol, index_sort: YicesTypeBV, value_sort: YicesTypeBV) -> YicesTermArray:
         assert isinstance(index_sort, YicesTypeBV)
@@ -384,3 +387,9 @@ class Yices2(Solver):
     #     # assert self.is_sat()
     #     #
     #     # return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]
+
+    def copy(self):
+        new_solver = Yices2()
+        new_solver.add_assertions(self.assertions)
+
+        return new_solver

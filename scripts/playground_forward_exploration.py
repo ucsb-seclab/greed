@@ -152,42 +152,41 @@ def main(args):
     # found.constraints.append(found.curr_stmt.address_val == 0x41414141)
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
-    with new_solver_context(critical_path) as solver:
-        print(f"SAT: {solver.is_sat()}")
-        # calldata = bytes(solver.eval_one_array(critical_path.calldata.base, critical_path.MAX_CALLDATA_SIZE)).hex()
-        # print(f'CALLDATA: {calldata}')
+    print(f"SAT: {critical_path.solver.is_sat()}")
+    # calldata = bytes(solver.eval_one_array(critical_path.calldata.base, critical_path.MAX_CALLDATA_SIZE)).hex()
+    # print(f'CALLDATA: {calldata}')
 
-        # # find storage reads in critical path
-        # critical_reads = dict()
-        # for offset_term in critical_path.storage.reads:
-        #     if not is_concrete(offset_term):
-        #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
-        #     offset_concrete = bv_unsigned_value(offset_term)
-        #     critical_reads[offset_term] = offset_concrete
-        #
-        # # find writes to storage offsets in critical reads
-        # sstores = [s for s in p.statement_at.values() if s.__internal_name__ == 'SSTORE']
-        # interesting_sstores = defaultdict(list)
-        # for sstore in sstores:
-        #     offset_term = sstore.arg1_val
-        #     if not is_concrete(offset_term):
-        #         # solver.is_formula_sat(Equal(sstore.arg1_val, list(critical_reads.keys())[0]))
-        #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
-        #     # offset_concrete = bv_unsigned_value(offset_term)
-        #     interesting_sstores[offset_term].append(sstore)
-        #
-        # for offset_term in critical_reads:
-        #     num_offset_term_candidates = len(interesting_sstores[offset_term])
-        #     for i in range(num_offset_term_candidates + 1):
-        #         print(list(itertools.permutations(interesting_sstores[offset_term], i)))
-        #         # here get the paths, prepend the paths, set initial storage, and re-trace all. if not sat, continue with the next attempt
-        #         # probably need a nested loop for all paths for each sstore
-        #         # actually "sat" here means that storage[offset_term] is set correctly, then we can continue to the other offset_terms
-        #
-        #
-        # import IPython;
-        # IPython.embed();
-        # exit()
+    # # find storage reads in critical path
+    # critical_reads = dict()
+    # for offset_term in critical_path.storage.reads:
+    #     if not is_concrete(offset_term):
+    #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
+    #     offset_concrete = bv_unsigned_value(offset_term)
+    #     critical_reads[offset_term] = offset_concrete
+    #
+    # # find writes to storage offsets in critical reads
+    # sstores = [s for s in p.statement_at.values() if s.__internal_name__ == 'SSTORE']
+    # interesting_sstores = defaultdict(list)
+    # for sstore in sstores:
+    #     offset_term = sstore.arg1_val
+    #     if not is_concrete(offset_term):
+    #         # solver.is_formula_sat(Equal(sstore.arg1_val, list(critical_reads.keys())[0]))
+    #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
+    #     # offset_concrete = bv_unsigned_value(offset_term)
+    #     interesting_sstores[offset_term].append(sstore)
+    #
+    # for offset_term in critical_reads:
+    #     num_offset_term_candidates = len(interesting_sstores[offset_term])
+    #     for i in range(num_offset_term_candidates + 1):
+    #         print(list(itertools.permutations(interesting_sstores[offset_term], i)))
+    #         # here get the paths, prepend the paths, set initial storage, and re-trace all. if not sat, continue with the next attempt
+    #         # probably need a nested loop for all paths for each sstore
+    #         # actually "sat" here means that storage[offset_term] is set correctly, then we can continue to the other offset_terms
+    #
+    #
+    # import IPython;
+    # IPython.embed();
+    # exit()
 
 
 

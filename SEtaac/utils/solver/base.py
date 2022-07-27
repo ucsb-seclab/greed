@@ -188,3 +188,6 @@ class Solver:
 
     def translate_xid(self, expr, old_xid, new_xid):
         raise Exception("Not implemented")
+
+    def copy(self):
+        raise Exception("Not implemented")

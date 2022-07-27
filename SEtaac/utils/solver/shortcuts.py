@@ -9,69 +9,8 @@ def set_solver(solver):
     _SOLVER = solver()
 
 
-class new_solver_context:
-    def __init__(self, state=None):
-        self._state = state
-        self.solver_context = None
-
-    def __enter__(self):
-        global _SOLVER
-        global _num_contexts
-
-        if _num_contexts != 0:
-            raise Exception("Illegal nested context detected")
-        _num_contexts += 1
-
-        _SOLVER.push()
-
-        class SolverContext(_SOLVER.__class__):
-            def __init__(self, parent):
-                self.__parent = parent
-                self.__invalid = False
-
-            @property
-            def solver(self):
-                if self.__invalid:
-                    raise Exception("Access to invalid context")
-                return self.__parent.solver
-
-            @property
-            def BVSort_cache(self):
-                if self.__invalid:
-                    raise Exception("Access to invalid context")
-                return self.__parent.BVSort_cache
-
-            @property
-            def BVV_cache(self):
-                if self.__invalid:
-                    raise Exception("Access to invalid context")
-                return self.__parent.BVV_cache
-
-            @property
-            def BVS_cache(self):
-                if self.__invalid:
-                    raise Exception("Access to invalid context")
-                return self.__parent.BVS_cache
-
-            def invalidate(self):
-                self.__invalid = True
-
-        self.solver_context = SolverContext(_SOLVER)
-
-        if self._state is not None:
-            self.solver_context.add_assertions(self._state.constraints)
-
-        return self.solver_context
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        global _SOLVER
-        global _num_contexts
-
-        _num_contexts -= 1
-
-        _SOLVER.pop()
-
-        self.solver_context.invalidate()
+def get_clean_solver():
+    return _SOLVER.copy()
 
 
 def ctx_or_symbolic(v, ctx, xid):

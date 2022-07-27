@@ -27,8 +27,10 @@ class SymbolicEVMState:
         self._pc = None
         self.trace = list()
 
-        self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8))
-        self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256))
+        self.solver = get_clean_solver()
+
+        self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
+        self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
         self.registers = dict()
         self.ctx = dict()
 
@@ -78,7 +80,7 @@ class SymbolicEVMState:
                 # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
                 self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
-                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8))
+                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
                 if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
@@ -86,7 +88,7 @@ class SymbolicEVMState:
                     for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
                         self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
-                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8))
+                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
@@ -101,7 +103,7 @@ class SymbolicEVMState:
                     self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
 
         else:
-            self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8))
+            self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
 
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
@@ -192,6 +194,7 @@ class SymbolicEVMState:
         if STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
         self.path_constraints.append(constraint)
+        self.solver.add_assertion(constraint)
     
     def add_breakpoint(self, stmt_id, func=None):
         if not func:
@@ -206,8 +209,10 @@ class SymbolicEVMState:
         new_state._pc = self._pc
         new_state.trace = list(self.trace)
 
-        new_state.memory = self.memory.copy(self.xid, self.xid)
-        new_state.storage = self.storage.copy(self.xid, self.xid)
+        new_state.solver = self.solver.copy()
+
+        new_state.memory = self.memory.copy(new_state=new_state)
+        new_state.storage = self.storage.copy(new_state=new_state)
         new_state.registers = dict(self.registers)
         new_state.ctx = dict(self.ctx)
         new_state.options = list(self.options)
@@ -228,13 +233,13 @@ class SymbolicEVMState:
 
         new_state.path_constraints = list(self.path_constraints)
 
-        new_state.sha_observed = list(self.sha_observed)
+        new_state.sha_observed = [sha.copy(new_state=new_state) for sha in self.sha_observed]
 
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp
 
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
-        new_state.calldata = self.calldata.copy(self.xid, self.xid)
+        new_state.calldata = self.calldata.copy(new_state=new_state)
         new_state.calldatasize = self.calldatasize
 
         return new_state

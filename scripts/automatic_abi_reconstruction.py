@@ -61,42 +61,42 @@ def main(args):
         # find out what offsets contain basic types (can be zero)
         current_offset = 4
         known_types = {0: ('func_signature', 4)}
-        with new_solver_context(successful_state) as solver:
-            while current_offset + 32 <= mininum_calldatasize:
-                # length is parsed ahead of time (when we see an "offset"), so skip this offset if already known
-                if current_offset in known_types:
-                    current_offset += known_types[current_offset][1]
+        
+        while current_offset + 32 <= mininum_calldatasize:
+            # length is parsed ahead of time (when we see an "offset"), so skip this offset if already known
+            if current_offset in known_types:
+                current_offset += known_types[current_offset][1]
 
-                bv_current_offset = successful_state.calldata.readn(BVV(current_offset, 256), BVV(32, 256))
+            bv_current_offset = successful_state.calldata.readn(BVV(current_offset, 256), BVV(32, 256))
 
-                # 1) check if the current offset is a basic element
-                current_offset_is_basic = solver.is_formula_sat(
-                    Equal(bv_current_offset, BVV(0, 256)))
+            # 1) check if the current offset is a basic element
+            current_offset_is_basic = solver.is_formula_sat(
+                Equal(bv_current_offset, BVV(0, 256)))
 
-                if current_offset_is_basic:
-                    known_types[current_offset] = ('basic', 32)
-                    current_offset += 32
-                    continue
-
-                # 2) else, the current offset has to be of "offset" type
-                known_types[current_offset] = ('offset', 32)
-                for offset in range(current_offset+32, mininum_calldatasize-32+1, 32):
-                    if solver.is_formula_sat(Equal(bv_current_offset, BVV(offset, 256))):
-                        # 3) find corresponding object (length)
-                        known_types[offset] = ('length', 32)
-                        break
-                else:
-                    raise Exception(f"Could not find element pointed by offset at {current_offset}")
+            if current_offset_is_basic:
+                known_types[current_offset] = ('basic', 32)
                 current_offset += 32
+                continue
 
-            calldata = bytes(solver.eval_one_array(successful_state.calldata.base,
-                                                   mininum_calldatasize)).hex()
-            log.info(f'CALLDATA: {calldata}')
-            log.info(f"{known_types}")
+            # 2) else, the current offset has to be of "offset" type
+            known_types[current_offset] = ('offset', 32)
+            for offset in range(current_offset+32, mininum_calldatasize-32+1, 32):
+                if successful_state.solver.is_formula_sat(Equal(bv_current_offset, BVV(offset, 256))):
+                    # 3) find corresponding object (length)
+                    known_types[offset] = ('length', 32)
+                    break
+            else:
+                raise Exception(f"Could not find element pointed by offset at {current_offset}")
+            current_offset += 32
 
-            log.info('-'*20)
-            for offset, (name, length) in known_types.items():
-                log.info(f"{name} {bytearray.fromhex(calldata)[offset:offset+length].hex()}")
+        calldata = bytes(successful_state.solver.eval_one_array(successful_state.calldata.base,
+                                               mininum_calldatasize)).hex()
+        log.info(f'CALLDATA: {calldata}')
+        log.info(f"{known_types}")
+
+        log.info('-'*20)
+        for offset, (name, length) in known_types.items():
+            log.info(f"{name} {bytearray.fromhex(calldata)[offset:offset+length].hex()}")
 
 
 if __name__ == "__main__":

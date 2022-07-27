@@ -6,6 +6,7 @@ from SEtaac.utils.solver.shortcuts import *
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
 
+
 class LambdaConstraint:
     def __init__(self):
         self.following_writes = list()
@@ -117,7 +118,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
 class LambdaMemory:
     uuid_generator = UUIDGenerator()
 
-    def __init__(self, tag=None, value_sort=None, default=None, partial_init=False):
+    def __init__(self, tag=None, value_sort=None, default=None, state=None, partial_init=False):
         if partial_init:
             return
         assert tag is not None and value_sort is not None, "Invalid LambdaMemory initialization"
@@ -125,6 +126,8 @@ class LambdaMemory:
         self.tag = tag
         self.value_sort = value_sort
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), value_sort)
+
+        self.state = state
 
         self.lambda_constraint = LambdaConstraint()
         self.constraints = list()
@@ -136,19 +139,14 @@ class LambdaMemory:
         self.write_count = 0
         self.read_count = 0
 
-        self.read_indexes = {}
-
     def __getitem__(self, index):
         assert not isinstance(index, slice), "slice memory read not implemented"
 
-        #if str(index.dump()) in self.read_indexes.keys():
-        #    self.read_indexes[str(index.dump())]+=1
-        #else:
-        #    self.read_indexes[str(index.dump())] = 1
-
         self.read_count += 1        
         # instantiate and add lambda constraints
-        self.constraints += self.lambda_constraint.instantiate(index)
+        new_constraints = self.lambda_constraint.instantiate(index)
+        self.constraints += new_constraints
+        self.state.solver.add_assertions(new_constraints)
 
         return Array_Select(self._base, index)
 
@@ -211,16 +209,14 @@ class LambdaMemory:
         #                [z3.If(i < olen, z3.If(i < ilen, self[istart + i], 0), self[ostart + i]) for i in
         #                 range(SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE)])
 
-    def copy(self, old_xid, new_xid):
-        if old_xid != new_xid:
-            raise Exception("memory copy with different xid is not implemented. Please have a look")
+    def copy(self, new_state):
         new_memory = LambdaMemory(partial_init=True)
         new_memory.tag = self.tag
         new_memory._base = self._base
+        new_memory.state = new_state
         new_memory.lambda_constraint = self.lambda_constraint
         new_memory.constraints = list(self.constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
 
-        new_memory.read_indexes = self.read_indexes
         return new_memory

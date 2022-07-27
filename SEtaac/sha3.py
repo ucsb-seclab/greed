@@ -7,10 +7,10 @@ from SEtaac import options
 class Sha3(LambdaMemory):
     uuid_generator = UUIDGenerator()
 
-    def __init__(self, memory, start, size):
+    def __init__(self, state, memory, start, size):
         self.uuid = Sha3.uuid_generator.next()
 
-        super().__init__(tag=f"SHA3_{self.uuid}_MEMORY", value_sort=BVSort(8), default=BVV(0, 8))
+        super().__init__(tag=f"SHA3_{self.uuid}_MEMORY", value_sort=BVSort(8), default=BVV(0, 8), state=state)
         self.symbol = BVS(f"SHA3_{self.uuid}", 256)
 
         # The source memory where we are fetching data from
