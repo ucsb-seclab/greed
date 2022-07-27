@@ -172,7 +172,7 @@ class TAC_Calldatacopy(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        state.memory.memcopy(self.destOffset_val, state.calldata, self.calldataOffset_val, self.size_val)
+        state.memory.memcopy(self.destOffset_val, state.calldata.copy(state), self.calldataOffset_val, self.size_val)
 
         state.set_next_pc()
         return [state]
