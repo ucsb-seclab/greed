@@ -49,7 +49,7 @@ def run_test(target_dir, debug=False):
 
 
 def test_lambda_memory_simple():
-    run_test(target_dir=f"{os.path.dirname(__file__)}/test_lambda_memory_sha",
+    run_test(target_dir=f"{os.path.dirname(__file__)}/test_sha_concrete",
              debug=DEBUG)
 
 
