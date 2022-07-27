@@ -2,23 +2,25 @@ import z3
 
 from SEtaac.utils.solver.base import Solver
 
+
 def simplify_result(func):
     def wrapper(*args, **kwargs):
         res = func(*args, **kwargs)
         return z3.simplify(res)
     return wrapper
 
+
 class Z3(Solver):
     """
     This is a singleton class, and all methods are static
     """
 
-    def __init__(self):
+    def __init__(self, partial_init=False):
+        self.assertions = list()
+        if partial_init is True:
+            return
         self._config_z3()
         self.solver = z3.SolverFor('QF_ABV')
-        self.BVSort_cache = dict()
-        self.BVV_cache = dict()
-        self.BVS_cache = dict()
     
     def _config_z3(self):
         # SEE HERE THE LIST OF POSSIBLE CONFIGURATIONS
@@ -38,19 +40,13 @@ class Z3(Solver):
         return
 
     def BVSort(self, width):
-        if width not in self.BVSort_cache:
-            self.BVSort_cache[width] = z3.BitVecSort(width)
-        return self.BVSort_cache[width]
+        return z3.BitVecSort(width)
 
     def BVV(self, value, width):
-        if (value, width) not in self.BVV_cache:
-            self.BVV_cache[(value, width)] = z3.BitVecVal(value, width)
-        return self.BVV_cache[(value, width)]
+        return z3.BitVecVal(value, width)
 
     def BVS(self, symbol, width):
-        if (symbol, width) not in self.BVS_cache:
-            self.BVS_cache[(symbol, width)] = z3.BitVec(symbol, width)
-        return self.BVS_cache[(symbol, width)]
+        return z3.BitVec(symbol, width)
 
     def bv_unsigned_value(self, bv):
         return int(bv.as_binary_string(), 2)
@@ -85,9 +81,11 @@ class Z3(Solver):
 
     def add_assertion(self, formula):
         self.solver.add(formula)
+        self.assertions.append(formula)
 
     def add_assertions(self, formulas):
         self.solver.add(*formulas)
+        self.assertions += formulas
 
     def add_assumption(self, formula):
         raise Exception
@@ -101,11 +99,8 @@ class Z3(Solver):
     def fixate_assumptions(self, ):
         raise Exception
 
-    def simplify(self, formula):
+    def simplify_formula(self, formula):
         return z3.simplify(formula)
-
-    def new_solver_context(self, ):
-        return Z3
 
     def Array(self, symbol, index_sort, value_sort):
         return z3.Array(symbol, index_sort, value_sort)
@@ -120,12 +115,6 @@ class Z3(Solver):
         return z3.If(cond, value_if_true, value_if_false)
 
     # BOOLEAN OPERATIONS
-
-    #def Equal(self, a, b):
-    #    return self.solver.mk_term(pybitwuzla.Kind.EQUAL, [a, b])
-
-    #def NotEqual(self, a, b):
-    #    return self.solver.mk_term(pybitwuzla.Kind.DISTINCT, [a, b])
 
     @simplify_result
     def Or(self, *terms):
@@ -284,7 +273,14 @@ class Z3(Solver):
     def Array_Select(self, arr, index):
         return z3.Select(arr, index)
 
-    def eval_one_array(self, array, length):
-        self.is_sat()
-        return [int(self.Array_Select(array, self.BVV(i, 256)).assignment, 2) for i in
-                range(length)]
+    # def eval_one_array(self, array, length):
+    #     self.is_sat()
+    #     return [int(self.Array_Select(array, self.BVV(i, 256)).assignment, 2) for i in
+    #             range(length)]
+
+    def copy(self):
+        new_solver = Z3(partial_init=True)
+        new_solver.solver = self.solver.translate(self.solver.ctx)
+        new_solver.add_assertions(self.assertions)
+
+        return new_solver
