@@ -13,19 +13,16 @@ contract TestSha {
         uint f;
         uint g;
         uint h;
+        uint i;
+        uint j;
+        uint k;
 
-        uint index1 = 1024*1;
-        uint index2 = 1024*2;
-        uint index3 = 1024*3;
-        uint index4 = 1024*4;
-        uint index5 = 1024*5;
-        uint index6 = 1024*6;
 
         assembly {
-            mstore(index1, 42)
-            mstore(index2, 42)
-            a := keccak256(index1, 32)
-            b := keccak256(index2, 32)
+            mstore(1000, 42)
+            mstore(2000, 42)
+            a := keccak256(1000, 32)
+            b := keccak256(2000, 32)
         }
 
         if (a != b) {
@@ -37,8 +34,8 @@ contract TestSha {
 
 
         assembly {
-            mstore(index3, 42)
-            c := keccak256(index3, 32)
+            mstore(3000, 42)
+            c := keccak256(3000, 32)
         }
 
         if (a != c) {
@@ -57,8 +54,8 @@ contract TestSha {
 
 
         assembly {
-            mstore(index4, 43)
-            d := keccak256(index4, 32)
+            mstore(4000, 43)
+            d := keccak256(4000, 32)
         }
 
         if (a == d) {
@@ -77,30 +74,45 @@ contract TestSha {
 
 
         assembly {
-            mstore(index5, 45)
-            mstore(index6, 46)
-            e := keccak256(index5, 32)
-            f := keccak256(index6, 32)
+            mstore(5000, 0x0000000000000000000000000000000000000000000000000000000000000000ffffffff00000000)
+            mstore(6000, 0x0000000000000000000000000000000000000000000000000000000000000000ffffffffffffffff)
+            e := keccak256(5000, 29)
+            f := keccak256(6000, 29)
         }
 
         if (e == f) {
-            assembly {log1(0, 0, "error:test_sha_different")}
+            assembly {log1(0, 0, "error:test_sha_diff0xff")}
             revert();
         } else {
-            assembly {log1(0, 0, "success:test_sha_different")}
+            assembly {log1(0, 0, "success:test_sha_diff0xff")}
         }
 
 
         assembly {
-            mstore(index6, 45)
-            g := keccak256(index6, 32)
+            g := keccak256(5000, 28)
+            h := keccak256(6000, 28)
         }
 
-        if (e != g) {
-            assembly {log1(0, 0, "error:test_sha_rewrite")}
+        if (g != h) {
+            assembly {log1(0, 0, "error:test_sha_diff0xffpartial")}
             revert();
         } else {
-            assembly {log1(0, 0, "success:test_sha_rewrite")}
+            assembly {log1(0, 0, "success:test_sha_diff0xffpartial")}
+        }
+
+
+        assembly {
+            mstore(7000, 45)
+            mstore(8000, 46)
+            i := keccak256(7000, 32)
+            j := keccak256(8000, 32)
+        }
+
+        if (i == j) {
+            assembly {log1(0, 0, "error:test_sha_different")}
+            revert();
+        } else {
+            assembly {log1(0, 0, "success:test_sha_different")}
         }
 
         assembly {log1(0, 0, "success:")}
