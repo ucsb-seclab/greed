@@ -88,7 +88,7 @@ class Yices2(Solver):
     def BVS(self, symbol: str, width: int) -> YicesTermBV:
         assert isinstance(symbol, str)
         assert isinstance(width, int)
-        yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width), name=symbol)
+        yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width).id, name=symbol)
         return YicesTermBV(yices_id=yices_id, name=symbol)
 
     def bv_unsigned_value(self, bv: YicesTermBV) -> int:
