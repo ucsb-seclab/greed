@@ -11,6 +11,9 @@ class YicesTerm:
         self.name = name
         self.value = value
 
+    def dump(self):
+        return yices.Terms.to_string(self.id, width=-1, height=-1, offset=0)
+
     def __str__(self):
         classname = self.__class__.__name__
         name_str = f" name:{self.name}" if self.name is not None else ""
