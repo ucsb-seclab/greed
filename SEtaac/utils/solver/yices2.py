@@ -29,6 +29,9 @@ class YicesTerm:
     def __eq__(self, other):
         return self.id == other.id
 
+    def __hash__(self):
+        return self.id
+
 
 class YicesTermBool(YicesTerm):
     pass

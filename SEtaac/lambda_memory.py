@@ -9,7 +9,7 @@ log.setLevel(logging.DEBUG)
 
 class LambdaConstraint:
     def __init__(self):
-        self.following_writes = list()
+        self.following_writes = set()
 
     def instantiate(self, index):
         return []
@@ -152,7 +152,11 @@ class LambdaMemory:
     def __getitem__(self, index):
         assert not isinstance(index, slice), "slice memory read not implemented"
 
-        self.read_count += 1        
+        self.read_count += 1
+
+        # if index in self.lambda_constraint.following_writes:
+        #     return Array_Select(self._base, index)
+
         # instantiate and add lambda constraints
         new_constraints = self.lambda_constraint.instantiate(index)
         self.add_constraints(new_constraints)
@@ -162,7 +166,7 @@ class LambdaMemory:
     def __setitem__(self, index, v):
         self.write_count += 1
 
-        self.lambda_constraint.following_writes.append(index)
+        self.lambda_constraint.following_writes.add(index)
 
         self._base = Array_Store(self._base, index, v)
 
