@@ -9,6 +9,11 @@ LAZY_SOLVES = False
 # Solver options
 CACHE_COMMON_CONSTRAINTS = False
 MAX_SHA_SIZE = 256
+
+# This is to enforce that two addresses constructed as
+# base + offset, where 'base' is a SHA result, cannot ever overlap
+# within a reasonable distance. This should avoid false positive 
+# related to overlapping memory regions.
 MIN_SHA_DISTANCE = 2**20
 
 # Debugging options
