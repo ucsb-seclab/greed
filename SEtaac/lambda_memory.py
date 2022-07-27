@@ -27,7 +27,7 @@ class LambdaMemsetConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+        if index in self.following_writes:
             return []
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -50,7 +50,7 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+        if index in self.following_writes:
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -76,7 +76,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+        if index in self.following_writes:
             return []
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -103,7 +103,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if is_concrete(index) and bv_unsigned_value(index) in self.following_writes:
+        if index in self.following_writes:
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -162,8 +162,7 @@ class LambdaMemory:
     def __setitem__(self, index, v):
         self.write_count += 1
 
-        if is_concrete(index):
-            self.lambda_constraint.following_writes.append(bv_unsigned_value(index))
+        self.lambda_constraint.following_writes.append(index)
 
         self._base = Array_Store(self._base, index, v)
 
