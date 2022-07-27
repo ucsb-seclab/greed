@@ -48,6 +48,7 @@ def parse_log(state):
     print(f"---> {value}")
     outcome, testname = value.split(":")
     assert outcome == "success", f"{testname} failed"
+    return outcome, testname
 
 
 def run_test(target_dir, debug=False):
@@ -57,14 +58,16 @@ def run_test(target_dir, debug=False):
     entry_state = p.factory.entry_state(xid=xid)
     simgr = p.factory.simgr(entry_state=entry_state)
 
+    outcome = testname = None
     while len(simgr.active) > 0:
         simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")
         for s in simgr.found:
-            parse_log(s)
+            outcome, testname = parse_log(s)
 
         simgr.move(from_stash="found", to_stash="active")
 
     assert not any([s.error for s in simgr.states]), f"Simulation Manager has errored states: {simgr}"
+    assert outcome == "success" and testname == "", f"Simulation Manager did not reach final success state: {simgr}"
 
     if debug:
         IPython.embed()
