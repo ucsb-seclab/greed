@@ -67,6 +67,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         super().__init__()
         self.array = array
         self.start = start
+        # WARNING: memcopy source is of type "memory", CALLER SHOULD TAKE CARE OF .copy()ing IT
         self.source = source
         self.source_start = source_start
         self.size = size
@@ -94,6 +95,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         super().__init__()
         self.array = array
         self.start = start
+        # WARNING: memcopy source is of type "memory", CALLER SHOULD TAKE CARE OF .copy()ing IT
         self.source = source
         self.source_start = source_start
 
