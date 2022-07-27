@@ -47,6 +47,7 @@ def run_test(target_dir, debug=False):
     common.run_test_simgr(simgr, debug=debug)
 
 
+
 def test_lambda_memory_simple():
     run_test(target_dir=f"{os.path.dirname(__file__)}/test_lambda_memory_sha",
              debug=DEBUG)

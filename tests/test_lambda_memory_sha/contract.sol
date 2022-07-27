@@ -23,7 +23,9 @@ contract TestMemory {
 
         uint deadbeef = 0xdeadbeef;
         bytes32 deadbeef_b = bytes32(abi.encodePacked(deadbeef));
-        
+        uint cafebabe = 0xcafebabe;
+        bytes32 cafebabe_b = bytes32(abi.encodePacked(cafebabe));
+
         assembly{
             sstore(test_address, deadbeef_b)
         }
@@ -38,9 +40,39 @@ contract TestMemory {
         }
 
         if(can_be_equal == true){
-            assembly {log1(0, 0, "success:test_lamb_sha_mem")}
-            assembly {log1(0, 0, "success:")}
-           
+
+            // If we are here, sha_res should be fixed to the address 
+            // that loads 0xdeadbeef from storage 
+
+            assembly {log1(0, 0, "success:test_lamb_sha_mem1")}
+
+            // Now, if we overwrite that storage location we 
+            // shouldn't be able to say that the two are equal! 
+            assembly{
+                sstore(test_address, cafebabe_b)
+            }
+
+            // Verify that I cannot load 0xdeadbeef from storage since 
+            // I just overwritten it with 0xcafebabe
+            mem_data = sload(test_address);
+            if(mem_data == deadbeef_b){
+                assembly {log1(0, 0, "error:test_lamb_sha_mem2")}
+                revert();
+            }
+            
+            // Now, since sha_res should be fixed (it was loading 0xdeadbeef before)
+            // I should be able to verify that I cannot load 0xdeadbeef anymore
+            else{
+                // Try to load from the address calculated from user.
+                mem_data = sload(sha_res);
+                if(mem_data == deadbeef_b){
+                    assembly {log1(0, 0, "error:test_lamb_sha_mem3")}
+                    revert();
+                }else{
+                assembly {log1(0, 0, "success:test_lamb_sha_mem2")}
+                assembly {log1(0, 0, "success:")}
+                }
+            }           
         }            
     }
 }

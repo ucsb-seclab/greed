@@ -17,7 +17,7 @@ MAX_SHA_SIZE = 256
 MIN_SHA_DISTANCE = 2**20
 
 # Debugging options
-SIMGRVIZ = False
+SIMGRVIZ = True
 
 # STATE OPTIONS
 # ==============

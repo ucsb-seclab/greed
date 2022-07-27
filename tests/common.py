@@ -47,6 +47,7 @@ def parse_log(state):
 
     print(f"---> {value}")
     outcome, testname = value.split(":")
+    import ipdb; ipdb.set_trace()
     assert outcome == "success", f"{testname} failed"
     return outcome, testname
 
@@ -70,6 +71,7 @@ def run_test_simgr(simgr, debug=False):
 
         simgr.move(from_stash="found", to_stash="active")
 
+    
     assert not any([s.error for s in simgr.states]), f"Simulation Manager has errored states: {simgr}"
     assert outcome == "success" and testname == "", f"Simulation Manager did not reach final success state: {simgr}"
 
