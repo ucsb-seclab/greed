@@ -27,6 +27,12 @@ class ExplorationTechnique:
     # This MUST return the successors.
     def check_successors(self, successors):
         return successors
+    
+    # This method indicate when the ET is done.
+    # If you just want to be done when there are no
+    # active states, just return True.
+    def is_complete(self, simgr):
+        return True
 
 
 from .simgrviz import SimgrViz

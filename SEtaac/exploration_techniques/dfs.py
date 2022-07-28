@@ -48,6 +48,13 @@ class DFS(ExplorationTechnique):
     def check_successors(self, successors):
         return successors
 
+    def is_complete(self,simgr, stash='active'):
+        # We are done if there are no active, or, no deferred.
+        if len(simgr._stashes[stash]) == 0 and len(simgr._stashes[self.deferred_stash]) == 0:
+            return True
+        else:
+            return False
+
     def _move(self, from_stash: str, to_stash: str, filter_func: Callable[[SymbolicEVMState], bool] = lambda s: True):
         for s in from_stash:
             if filter_func(s):

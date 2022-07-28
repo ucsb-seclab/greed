@@ -189,7 +189,11 @@ class SimulationManager:
         """
 
         try:
-            while len(self.active) > 0:
+            # We iterate until we have active states, 
+            # OR, if any of the ET is not done.
+            while len(self.active) > 0 or (self._techniques != [] and 
+                                            not(all([t.is_complete(self) for t in self._techniques]))):
+                
                 if len(self.found) > 0 and not find_all:
                     break
                 elif self._halt:
