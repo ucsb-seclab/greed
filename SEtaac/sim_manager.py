@@ -181,8 +181,11 @@ class SimulationManager:
             prune: Callable[[SymbolicEVMState], bool] = lambda s: False,
             find_all=False):
         """
-        Run the simulation manager, until the `find` condition is met. The analysis will stop when there are no more
-        active states or some states met the `find` condition (these will be moved to the found stash)
+        Run the simulation manager, until the `find` condition is met. 
+        The analysis will stop when there are no more active states, some states met the `find` condition 
+        (these will be moved to the found stash), or the exploration techniques are done.
+        If no ET are plugged, the default searching strategy is BFS.
+
         :param find: Function that will be called after each step. The matching states will be moved to the found stash
         :param prune: Function that will be called after each step. The matching states will be moved to the pruned stash
         :return: None
