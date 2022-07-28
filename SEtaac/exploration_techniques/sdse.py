@@ -69,7 +69,7 @@ class SDSE(ExplorationTechnique):
                     return True
             return False
     
-    def _is_reachable_without_returns(block_a, block_b, factory, callgraph):
+    def _is_reachable_without_returns(self, block_a, block_b, factory, callgraph):
         function_a = block_a.function
         function_b = block_b.function
         if block_a == block_b:
