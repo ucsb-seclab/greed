@@ -110,6 +110,9 @@ class SymbolicEVMState:
             # CALLDATASIZE < MAX_CALLDATA_SIZE
             self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
 
+        if "CALLER" in init_ctx:
+            self.ctx["CALLER"] = BVV(init_ctx["CALLER"], 256)
+
     @property
     def pc(self):
         return self._pc
