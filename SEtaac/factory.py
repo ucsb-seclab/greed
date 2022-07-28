@@ -1,7 +1,7 @@
 import logging
 
 from SEtaac.block import Block
-from SEtaac.simulation_manager import SimulationManager
+from SEtaac.sim_manager import SimulationManager
 from SEtaac.state import SymbolicEVMState
 
 
@@ -13,7 +13,7 @@ class Factory:
         self.project = project
 
     def simgr(self, entry_state: SymbolicEVMState) -> SimulationManager:
-        return SimulationManager(entry_state=entry_state)
+        return SimulationManager(entry_state=entry_state, project=self.project)
 
     def entry_state(self, xid: str, init_ctx: dict = None, options: list = None, max_calldatasize: int = None) -> SymbolicEVMState:
         state = SymbolicEVMState(xid=xid, project=self.project, init_ctx=init_ctx, options=options, max_calldatasize=max_calldatasize)

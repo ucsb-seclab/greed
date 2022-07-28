@@ -6,10 +6,6 @@
 # Exploration options
 LAZY_SOLVES = False
 
-# Solver options
-CACHE_COMMON_CONSTRAINTS = False
-MAX_SHA_SIZE = 256
-
 # This is to enforce that two addresses constructed as
 # base + offset, where 'base' is a SHA result, cannot ever overlap
 # within a reasonable distance. This should avoid false positive 
@@ -26,6 +22,7 @@ STATE_STOP_AT_ADDCONSTRAINT = "STATE_STOP_AT_ADDCONSTRAINT"
 
 # SOLVER OPTIONS
 # ==============
+MAX_SHA_SIZE = 256
 SOLVER_BITWUZLA = "BITWUZLA"
 SOLVER_YICES2 = "YICES2"
 SOLVER_Z3 = "Z3"

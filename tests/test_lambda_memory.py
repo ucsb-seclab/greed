@@ -6,6 +6,7 @@ import IPython
 
 from SEtaac import Project
 from SEtaac.utils import gen_exec_id
+from SEtaac.exploration_techniques import SimgrViz
 
 if __package__:
     from . import common
@@ -58,7 +59,6 @@ def run_test(target_dir, debug=False):
     init_ctx = {"CALLDATA": "0x28a3ceac" + data}
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=600)
     simgr = p.factory.simgr(entry_state=entry_state)
-
     common.run_test_simgr(simgr, debug=debug)
 
 

@@ -12,78 +12,11 @@ from SEtaac import options
 log = logging.getLogger(__name__)
 
 
-class SimgrViz(object):
-    def __init__(self):
-        self._simgGraph = networkx.DiGraph()
-        self.timestamp = 0
-        self._first_instruction = None
-
-    def get_state_hash(self, state):
-        h = hashlib.sha256()
-        h.update(str(state.pc).encode("utf-8"))
-        h.update(str(state.callstack).encode("utf-8"))
-        h.update(str(state.instruction_count).encode("utf-8"))
-        h.update(str(state.gas).encode("utf-8"))
-        h.update('\n'.join([x for x in state.registers.keys()]).encode("utf-8"))
-        h_hexdigest = h.hexdigest()
-        state._id = h_hexdigest
-        return str(h_hexdigest)
-
-    def add_node(self, state):
-        state_id = self.get_state_hash(state)
-        if state_id in self._simgGraph:
-            return state_id
-        self._simgGraph.add_node(state_id)
-        self._simgGraph.nodes[state_id]['timestamp'] = str(self.timestamp)
-        self._simgGraph.nodes[state_id]['pc'] = state.pc
-        #if state.curr_stmt.__internal_name__ == "LOG1":
-        #    self._simgGraph.nodes[state_id]['log'] = state.curr_stmt.arg2_val
-        #self._simgGraph.nodes[state_id]['csts'] = '\n'.join([str(x.dump()) for x in state.constraints])
-        self.timestamp += 1
-        return state_id
-    
-    def add_edge(self, new_state_id, parent_state_id):
-        self._simgGraph.add_edge(new_state_id, parent_state_id)
-
-    def dump_graph(self):
-        s = 'digraph g {\n'
-        s += '\tnode[fontname="courier"];\n'
-        for node_id in self._simgGraph.nodes:
-            node = self._simgGraph.nodes[node_id]
-            
-            shape = 'box'
-            s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
-            s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
-            s += '<br align="left"/>pc:{}'.format(node["pc"])
-            if node.get("log", None):
-                s += '<br align="left"/>log:{}'.format(node["log"])
-            #s += '<br align="left"/>csts:{}'.format(node["csts"])
-            s += '<br align="left"/>>];\n'  
-        
-        s += '\n'
-        
-        for edge in self._simgGraph.edges:
-            start = edge[0][:10]
-            end = edge[1][:10]
-            s += '\t\"%s\" -> \"%s\";\n' % (end, start)
-        
-        s += '}'
-        
-        with open("./simgr_viz.dot", "w") as simgrviz_file:
-            simgrviz_file.write(s)
-
 class SimulationManager:
-    def __init__(self, entry_state: SymbolicEVMState, keep_predecessors: int = 0, debug=options.SIMGRVIZ):
-        self.keep_predecessors = keep_predecessors
-        self.error = list()
+    def __init__(self, entry_state: SymbolicEVMState, project):
+        self._project = project
         self._halt = False
-
-        self.insns_count = 0
-
-        self.debug = debug
-
-        if debug:
-            self.simgrViz = SimgrViz()
+        self._techniques = []
 
         # initialize empty stashes
         self._stashes = {
@@ -92,6 +25,9 @@ class SimulationManager:
             'found': [],
             'pruned': []
         }
+
+        self.insns_count = 0
+        self.error = list()
 
         self.active.append(entry_state)
 
@@ -157,6 +93,23 @@ class SimulationManager:
         else:
             return None
 
+    def use_technique(self, tech):
+        # Pre-check 
+        if not isinstance(tech, ExplorationTechnique):
+            raise Exception
+        needed_methods = {"setup", "check_stashes", "check_state", "check_successors"}
+        # Check if we have all the required methods 
+        tech_methods = set(x for x in dir(tech) if x.startswith('check_') is True or x == "setup")
+        if len(needed_methods.difference(tech_methods)) != 0:
+            raise Exception("The ET you are trying to install is missing methods")
+        
+        # All good, let's install it.
+        tech.project = self._project
+        tech.setup(self)
+        self._techniques.append(tech)
+
+        return tech
+
     def move(self, from_stash: str, to_stash: str, filter_func: Callable[[SymbolicEVMState], bool] = lambda s: True):
         """
         Move all the states that meet the filter_func condition from from_stash to to_stash
@@ -171,12 +124,19 @@ class SimulationManager:
                 self._stashes[to_stash].append(s)
 
     def step(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
-            prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
+                   prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
         log.debug('-' * 30)
         new_active = list()
+        
+        # Let the techniques manipulate the stashes
+        for tech in self._techniques: 
+            self._stashes = tech.check_stashes(self._stashes)
+        
+        # Let's step the active!
         for state in self.active:
             successors = self.single_step_state(state)
             new_active += successors
+        
         self._stashes['active'] = new_active
 
         self.insns_count += 1
@@ -184,26 +144,6 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='found', filter_func=find)
         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
-
-        if options.CACHE_COMMON_CONSTRAINTS:
-            # TODO/WARNING: this can introduce unexpected side effects related to
-            # the interaction between the solver state and the exploration techniques being
-            # employed.
-        
-            # migrate common constraints to solver
-            # todo: this is a very hacky way to use incremental solving as much as possible
-            csts_sets = []
-            for s in self.active:
-                csts_sets.append(set(s.constraints))
-
-            if csts_sets != []:
-                common_constraints = set.intersection(*csts_sets)
-                from SEtaac.utils.solver.shortcuts import _SOLVER
-                # Common constraints are becoming assertions
-                _SOLVER.add_assertions(list(common_constraints))
-                #for s in self.states:
-                #    s.path_constraints = list(set(s.constraints)-common_constraints)
-
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(f"Stepping {state}")
@@ -216,22 +156,26 @@ class SimulationManager:
             state.breakpoints[state.pc](state)
 
         successors = list()
-    
-        if self.debug:
-            parent_state_id = self.simgrViz.add_node(state)
-         
+        
+        # Let exploration techniques manipulate the state
+        # that is going to be handled
+        state_to_step = state
+        for t in self._techniques: 
+            state_to_step = t.check_state(state_to_step)
+
+        # Finally step the state
         try:
             successors += state.curr_stmt.handle(state)
         except Exception as e:
-            log.exception(f"Something went wrong while stepping {state}")
+            log.exception(f"Something went wrong while generating successor for {state}")
             state.error = e
             state.halt = True
             successors += [state]
 
-        if self.debug:
-            for succ in successors:
-                child_state_id = self.simgrViz.add_node(succ)
-                self.simgrViz.add_edge(child_state_id, parent_state_id)
+        # Let exploration techniques manipulate the successors
+        for t in self._techniques: 
+            successors = t.check_successors(successors)
+        
         return successors
 
     def run(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
@@ -251,8 +195,9 @@ class SimulationManager:
                     break
                 elif self._halt:
                     break
-
+                
                 self.step(find, prune)
+
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -272,3 +217,6 @@ class SimulationManager:
 
     def __repr__(self):
         return self.__str__()
+
+
+from .exploration_techniques import ExplorationTechnique
