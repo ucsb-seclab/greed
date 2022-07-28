@@ -185,6 +185,11 @@ class SimulationManager:
         The analysis will stop when there are no more active states, some states met the `find` condition 
         (these will be moved to the found stash), or the exploration techniques are done.
         If no ET are plugged, the default searching strategy is BFS.
+        When techniques are plugged, their methods are executed following the same order they were plugged.
+        
+        e.g., assuming we have T1 and T2.
+                T1(check_stashes) -> T2(check_stashes) -> T1(check_state) -> T2(check_state) 
+                    -> T1(check_successors) -> T2(check_successors)
 
         :param find: Function that will be called after each step. The matching states will be moved to the found stash
         :param prune: Function that will be called after each step. The matching states will be moved to the pruned stash
