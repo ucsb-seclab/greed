@@ -12,12 +12,13 @@ from . import ExplorationTechnique
 # This technique tries to prune states that cannot reach the 
 # block of a specific target statement.
 class SDSE(ExplorationTechnique):
-    def __init__(self):
+    def __init__(self, target_stmt):
         super(SDSE,self).__init__()
+        self._target_stmt = target_stmt
         self._target_block = None
 
-    def setup(self, simgr, target_stmt):
-        self._target_block = self._project.factory.block(target_stmt.block_id)
+    def setup(self, simgr):
+        self._target_block = self._project.factory.block(self._target_stmt.block_id)
 
     def check_stashes(self, stashes, stash='active'):
         return stashes
