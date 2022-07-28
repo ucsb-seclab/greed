@@ -18,7 +18,7 @@ class SDSE(ExplorationTechnique):
         self._target_block = None
 
     def setup(self, simgr):
-        self._target_block = self._project.factory.block(self._target_stmt.block_id)
+        self._target_block = self.project.factory.block(self._target_stmt.block_id)
 
     def check_stashes(self, stashes, stash='active'):
         return stashes
@@ -38,8 +38,8 @@ class SDSE(ExplorationTechnique):
 
     # Check if the current state can reach 'block_b'
     def _is_reachable(self, state_a, block_b):
-        factory = self._project.factory
-        callgraph = self._project.callgraph
+        factory = self.project.factory
+        callgraph = self.project.callgraph
 
         block_a = factory.block(state_a.curr_stmt.block_id)
         if self._is_reachable_without_returns(block_a, block_b, factory, callgraph):
