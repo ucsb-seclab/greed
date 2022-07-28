@@ -107,7 +107,6 @@ class SimulationManager:
         tech.project = self._project
         tech.setup(self)
         self._techniques.append(tech)
-
         return tech
 
     def move(self, from_stash: str, to_stash: str, filter_func: Callable[[SymbolicEVMState], bool] = lambda s: True):

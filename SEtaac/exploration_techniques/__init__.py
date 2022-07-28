@@ -30,3 +30,4 @@ class ExplorationTechnique:
 
 
 from .simgrviz import SimgrViz
+from .dfs import DFS

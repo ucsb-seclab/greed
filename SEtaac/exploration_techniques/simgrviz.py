@@ -7,6 +7,7 @@ from . import ExplorationTechnique
 
 class SimgrViz(ExplorationTechnique):
     def __init__(self):
+        super(SimgrViz,self).__init__()
         self._simgGraph = networkx.DiGraph()
         self.timestamp = 0
         self._first_instruction = None
