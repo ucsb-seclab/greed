@@ -381,18 +381,16 @@ class Yices2(Solver):
         yices_id = yices.Terms.application(arr.id, [index.id])
         return YicesTermBV(yices_id=yices_id)
 
-    # def eval_one(self, term, cast_to="int"):
-    #     assert self.is_sat()
-    #     if cast_to == "int":
-    #         return int(self.solver.get_value_str(term))
-    #     else:
-    #         return self.solver.get_value_str(term)
-    #
+    def eval_one(self, term):
+        assert self.is_sat()
+        model = yices.Model.from_context(self.solver, 1)
+
+        return YicesTerm(model.get_value_as_term(term)).dump()
+
     # def eval_one_array(self, array, length):
     #     raise Exception("this doesn't work for now because it does not consider the side effects of memory reads")
-    #     # assert self.is_sat()
-    #     #
-    #     # return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]
+    #     assert self.is_sat()
+    #     return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]
 
     def copy(self):
         new_solver = Yices2()
