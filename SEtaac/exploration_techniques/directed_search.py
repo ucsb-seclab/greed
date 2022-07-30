@@ -7,10 +7,11 @@ from . import ExplorationTechnique
 # This technique tries to prune states that cannot reach the 
 # block of a specific target statement.
 class DirectedSearch(ExplorationTechnique):
-    def __init__(self, target_stmt):
+    def __init__(self, target_stmt, pruned_stash='pruned'):
         super(DirectedSearch, self).__init__()
         self._target_stmt = target_stmt
         self._target_block = None
+        self.pruned_stash = pruned_stash
 
     def setup(self, simgr):
         self._target_block = simgr.project.factory.block(self._target_stmt.block_id)
@@ -20,6 +21,8 @@ class DirectedSearch(ExplorationTechnique):
         for succ in successors:
             if self._is_reachable(succ, self._target_block, simgr.project.factory, simgr.project.callgraph):
                 new_successors.append(succ)
+            else:
+                simgr.stashes[self.pruned_stash].append(succ)
         return new_successors
 
     # Check if the current state can reach 'block_b'
