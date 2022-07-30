@@ -1,13 +1,13 @@
-
 import hashlib
-import logging
+
 import networkx
 
 from . import ExplorationTechnique
 
+
 class SimgrViz(ExplorationTechnique):
     def __init__(self):
-        super(SimgrViz,self).__init__()
+        super(SimgrViz, self).__init__()
         self._simgGraph = networkx.DiGraph()
         self.timestamp = 0
         self._first_instruction = None
@@ -16,21 +16,22 @@ class SimgrViz(ExplorationTechnique):
     def setup(self, simgr):
         return
 
-    def check_stashes(self, stashes):
+    def check_stashes(self, simgr, stashes):
         return stashes
 
-    def check_state(self, state):
+    def check_state(self, simgr, state):
         self.curr_parent_state_id = self._add_node(state)
         return state
 
-    def check_successors(self, successors):
-        assert(self.curr_parent_state_id)
+    def check_successors(self, simgr, successors):
+        assert self.curr_parent_state_id
         for succ in successors:
             child_state_id = self._add_node(succ)
             self._add_edge(child_state_id, self.curr_parent_state_id)
         return successors
-    
-    def _get_state_hash(self, state):
+
+    @staticmethod
+    def _get_state_hash(state):
         h = hashlib.sha256()
         h.update(str(state.pc).encode("utf-8"))
         h.update(str(state.callstack).encode("utf-8"))
@@ -48,12 +49,12 @@ class SimgrViz(ExplorationTechnique):
         self._simgGraph.add_node(state_id)
         self._simgGraph.nodes[state_id]['timestamp'] = str(self.timestamp)
         self._simgGraph.nodes[state_id]['pc'] = state.pc
-        #if state.curr_stmt.__internal_name__ == "LOG1":
+        # if state.curr_stmt.__internal_name__ == "LOG1":
         #    self._simgGraph.nodes[state_id]['log'] = state.curr_stmt.arg2_val
-        #self._simgGraph.nodes[state_id]['csts'] = '\n'.join([str(x.dump()) for x in state.constraints])
+        # self._simgGraph.nodes[state_id]['csts'] = '\n'.join([str(x.dump()) for x in state.constraints])
         self.timestamp += 1
         return state_id
-    
+
     def _add_edge(self, new_state_id, parent_state_id):
         self._simgGraph.add_edge(new_state_id, parent_state_id)
 
@@ -62,24 +63,24 @@ class SimgrViz(ExplorationTechnique):
         s += '\tnode[fontname="courier"];\n'
         for node_id in self._simgGraph.nodes:
             node = self._simgGraph.nodes[node_id]
-            
+
             shape = 'box'
             s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
             s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
             s += '<br align="left"/>pc:{}'.format(node["pc"])
             if node.get("log", None):
                 s += '<br align="left"/>log:{}'.format(node["log"])
-            #s += '<br align="left"/>csts:{}'.format(node["csts"])
-            s += '<br align="left"/>>];\n'  
-        
+            # s += '<br align="left"/>csts:{}'.format(node["csts"])
+            s += '<br align="left"/>>];\n'
+
         s += '\n'
-        
+
         for edge in self._simgGraph.edges:
             start = edge[0][:10]
             end = edge[1][:10]
             s += '\t\"%s\" -> \"%s\";\n' % (end, start)
-        
+
         s += '}'
-        
+
         with open("./simgr_viz.dot", "w") as simgrviz_file:
             simgrviz_file.write(s)

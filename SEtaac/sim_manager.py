@@ -14,12 +14,12 @@ log = logging.getLogger(__name__)
 
 class SimulationManager:
     def __init__(self, entry_state: SymbolicEVMState, project):
-        self._project = project
+        self.project = project
         self._halt = False
         self._techniques = []
 
         # initialize empty stashes
-        self._stashes = {
+        self.stashes = {
             'active': [],
             'deadended': [],
             'found': [],
@@ -40,36 +40,36 @@ class SimulationManager:
         """
         :return: All the states
         """
-        return sum(self._stashes.values(), [])
+        return sum(self.stashes.values(), [])
 
     @property
     def active(self):
         """
         :return: Active stash
         """
-        return self._stashes['active']
+        return self.stashes['active']
 
     @property
     def deadended(self):
         """
         :return: Deadended stash
         """
-        return self._stashes['deadended']
+        return self.stashes['deadended']
 
     @property
     def found(self):
         """
         :return: Found stash
         """
-        return self._stashes['found']
+        return self.stashes['found']
 
     @property
     def one_active(self):
         """
         :return: First element of the active stash, or None if the stash is empty
         """
-        if len(self._stashes['active']) > 0:
-            return self._stashes['active'][0]
+        if len(self.stashes['active']) > 0:
+            return self.stashes['active'][0]
         else:
             return None
 
@@ -78,8 +78,8 @@ class SimulationManager:
         """
         :return: First element of the deadended stash, or None if the stash is empty
         """
-        if len(self._stashes['deadended']) > 0:
-            return self._stashes['deadended'][0]
+        if len(self.stashes['deadended']) > 0:
+            return self.stashes['deadended'][0]
         else:
             return None
 
@@ -88,26 +88,21 @@ class SimulationManager:
         """
         :return: First element of the found stash, or None if the stash is empty
         """
-        if len(self._stashes['found']) > 0:
-            return self._stashes['found'][0]
+        if len(self.stashes['found']) > 0:
+            return self.stashes['found'][0]
         else:
             return None
 
-    def use_technique(self, tech):
+    def use_technique(self, technique):
         # Pre-check 
-        if not isinstance(tech, ExplorationTechnique):
-            raise Exception
-        needed_methods = {"setup", "check_stashes", "check_state", "check_successors"}
-        # Check if we have all the required methods 
-        tech_methods = set(x for x in dir(tech) if x.startswith('check_') is True or x == "setup")
-        if len(needed_methods.difference(tech_methods)) != 0:
-            raise Exception("The ET you are trying to install is missing methods")
+        if not isinstance(technique, ExplorationTechnique):
+            raise Exception(f"{technique} is not an instance of ExplorationTechnique")
         
         # All good, let's install it.
-        tech.project = self._project
-        tech.setup(self)
-        self._techniques.append(tech)
-        return tech
+        technique.project = self.project
+        technique.setup(self)
+        self._techniques.append(technique)
+        return technique
 
     def move(self, from_stash: str, to_stash: str, filter_func: Callable[[SymbolicEVMState], bool] = lambda s: True):
         """
@@ -117,10 +112,10 @@ class SimulationManager:
         :param filter_func: A function that discriminates what states should be moved
         :return: None
         """
-        for s in list(self._stashes[from_stash]):
+        for s in list(self.stashes[from_stash]):
             if filter_func(s):
-                self._stashes[from_stash].remove(s)
-                self._stashes[to_stash].append(s)
+                self.stashes[from_stash].remove(s)
+                self.stashes[to_stash].append(s)
 
     def step(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
                    prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
@@ -129,14 +124,14 @@ class SimulationManager:
         
         # Let the techniques manipulate the stashes
         for tech in self._techniques: 
-            self._stashes = tech.check_stashes(self._stashes)
+            self.stashes = tech.check_stashes(self, self.stashes)
         
         # Let's step the active!
         for state in self.active:
             successors = self.single_step_state(state)
             new_active += successors
         
-        self._stashes['active'] = new_active
+        self.stashes['active'] = new_active
 
         self.insns_count += 1
 
@@ -160,7 +155,7 @@ class SimulationManager:
         # that is going to be handled
         state_to_step = state
         for t in self._techniques: 
-            state_to_step = t.check_state(state_to_step)
+            state_to_step = t.check_state(self, state_to_step)
 
         # Finally step the state
         try:
@@ -173,7 +168,7 @@ class SimulationManager:
 
         # Let exploration techniques manipulate the successors
         for t in self._techniques: 
-            successors = t.check_successors(successors)
+            successors = t.check_successors(self, successors)
         
         return successors
 
@@ -219,7 +214,7 @@ class SimulationManager:
 
     def __str__(self):
         stashes_str = [f'{len(stash)} {stash_name}'  # {[s for s in stash]}'
-                       for stash_name, stash in self._stashes.items() if len(stash)]
+                       for stash_name, stash in self.stashes.items() if len(stash)]
         errored_count = len([s for s in self.states if s.error])
         stashes_str += [f'({errored_count} errored)']
         reverted_count = len([s for s in self.states if s.revert])

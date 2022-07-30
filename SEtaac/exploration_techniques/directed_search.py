@@ -1,46 +1,29 @@
+import networkx as nx
 
-import hashlib
-import logging
-import networkx
-import random
-
-from typing import Callable
-from SEtaac.state import SymbolicEVMState
 from . import ExplorationTechnique
+
 
 # Shortest Distance Symbolic Execution.
 # This technique tries to prune states that cannot reach the 
 # block of a specific target statement.
-class SDSE(ExplorationTechnique):
+class DirectedSearch(ExplorationTechnique):
     def __init__(self, target_stmt):
-        super(SDSE,self).__init__()
+        super(DirectedSearch, self).__init__()
         self._target_stmt = target_stmt
         self._target_block = None
 
     def setup(self, simgr):
-        self._target_block = self.project.factory.block(self._target_stmt.block_id)
+        self._target_block = simgr.project.factory.block(self._target_stmt.block_id)
 
-    def check_stashes(self, stashes, stash='active'):
-        return stashes
-
-    def check_state(self, state):
-        return state
-
-    def check_successors(self, successors):
+    def check_successors(self, simgr, successors):
         new_successors = []
         for succ in successors:
-            if self._is_reachable(succ, self._target_block):
+            if self._is_reachable(succ, self._target_block, simgr.project.factory, simgr.project.callgraph):
                 new_successors.append(succ)
         return new_successors
 
-    def is_complete(self,simgr):
-        return True 
-
     # Check if the current state can reach 'block_b'
-    def _is_reachable(self, state_a, block_b):
-        factory = self.project.factory
-        callgraph = self.project.callgraph
-
+    def _is_reachable(self, state_a, block_b, factory, callgraph):
         block_a = factory.block(state_a.curr_stmt.block_id)
         if self._is_reachable_without_returns(block_a, block_b, factory, callgraph):
             # this is the simple case, no need to look at the callstack
@@ -68,7 +51,8 @@ class SDSE(ExplorationTechnique):
                 if self._is_reachable_without_returns(return_block, block_b, factory, callgraph):
                     return True
             return False
-    
+
+    # Check if 'block_a' can reach 'block_b'
     def _is_reachable_without_returns(self, block_a, block_b, factory, callgraph):
         function_a = block_a.function
         function_b = block_b.function
@@ -88,9 +72,3 @@ class SDSE(ExplorationTechnique):
                     return self._is_reachable_without_returns(block_a, callprivate_block, factory, callgraph)
         else:
             return False
-
-    def _move(self, from_stash: str, to_stash: str, filter_func: Callable[[SymbolicEVMState], bool] = lambda s: True):
-        for s in from_stash:
-            if filter_func(s):
-                from_stash.remove(s)
-                to_stash.append(s)
