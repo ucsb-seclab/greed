@@ -1,4 +1,4 @@
-from SEtaac.utils.solver.base import Solver
+from SEtaac.utils.solver.solver import Solver
 
 _SOLVER = Solver()
 _num_contexts = 0

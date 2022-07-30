@@ -2,7 +2,7 @@ from typing import List
 
 import yices
 
-from SEtaac.utils.solver.base import Solver
+from SEtaac.utils.solver.solver import Solver
 
 
 class YicesTerm:

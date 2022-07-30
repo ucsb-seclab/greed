@@ -1,16 +1,4 @@
-from contextlib import contextmanager
-
-
 class Solver:
-    """
-    This is a singleton class
-    """
-
-    # def __init__(self):
-    #     self.solver = None
-    #     self.BVSort_cache = None
-    #     self.BVV_cache = None
-    #     self.BVS_cache = None
 
     def BVSort(self, width):
         raise Exception("Not implemented")
@@ -31,9 +19,6 @@ class Solver:
         raise Exception("Not implemented")
 
     def is_unsat(self, ):
-        raise Exception("Not implemented")
-
-    def substitute_terms(self, formula, substitute_map):
         raise Exception("Not implemented")
 
     def is_formula_sat(self, formula):
