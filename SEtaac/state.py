@@ -1,8 +1,8 @@
 import datetime
 import logging
 
+from SEtaac import options
 from SEtaac.lambda_memory import LambdaMemory
-from SEtaac.options import *
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
@@ -194,7 +194,7 @@ class SymbolicEVMState:
     
     def add_constraint(self, constraint):
         # Here you can inspect the constraints being added to the state.
-        if STATE_STOP_AT_ADDCONSTRAINT in self.options:
+        if options.STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
         self.path_constraints.append(constraint)
         self.solver.add_assertion(constraint)

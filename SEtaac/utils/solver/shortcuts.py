@@ -1,11 +1,11 @@
-from SEtaac import options
-from SEtaac.utils.solver.solver import Solver
+from . import Solver
 
 _SOLVER = Solver()
 
 
 def set_default_solver():
     global _SOLVER
+    from SEtaac import options
     if options.SOLVER == options.SOLVER_YICES2:
         from SEtaac.utils.solver.yices2 import Yices2
         _SOLVER = Yices2()
