@@ -45,19 +45,7 @@ class Solver:
     def add_assertions(self, formulas):
         raise Exception("Not implemented")
 
-    def reset_assumptions(self, ):
-        raise Exception("Not implemented")
-
-    def fixate_assumptions(self, ):
-        raise Exception("Not implemented")
-
-    def simplify(self, ):
-        raise Exception("Not implemented")
-
     def Array(self, symbol, index_sort, value_sort):
-        raise Exception("Not implemented")
-
-    def ConstArray(self, symbol, index_sort, value_sort, default):
         raise Exception("Not implemented")
 
     def If(self, cond, value_if_true, value_if_false):
@@ -169,9 +157,6 @@ class Solver:
         raise Exception("Not implemented")
 
     def eval_one_array(self, array, length):
-        raise Exception("Not implemented")
-
-    def translate_xid(self, expr, old_xid, new_xid):
         raise Exception("Not implemented")
 
     def copy(self):

@@ -1,12 +1,16 @@
+from SEtaac import options
 from SEtaac.utils.solver.solver import Solver
 
 _SOLVER = Solver()
-_num_contexts = 0
 
 
-def set_solver(solver):
+def set_default_solver():
     global _SOLVER
-    _SOLVER = solver()
+    if options.SOLVER == options.SOLVER_YICES2:
+        from SEtaac.utils.solver.yices2 import Yices2
+        _SOLVER = Yices2()
+    else:
+        raise Exception(f"Unsupported solver {options.SOLVER}. Aborting.")
 
 
 def get_clean_solver():
@@ -17,13 +21,6 @@ def ctx_or_symbolic(v, ctx, xid):
     if v not in ctx:
         ctx[v] = BVS(f'{v}_{xid}', 256)
     return ctx[v]
-
-
-# GENERIC OPS
-
-
-def substitute_terms(formula, substitute_map):
-    return _SOLVER.substitute_terms(formula, substitute_map)
 
 
 # TYPES
@@ -43,10 +40,6 @@ def BVS(symbol, width):
 
 def Array(symbol, index_sort, value_sort):
     return _SOLVER.Array(symbol, index_sort, value_sort)
-
-
-def ConstArray(symbol, index_sort, value_sort, default):
-    return _SOLVER.ConstArray(symbol, index_sort, value_sort, default)
 
 
 # CONDITIONAL OPERATIONS
@@ -84,9 +77,6 @@ def Not(a):
 
 def bv_unsigned_value(bv):
     return _SOLVER.bv_unsigned_value(bv)
-
-def bv_size(bv):
-    return _SOLVER.bv_size(bv)
 
 
 def is_concrete(bv):
