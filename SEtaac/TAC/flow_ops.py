@@ -188,6 +188,6 @@ class TAC_Staticcall(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        value_val = 0
+        value_val = BVV(0, 256)
 
         return self._handle(state, value_val=value_val)
