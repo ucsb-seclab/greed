@@ -95,23 +95,26 @@ class TAC_BaseCall(TAC_Statement):
         ostart = retOffset_val
         olen = retSize_val
 
+        state.returndata['size'] = olen
+        state.returndata['instruction_count'] = state.instruction_count
+
         if is_concrete(address_val) and bv_unsigned_value(address_val) <= 8:
             if bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
                 istart = argsOffset_val
                 ilen = argsSize_val
                 state.memory.copy_return_data(istart, ilen, ostart, olen)
-                state.registers[self.res1_var] = 1
+                state.registers[self.res1_var] = BVV(1, 256)
             else:
                 raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
-        elif (is_concrete(ostart) and is_concrete(olen)) or (is_concrete(olen) and bv_unsigned_value(olen) == 0):
+        elif is_concrete(olen):
             for i in range(bv_unsigned_value(olen)):
                 state.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{state.instruction_count}_{i}_{state.xid}', 8)
             log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
             logging.info(f"Calling contract {log_address_val} ({state.instruction_count}_{state.xid})")
             state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
         else:
-            raise VMSymbolicError("Unsupported symbolic ostart/olen in CALL")
+            raise VMSymbolicError("Unsupported symbolic retSize_val in CALL")
 
         state.set_next_pc()
         return [state]

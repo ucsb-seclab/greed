@@ -274,7 +274,10 @@ class TAC_Returndatasize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise VMExternalData('RETURNDATASIZE')
+        state.registers[self.res1_var] = state.returndata['size']
+
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Returndatacopy(TAC_Statement):

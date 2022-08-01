@@ -40,6 +40,8 @@ class SymbolicEVMState:
 
         self.callstack = list()
 
+        self.returndata = {'size': None, 'instruction_count': None}
+
         self.instruction_count = 0
         self.breakpoints = {}
         self.halt = False
@@ -221,6 +223,8 @@ class SymbolicEVMState:
         new_state.options = list(self.options)
 
         new_state.callstack = list(self.callstack)
+
+        new_state.returndata = dict(self.returndata)
 
         new_state.instruction_count = self.instruction_count
         new_state.breakpoints = self.breakpoints
