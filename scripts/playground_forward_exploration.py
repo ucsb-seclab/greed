@@ -8,7 +8,7 @@ from SEtaac import Project
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
 from SEtaac.utils.solver.shortcuts import *
-from SEtaac.exploration_techniques import DFS, DirectedSearch
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
@@ -99,6 +99,9 @@ def main(args):
 
     dfs = DFS()
     simgr.use_technique(dfs)
+
+    heartbeat = HeartBeat()
+    simgr.use_technique(heartbeat)
 
     try:
         simgr.run()
