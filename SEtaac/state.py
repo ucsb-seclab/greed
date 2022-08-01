@@ -53,7 +53,7 @@ class SymbolicEVMState:
         callvalue = ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
         self.balance = BV_Add(self.balance, callvalue)
 
-        self.ctx['CODESIZE-ADDRESS'] = len(self.code)
+        self.ctx['CODESIZE-ADDRESS'] = BVV(len(self.code), 256)
 
         self.path_constraints = list()
 
@@ -231,8 +231,6 @@ class SymbolicEVMState:
         new_state.gas = self.gas
         new_state.start_balance = self.start_balance
         new_state.balance = self.balance
-
-        new_state.ctx['CODESIZE-ADDRESS'] = self.ctx['CODESIZE-ADDRESS']
 
         new_state.path_constraints = list(self.path_constraints)
 
