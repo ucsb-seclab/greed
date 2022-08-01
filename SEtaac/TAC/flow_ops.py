@@ -104,13 +104,14 @@ class TAC_BaseCall(TAC_Statement):
                 state.registers[self.res1_var] = 1
             else:
                 raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
-        else:
-            assert is_concrete(ostart) and is_concrete(olen)
+        elif (is_concrete(ostart) and is_concrete(olen)) or (is_concrete(olen) and bv_unsigned_value(olen) == 0):
             for i in range(bv_unsigned_value(olen)):
                 state.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{state.instruction_count}_{i}_{state.xid}', 8)
             log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
             logging.info(f"Calling contract {log_address_val} ({state.instruction_count}_{state.xid})")
             state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
+        else:
+            raise VMSymbolicError("Unsupported symbolic ostart/olen in CALL")
 
         state.set_next_pc()
         return [state]
