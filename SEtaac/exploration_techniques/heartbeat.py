@@ -9,7 +9,7 @@ log.setLevel(logging.INFO)
 
 
 class HeartBeat(ExplorationTechnique):
-    def __init__(self, beat_interval=100):
+    def __init__(self, beat_interval=1000):
         super(HeartBeat, self).__init__()
         self.heart_beat_file = tempfile.NamedTemporaryFile(prefix='SEtaac_heartbeat_', delete=False).name
         log.info(f"Heartbeat file: {self.heart_beat_file} (delete to stop heartbeat)")
@@ -24,7 +24,9 @@ class HeartBeat(ExplorationTechnique):
             log.info("Exploration is alive <3. Step {}".format(self.steps_cnt))
             log.info("    Succs are: {}".format(successors))
             self.beat_cnt = 0
-            if os.path.isfile(self.heart_beat_file):
+            if not os.path.isfile(self.heart_beat_file):
                 log.info("HeartBeat stopped, need help? </3")
                 import ipdb
                 ipdb.set_trace()
+
+        return successors
