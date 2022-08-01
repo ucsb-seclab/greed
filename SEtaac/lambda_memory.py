@@ -132,7 +132,7 @@ class LambdaMemory:
         self.state = state
 
         self.lambda_constraint = LambdaConstraint()
-        self.constraints = list()
+        self._constraints = list()
 
         if default is not None:
             # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
@@ -142,12 +142,16 @@ class LambdaMemory:
         self.read_count = 0
 
     def add_constraint(self, formula):
-        self.constraints.append(formula)
+        self._constraints.append(formula)
         self.state.solver.add_assertion(formula)
 
     def add_constraints(self, formulas):
-        self.constraints += formulas
+        self._constraints += formulas
         self.state.solver.add_assertions(formulas)
+
+    @property
+    def constraints(self):
+        return self._constraints
 
     def __getitem__(self, index):
         assert not isinstance(index, slice), "slice memory read not implemented"
@@ -227,7 +231,7 @@ class LambdaMemory:
         new_memory._base = self._base
         new_memory.state = new_state
         new_memory.lambda_constraint = self.lambda_constraint
-        new_memory.constraints = list(self.constraints)
+        new_memory._constraints = list(self._constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
 

@@ -57,7 +57,7 @@ class SymbolicEVMState:
 
         self.ctx['CODESIZE-ADDRESS'] = BVV(len(self.code), 256)
 
-        self.path_constraints = list()
+        self._path_constraints = list()
 
         self.sha_observed = list()
 
@@ -191,14 +191,14 @@ class SymbolicEVMState:
 
     @property
     def constraints(self):
-        return self.path_constraints + self.memory.constraints + self.calldata.constraints + \
+        return self._path_constraints + self.memory.constraints + self.calldata.constraints + \
                self.storage.constraints + self.sha_constraints
     
     def add_constraint(self, constraint):
         # Here you can inspect the constraints being added to the state.
         if options.STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
-        self.path_constraints.append(constraint)
+        self._path_constraints.append(constraint)
         self.solver.add_assertion(constraint)
     
     def add_breakpoint(self, stmt_id, func=None):
@@ -236,7 +236,7 @@ class SymbolicEVMState:
         new_state.start_balance = self.start_balance
         new_state.balance = self.balance
 
-        new_state.path_constraints = list(self.path_constraints)
+        new_state._path_constraints = list(self._path_constraints)
 
         new_state.sha_observed = [sha.copy(new_state=new_state) for sha in self.sha_observed]
 
