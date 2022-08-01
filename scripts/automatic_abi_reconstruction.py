@@ -31,24 +31,25 @@ def main(args):
         simgr = p.factory.simgr(entry_state=entry_state)
         simgr.run()
 
+        print("Ran that")
+
         get_num_calldataload = lambda s: len([stmt for stmt in s.trace if stmt.__internal_name__ == "CALLDATALOAD"])
         for state in sorted(simgr.states, key=get_num_calldataload, reverse=True):
             if state.curr_stmt.__internal_name__ != "STOP":
                 continue
-            with new_solver_context(state) as solver:
-                if solver.is_sat():
-                    successful_state = state
-                    break
+            if state.solver.is_sat():
+                successful_state = state
+                break
         else:
             log.info("Could not find any successful state (calldatasize range searched: 0-256)")
             continue
             # raise Exception("Could not find any successful state (calldatasize range searched: 0-256)")
 
-        with new_solver_context(successful_state) as solver:
-            for i in range(256):
-                if solver.is_formula_sat(Equal(successful_state.calldatasize, BVV(i, 256))):
-                    mininum_calldatasize = i
-                    break
+    
+        for i in range(256):
+            if state.solver.is_formula_sat(Equal(successful_state.calldatasize, BVV(i, 256))):
+                mininum_calldatasize = i
+                break
             else:
                 raise Exception("Could not find minimum calldatasize (calldatasize range searched: 0-256)")
 
