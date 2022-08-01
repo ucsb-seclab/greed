@@ -132,11 +132,11 @@ class Yices2(Solver):
 
     def is_formula_true(self, formula: YicesTermBool) -> bool:
         assert isinstance(formula, YicesTermBool)
-        return self.is_formula_unsat(self.Not(formula).id)
+        return self.is_formula_unsat(self.Not(formula))
 
     def is_formula_false(self, formula: YicesTermBool) -> bool:
         assert isinstance(formula, YicesTermBool)
-        return self.is_formula_unsat(formula.id)
+        return self.is_formula_unsat(formula)
 
     def push(self):
         self.solver.push()
