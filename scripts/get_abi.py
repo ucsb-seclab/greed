@@ -17,11 +17,13 @@ if __name__ == "__main__":
     p = Project(target_dir=sys.argv[1])
 
     for s in [s for s in p.statement_at.values() if s.__internal_name__ == 'CALLDATALOAD']:
-        if not s.byte_offset_val:
-            continue
-        if is_concrete(s.byte_offset_val):
-            offset_val = bv_unsigned_value(s.byte_offset_val)
-            print(f"[{s.id}] Access to CALLDATA[{offset_val}]")
+        
+        if s.byte_offset_val:
+            if is_concrete(s.byte_offset_val):
+                offset_val = bv_unsigned_value(s.byte_offset_val)
+                print(f"[{s.id}] Access to CALLDATA[{offset_val}]")
+        else:
+            offset_val = s.byte_offset_var
         
         # Is the result register used in a comparison against 0xfffffffff? 
         register_result = s.res1_var
