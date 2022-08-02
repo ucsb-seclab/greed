@@ -72,6 +72,7 @@ def main(args):
         target_block_id = args.block
         target_block = p.factory.block(target_block_id)
         target_stmt = target_block.first_ins
+        target_stmt_id = target_stmt.id
     elif args.stmt:
         target_stmt_id = args.stmt
         target_stmt = p.factory.statement(target_stmt_id)
@@ -104,12 +105,9 @@ def main(args):
     simgr.use_technique(heartbeat)
 
     try:
-        simgr.run()
+        simgr.run(find=lambda s: s.curr_stmt.id == target_stmt_id)
     except KeyboardInterrupt:
         pass
-
-    import IPython; IPython.embed(); exit()
-
 
     # # todo: consider all critical paths
     # critical_paths = find_paths_with_stmt(p, target_stmt)
@@ -123,9 +121,11 @@ def main(args):
     # found.constraints.append(found.curr_stmt.address_val == 0x41414141)
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
+    print(simgr)
+    critical_path = simgr.one_found
     print(f"SAT: {critical_path.solver.is_sat()}")
-    # calldata = bytes(solver.eval_one_array(critical_path.calldata.base, critical_path.MAX_CALLDATA_SIZE)).hex()
-    # print(f'CALLDATA: {calldata}')
+    calldata = bytes(critical_path.solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
+    print(f'CALLDATA: {calldata}')
 
     # # find storage reads in critical path
     # critical_reads = dict()

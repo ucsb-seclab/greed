@@ -385,12 +385,13 @@ class Yices2(Solver):
         assert self.is_sat()
         model = yices.Model.from_context(self.solver, 1)
 
-        return YicesTerm(model.get_value_as_term(term)).dump()
+        return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(term)))
 
-    # def eval_one_array(self, array, length):
-    #     raise Exception("this doesn't work for now because it does not consider the side effects of memory reads")
-    #     assert self.is_sat()
-    #     return [int(self.solver.get_value_str(self.Array_Select(array, self.BVV(i, 256))), 2) for i in range(length)]
+    def eval_one_array(self, array, length):
+        assert self.is_sat()
+        model = yices.Model.from_context(self.solver, 1)
+        return [self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array[self.BVV(i, 256)])))
+                for i in range(length)]
 
     def copy(self):
         new_solver = Yices2()
