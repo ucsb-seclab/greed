@@ -23,7 +23,7 @@ if __name__ == "__main__":
         if s.byte_offset_val:
             if is_concrete(s.byte_offset_val):
                 offset_val = bv_unsigned_value(s.byte_offset_val)
-                #print(f"[{s.id}] Access to CALLDATA[{offset_val}]")
+                print(f"[{s.id}] Access to CALLDATA[{offset_val}]")
         else:
             offset_val = s.byte_offset_var
         
@@ -55,7 +55,7 @@ if __name__ == "__main__":
                             found_magic_constant = True
                             continue
                 if found_reg_result and found_magic_constant:
-                    log = "   CALLDATALOAD[{}] in is an offset in the CALLDATA memory".format(str(offset_val))
+                    log = "   CALLDATALOAD[{}] in {} is an offset in the CALLDATA memory".format(stmt.id, str(offset_val))
                     REPORT[func_signature].append(log)
 
 
