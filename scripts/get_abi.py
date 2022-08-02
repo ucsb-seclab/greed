@@ -13,6 +13,8 @@ LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger("SEtaac")
 
+REPORT = {}
+
 if __name__ == "__main__":
     p = Project(target_dir=sys.argv[1])
 
@@ -21,7 +23,7 @@ if __name__ == "__main__":
         if s.byte_offset_val:
             if is_concrete(s.byte_offset_val):
                 offset_val = bv_unsigned_value(s.byte_offset_val)
-                print(f"[{s.id}] Access to CALLDATA[{offset_val}]")
+                #print(f"[{s.id}] Access to CALLDATA[{offset_val}]")
         else:
             offset_val = s.byte_offset_var
         
@@ -30,6 +32,11 @@ if __name__ == "__main__":
         
         # Let's look into the current block as of now 
         curr_block = p.factory.block(s.block_id)
+        func_signature = curr_block.function.signature
+        
+        if not REPORT.get(func_signature, None):
+            REPORT[func_signature] = []
+        
         for stmt in curr_block.statements:
             if stmt.__internal_name__ == "GT":
                 found_reg_result = False
@@ -39,14 +46,25 @@ if __name__ == "__main__":
                     if arg_var == register_result:
                         found_reg_result = True
                         continue
+                    
+                    if not arg_val:
+                        continue
+
                     if is_concrete(arg_val):
                         if bv_unsigned_value(arg_val) == 0xffffffffffffffff:
                             found_magic_constant = True
                             continue
                 if found_reg_result and found_magic_constant:
-                    print(f"   CALLDATALOAD[{offset_val}] is an offset in the CALLDATA memory")
+                    log = "   CALLDATALOAD[{}] in is an offset in the CALLDATA memory".format(str(offset_val))
+                    REPORT[func_signature].append(log)
 
 
+    for k,v in REPORT.items():
+        print(f"Func {k}")
+        for vv in v:
+            print(f"   {vv}")
+    
+    import ipdb; ipdb.set_trace()
 
 '''
 for f in list(p.function_at.values()):
