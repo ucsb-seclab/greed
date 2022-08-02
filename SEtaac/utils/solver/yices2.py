@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 import yices
@@ -11,8 +12,20 @@ class YicesTerm:
         self.name = name
         self.value = value
 
-    def dump(self):
-        return yices.Terms.to_string(self.id, width=-1, height=-1, offset=0)
+    def dump(self, pp=False):
+        _dump = yices.Terms.to_string(self.id, width=-1, height=-1, offset=0)
+        if pp is True:
+            for match in re.findall(r'0b\d{256}', _dump):
+                _dump = _dump.replace(match, str(int(match[2:], 2)))
+        return _dump
+
+    def pp(self):
+        if self.value is not None:
+            return self.value
+        elif self.name is not None:
+            return self.name
+        else:
+            return f"<SYMBOL #{self.id}>"
 
     def __str__(self):
         classname = self.__class__.__name__

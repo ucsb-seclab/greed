@@ -14,6 +14,11 @@ class LambdaConstraint:
     def instantiate(self, index):
         return []
 
+    def __str__(self):
+        formatted_following_writes = ",".join([str(w) for w in self.following_writes])
+        return f"[{len(self.following_writes)} following writes]\n" \
+               f"LambdaConstraint"
+
 
 class LambdaMemsetConstraint(LambdaConstraint):
     def __init__(self, array, start, value, size, new_array, parent):
@@ -38,6 +43,11 @@ class LambdaMemsetConstraint(LambdaConstraint):
 
         return [instance] + self.parent.instantiate(index)
 
+    def __str__(self):
+        return f"[{len(self.following_writes)} following writes]\n" \
+               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},value:{self.value.pp()})\n" \
+               f"{self.parent}"
+
 
 class LambdaMemsetInfiniteConstraint(LambdaConstraint):
     def __init__(self, array, start, value, new_array, parent):
@@ -60,6 +70,11 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)
+
+    def __str__(self):
+        return f"[{len(self.following_writes)} following writes]\n" \
+               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},value:{self.value.pp()})\n" \
+               f"{self.parent}"
 
 
 class LambdaMemcopyConstraint(LambdaConstraint):
@@ -89,6 +104,11 @@ class LambdaMemcopyConstraint(LambdaConstraint):
 
         return [instance] + self.parent.instantiate(index)
 
+    def __str__(self):
+        return f"[{len(self.following_writes)} following writes]\n" \
+               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},source:{self.source.pp()},source_start:{self.source_start.pp()})\n" \
+               f"{self.parent}"
+
 
 class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
     def __init__(self, array, start, source, source_start, new_array, parent):
@@ -115,6 +135,11 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)
+
+    def __str__(self):
+        return f"[{len(self.following_writes)} following writes]\n" \
+               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},source:{self.source.pp()},source_start:{self.source_start.pp()})\n" \
+               f"{self.parent}"
 
 
 class LambdaMemory:
@@ -236,3 +261,7 @@ class LambdaMemory:
         new_memory.read_count = self.read_count
 
         return new_memory
+
+    def __str__(self):
+        return f"LambdaMemory\n" \
+               f"{self.lambda_constraint}"
