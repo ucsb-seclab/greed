@@ -65,7 +65,7 @@ class SymbolicEVMState:
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
-        self.MAX_CALLDATA_SIZE = max_calldatasize or option.MAX_CALLDATA_SIZE
+        self.MAX_CALLDATA_SIZE = max_calldatasize or options.MAX_CALLDATA_SIZE
 
         init_ctx = init_ctx or dict()
         if "CALLDATA" in init_ctx:
