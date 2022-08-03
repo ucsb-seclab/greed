@@ -1,7 +1,7 @@
 import datetime
 import logging
 
-from SEtaac import options
+from SEtaac import options as opt
 from SEtaac.lambda_memory import LambdaMemory
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.extra import UUIDGenerator
@@ -65,7 +65,7 @@ class SymbolicEVMState:
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
 
-        self.MAX_CALLDATA_SIZE = max_calldatasize or options.MAX_CALLDATA_SIZE
+        self.MAX_CALLDATA_SIZE = max_calldatasize or opt.MAX_CALLDATA_SIZE
 
         init_ctx = init_ctx or dict()
         if "CALLDATA" in init_ctx:
@@ -196,7 +196,7 @@ class SymbolicEVMState:
     
     def add_constraint(self, constraint):
         # Here you can inspect the constraints being added to the state.
-        if options.STATE_STOP_AT_ADDCONSTRAINT in self.options:
+        if opt.STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
         self._path_constraints.append(constraint)
         self.solver.add_assertion(constraint)
