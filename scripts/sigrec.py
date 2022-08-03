@@ -11,9 +11,9 @@ if __name__ == "__main__":
     xid = gen_exec_id()
     
     for f in p.function_at.values():
-        print(f"Exploring {f.signature}")
-        if f.signature == None:
+        if f.signature == None or f.signature == "0x00000000":
             continue
+        print(f"Exploring {f.signature}")
         init_ctx = {"CALLDATA": f.signature}
         entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx)
         simgr = p.factory.simgr(entry_state=entry_state)

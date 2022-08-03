@@ -15,7 +15,7 @@ class YicesTerm:
     def dump(self, pp=False):
         _dump = yices.Terms.to_string(self.id, width=-1, height=-1, offset=0)
         if pp is True:
-            for match in re.findall(r'0b\d{256}', _dump):
+            for match in re.findall(r'0b\d*', _dump):
                 _dump = _dump.replace(match, str(int(match[2:], 2)))
         return _dump
 
