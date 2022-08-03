@@ -15,6 +15,9 @@ MIN_SHA_DISTANCE = 2**20
 # Debugging options
 SIMGRVIZ = False
 
+# Max calldatasize considered
+MAX_CALLDATA_SIZE = 256
+
 # STATE OPTIONS
 # ==============
 STATE_STOP_AT_ADDCONSTRAINT = "STATE_STOP_AT_ADDCONSTRAINT" 
