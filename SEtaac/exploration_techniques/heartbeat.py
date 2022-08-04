@@ -4,12 +4,13 @@ import tempfile
 
 from . import ExplorationTechnique
 
-log = logging.getLogger(__name__)
+LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
+logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
+log = logging.getLogger("HeartBeat")
 log.setLevel(logging.INFO)
 
-
 class HeartBeat(ExplorationTechnique):
-    def __init__(self, beat_interval=1000):
+    def __init__(self, beat_interval=100):
         super(HeartBeat, self).__init__()
         self.heart_beat_file = tempfile.NamedTemporaryFile(prefix='SEtaac_heartbeat_', delete=False).name
         log.info(f"Heartbeat file: {self.heart_beat_file} (delete to stop heartbeat)")
