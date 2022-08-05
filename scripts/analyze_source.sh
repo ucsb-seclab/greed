@@ -17,7 +17,7 @@ SETAAC_DIR=`readlink -f $SETAAC_DIR/../`
 arch=$(uname -i)
 
 # compile with solc-select
-SOLC_VERSION=0.8.7 solc --bin-runtime $SOURCE_FILE | sed "1,/Binary of the runtime part:/d" | tr -d '\n' > contract.hex || { echo "${bold}${red}Failed to run solc${normal}"; exit 1; }
+SOLC_VERSION=0.8.7 solc --bin-runtime $SOURCE_FILE | sed -rn '/Binary of the runtime part:/{n;p;}' | tail -n 1 | tr -d '\n' > contract.hex || { echo "${bold}${red}Failed to run solc${normal}"; exit 1; }
 
 # analyze deployment hex
 $SETAAC_DIR/scripts/analyze_contract_hex.sh --file contract.hex
