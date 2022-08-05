@@ -136,7 +136,7 @@ class TAC_Calldataload(TAC_Statement):
             state.add_constraint(BV_ULT(self.byte_offset_val, BVV(state.MAX_CALLDATA_SIZE, 256)))
         
         calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.uuid_generator.next()}", 256)
-
+        
         state.add_constraint(Equal(calldataload_res,
                                   state.calldata.readn(self.byte_offset_val, BVV(32, 256))))
 

@@ -79,9 +79,10 @@ class YicesTerm:
 
     def __str__(self):
         classname = self.__class__.__name__
+        operator = self.operator.name
         name_str = f" name:{self.name}" if self.name is not None else ""
-        value_str = f" value:{self.value}" if self.value is not None else ""
-        return f"{classname} (#{self.id}){name_str}{value_str}"
+        value_str = f" value:{hex(self.value)}" if self.value is not None else ""
+        return f"(#{self.id})\n{operator}\n{name_str}{value_str}"
 
     def __repr__(self):
         return str(self)
