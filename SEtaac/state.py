@@ -1,5 +1,6 @@
 import datetime
 import logging
+from copy import copy
 
 from SEtaac import options as opt
 from SEtaac.lambda_memory import LambdaMemory
@@ -37,6 +38,8 @@ class SymbolicEVMState:
         # We want every state to have an individual set
         # of options.
         self.options = options or list()
+
+        self.globals = dict()
 
         self.callstack = list()
 
@@ -221,6 +224,8 @@ class SymbolicEVMState:
         new_state.registers = dict(self.registers)
         new_state.ctx = dict(self.ctx)
         new_state.options = list(self.options)
+
+        new_state.globals = {k: copy(v) for k, v in self.globals.items()}
 
         new_state.callstack = list(self.callstack)
 
