@@ -166,6 +166,9 @@ class LambdaMemory:
         self.write_count = 0
         self.read_count = 0
 
+        # A cache to keep track 
+        self.read_offset_cache = set()
+
     def add_constraint(self, formula):
         self._constraints.append(formula)
         self.state.solver.add_assertion(formula)
@@ -187,8 +190,11 @@ class LambdaMemory:
         #     return Array_Select(self._base, index)
 
         # instantiate and add lambda constraints
-        new_constraints = self.lambda_constraint.instantiate(index)
-        self.add_constraints(new_constraints)
+        if index not in self.read_offset_cache:
+            l.debug(f"Avoiding instantiation at index {index}")
+            new_constraints = self.lambda_constraint.instantiate(index)
+            self.add_constraints(new_constraints)
+            self.read_offset_cache.add(index)
 
         return Array_Select(self._base, index)
 
@@ -259,6 +265,7 @@ class LambdaMemory:
         new_memory._constraints = list(self._constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
+        new_memory.read_offset_cache = self.read_offset_cache
 
         return new_memory
 
