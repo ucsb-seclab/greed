@@ -208,6 +208,7 @@ class SymbolicEVMState:
         if not func:
             def justStop(state):
                 import ipdb; ipdb.set_trace()
+            func = justStop
         self.breakpoints[stmt_id] = func
 
     def copy(self):

@@ -147,6 +147,7 @@ class SimulationManager:
 
         if state.pc in state.breakpoints.keys():
             log.warning("⚡ Triggered breakpoint at {}".format(state.pc))
+            import ipdb; ipdb.set_trace()
             state.breakpoints[state.pc](state)
 
         successors = list()
@@ -210,7 +211,7 @@ class SimulationManager:
 
             log.exception(f'Exception while stepping the Simulation Manager')
             self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
-            exit(1)
+            sys.exit(1)
 
     def __str__(self):
         stashes_str = [f'{len(stash)} {stash_name}'  # {[s for s in stash]}'
