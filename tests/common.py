@@ -5,7 +5,6 @@ import IPython
 
 from SEtaac import Project, utils
 from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
 from SEtaac.utils.solver.shortcuts import *
 
 
