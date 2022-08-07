@@ -1,4 +1,4 @@
-from SEtaac.lambda_memory import LambdaMemory
+from SEtaac.memory import LambdaMemory
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 from SEtaac import options
