@@ -3,7 +3,8 @@ import logging
 from copy import copy
 
 from SEtaac import options as opt
-from SEtaac.lambda_memory import LambdaMemory
+from SEtaac.memory import LambdaMemory
+from SEtaac.state_plugins import SimStatePlugin, SimStateGlobals
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
@@ -34,6 +35,11 @@ class SymbolicEVMState:
         self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
         self.registers = dict()
         self.ctx = dict()
+
+        self.active_plugins = dict()
+        
+        # Register default plugins
+        self._register_default_plugins()
 
         # We want every state to have an individual set
         # of options.
@@ -93,6 +99,7 @@ class SymbolicEVMState:
                     for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
                         self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
+                
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
@@ -106,10 +113,8 @@ class SymbolicEVMState:
                 else:
                     log.debug("Initializing CALLDATA at {}".format(index))
                     self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
-
         else:
             self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
-
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             # CALLDATASIZE < MAX_CALLDATA_SIZE
@@ -135,6 +140,11 @@ class SymbolicEVMState:
             self.pc = self.get_fallthrough_pc()
         except VMNoSuccessors:
             self.halt = True
+
+    # Add here any default plugin that we want to ship
+    # with a fresh state.
+    def _register_default_plugins(self):
+        self.register_plugin("globals",SimStateGlobals())
 
     # index: where to start
     # size: the amount of bytes to read, default 1.
@@ -211,6 +221,12 @@ class SymbolicEVMState:
             func = justStop
         self.breakpoints[stmt_id] = func
 
+    def register_plugin(self, name:str, plugin:SimStatePlugin):
+        self.active_plugins[name] = plugin
+        setattr(self, name, plugin)
+        plugin.set_state(self)
+        return plugin
+
     def copy(self):
         # assume unchanged xid
         new_state = SymbolicEVMState(self.xid, project=self.project, partial_init=True)
@@ -252,6 +268,11 @@ class SymbolicEVMState:
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
         new_state.calldata = self.calldata.copy(new_state=new_state)
         new_state.calldatasize = self.calldatasize
+
+        new_state.active_plugins = dict()
+        # Copy all the plugins
+        for p_name, p in self.active_plugins.items():
+            new_state.register_plugin(p_name, p.copy())
 
         return new_state
 
