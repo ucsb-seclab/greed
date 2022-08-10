@@ -192,6 +192,7 @@ class LambdaMemory:
 
         # instantiate and add lambda constraints
         if index not in self.read_offset_cache:
+            # TODO: is this correct?
             log.debug(f"Avoiding instantiation at index {index}")
             new_constraints = self.lambda_constraint.instantiate(index)
             self.add_constraints(new_constraints)

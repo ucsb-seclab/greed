@@ -1,5 +1,6 @@
 
 
+from SEtaac.utils.solver.shortcuts import *
 
 # Temporary, Yices specific.
 def get_array_base(self,array):
@@ -10,4 +11,3 @@ def get_array_base(self,array):
                     self.get_array_base(c)
                 elif c.operator == "array":
                     print(c.name)
-
