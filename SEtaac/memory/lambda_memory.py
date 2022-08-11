@@ -9,13 +9,13 @@ log = logging.getLogger(__name__)
 
 class LambdaConstraint:
     def __init__(self):
-        self.following_writes = set()
+        self.following_writes = dict()
 
     def instantiate(self, index):
         return []
 
     def __str__(self):
-        formatted_following_writes = ",".join([str(w) for w in self.following_writes])
+        formatted_following_writes = ",".join([str(w) for w in self.following_writes.items()])
         return f"[{len(self.following_writes)} following writes]\n" \
                f"LambdaConstraint"
 
@@ -33,7 +33,7 @@ class LambdaMemsetConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes:
+        if index in self.following_writes.keys():
             return []
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -61,7 +61,7 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes:
+        if index in self.following_writes.keys():
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -92,7 +92,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes:
+        if index in self.following_writes.keys():
             return []
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -124,7 +124,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes:
+        if index in self.following_writes.keys():
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -152,8 +152,9 @@ class LambdaMemory:
         assert tag is not None and value_sort is not None, "Invalid LambdaMemory initialization"
 
         self.tag = tag
+        self.layer_level = 0
         self.value_sort = value_sort
-        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), value_sort)
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
 
         self.state = state
 
@@ -199,7 +200,7 @@ class LambdaMemory:
     def __setitem__(self, index, v):
         self.write_count += 1
 
-        self.lambda_constraint.following_writes.add(index)
+        self.lambda_constraint.following_writes[index] = v
 
         self._base = Array_Store(self._base, index, v)
 
@@ -212,33 +213,41 @@ class LambdaMemory:
         else:
             vv = list()
             for i in range(bv_unsigned_value(n)):
-                vv.append(self[BV_Add(index, BVV(i, 256))])
+                if is_concrete(index):
+                    read_index = BVV(index.value+i, 256)
+                else:
+                    read_index = BV_Add(index, BVV(i, 256))
+                vv.append(self[read_index])
             return BV_Concat(vv)
 
     def memset(self, start, value, size):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
+        self.layer_level += 1
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemsetConstraint(old_base, start, value, size, self._base,
                                                         parent=self.lambda_constraint)
 
     def memsetinfinite(self, start, value):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
+        self.layer_level += 1
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self._base,
                                                                 parent=self.lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
+        self.layer_level += 1
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self._base,
                                                          parent=self.lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
         old_base = self._base
-        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}", BVSort(256), BVSort(8))
+        self.layer_level += 1
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
         self.lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
                                                                  parent=self.lambda_constraint)
@@ -264,6 +273,7 @@ class LambdaMemory:
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
         new_memory.read_offset_cache = self.read_offset_cache
+        new_memory.layer_level = self.layer_level
 
         return new_memory
 

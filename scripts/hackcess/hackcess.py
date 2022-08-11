@@ -6,6 +6,8 @@ from SEtaac.utils import gen_exec_id
 from SEtaac.utils.solver.shortcuts import *
 from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
 
+#from .taint_analysis import is_mem_read_tainted
+
 import networkx as nx 
 import random
 
@@ -85,13 +87,13 @@ if __name__ == "__main__":
     dfs = DFS()
     simgr.use_technique(dfs)
     
-    directed_search = DirectedSearch(p.factory.statement("0x15b0x50"))
+    directed_search = DirectedSearch(p.factory.statement("0xc10x45"))
     simgr.use_technique(directed_search)
 
     heartbeat = HeartBeat()
     simgr.use_technique(heartbeat)
 
-    simgr.run(find=lambda s: s.curr_stmt.id == "0x15b0x50")
+    simgr.run(find=lambda s: s.curr_stmt.id == "0xc10x45")
 
     found = simgr.one_found
 
