@@ -98,7 +98,6 @@ class LambdaMemcopyConstraint(LambdaConstraint):
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
 
-        # FIXME This depends on what is bigger!
         shift_to_source_offset = If(BV_UGE(self.source_start, self.start), 
                                         BV_Sub(self.source_start, self.start),
                                         BV_Sub(self.start, self.source_start))
