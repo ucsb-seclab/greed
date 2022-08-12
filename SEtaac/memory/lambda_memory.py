@@ -3,6 +3,7 @@ import logging
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 
+
 log = logging.getLogger(__name__)
 #log.setLevel(logging.DEBUG)
 
@@ -96,7 +97,10 @@ class LambdaMemcopyConstraint(LambdaConstraint):
             return []
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
+
+        # FIXME This depends on what is bigger!
         shift_to_source_offset = BV_Sub(self.source_start, self.start)
+        
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,
                             # memcopy source is of type "memory", don't access directly as an array
