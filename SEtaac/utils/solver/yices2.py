@@ -447,24 +447,29 @@ class Yices2(Solver):
         yices_id = yices.Terms.application(arr.id, [index.id])
         return YicesTermBV(operator="select", children=[arr, index], yices_id=yices_id)
 
-    def eval_one(self, term):
+    def eval_one(self, term, raw=False):
         assert self.is_sat(), "Formula is UNSAT"
         model = yices.Model.from_context(self.solver, 1)
-        return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(term)))
-
+        if raw:
+            return YicesTermBV(model.get_value_as_term(term))
+        else:
+            return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(term)))
+            
     def eval_one_array(self, array, length):
         assert self.is_sat(), "Formula is UNSAT"
         model = yices.Model.from_context(self.solver, 1)
         return [self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array[self.BVV(i, 256)])))
                 for i in range(length)]
 
-    def eval_one_array_at(self, array, offset, length):
+    def eval_one_array_at(self, array, offset, length, raw=False):
         assert self.is_sat(), "Formula is UNSAT"
+        assert isinstance(offset, YicesTermBV)
+        assert isinstance(length, YicesTermBV)
         model = yices.Model.from_context(self.solver, 1)
-        offset = self.BVV(offset, 256)
-        length = self.BVV(length, 256)
-        return [self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array.readn(offset, length))))]
-
+        if raw:
+            return YicesTermBV(model.get_value_as_term(array.readn(offset, length)))
+        else:
+            return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array.readn(offset, length))))
 
     def copy(self):
         new_solver = Yices2()

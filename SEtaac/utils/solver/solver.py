@@ -156,10 +156,10 @@ class Solver:
     def eval_one(self, term):
         raise Exception("Not implemented")
 
-    def eval_one_array(self, array, length):
+    def eval_one_array(self, array, length, raw=False):
         raise Exception("Not implemented")
 
-    def eval_one_array_at(self, array, offset, length):
+    def eval_one_array_at(self, array, offset, length, raw=False):
         raise Exception("Not implemented")
 
     def copy(self):

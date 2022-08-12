@@ -1,4 +1,6 @@
 import logging
+import sha3 
+import SEtaac.options as opts
 
 from SEtaac import utils
 from SEtaac.TAC.base import TAC_Statement
@@ -8,7 +10,9 @@ from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 
+
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Callvalue', 'TAC_Calldataload', 'TAC_Calldatasize', 'TAC_Calldatacopy',
@@ -33,7 +37,40 @@ class TAC_Sha3(TAC_Statement):
         state.sha_observed.append(new_sha)
 
         state.registers[self.res1_var] = new_sha.symbol
-        
+
+        size_sol = state.solver.eval_one(self.size_val, raw=True)
+        offset_sol = state.solver.eval_one(self.offset_val, raw=True)
+
+        # Checks to see if we have only one solution, if not, as of now we give up and 
+        # keep thre unconstrained symbol + the ackermann constraints, otherwise let's 
+        # calculate the possible solutions and apply the constraints.
+        if opts.GREEDY_SHA:
+            if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
+                                not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
+
+                buffer_sol = state.solver.eval_one_array_at(state.memory, offset_sol, 
+                                                                        size_sol, 
+                                                                        raw=True)
+
+                if not state.solver.is_formula_sat(NotEqual(state.memory.readn(offset_sol, size_sol), buffer_sol)):
+                    # Everything has only one solution, we can calculate the SHA
+                    keccak256 = sha3.keccak_256()
+                    buffer_sol = bv_unsigned_value(buffer_sol).to_bytes(bv_unsigned_value(size_sol), 'big')
+                    keccak256.update(buffer_sol)
+                    res = keccak256.hexdigest()
+                    log.info(f"Calculated concrete SHA3 {res}")
+                    
+                    # Constraining parameters to their calculated solutions
+                    state.add_constraint(Equal(self.offset_val, offset_sol))
+                    state.add_constraint(Equal(self.size_val, size_sol))
+
+                    # Constraining the fresh SHA symbol to its solution given this buffer 
+                    state.add_constraint(Equal(state.registers[self.res1_var], BVV(int(res,16),256)))
+
+                    # Constraining the SHA3 input buffer to the solution just calculated
+                    for x,b in zip(range(0, bv_unsigned_value(size_sol)), buffer_sol):
+                        state.add_constraint(Equal(state.memory[BVV(bv_unsigned_value(offset_sol)+x,256)], BVV(b,8)))
+
         state.set_next_pc()
 
         return [state]

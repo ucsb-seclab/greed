@@ -2,9 +2,22 @@
 
 # GENERAL OPTIONS 
 # ===============
+# Global options valid for ALL the states 
+# generated during the exploration.
+# ===============
 
-# Exploration options
+# Wether we want to check for satisfiability 
+# every time the execution can fork.
+# Checking for SAT at every branch may considerably
+# slow down the exploration, but reduces the amount 
+# of states kept in the stashes (i.e., pruning)
 LAZY_SOLVES = False
+
+# Wether we want to try to calculate the SHA3 for 
+# buffer that are concrete or have only 1 solutions.
+# This may slow down the exploration as we need to calculate
+# a solution for input buffers/offset and length used by the sha.
+GREEDY_SHA = True
 
 # This is to enforce that two addresses constructed as
 # base + offset, where 'base' is a SHA result, cannot ever overlap
@@ -12,22 +25,36 @@ LAZY_SOLVES = False
 # related to overlapping memory regions.
 MIN_SHA_DISTANCE = 2**20
 
-# Debugging options
+# Create a graph visualizing the exploration.
 SIMGRVIZ = False
+
+# Activate debugging capabilities through the
+# SimStateInspect plugin (i.e., breakpoints)
 STATE_INSPECT = False
 
-# Max calldatasize considered
+# Default CALLDATASIZE considered.
+# Can be overwritten by the entry_state constructor.
 MAX_CALLDATA_SIZE = 256
 
 # STATE OPTIONS
-# ==============
+# =============================================
+# Per-state options, can be enabled/disabled 
+# for a single state.
+# =============================================
+
+# Wether we want to drop a debugging interface everytime we 
+# add a constraint to the state.
 STATE_STOP_AT_ADDCONSTRAINT = "STATE_STOP_AT_ADDCONSTRAINT" 
 
 
 # SOLVER OPTIONS
 # ==============
-MAX_SHA_SIZE = 256
-SOLVER_YICES2 = "YICES2"
+# Options that influence the solving capabilities
+# ==============
 
+# MAX size of the SHA3 input buffer that is considered.
+MAX_SHA_SIZE = 256
+
+SOLVER_YICES2 = "YICES2"
 # Default is Yices2
 SOLVER = SOLVER_YICES2
