@@ -455,11 +455,14 @@ class Yices2(Solver):
         else:
             return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(term)))
             
-    def eval_one_array(self, array, length):
+    def eval_one_array(self, array, length, raw=False):
         assert self.is_sat(), "Formula is UNSAT"
+        assert isinstance(length, YicesTermBV)
         model = yices.Model.from_context(self.solver, 1)
-        return [self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array[self.BVV(i, 256)])))
-                for i in range(length)]
+        if raw:
+            return YicesTermBV(model.get_value_as_term(array.readn(offset, length)))
+        else:
+            return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array.readn(self.BVV(0,256), length))))
 
     def eval_one_array_at(self, array, offset, length, raw=False):
         assert self.is_sat(), "Formula is UNSAT"
