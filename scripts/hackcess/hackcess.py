@@ -6,7 +6,7 @@ from SEtaac.utils import gen_exec_id
 from SEtaac.utils.solver.shortcuts import *
 from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
 
-#from .taint_analysis import is_mem_read_tainted
+from taint_analysis import CalldataTaintAnalysis
 
 import networkx as nx 
 import random
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     p = Project(target_dir=sys.argv[1])
     xid = gen_exec_id()
     
-    init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
+    init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a2211111111111111222200000000000000000000000000"}
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=100)
 
     #entry_state.add_breakpoint("0x4460x2060x2530x3b")
@@ -96,6 +96,9 @@ if __name__ == "__main__":
     simgr.run(find=lambda s: s.curr_stmt.id == "0xc10x45")
 
     found = simgr.one_found
+
+    #cta = CalldataTaintAnalysis(found, 0x4, 0x100)
+    #cta.is_mem_read_tainted(0x0)
 
     #data = found.memory.readn(BVV(386,256), BVV(32,256))
 
