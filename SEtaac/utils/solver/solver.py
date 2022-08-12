@@ -159,5 +159,8 @@ class Solver:
     def eval_one_array(self, array, length):
         raise Exception("Not implemented")
 
+    def eval_one_array_at(self, array, offset, length):
+        raise Exception("Not implemented")
+
     def copy(self):
         raise Exception("Not implemented")
