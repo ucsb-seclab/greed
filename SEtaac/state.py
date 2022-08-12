@@ -4,7 +4,7 @@ from copy import copy
 
 from SEtaac import options as opt
 from SEtaac.memory import LambdaMemory
-from SEtaac.state_plugins import SimStatePlugin, SimStateGlobals
+from SEtaac.state_plugins import SimStatePlugin, SimStateGlobals, SimStateInspect
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
@@ -36,14 +36,13 @@ class SymbolicEVMState:
         self.registers = dict()
         self.ctx = dict()
 
-        self.active_plugins = dict()
-        
-        # Register default plugins
-        self._register_default_plugins()
-
         # We want every state to have an individual set
         # of options.
         self.options = options or list()
+
+        # Register default plugins
+        self.active_plugins = dict()
+        self._register_default_plugins()
 
         self.globals = dict()
 
@@ -128,32 +127,31 @@ class SymbolicEVMState:
     def pc(self):
         return self._pc
 
-    @pc.setter
-    def pc(self, value):
-        self._pc = value
-
     @property
     def curr_stmt(self):
         return self.project.factory.statement(self._pc)
+
+    @property
+    def sha_constraints(self):
+        constraints = list()
+        for sha in self.sha_observed:
+            constraints += sha.constraints
+        return constraints
+
+    @property
+    def constraints(self):
+        return self._path_constraints + self.memory.constraints + self.calldata.constraints + \
+               self.storage.constraints + self.sha_constraints
+
+    @pc.setter
+    def pc(self, value):
+        self._pc = value
 
     def set_next_pc(self):
         try:
             self.pc = self.get_fallthrough_pc()
         except VMNoSuccessors:
             self.halt = True
-
-    # Add here any default plugin that we want to ship
-    # with a fresh state.
-    def _register_default_plugins(self):
-        self.register_plugin("globals",SimStateGlobals())
-
-    # index: where to start
-    # size: the amount of bytes to read, default 1.
-    def dbg_read_memory(self, index, size=1):
-        # WARNING: THIS IS JUST AN API EXPOSED TO USER,
-        #          DO NOT USE IT INTERNALLY.
-        assert(type(index) is int)
-        return BV_Concat(self.memory[BVV(index, 256):BVV(index+size, 256)])
 
     def get_fallthrough_pc(self):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
@@ -195,18 +193,6 @@ class SymbolicEVMState:
 
         log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))
         return non_fallthrough_bb.first_ins.id
-
-    @property
-    def sha_constraints(self):
-        constraints = list()
-        for sha in self.sha_observed:
-            constraints += sha.constraints
-        return constraints
-
-    @property
-    def constraints(self):
-        return self._path_constraints + self.memory.constraints + self.calldata.constraints + \
-               self.storage.constraints + self.sha_constraints
     
     def add_constraint(self, constraint):
         # Here you can inspect the constraints being added to the state.
@@ -214,13 +200,13 @@ class SymbolicEVMState:
             import ipdb; ipdb.set_trace()
         self._path_constraints.append(constraint)
         self.solver.add_assertion(constraint)
-    
-    def add_breakpoint(self, stmt_id, func=None):
-        if not func:
-            def justStop(state):
-                import ipdb; ipdb.set_trace()
-            func = justStop
-        self.breakpoints[stmt_id] = func
+
+    # Add here any default plugin that we want to ship
+    # with a fresh state.
+    def _register_default_plugins(self):
+        self.register_plugin("globals", SimStateGlobals())
+        if opt.STATE_INSPECT:
+            self.register_plugin("inspect", SimStateInspect())
 
     def register_plugin(self, name:str, plugin:SimStatePlugin):
         self.active_plugins[name] = plugin

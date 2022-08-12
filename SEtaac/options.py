@@ -14,6 +14,7 @@ MIN_SHA_DISTANCE = 2**20
 
 # Debugging options
 SIMGRVIZ = False
+STATE_INSPECT = False
 
 # Max calldatasize considered
 MAX_CALLDATA_SIZE = 256
