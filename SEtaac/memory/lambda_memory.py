@@ -211,13 +211,13 @@ class LambdaMemory:
     def readn(self, index, n):
         assert is_concrete(n), "readn with symbolic length not implemented"
         assert bv_unsigned_value(n) != 0, "invalid readn with length=0"
-
         if bv_unsigned_value(n) == 1:
             return self[index]
         else:
             vv = list()
             for i in range(bv_unsigned_value(n)):
-                if is_concrete(index):
+                # Need an extra check to make sure it's just a BVV.
+                if is_concrete(index) and len(index.children) == 0:
                     read_index = BVV(index.value+i, 256)
                 else:
                     read_index = BV_Add(index, BVV(i, 256))

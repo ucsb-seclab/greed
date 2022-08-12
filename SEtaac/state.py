@@ -108,6 +108,7 @@ class SymbolicEVMState:
 
             for index, cb in enumerate(calldata_bytes):
                 if cb == 'SS':
+                    log.debug(f"Storing symbolic byte at index {index} in CALLDATA")
                     # special sequence for symbolic bytes
                     self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
                 else:

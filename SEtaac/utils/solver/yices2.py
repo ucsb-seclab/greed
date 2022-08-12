@@ -450,7 +450,6 @@ class Yices2(Solver):
     def eval_one(self, term):
         assert self.is_sat(), "Formula is UNSAT"
         model = yices.Model.from_context(self.solver, 1)
-
         return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(term)))
 
     def eval_one_array(self, array, length):
