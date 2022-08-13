@@ -186,9 +186,6 @@ class LambdaMemory:
         self.write_count = 0
         self.read_count = 0
 
-        # A cache to keep track 
-        self.read_offset_cache = set()
-
     def add_constraint(self, formula):
         self._constraints.append(formula)
         self.state.solver.add_assertion(formula)
@@ -286,7 +283,6 @@ class LambdaMemory:
         new_memory._constraints = list(self._constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
-        new_memory.read_offset_cache = self.read_offset_cache
         new_memory.layer_level = self.layer_level
 
         return new_memory
