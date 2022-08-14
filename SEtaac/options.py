@@ -14,10 +14,10 @@
 LAZY_SOLVES = False
 
 # Wether we want to try to calculate the SHA3 for 
-# buffer that are concrete or have only 1 solutions.
+# buffer that are concrete or have only 1 solution.
 # This may slow down the exploration as we need to calculate
 # a solution for input buffers/offset and length used by the sha.
-GREEDY_SHA = True
+GREEDY_SHA = False
 
 # This is to enforce that two addresses constructed as
 # base + offset, where 'base' is a SHA result, cannot ever overlap
