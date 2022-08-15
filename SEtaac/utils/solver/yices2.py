@@ -140,8 +140,25 @@ class Yices2(Solver):
 
     def __init__(self):
         cfg = yices.Config()
+        
         cfg.default_config_for_logic('QF_ABV')
+
+        #cfg.set_config("arith-solver", 'simplex')
+        
         self.solver = yices.Context(cfg)
+
+        # For the list of options see here.
+        # https://github.com/SRI-CSL/yices2/blob/bc50bebdc3aabb161328bbfc234a10da6dd3d5c4/doc/sphinx/source/context-operations.rst
+        
+        #self.solver.enable_option("var-elim")
+        #self.solver.enable_option("arith-elim")
+        #self.solver.enable_option("flatten")
+        #self.solver.enable_option("assert-ite-bounds")
+        #self.solver.enable_option("eager-arith-lemmas")
+        #self.solver.enable_option("keep-ite")
+        #self.solver.enable_option("bvarith-elim")
+        #self.solver.enable_option("break-symmetries")
+
         self.assertions = list()
 
     def BVSort(self, width: int) -> YicesTypeBV:
