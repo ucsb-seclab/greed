@@ -28,7 +28,7 @@ class Sha3(LambdaMemory):
         # of bytes 'size' starting from 'start'
         self.memcopy(BVV(0, 256), memory.copy(state), start, size)
 
-        # todo: we somehow want to make sure that there is never a constraint of the type SHA3_<x> == 0xhardcoded
+        # TODO: we somehow want to make sure that there is never a constraint of the type SHA3_<x> == 0xhardcoded
 
     def instantiate_ackermann_constraints(self, other):
         assert isinstance(other, Sha3)
@@ -51,3 +51,16 @@ class Sha3(LambdaMemory):
                                           And(sha_not_equal, sha_distance_more_than_x))
 
         self.add_constraint(bounded_ackermann_constraint)
+    
+    def copy(self, new_state):
+        new_sha_memory = super().copy(new_state)
+        new_sha_memory.symbol = self.symbol
+
+        # WARNING: does this need a deep copy?
+        new_sha_memory.memory = self.memory
+
+        new_sha_memory.start = self.start
+        new_sha_memory.size = self.size
+        new_sha_memory.max_size = self.max_size
+        
+        return new_sha_memory
