@@ -37,14 +37,15 @@ class TAC_Sha3(TAC_Statement):
         state.sha_observed.append(new_sha)
 
         state.registers[self.res1_var] = new_sha.symbol
-
-        size_sol = state.solver.eval_one(self.size_val, raw=True)
-        offset_sol = state.solver.eval_one(self.offset_val, raw=True)
-
+        
         # Checks to see if we have only one solution, if not, as of now we give up and 
         # keep thre unconstrained symbol + the ackermann constraints, otherwise let's 
         # calculate the possible solutions and apply the constraints.
         if opts.GREEDY_SHA:
+            log.info(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
+            size_sol = state.solver.eval_one(self.size_val, raw=True)
+            offset_sol = state.solver.eval_one(self.offset_val, raw=True)
+            
             if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
                                 not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
 
