@@ -208,6 +208,11 @@ class Yices2(Solver):
         assert isinstance(formula, YicesTermBool)
         return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.SAT
 
+    def are_formulas_sat(self, terms: List[YicesTermBool]) -> bool:
+        for term in terms:
+            assert isinstance(term, YicesTermBool)
+        return self.solver.check_context_with_assumptions(None, [term.id for term in terms]) == yices.Status.SAT
+
     def is_formula_unsat(self, formula: YicesTermBool) -> bool:
         assert isinstance(formula, YicesTermBool)
         return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.UNSAT
