@@ -7,12 +7,17 @@ else:
     import common
 
 
+DEBUG = False
+
+
 def test_math():
-    common.run_test(f"{os.path.dirname(__file__)}/test_math")
+    common.run_test(target_dir=f"{os.path.dirname(__file__)}/test_math",
+                    debug=DEBUG)
 
 
 if __name__ == "__main__":
     common.setup_logging()
     args = common.parse_args()
 
+    DEBUG=args.debug
     test_math()

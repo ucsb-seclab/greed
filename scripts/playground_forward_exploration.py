@@ -8,64 +8,11 @@ from SEtaac import Project
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
 from SEtaac.utils.solver.shortcuts import *
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger("SEtaac")
-
-
-def is_reachable_without_returns(block_a, block_b, factory, callgraph):
-    function_a = block_a.function
-    function_b = block_b.function
-    if block_a == block_b:
-        return True
-    elif function_a == function_b:
-        # check if reachable in intra-procedural cfg
-        return block_b in block_a.descendants
-    elif function_a and function_b:
-        # for each path (in the callgraph) from function_a to function_b
-        callgraph_paths = nx.all_simple_paths(callgraph, function_a, function_b)
-        for path in callgraph_paths:
-            first_call_target = path[1]
-            # check if we can reach the first call (i.e., any "CALLPRIVATE <first_call_target>" in function_a)
-            for callprivate_block_id in function_a.callprivate_target_sources[first_call_target.id]:
-                callprivate_block = factory.block(callprivate_block_id)
-                return is_reachable_without_returns(block_a, callprivate_block, factory, callgraph)
-    else:
-        return False
-
-
-def is_reachable(state_a, block_b):
-    factory = state_a.project.factory
-    callgraph = state_a.project.callgraph
-
-    block_a = factory.block(state_a.curr_stmt.block_id)
-    if is_reachable_without_returns(block_a, block_b, factory, callgraph):
-        # this is the simple case, no need to look at the callstack
-        return True
-    elif not state_a.callstack:
-        # not reachable without returns, but the callstack is empty
-        return False
-    else:
-        # otherwise we can look at the callstack
-        callstack = list(state_a.callstack)
-        while callstack:
-            return_stmt_id, _ = callstack.pop()
-            return_stmt = factory.statement(return_stmt_id)
-            return_block = factory.block(return_stmt.block_id)
-
-            # check if any RETURNPRIVATE is reachable
-            for returnprivate_block_id in block_a.function.returnprivate_block_ids:
-                returnprivate_block = factory.block(returnprivate_block_id)
-                if is_reachable_without_returns(block_a, returnprivate_block, factory, callgraph):
-                    break
-            else:
-                # executed if there is no break
-                return False
-
-            if is_reachable_without_returns(return_block, block_b, factory, callgraph):
-                return True
-        return False
 
 
 def find_paths_with_stmt(p, target_stmt):
@@ -125,6 +72,7 @@ def main(args):
         target_block_id = args.block
         target_block = p.factory.block(target_block_id)
         target_stmt = target_block.first_ins
+        target_stmt_id = target_stmt.id
     elif args.stmt:
         target_stmt_id = args.stmt
         target_stmt = p.factory.statement(target_stmt_id)
@@ -140,53 +88,76 @@ def main(args):
         print('Block not found.')
         exit(1)
 
-    # todo: consider all critical paths
-    critical_paths = find_paths_with_stmt(p, target_stmt)
-    if not critical_paths:
-        log.fatal('No paths found')
-        exit()
-    critical_path = critical_paths[0]
+    xid = gen_exec_id()
+    entry_state = p.factory.entry_state(xid=xid)
+
+    simgr = p.factory.simgr(entry_state=entry_state)
+
+    options.LAZY_SOLVES = True
+
+    directed_search = DirectedSearch(target_stmt)
+    simgr.use_technique(directed_search)
+
+    dfs = DFS()
+    simgr.use_technique(dfs)
+
+    heartbeat = HeartBeat()
+    simgr.use_technique(heartbeat)
+
+    try:
+        simgr.run(find=lambda s: s.curr_stmt.id == target_stmt_id)
+    except KeyboardInterrupt:
+        pass
+
+    # # todo: consider all critical paths
+    # critical_paths = find_paths_with_stmt(p, target_stmt)
+    # if not critical_paths:
+    #     log.fatal('No paths found')
+    #     exit()
+    # critical_path = critical_paths[0]
 
     # this is to hi-jack a call
     # found.curr_stmt.set_arg_val(found)
     # found.constraints.append(found.curr_stmt.address_val == 0x41414141)
     # found.constraints.append(found.curr_stmt.value_val == 0x42424242)
 
-    with new_solver_context(critical_path) as solver:
-        calldata = bytes(solver.eval_one_array(critical_path.calldata.base, critical_path.MAX_CALLDATA_SIZE)).hex()
-        print(f'CALLDATA: {calldata}')
+    print(simgr)
+    critical_path = simgr.one_found
+    print(f"SAT: {critical_path.solver.is_sat()}")
+    calldata = bytes(critical_path.solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
+    print(f'CALLDATA: {calldata}')
 
-        # # find storage reads in critical path
-        # critical_reads = dict()
-        # for offset_term in critical_path.storage.reads:
-        #     if not is_concrete(offset_term):
-        #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
-        #     offset_concrete = bv_unsigned_value(offset_term)
-        #     critical_reads[offset_term] = offset_concrete
-        #
-        # # find writes to storage offsets in critical reads
-        # sstores = [s for s in p.statement_at.values() if s.__internal_name__ == 'SSTORE']
-        # interesting_sstores = defaultdict(list)
-        # for sstore in sstores:
-        #     offset_term = sstore.arg1_val
-        #     if not is_concrete(offset_term):
-        #         # solver.is_formula_sat(Equal(sstore.arg1_val, list(critical_reads.keys())[0]))
-        #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
-        #     # offset_concrete = bv_unsigned_value(offset_term)
-        #     interesting_sstores[offset_term].append(sstore)
-        #
-        # for offset_term in critical_reads:
-        #     num_offset_term_candidates = len(interesting_sstores[offset_term])
-        #     for i in range(num_offset_term_candidates + 1):
-        #         print(list(itertools.permutations(interesting_sstores[offset_term], i)))
-        #         # here get the paths, prepend the paths, set initial storage, and re-trace all. if not sat, continue with the next attempt
-        #         # probably need a nested loop for all paths for each sstore
-        #         # actually "sat" here means that storage[offset_term] is set correctly, then we can continue to the other offset_terms
-        #
-        #
-        # import IPython;
-        # IPython.embed();
-        # exit()
+    # # find storage reads in critical path
+    # critical_reads = dict()
+    # for offset_term in critical_path.storage.reads:
+    #     if not is_concrete(offset_term):
+    #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
+    #     offset_concrete = bv_unsigned_value(offset_term)
+    #     critical_reads[offset_term] = offset_concrete
+    #
+    # # find writes to storage offsets in critical reads
+    # sstores = [s for s in p.statement_at.values() if s.__internal_name__ == 'SSTORE']
+    # interesting_sstores = defaultdict(list)
+    # for sstore in sstores:
+    #     offset_term = sstore.arg1_val
+    #     if not is_concrete(offset_term):
+    #         # solver.is_formula_sat(Equal(sstore.arg1_val, list(critical_reads.keys())[0]))
+    #         raise Exception('NOT SUPPORTED: symbolic storage offset in critical reads')
+    #     # offset_concrete = bv_unsigned_value(offset_term)
+    #     interesting_sstores[offset_term].append(sstore)
+    #
+    # for offset_term in critical_reads:
+    #     num_offset_term_candidates = len(interesting_sstores[offset_term])
+    #     for i in range(num_offset_term_candidates + 1):
+    #         print(list(itertools.permutations(interesting_sstores[offset_term], i)))
+    #         # here get the paths, prepend the paths, set initial storage, and re-trace all. if not sat, continue with the next attempt
+    #         # probably need a nested loop for all paths for each sstore
+    #         # actually "sat" here means that storage[offset_term] is set correctly, then we can continue to the other offset_terms
+    #
+    #
+    # import IPython;
+    # IPython.embed();
+    # exit()
 
 
 

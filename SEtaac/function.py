@@ -1,10 +1,10 @@
-import logging
 from collections import defaultdict
 from typing import List, Mapping
 
 from SEtaac.block import Block
 from SEtaac.cfg import CFG
 from SEtaac.factory import Factory
+from SEtaac.utils.solver.shortcuts import *
 
 
 class TAC_Function:
@@ -35,7 +35,7 @@ class TAC_Function:
         for bb in self.blocks:
             for stmt in bb.statements:
                 if stmt.__internal_name__ == "CALLPRIVATE":
-                    target_bb_id = stmt.get_target_bb_id()
+                    target_bb_id = hex(bv_unsigned_value(stmt.arg1_val))
                     call_targets[stmt.block_id] = target_bb_id
         return call_targets
 

@@ -80,7 +80,8 @@ class TAC_parser:
         while not fixpoint:
             fixpoint = True
             for v_old, v_new in phimap.items():
-                if v_new in phimap:
+                # (phimap[v_old] != phimap[v_new]) --> means "not already at local fixpoint"
+                if v_new in phimap and (phimap[v_old] != phimap[v_new]):
                     phimap[v_old] = phimap[v_new]
                     fixpoint = False
 

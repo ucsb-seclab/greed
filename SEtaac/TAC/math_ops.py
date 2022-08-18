@@ -5,11 +5,9 @@ from .base import TAC_Statement
 from ..state import SymbolicEVMState
 
 __all__ = [
-    'TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv',
-    'TAC_Mod', 'TAC_Smod', 'TAC_Addmod', 'TAC_Mulmod', 'TAC_Exp',
-    'TAC_Signextend', 'TAC_Lt', 'TAC_Gt', 'TAC_Slt', 'TAC_Sgt',
-    'TAC_Eq', 'TAC_Iszero', 'TAC_And', 'TAC_Or', 'TAC_Xor',
-    'TAC_Not', 'TAC_Byte', 'TAC_Shl', 'TAC_Shr', 'TAC_Sar'
+    'TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv', 'TAC_Mod', 'TAC_Smod', 'TAC_Addmod', 'TAC_Mulmod',
+    'TAC_Exp', 'TAC_Signextend', 'TAC_Lt', 'TAC_Gt', 'TAC_Slt', 'TAC_Sgt', 'TAC_Eq', 'TAC_Iszero', 'TAC_And',
+    'TAC_Or', 'TAC_Xor', 'TAC_Not', 'TAC_Byte', 'TAC_Shl', 'TAC_Shr', 'TAC_Sar'
 ]
 
 
@@ -19,13 +17,10 @@ class TAC_Add(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Add(self.arg1_val, self.arg2_val)
 
-        succ.registers[self.res1_var] = BV_Add(self.arg1_val, self.arg2_val)
-
-        succ.set_next_pc()
-        
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Sub(TAC_Statement):
@@ -34,12 +29,10 @@ class TAC_Sub(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Sub(self.arg1_val, self.arg2_val)
 
-        succ.registers[self.res1_var] = BV_Sub(self.arg1_val, self.arg2_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Mul(TAC_Statement):
@@ -48,12 +41,10 @@ class TAC_Mul(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Mul(self.arg1_val, self.arg2_val)
 
-        succ.registers[self.res1_var] = BV_Mul(self.arg1_val, self.arg2_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Div(TAC_Statement):
@@ -62,13 +53,12 @@ class TAC_Div(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)),
+                                            BVV(0, 256),
+                                            BV_UDiv(self.arg1_val, self.arg2_val))
 
-        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
-                                           BV_UDiv(self.arg1_val, self.arg2_val))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Sdiv(TAC_Statement):
@@ -77,13 +67,12 @@ class TAC_Sdiv(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)),
+                                            BVV(0, 256),
+                                            BV_SDiv(self.arg1_val, self.arg2_val))
 
-        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
-                                           BV_SDiv(self.arg1_val, self.arg2_val))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Mod(TAC_Statement):
@@ -92,13 +81,12 @@ class TAC_Mod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)),
+                                            BVV(0, 256),
+                                            BV_URem(self.arg1_val, self.arg2_val))
 
-        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
-                                           BV_URem(self.arg1_val, self.arg2_val))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Smod(TAC_Statement):
@@ -106,13 +94,12 @@ class TAC_Smod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)),
+                                            BVV(0, 256),
+                                            BV_SRem(self.arg1_val, self.arg2_val))
 
-        succ.registers[self.res1_var] = If(Equal(self.arg2_val, BVV(0, 256)), BVV(0, 256),
-                                           BV_SRem(self.arg1_val, self.arg2_val))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Addmod(TAC_Statement):
@@ -121,20 +108,21 @@ class TAC_Addmod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         # todo: might be over complicated
         sext_arg1_val = BV_Zero_Extend(self.arg1_val, 256)
         sext_arg2_val = BV_Zero_Extend(self.arg2_val, 256)
         sext_arg3_val = BV_Zero_Extend(self.arg3_val, 256)
         sext_add_res = BV_Add(sext_arg1_val, sext_arg2_val)
+        
         sext_mod_res = BV_URem(sext_add_res, sext_arg3_val)
         mod_res = BV_Extract(0, 255, sext_mod_res)
-        succ.registers[self.res1_var] = If(Equal(self.denominator_val, BVV(0, 256)), BVV(0, 256),
-                                           mod_res)
+        
+        state.registers[self.res1_var] = If(Equal(self.denominator_val, BVV(0, 256)),
+                                            BVV(0, 256),
+                                            mod_res)
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Mulmod(TAC_Statement):
@@ -143,8 +131,6 @@ class TAC_Mulmod(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         # todo: might be over complicated
         sext_arg1_val = BV_Zero_Extend(self.arg1_val, 256)
         sext_arg2_val = BV_Zero_Extend(self.arg2_val, 256)
@@ -152,11 +138,13 @@ class TAC_Mulmod(TAC_Statement):
         sext_mul_res = BV_Mul(sext_arg1_val, sext_arg2_val)
         sext_mod_res = BV_URem(sext_mul_res, sext_arg3_val)
         mod_res = BV_Extract(0, 255, sext_mod_res)
-        succ.registers[self.res1_var] = If(Equal(self.denominator_val, BVV(0, 256)), BVV(0, 256),
-                                           mod_res)
+        
+        state.registers[self.res1_var] = If(Equal(self.denominator_val, BVV(0, 256)),
+                                            BVV(0, 256),
+                                            mod_res)
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Exp(TAC_Statement):
@@ -165,16 +153,14 @@ class TAC_Exp(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        if self.base_val.is_bv_value() and self.exp_val.is_bv_value():
+        if is_concrete(self.base_val) and is_concrete(self.exp_val):
             res = pow(bv_unsigned_value(self.base_val), bv_unsigned_value(self.exp_val), utils.TT256)
-            succ.registers[self.res1_var] = BVV(res, 256)
+            state.registers[self.res1_var] = BVV(res, 256)
         else:
             raise VMSymbolicError('exponentiation with symbolic exponent currently not supported :-/')
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Signextend(TAC_Statement):
@@ -182,20 +168,18 @@ class TAC_Signextend(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        if self.arg1_val.is_bv_value():
+        if is_concrete(self.arg1_val):
             if bv_unsigned_value(self.arg1_val) <= 31:
                 oldwidth = (bv_unsigned_value(self.arg1_val) + 1) * 8
                 truncated = BV_Extract(0, oldwidth-1, self.arg2_val)
-                succ.registers[self.res1_var] = BV_Sign_Extend(truncated, 256 - oldwidth)
+                state.registers[self.res1_var] = BV_Sign_Extend(truncated, 256 - oldwidth)
             else:
-                succ.registers[self.res1_var] = self.arg2_val
+                state.registers[self.res1_var] = self.arg2_val
         else:
             raise VMSymbolicError('symbolic bitwidth for signextension is currently not supported')
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Lt(TAC_Statement):
@@ -203,12 +187,12 @@ class TAC_Lt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(BV_ULT(self.arg1_val, self.arg2_val),
+                                            BVV(1, 256),
+                                            BVV(0, 256))
 
-        succ.registers[self.res1_var] = If(BV_ULT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Gt(TAC_Statement):
@@ -216,12 +200,12 @@ class TAC_Gt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(BV_UGT(self.arg1_val, self.arg2_val),
+                                            BVV(1, 256),
+                                            BVV(0, 256))
 
-        succ.registers[self.res1_var] = If(BV_UGT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Slt(TAC_Statement):
@@ -229,12 +213,12 @@ class TAC_Slt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(BV_SLT(self.arg1_val, self.arg2_val),
+                                            BVV(1, 256),
+                                            BVV(0, 256))
 
-        succ.registers[self.res1_var] = If(BV_SLT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Sgt(TAC_Statement):
@@ -242,12 +226,12 @@ class TAC_Sgt(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(BV_SGT(self.arg1_val, self.arg2_val),
+                                            BVV(1, 256),
+                                            BVV(0, 256))
 
-        succ.registers[self.res1_var] = If(BV_SGT(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Eq(TAC_Statement):
@@ -255,12 +239,12 @@ class TAC_Eq(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(Equal(self.arg1_val, self.arg2_val),
+                                            BVV(1, 256),
+                                            BVV(0, 256))
 
-        succ.registers[self.res1_var] = If(Equal(self.arg1_val, self.arg2_val), BVV(1, 256), BVV(0, 256))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Iszero(TAC_Statement):
@@ -268,12 +252,12 @@ class TAC_Iszero(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = If(Equal(self.arg1_val, BVV(0, 256)),
+                                            BVV(1, 256),
+                                            BVV(0, 256))
 
-        succ.registers[self.res1_var] = If(Equal(self.arg1_val, BVV(0, 256)), BVV(1, 256), BVV(0, 256))
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_And(TAC_Statement):
@@ -281,12 +265,10 @@ class TAC_And(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_And(self.arg1_val, self.arg2_val)
 
-        succ.registers[self.res1_var] = BV_And(self.arg1_val, self.arg2_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Or(TAC_Statement):
@@ -294,12 +276,10 @@ class TAC_Or(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Or(self.arg1_val, self.arg2_val)
 
-        succ.registers[self.res1_var] = BV_Or(self.arg1_val, self.arg2_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Xor(TAC_Statement):
@@ -307,12 +287,10 @@ class TAC_Xor(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Xor(self.arg1_val, self.arg2_val)
 
-        succ.registers[self.res1_var] = BV_Xor(self.arg1_val, self.arg2_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Not(TAC_Statement):
@@ -320,12 +298,10 @@ class TAC_Not(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Not(self.arg1_val)
 
-        succ.registers[self.res1_var] = BV_Not(self.arg1_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Byte(TAC_Statement):
@@ -334,25 +310,22 @@ class TAC_Byte(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        if self.offset_val.is_bv_value():
+        if is_concrete(self.offset_val):
             if bv_unsigned_value(self.offset_val) >= 32:
-                succ.registers[self.res1_var] = BVV(0, 256)
+                state.registers[self.res1_var] = BVV(0, 256)
+            elif is_concrete(self.arg2_val):
+                res = bv_unsigned_value(self.arg2_val) // 256 ** (31 - bv_unsigned_value(self.offset_val))
+                state.registers[self.res1_var] = BVV(res, 256)
             else:
-                if self.arg2_val.is_bv_value():
-                    res = bv_unsigned_value(self.arg2_val) // 256 ** (31 - bv_unsigned_value(self.offset_val))
-                    succ.registers[self.res1_var] = BVV(res, 256)
-                else:
-                    start = (31 - bv_unsigned_value(self.offset_val)) * 8
-                    end = (31 - bv_unsigned_value(self.offset_val)) * 8 + 7
-                    v = BV_Extract(start, end, self.arg2_val)
-                    succ.registers[self.res1_var] = BV_Zero_Extend(v, 256 - 8)
+                start = (31 - bv_unsigned_value(self.offset_val)) * 8
+                end = (31 - bv_unsigned_value(self.offset_val)) * 8 + 7
+                v = BV_Extract(start, end, self.arg2_val)
+                state.registers[self.res1_var] = BV_Zero_Extend(v, 256 - 8)
         else:
             raise VMSymbolicError('symbolic byte-index not supported')
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Shl(TAC_Statement):
@@ -361,12 +334,10 @@ class TAC_Shl(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Shl(self.arg2_val, self.arg1_val)
 
-        succ.registers[self.res1_var] = BV_Shl(self.arg2_val, self.arg1_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Shr(TAC_Statement):
@@ -375,12 +346,10 @@ class TAC_Shr(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Shr(self.arg2_val, self.arg1_val)
 
-        succ.registers[self.res1_var] = BV_Shr(self.arg2_val, self.arg1_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Sar(TAC_Statement):
@@ -389,16 +358,7 @@ class TAC_Sar(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = BV_Sar(self.arg2_val, self.arg1_val)
 
-        # (n&msb) | (n>>shift)
-        msb_set = BV_Extract(255, 255, self.arg2_val)
-        shift_mask = BV_Shr(BVV(2**256-1, 256), self.shift_val)
-
-        shifted = BV_Shr(self.arg2_val, self.shift_val)
-        res = If(msb_set, BV_Or(shifted, BV_Not(shift_mask)), BV_And(shifted, shift_mask))
-
-        succ.registers[self.res1_var] = res
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
