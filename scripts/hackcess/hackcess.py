@@ -73,123 +73,159 @@ def get_keccak256(input_buffer, sha_size):
 # Returns a graph representing the dependencies.
 # TODO, maybe this is too expensive and we want to look into
 #       alternative solutions like peeking into the constraints?
-def detect_sha_dependencies(base_state):
-    log.info("Checking SHA dependecies")
+def detect_sha_dependencies(state):
     sha_deps = nx.DiGraph()
     
-    # WARNING: this might not be right, however, copy the state for EVERY
-    # observed SHA is too expensive because we lose Yices incremental solving.
-    # Maybe we can do something importing the Context? TODO 
-    state = base_state.copy()
+    if len(state.sha_observed) == 1:
+        # Well, we are done.
+        sha_deps.add_node(state.sha_observed[0])
+        return sha_deps
 
-    for sha_observed in state.sha_observed:
-        log.info(f"Checking dependencies for {sha_observed.symbol.name}")
-        sha_deps.add_node(sha_observed)
+    log.info("Checking SHA dependecies")
 
-        log.info(f" [{sha_observed.symbol.name}] checking if unconstrained")
+    for curr_sha in state.sha_observed:
+        log.info(f"Checking dependencies for {curr_sha.symbol.name}")
+        sha_deps.add_node(curr_sha)
 
-        # NOTE: if the SHA has already been fixed by the symbolic-executor, 
-        # we are going to be faster at fixing the next solutions, but afaik 
-        # it should be safe to re-add constraints.
+        # Get a model for our SHA
+        sha_model = get_fixed_sha_model(state, curr_sha)
 
-        fix_sha(state, sha_observed)
-        
         # Now, let's see what happened to the other SHAs
         for other_sha in state.sha_observed:
-            if other_sha.symbol.name == sha_observed.symbol.name:
+            if other_sha.symbol.name == curr_sha.symbol.name:
                 # Skip the current SHA under analysis
                 continue
+
             # Can this other SHA still be concretized to 0? If yes, constraining the 
             # input buffer of 'sha_observed' didn't influence this SHA, hence, there 
-            # is no dependency between this two SHAs.
-            if state.solver.is_formula_sat(Equal(other_sha.symbol, BVV(0,256))):
+            # is no dependency between these two SHAs.
+            import ipdb; ipdb.set_trace()
+            sha_model.add(Equal(other_sha.symbol, BVV(0,256)))
+            if state.solver.are_formulas_sat(list(sha_model)):
                 continue
             else:
                 # Register the dependency
-                log.info(f"{sha_observed.symbol.name} depends from {other_sha.symbol.name}")
+                log.info(f"{curr_sha.symbol.name} depends from {other_sha.symbol.name}")
                 sha_deps.add_node(other_sha)
-                sha_deps.add_edge(sha_observed, other_sha)
+                sha_deps.add_edge(curr_sha, other_sha)
+                # TODO: OPTIMIZATION: if sha1 depends from sha2, sha2 CANNOT depend from sha1, so skip that.
     
     # We return the transitive reduction :)
     return nx.transitive_reduction(sha_deps)
 
 
-def fix_sha(state, sha_observed):
+def get_fixed_sha_model(state, sha_observed):
+    
+    sha_model = set()
 
     # Null size doesn't make any sense for SHA, let's rule this out
-    state.add_constraint(NotEqual(sha_observed.size, BVV(0,256)))
+    sha_model.add(NotEqual(sha_observed.size, BVV(0,256)))
+
     # Get some solutions 
     log.info(f"  [{sha_observed.symbol.name}] getting solution for argOffset")
     sha_arg_offset = state.solver.eval_one(sha_observed.start, raw=True)
+    log.info(f"  [{sha_observed.symbol.name}] offsetArg at {hex(bv_unsigned_value(sha_arg_offset))}")
     log.info(f"  [{sha_observed.symbol.name}] getting solution for argSize")
     sha_size = state.solver.eval_one(sha_observed.size, raw=True)
+    log.info(f"  [{sha_observed.symbol.name}] argSize at {hex(bv_unsigned_value(sha_size))}")
     log.info(f"  [{sha_observed.symbol.name}] getting solution for inputBuffer")
-    sha_input_buffer = state.solver.eval_one_array_at(sha_observed.memory, sha_arg_offset, sha_size, raw=True)
+    
+    sha_input_buffer = state.solver.eval_one_array_at(sha_observed, BVV(0,256), sha_size, raw=True)
+
+    log.info(f"Buffer for {sha_observed.symbol.name} set at {hex(bv_unsigned_value(sha_input_buffer))}")
     log.info(f"  [{sha_observed.symbol.name}] calculating concrete SHA")
     sha_result = get_keccak256(sha_input_buffer, sha_size)
     log.info(f"    [{sha_observed.symbol.name}] concrete SHA is {sha_result}")
 
     # Set constraints accordingly
-    state.add_constraint(Equal(sha_observed.start, sha_arg_offset))
-    state.add_constraint(Equal(sha_observed.size, sha_size))
+    sha_model.add(Equal(sha_observed.start, sha_arg_offset))
+    sha_model.add(Equal(sha_observed.size, sha_size))
+
     for x,b in zip(range(0, bv_unsigned_value(sha_size)), 
                             bv_unsigned_value(sha_input_buffer).to_bytes(bv_unsigned_value(sha_size), 'big')):
-        state.add_constraint(Equal(sha_observed.memory[BVV(bv_unsigned_value(sha_arg_offset)+x,256)], BVV(b,8)))
-    
+        sha_model.add(Equal(sha_observed[BVV(x,256)], BVV(b,8)))
+
     # Finally set the SHA result
-    state.add_constraint(Equal(sha_observed.symbol, BVV(int(sha_result,16),256)))
+    sha_model.add(Equal(sha_observed.symbol, BVV(int(sha_result,16),256)))
+
+    return sha_model
 
 
 # WARNING: this function modifies the state!
 def resolve_sha_ops(state):
-    # This will contain the set of constraints that need to 
-    # be added to the state 
-    sha_models = set()
-
     # Let's detect first any dependencies among the SHAs.
     sha_deps = detect_sha_dependencies(state)
 
     # Now that we have the dependecies between SHAs, we want 
     # to resolve them starting from the leaves, up to the root SHAs.
-    # NOTE: keep in mind that the graph possibly contains disjunted nodes.
+    # NOTE: keep in mind that the graph possibly contains disjointed nodes.
     last_shas = [sha for sha in sha_deps.nodes() if sha_deps.out_degree(sha) == 0]
     
     log.info("Fixating all the SHAs")
+
+    # This will contain the set of constraints that need to 
+    # be added to the state 
+    shas_models = {}
     for sha_observed in last_shas:
         log.info(f" Fixing {sha_observed.symbol.name}")
-        fix_sha(state, sha_observed)
+        shas_models[sha_observed.symbol.name] = get_fixed_sha_model(state, sha_observed)
         for pred_sha in nx.ancestors(sha_deps, sha_observed):
             log.info(f" Fixing {pred_sha.symbol.name}")
-            fix_sha(state, pred_sha)
+            shas_models[sha_observed.symbol.name] = get_fixed_sha_model(state, pred_sha)
     
-    return
-
+    return shas_models
 
 
 def analyze_state_at_call(state, target_call_info):
     # Here we want to grab more information regarding
     # the call.
 
+    extra_formulas = set()
     # First thing, if any SHA3 happens, we need to fixate
     # them.
-    resolve_sha_ops(state)
+    if len(state.sha_observed) != 0:
+        # WARNING: this function adds constraints to the state to fix 
+        # the SHAs values in a new frame (i.e., push)
+        extra_formulas.union(resolve_sha_ops(state))
+
+    state = state.copy()
+
+    for ef in extra_formulas:
+        state.add_constraint(ef)
     
     if len(target_call_info.contractAddresses) == 0:
         # This means we did not extract the targetContract statically, hence, we need
         # to know how many solutions we have for this.
-        targetContract = state.solver.eval_one(state.registers[state.curr_stmt.arg1_var])
-        # TODO TODO TODO
-        assert(False)
+        targetContract = state.solver.eval_one(state.registers[state.curr_stmt.arg1_var], raw=True)
+        if state.solver.is_formula_sat(NotEqual(state.registers[state.curr_stmt.arg1_var], targetContract)):
+            log.info(f"Multiple resolutions for CALL targetContract!")
+        # TODO rest
+    else:
+        log.info(f"Fixated CALL targetContract at {hex(target_call_info.contractAddresses[0])}")
+
+    log.info(f"Getting solution for memory at CALL")
+    mem_offset_call = state.solver.eval_one(state.registers[state.curr_stmt.arg4_var], raw=True)        
+    memory_at_call = state.solver.eval_one_array_at(state.memory, mem_offset_call, BVV(4,256), raw=True)
     
-    import ipdb; ipdb.set_trace()
+    # Check if memory_at_call depends on SHAs (if any)
+    if len(state.sha_observed) != 0:
+        # To check for this, we can pop the current SHA constraints, set new input 
+        # buffer (if possible) and see if the new 'mem_offset_call' is the same as before or not.
+        # TODO
+        pass
 
-    mem_offset_call = state.solver.eval_one(state.registers[state.curr_stmt.arg4_var], raw=True)
-    print(f"mem_offset_call at {bv_unsigned_value(mem_offset_call)}")
-    args_size_call = state.solver.eval_one(state.registers[state.curr_stmt.arg5_var], raw=True)
-    print(f"args_size_call at {bv_unsigned_value(args_size_call)}")
 
-    memory_at_call = hex(state.solver.eval_one_array_at(state.memory, mem_offset_call, args_size_call))
-    print(f"CALLDATA {calldata_value} - MEMORY AT CALL {memory_at_call}")
+    # Check how many solutions we have for memory_at_call
+    if state.solver.is_formula_sat(NotEqual(state.memory.readn(mem_offset_call, BVV(4,256)), memory_at_call)):
+        # If yes, this must be untainted, unless, maybe we want to try to change (1) mem_offset_call (if there are 
+        # other solutions), or, the value of the SHAs we have fixated before
+        # TODO TODO TODO
+        log.info(f"Multiple resolutions for CALL targetFunction!")
+    else:
+        # If we are here we have a single solution, however it might be that this is just because 
+        # we fixated the previous SHA. Let's try to fixate them to other values and see if it changes 
+        # anything.
+        log.info(f"CALL targets UNTAINTED function at {hex(bv_unsigned_value(memory_at_call))}")
 
     return
 
@@ -208,6 +244,7 @@ def analyze_call_from_ep(entry_point, target_call_info):
     
     # HACK 
     init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
+    #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
     max_calldatasize = 100 
 
     # Some state options
@@ -215,6 +252,9 @@ def analyze_call_from_ep(entry_point, target_call_info):
     #options.LAZY_SOLVES = True
 
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=max_calldatasize)
+
+    import ipdb; ipdb.set_trace()
+    
     simgr = p.factory.simgr(entry_state=entry_state)
     
     #simgrviz = SimgrViz()
@@ -255,10 +295,10 @@ def how_to_reach(p: Project, target_call:TAC_Statement):
     # using the callgraph.
     # To do that, we start from all the public functions, and see if they 
     # can reach the function.id of the CALL under analysis.
-    possible_entry_points = [f for f in p.function_at.values() if f.public]
+    possible_entry_points = [f for f in p.function_at.values() if f.public and f.id != '0x0']
     entry_points = set()
     for ep in possible_entry_points:
-        if nx.has_path(ep, target_function):
+        if nx.has_path(p.callgraph, source=ep, target=target_function):
             entry_points.add(ep)
     
     return entry_points
@@ -317,8 +357,6 @@ if __name__ == "__main__":
         
         for ep in entry_points:
             analyze_call_from_ep(ep, call)
-        
-        import ipdb; ipdb.set_trace()
 
     log.info("CALLS SUMMARY")
     for call in CallInfos.values():
@@ -328,3 +366,4 @@ if __name__ == "__main__":
     import ipdb; ipdb.set_trace()
 
     
+
