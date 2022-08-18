@@ -3,18 +3,27 @@ from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 from SEtaac import options
 
+# SHA3 needs to be of type LambdaMemory 
+# because we NEED to put those extra zero 
+# at the end to be able to do the check at line 50.
 
 class Sha3(LambdaMemory):
     uuid_generator = UUIDGenerator()
 
-    def __init__(self, state, memory, start, size):
+    def __init__(self, state=None, memory=None, start=None, size=None, partial_init=False):
+
+        if partial_init:
+            return 
+
         self.uuid = Sha3.uuid_generator.next()
 
         super().__init__(tag=f"SHA3_{self.uuid}_MEMORY", value_sort=BVSort(8), default=BVV(0, 8), state=state)
         self.symbol = BVS(f"SHA3_{self.uuid}", 256)
 
+        self.state = state
+        
         # The source memory where we are fetching data from
-        self.memory = memory
+        self.memory = memory.copy(self.state)
         # Where to start to hash in the source memory
         self.start = start
         # How much we should hash 
@@ -26,7 +35,7 @@ class Sha3(LambdaMemory):
 
         # Let's start to copy at offset 0 of this lambda memory (it's _base) the amount 
         # of bytes 'size' starting from 'start'
-        self.memcopy(BVV(0, 256), memory.copy(state), start, size)
+        self.memcopy(BVV(0, 256), self.memory, start, size)
 
         # TODO: we somehow want to make sure that there is never a constraint of the type SHA3_<x> == 0xhardcoded
 
@@ -53,7 +62,15 @@ class Sha3(LambdaMemory):
         self.add_constraint(bounded_ackermann_constraint)
     
     def copy(self, new_state):
-        new_sha_memory = super().copy(new_state)
+        new_sha_memory = Sha3(partial_init=True)
+        new_sha_memory.uuid = self.uuid
+        new_sha_memory.tag = self.tag
+        new_sha_memory._base = self._base
+        new_sha_memory.lambda_constraint = self.lambda_constraint
+        new_sha_memory._constraints = list(self._constraints)
+        new_sha_memory.write_count = self.write_count
+        new_sha_memory.read_count = self.read_count
+        new_sha_memory.layer_level = self.layer_level
         new_sha_memory.symbol = self.symbol
 
         # WARNING: does this need a deep copy?

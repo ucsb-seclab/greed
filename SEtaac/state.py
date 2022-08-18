@@ -198,8 +198,9 @@ class SymbolicEVMState:
         # Here you can inspect the constraints being added to the state.
         if opt.STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
-        self._path_constraints.append(constraint)
-        self.solver.add_assertion(constraint)
+        if constraint not in self._path_constraints: 
+            self._path_constraints.append(constraint)
+            self.solver.add_assertion(constraint)
 
     # Add here any default plugin that we want to ship
     # with a fresh state.
@@ -247,7 +248,8 @@ class SymbolicEVMState:
 
         new_state._path_constraints = list(self._path_constraints)
 
-        new_state.sha_observed = [sha.copy(new_state=new_state) for sha in self.sha_observed]
+        #new_state.sha_observed = [sha.copy(new_state=new_state) for sha in self.sha_observed]
+        new_state.sha_observed = self.sha_observed
 
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp

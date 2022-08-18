@@ -187,12 +187,13 @@ class LambdaMemory:
         self.read_count = 0
 
     def add_constraint(self, formula):
-        self._constraints.append(formula)
-        self.state.solver.add_assertion(formula)
+        if formula not in self._constraints:
+            self._constraints.append(formula)
+            self.state.solver.add_assertion(formula)
 
     def add_constraints(self, formulas):
-        self._constraints += formulas
-        self.state.solver.add_assertions(formulas)
+        for formula in formulas:
+            self.add_constraint(formula)
 
     @property
     def constraints(self):
@@ -214,9 +215,7 @@ class LambdaMemory:
 
     def __setitem__(self, index, v):
         self.write_count += 1
-
         self.lambda_constraint.following_writes[index] = v
-
         self._base = Array_Store(self._base, index, v)
 
     def readn(self, index, n):
