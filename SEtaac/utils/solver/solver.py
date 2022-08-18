@@ -24,6 +24,9 @@ class Solver:
     def is_formula_sat(self, formula):
         raise Exception("Not implemented")
 
+    def are_formulas_sat(self, terms):
+        raise Exception("Not implemented")
+
     def is_formula_unsat(self, formula):
         raise Exception("Not implemented")
 
