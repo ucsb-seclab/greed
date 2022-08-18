@@ -478,6 +478,10 @@ class Yices2(Solver):
 
         array_to_eval = array.readn(self.BVV(0,256), length)
 
+        # We need to check again the context before proceeding
+        # since the readn modified the assertions in the solver
+        assert self.is_sat(), "Formula is UNSAT"
+
         # THIS MUST BE DECLARED AFTER YOU ARE DONE ADDING CONSTRIANTS
         model = yices.Model.from_context(self.solver, 1)
 
@@ -490,10 +494,14 @@ class Yices2(Solver):
         assert self.is_sat(), "Formula is UNSAT"
         assert isinstance(offset, YicesTermBV)
         assert isinstance(length, YicesTermBV)
-    
+
         array_to_eval = array.readn(offset, length)
 
-        # THIS MUST BE DECLARED AFTER YOU ARE DONE ADDING CONSTRIANTS
+        # We need to check again the context before proceeding
+        # since the readn modified the assertions in the solver
+        assert self.is_sat(), "Formula is UNSAT"
+
+        # ALSO, THIS MUST BE DECLARED AFTER YOU ARE DONE ADDING CONSTRIANTS
         model = yices.Model.from_context(self.solver, 1)
 
         if raw:
