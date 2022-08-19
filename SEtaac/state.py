@@ -4,7 +4,7 @@ from copy import copy
 
 from SEtaac import options as opt
 from SEtaac.memory import LambdaMemory
-from SEtaac.state_plugins import SimStatePlugin, SimStateGlobals, SimStateInspect
+from SEtaac.state_plugins import SimStatePlugin, SimStateSolver, SimStateGlobals, SimStateInspect
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
@@ -19,18 +19,17 @@ class SymbolicEVMState:
         self.xid = xid
         self.project = project
         self.code = project.code
-
         self.uuid = SymbolicEVMState.uuid_generator.next()
 
         if partial_init:
             # this is only used when copying the state
             return
-
+    
+        # Register default plugins
+        self.active_plugins = dict()
+        self._register_default_plugins()
         self._pc = None
         self.trace = list()
-
-        self.solver = get_clean_solver()
-
         self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
         self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
         self.registers = dict()
@@ -39,40 +38,21 @@ class SymbolicEVMState:
         # We want every state to have an individual set
         # of options.
         self.options = options or list()
-
-        # Register default plugins
-        self.active_plugins = dict()
-        self._register_default_plugins()
-
-        self.globals = dict()
-
         self.callstack = list()
-
         self.returndata = {'size': None, 'instruction_count': None}
-
         self.instruction_count = 0
-        self.breakpoints = {}
         self.halt = False
         self.revert = False
         self.error = None
-
         self.gas = BVS(f'GAS_{self.xid}', 256)
         self.start_balance = BVS(f'BALANCE_{self.xid}', 256)
-        self.balance = self.start_balance
-
-        callvalue = ctx_or_symbolic('CALLVALUE', self.ctx, self.xid)
-        self.balance = BV_Add(self.balance, callvalue)
-
+        self.balance = BV_Add(self.start_balance, ctx_or_symbolic('CALLVALUE', self.ctx, self.xid))
         self.ctx['CODESIZE-ADDRESS'] = BVV(len(self.code), 256)
-
-        self._path_constraints = list()
-
         self.sha_observed = list()
 
         # make sure we can exploit it in the foreseeable future
         self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
-
         self.MAX_CALLDATA_SIZE = max_calldatasize or opt.MAX_CALLDATA_SIZE
 
         init_ctx = init_ctx or dict()
@@ -132,16 +112,8 @@ class SymbolicEVMState:
         return self.project.factory.statement(self._pc)
 
     @property
-    def sha_constraints(self):
-        constraints = list()
-        for sha in self.sha_observed:
-            constraints += sha.constraints
-        return constraints
-
-    @property
     def constraints(self):
-        return self._path_constraints + self.memory.constraints + self.calldata.constraints + \
-               self.storage.constraints + self.sha_constraints
+        return self.solver.constraints
 
     @pc.setter
     def pc(self, value):
@@ -198,13 +170,12 @@ class SymbolicEVMState:
         # Here you can inspect the constraints being added to the state.
         if opt.STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
-        if constraint not in self._path_constraints: 
-            self._path_constraints.append(constraint)
-            self.solver.add_assertion(constraint)
+        self.solver.add_path_constraints(constraint)
 
     # Add here any default plugin that we want to ship
     # with a fresh state.
     def _register_default_plugins(self):
+        self.register_plugin("solver", SimStateSolver())
         self.register_plugin("globals", SimStateGlobals())
         if opt.STATE_INSPECT:
             self.register_plugin("inspect", SimStateInspect())
@@ -222,38 +193,25 @@ class SymbolicEVMState:
         new_state._pc = self._pc
         new_state.trace = list(self.trace)
 
-        new_state.solver = self.solver.copy()
-
         new_state.memory = self.memory.copy(new_state=new_state)
         new_state.storage = self.storage.copy(new_state=new_state)
         new_state.registers = dict(self.registers)
         new_state.ctx = dict(self.ctx)
         new_state.options = list(self.options)
-
-        new_state.globals = {k: copy(v) for k, v in self.globals.items()}
-
         new_state.callstack = list(self.callstack)
-
         new_state.returndata = dict(self.returndata)
-
         new_state.instruction_count = self.instruction_count
-        new_state.breakpoints = self.breakpoints
         new_state.halt = self.halt
         new_state.revert = self.revert
         new_state.error = self.error
-
         new_state.gas = self.gas
         new_state.start_balance = self.start_balance
         new_state.balance = self.balance
 
-        new_state._path_constraints = list(self._path_constraints)
-
         #new_state.sha_observed = [sha.copy(new_state=new_state) for sha in self.sha_observed]
         new_state.sha_observed = self.sha_observed
-
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp
-
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
         new_state.calldata = self.calldata.copy(new_state=new_state)
         new_state.calldatasize = self.calldatasize

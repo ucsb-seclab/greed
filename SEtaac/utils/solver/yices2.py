@@ -5,50 +5,6 @@ from SEtaac.utils.solver.solver import Solver
 from enum import Enum
 from typing import List
 
-class TermConstructorEnum(Enum):
-	YICES_BOOL_CONSTANT = 0
-	YICES_ARITH_CONSTANT = 1
-	YICES_BV_CONSTANT = 2
-	YICES_SCALAR_CONSTANT = 3
-	YICES_VARIABLE = 4
-	YICES_UNINTERPRETED_TERM = 5
-	YICES_ITE_TERM = 6
-	YICES_APP_TERM = 7
-	YICES_UPDATE_TERM = 8
-	YICES_TUPLE_TERM = 9
-	YICES_EQ_TERM = 10
-	YICES_DISTINCT_TERM = 11
-	YICES_FORALL_TERM = 12
-	YICES_LAMBDA_TERM = 13
-	YICES_NOT_TERM = 14
-	YICES_OR_TERM = 15
-	YICES_XOR_TERM = 16
-	YICES_BV_ARRAY = 17
-	YICES_BV_DIV = 18
-	YICES_BV_REM = 19
-	YICES_BV_SDIV = 20
-	YICES_BV_SREM = 21
-	YICES_BV_SMOD = 22
-	YICES_BV_SHL = 23
-	YICES_BV_LSHR = 24
-	YICES_BV_ASHR = 25
-	YICES_BV_GE_ATOM = 26
-	YICES_BV_SGE_ATOM = 27
-	YICES_ARITH_GE_ATOM = 28
-	YICES_ARITH_ROOT_ATOM = 29
-	YICES_ABS = 30
-	YICES_CEIL = 31
-	YICES_FLOOR = 32
-	YICES_RDIV = 33
-	YICES_IDIV = 34
-	YICES_IMOD = 35
-	YICES_IS_INT_ATOM = 36
-	YICES_DIVIDES_ATOM = 37
-	YICES_SELECT_TERM = 38
-	YICES_BIT_TERM = 39
-	YICES_BV_SUM = 40
-	YICES_ARITH_SUM = 41
-	YICES_POWER_PRODUCT = 42
 
 class YicesTerm:
     def __init__(self, yices_id, operator=None, children=None, name=None, value=None):
@@ -132,6 +88,21 @@ class YicesTypeBV(YicesType):
 class YicesTypeArray(YicesType):
     pass
 
+# Backend for Yices2
+#
+# For the list of options see here.
+# https://github.com/SRI-CSL/yices2/blob/bc50bebdc3aabb161328bbfc234a10da6dd3d5c4/doc/sphinx/source/context-operations.rst
+#
+# self.solver.enable_option("var-elim")
+# self.solver.enable_option("arith-elim")
+# self.solver.enable_option("flatten")
+# self.solver.enable_option("assert-ite-bounds")
+# self.solver.enable_option("eager-arith-lemmas")
+# self.solver.enable_option("keep-ite")
+# self.solver.enable_option("bvarith-elim")
+# self.solver.enable_option("break-symmetries")
+#
+# cfg.set_config("arith-solver", 'simplex')
 
 class Yices2(Solver):
     """
@@ -140,26 +111,8 @@ class Yices2(Solver):
 
     def __init__(self):
         cfg = yices.Config()
-        
         cfg.default_config_for_logic('QF_ABV')
-
-        #cfg.set_config("arith-solver", 'simplex')
-        
         self.solver = yices.Context(cfg)
-
-        # For the list of options see here.
-        # https://github.com/SRI-CSL/yices2/blob/bc50bebdc3aabb161328bbfc234a10da6dd3d5c4/doc/sphinx/source/context-operations.rst
-        
-        #self.solver.enable_option("var-elim")
-        #self.solver.enable_option("arith-elim")
-        #self.solver.enable_option("flatten")
-        #self.solver.enable_option("assert-ite-bounds")
-        #self.solver.enable_option("eager-arith-lemmas")
-        #self.solver.enable_option("keep-ite")
-        #self.solver.enable_option("bvarith-elim")
-        #self.solver.enable_option("break-symmetries")
-
-        self.assertions = list()
 
     def BVSort(self, width: int) -> YicesTypeBV:
         assert isinstance(width, int)
@@ -232,9 +185,7 @@ class Yices2(Solver):
         self.solver.pop()
 
     def add_assertion(self, formula: YicesTermBool):
-        if formula not in self.assertions:
-            self.solver.assert_formula(formula.id)
-            self.assertions.append(formula)
+        self.solver.assert_formula(formula.id)
 
     def add_assertions(self, formulas: List[YicesTermBool]):
         for f in formulas:
@@ -469,53 +420,14 @@ class Yices2(Solver):
         yices_id = yices.Terms.application(arr.id, [index.id])
         return YicesTermBV(operator="select", children=[arr, index], yices_id=yices_id)
 
-    def eval_one(self, term, raw=False):
+    def eval(self, term, raw=False):
         assert self.is_sat(), "Formula is UNSAT"
         model = yices.Model.from_context(self.solver, 1)
         if raw:
             return YicesTermBV(model.get_value_as_term(term))
         else:
             return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(term)))
-            
-    def eval_one_array(self, array, length, raw=False):
-        assert self.is_sat(), "Formula is UNSAT"
-        assert isinstance(length, YicesTermBV)
-
-        array_to_eval = array.readn(self.BVV(0,256), length)
-
-        # We need to check again the context before proceeding
-        # since the readn modified the assertions in the solver
-        assert self.is_sat(), "Formula is UNSAT"
-
-        # THIS MUST BE DECLARED AFTER YOU ARE DONE ADDING CONSTRIANTS
-        model = yices.Model.from_context(self.solver, 1)
-
-        if raw:
-            return YicesTermBV(model.get_value_as_term(array_to_eval))
-        else:
-            return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array_to_eval)))
-
-    def eval_one_array_at(self, array, offset, length, raw=False):
-        assert self.is_sat(), "Formula is UNSAT"
-        assert isinstance(offset, YicesTermBV)
-        assert isinstance(length, YicesTermBV)
-
-        array_to_eval = array.readn(offset, length)
-
-        # We need to check again the context before proceeding
-        # since the readn modified the assertions in the solver
-        assert self.is_sat(), "Formula is UNSAT"
-
-        # ALSO, THIS MUST BE DECLARED AFTER YOU ARE DONE ADDING CONSTRIANTS
-        model = yices.Model.from_context(self.solver, 1)
-
-        if raw:
-            return YicesTermBV(model.get_value_as_term(array_to_eval))
-        else:
-            return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(array_to_eval)))
 
     def copy(self):
         new_solver = Yices2()
-        new_solver.add_assertions(self.assertions)
-
         return new_solver

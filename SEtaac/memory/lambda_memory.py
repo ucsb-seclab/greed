@@ -187,9 +187,7 @@ class LambdaMemory:
         self.read_count = 0
 
     def add_constraint(self, formula):
-        if formula not in self._constraints:
-            self._constraints.append(formula)
-            self.state.solver.add_assertion(formula)
+        self.state.solver.add_memory_constraints(formula)
 
     def add_constraints(self, formulas):
         for formula in formulas:
