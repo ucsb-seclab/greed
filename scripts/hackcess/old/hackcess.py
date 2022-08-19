@@ -10,6 +10,8 @@ from SEtaac.utils import gen_exec_id
 from SEtaac.utils.solver.shortcuts import *
 from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz
 
+from sha_resolver import detect_sha_dependencies, get_keccak256, get_fixed_sha_model
+
 import networkx as nx 
 import random
 
@@ -59,102 +61,6 @@ class CallInfo():
         return f"Call at {self.call_stmt.id} | call_type: {self.call_type}"
 
 
-def get_keccak256(input_buffer, sha_size):
-    keccak256 = sha3.keccak_256()
-    input_buffer = bv_unsigned_value(input_buffer).to_bytes(bv_unsigned_value(sha_size), 'big')
-    keccak256.update(input_buffer)
-    res = keccak256.hexdigest()
-    return res
-
-
-# This function tries to spot 
-# dependencies between SHA operations.
-# e.g., SHA of SHA.
-# Returns a graph representing the dependencies.
-# TODO, maybe this is too expensive and we want to look into
-#       alternative solutions like peeking into the constraints?
-def detect_sha_dependencies(state):
-    sha_deps = nx.DiGraph()
-    
-    if len(state.sha_observed) == 1:
-        # Well, we are done.
-        sha_deps.add_node(state.sha_observed[0])
-        return sha_deps
-
-    log.info("Checking SHA dependecies")
-
-    for curr_sha in state.sha_observed:
-        log.info(f"Checking dependencies for {curr_sha.symbol.name}")
-        sha_deps.add_node(curr_sha)
-
-        # Get a model for our SHA
-        sha_model = get_fixed_sha_model(state, curr_sha)
-
-        # Now, let's see what happened to the other SHAs
-        for other_sha in state.sha_observed:
-            if other_sha.symbol.name == curr_sha.symbol.name:
-                # Skip the current SHA under analysis
-                continue
-            if sha_deps.has_edge(other_sha, curr_sha):
-                # OPTIMIZATION: if sha1 depends from sha2, sha2 CANNOT depend from sha1, so skip that.
-                continue
-
-            # Can this other SHA still be concretized to 0? If yes, constraining the 
-            # input buffer of 'sha_observed' didn't influence this SHA, hence, there 
-            # is no dependency between these two SHAs.
-            sha_model.add(Equal(other_sha.symbol, BVV(0,256)))
-            if state.solver.are_formulas_sat(list(sha_model)):
-                continue
-            else:
-                # Register the dependency
-                log.info(f"{curr_sha.symbol.name} depends from {other_sha.symbol.name}")
-                sha_deps.add_node(other_sha)
-                sha_deps.add_edge(curr_sha, other_sha)
-    
-    # We return the transitive reduction :)
-    return nx.transitive_reduction(sha_deps)
-
-
-def get_fixed_sha_model(state, sha_observed, input_buffer_blocked_sols=None):
-    
-    sha_model = set()
-
-    # Null size doesn't make any sense for SHA, let's rule this out
-    sha_model.add(NotEqual(sha_observed.size, BVV(0,256)))
-
-    # Get some solutions 
-    log.info(f"  [{sha_observed.symbol.name}] getting solution for argOffset")
-    sha_arg_offset = state.solver.eval(sha_observed.start, raw=True)
-    log.info(f"  [{sha_observed.symbol.name}] offsetArg at {hex(bv_unsigned_value(sha_arg_offset))}")
-    log.info(f"  [{sha_observed.symbol.name}] getting solution for argSize")
-    sha_size = state.solver.eval(sha_observed.size, raw=True)
-    log.info(f"  [{sha_observed.symbol.name}] argSize at {hex(bv_unsigned_value(sha_size))}")
-    log.info(f"  [{sha_observed.symbol.name}] getting solution for inputBuffer")
-    
-    if input_buffer_blocked_sols:
-        # MAKE SURE blocked_sols are of type raw.
-        for blocked_sol in input_buffer_blocked_sols:
-            state.solver.add_constraint(NotEqual(sha_observed.readn(BVV(0,256), sha_size), blocked_sol))
-    
-    sha_input_buffer = state.solver.eval_memory_at(sha_observed, BVV(0,256), sha_size, raw=True)
-
-    log.info(f"Buffer for {sha_observed.symbol.name} set at {hex(bv_unsigned_value(sha_input_buffer))}")
-    log.info(f"  [{sha_observed.symbol.name}] calculating concrete SHA")
-    sha_result = get_keccak256(sha_input_buffer, sha_size)
-    log.info(f"    [{sha_observed.symbol.name}] concrete SHA is {sha_result}")
-
-    # Set constraints accordingly
-    sha_model.add(Equal(sha_observed.start, sha_arg_offset))
-    sha_model.add(Equal(sha_observed.size, sha_size))
-
-    for x,b in zip(range(0, bv_unsigned_value(sha_size)), 
-                            bv_unsigned_value(sha_input_buffer).to_bytes(bv_unsigned_value(sha_size), 'big')):
-        sha_model.add(Equal(sha_observed[BVV(x,256)], BVV(b,8)))
-
-    # Finally set the SHA result
-    sha_model.add(Equal(sha_observed.symbol, BVV(int(sha_result,16),256)))
-
-    return sha_model
 
 
 # WARNING: this function modifies the state!
@@ -182,29 +88,26 @@ def resolve_sha_ops(state):
     return shas_models
 
 
-def analyze_state_at_call(state, target_call_info):
+def analyze_state_at_call(base_state, target_call_info):
     # Here we want to grab more information regarding
     # the call.
 
     extra_formulas = set()
     # First thing, if any SHA3 happens, we need to fixate
     # them.
-    if len(state.sha_observed) != 0:
+    if len(base_state.sha_observed) != 0:
         # WARNING: this function adds constraints to the state to fix 
         # the SHAs values in a new frame (i.e., push)
-        extra_formulas.union(resolve_sha_ops(state))
-    
+        extra_formulas.union(resolve_sha_ops(base_state))
+
+    state = base_state.copy()
+
     # Fix the SHA model on this state.
     for ef in extra_formulas:
         # Well, technically I can push a new frame and add the constraints directly 
         # to the solver (without using add_assertions but directly assert formula).
         # IT'S A SUPER DIRTY HACK, BUT IT SHOULD MAKE THE TRICK AND SAVING THE COPY.
         # HOWEVER, HAVING THIS CONCEPT OF LAYERED SOLVER EVERYWHERE WOULD BE GREAT.
-
-        # THIS IS VERY RISKY, UNDER THE HOOD EVAL SOLVER ADDS MORE CONSTRAINTS, THIS 
-        # SO THIS WILL END UP BEING A MESS. EVEN BUILDING AN EVAL_WITH_ASSUMPTIONS
-        # MESSY BECAUSE THE EVAL_ARRAY ARE TRIGGERING ADDITIN OF CONSTRAINTS INSIDE 
-        # THE MEMORY THAT ARE ADDED TO THE GLOBAL STATE OF THE LAMBDA MEMORY.
         state.add_constraint(ef)
     
     if len(target_call_info.contractAddresses) == 0:
@@ -217,7 +120,6 @@ def analyze_state_at_call(state, target_call_info):
     else:
         log.info(f"Fixated CALL targetContract at {hex(target_call_info.contractAddresses[0])}")
 
-    import ipdb; ipdb.set_trace()
     log.info(f"Getting solution for memory at CALL")
     mem_offset_call = state.solver.eval(state.registers[state.curr_stmt.arg4_var], raw=True)        
     memory_at_call = state.solver.eval_memory_at(state.memory, mem_offset_call, BVV(4,256), raw=True)

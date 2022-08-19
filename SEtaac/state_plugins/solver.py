@@ -65,6 +65,10 @@ class SimStateSolver(SimStatePlugin):
         self._memory_constraints[self._curr_frame_level].add(constraint)
         self._add_assertion(constraint)
 
+    @property
+    def frame(self):
+        return self._curr_frame_level
+
     # returns path constraints
     # If frame is None, returns ALL the currently active constraints,
     # otherwise, just return the constraints at a specific frame.
@@ -145,17 +149,22 @@ class SimStateSolver(SimStatePlugin):
         new_solver._curr_frame_level = 0
         new_solver._path_constraints = dict()
         new_solver._memory_constraints = dict()
-        self._path_constraints[new_solver._curr_frame_level] = set()
-        self._memory_constraints[new_solver._curr_frame_level] = set()
-
+        new_solver._path_constraints[new_solver._curr_frame_level] = set()
+        new_solver._memory_constraints[new_solver._curr_frame_level] = set()
+        
         # Re-add all the constraints (Maybe one day Yices2 will do it for us with 
         # a full Context clone, as of now this is the "cloning dei poveri".
-        for frame in range(0, self._curr_frame_level+1):
-            for path_constraint in self._path_constraints[frame]:
+        while True:
+            for path_constraint in self._path_constraints[new_solver._curr_frame_level]:
                 new_solver.add_path_constraints(path_constraint)
-            for mem_constraint in self._memory_constraints[frame]:
+            for mem_constraint in self._memory_constraints[new_solver._curr_frame_level]:
                 new_solver.add_memory_constraints(mem_constraint)
-            new_solver.push()
+            
+            if new_solver._curr_frame_level == self._curr_frame_level:
+                break
+            else: 
+                # Add the next frame
+                new_solver.push()
 
         return new_solver
     
