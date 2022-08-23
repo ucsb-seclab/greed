@@ -48,6 +48,7 @@ class ShaResolver():
         sha_deps = self.sha_deps
 
         if len(sha_deps.nodes) != 0:
+            log.info("sha_deps already initialized.")
             return
 
         state = self.state
