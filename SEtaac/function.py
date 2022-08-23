@@ -6,7 +6,12 @@ from SEtaac.cfg import CFG
 from SEtaac.factory import Factory
 from SEtaac.utils.solver.shortcuts import *
 
-
+# id: block id at wich the function start
+# signature: four bytes signature of the function
+# name: full prototype of the function if retrieved by Gigahorse
+# public: wether the function is public or not
+# blocks: list of blocks belonging to this function
+# arguments: TAC names of the arguments of this function
 class TAC_Function:
     def __init__(self, id: str, signature: str, name: str, public: bool, blocks: List[Block], arguments: List[str]):
         self.id = id
