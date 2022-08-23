@@ -96,8 +96,8 @@ class SimStateSolver(SimStatePlugin):
     def constraints(self, frame=None):
         if not frame:
             all_path_csts = [c_set for c_set in self._path_constraints.values()]
-            all_mem_csts - [c_set for c_set in self._memory_constraints.values()]
-            all_csts = all_path_csts.extend(all_mem_csts)
+            all_mem_csts = [c_set for c_set in self._memory_constraints.values()]
+            all_path_csts.extend(all_mem_csts)
             return list(set().union(*all_csts))
         else:
             path_csts = self._path_constraints[frame]
