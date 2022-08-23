@@ -41,6 +41,7 @@ class Project(object):
                 f_sig = k.update(f_proto.encode('utf-8'))
                 sig_to_name[f"0x{k.hexdigest()[0:8]}"] = f_proto
 
+            # Set the name of the function
             for f in self.function_at.values():
                 if f.signature in sig_to_name.keys():
                     f.name = sig_to_name[f.signature]
