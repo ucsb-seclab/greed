@@ -50,14 +50,16 @@ class CalldataToFuncTarget():
         # If they are initialized concretely, we considerably limit the 
         # amount of solution we can get later. This can impact the
         # taint analysis if not used carefully.
+        tainted_concrete_guard = False
         for index in range(source_start, source_end+1):
             if is_concrete(self.state.calldata[BVV(index,256)]):
-                self.log.warning(f"CALLDATA[{index}] set as tainted, but initialized with concrete data.")
-
+                tainted_concrete_guard = True
+        if tainted_concrete_guard:
+            self.log.warning(f"Some CALLDATA bytes tainted, but initialized with concrete data.")
         
         # Get an instance for the sha resolver
         
-        self.sha_resolver = ShaResolver(self.state)
+        self.sha_resolver = ShaResolver(self.state, sha_deps=sha_deps)
         self.sha_resolver.detect_sha_dependencies()
         
         self.state_has_shas = True if len(self.sha_resolver.sha_deps) != 0 else False
@@ -211,13 +213,15 @@ class CalldataToContractTarget():
         # If they are initialized concretely, we considerably limit the 
         # amount of solution we can get later. This can impact the
         # taint analysis if not used carefully.
+        tainted_concrete_guard = False
         for index in range(source_start, source_end+1):
             if is_concrete(self.state.calldata[BVV(index,256)]):
-                self.log.warning(f"CALLDATA[{index}] set as tainted, but initialized with concrete data.")
-
-        
+                tainted_concrete_guard = True
+        if tainted_concrete_guard:
+            self.log.warning(f"Some CALLDATA bytes are tainted, but initialized with concrete data.")
+    
         # Get an instance for the sha resolver
-        self.sha_resolver = ShaResolver(self.state, sha_deps)
+        self.sha_resolver = ShaResolver(self.state, sha_deps=sha_deps)
         self.sha_resolver.detect_sha_dependencies()
         self.state_has_shas = True if len(self.sha_resolver.sha_deps) != 0 else False
 
@@ -233,7 +237,7 @@ class CalldataToContractTarget():
 
     def run(self):
 
-        self.log.info("Starting CALLDATA to funcTarget taint analysis")
+        self.log.info("Starting CALLDATA to tagetContract taint analysis")
 
         calldata_sol = self.state.solver.eval_memory_at(self.state.calldata, self.source_start, self.source_size, raw=True)
 

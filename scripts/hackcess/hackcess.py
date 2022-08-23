@@ -228,7 +228,7 @@ if __name__ == "__main__":
 
     log.info("CALLS SUMMARY")
     for call in CallInfos.values():
-        log.info(" 📞 "+str(call))
+        log.info(" > "+str(call))
 
 
     import ipdb; ipdb.set_trace()
