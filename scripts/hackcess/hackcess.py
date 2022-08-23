@@ -10,7 +10,8 @@ from SEtaac.utils import gen_exec_id
 from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz
 from SEtaac.utils.solver.shortcuts import *
 
-from ShaResolver import ShaResolver
+from sha_resolver import ShaResolver
+from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
 
 import random
 
@@ -51,73 +52,44 @@ class CallInfo():
         else:
             type_str += "U"
         if self.taintedArguments:
-            type_str += "T"
+            type_str += "*"
         else:
-            type_str += "U"
+            type_str += "*"
         return type_str
         
     def __str__(self):
         return f"Call at {self.call_stmt.id} | call_type: {self.call_type}"
 
+
 def analyze_state_at_call(state, target_call_info):
-    # Here we want to grab more information regarding
-    # the call.
+    static_targetContract = False
+    tainted_targetContract = False
+    tainted_targetFunc = False 
 
-    # First thing, if any SHA3 happens, we need to fixate
-    # them.
-    if len(state.sha_observed) != 0:
-        shaResolver = ShaResolver(state)
-        # WARNING: this function adds constraints to the state to fix 
-        # the SHAs values in a new frame (i.e., push)
-        assert(shaResolver.state.solver.frame==0)
-        shaResolver.detect_sha_dependencies()
-        assert(shaResolver.state.solver.frame==0)
-        sha_models = shaResolver.fix_shas()
-
-    if len(target_call_info.contractAddresses) == 0:
-        # This means we did not extract the targetContract statically, hence, we need
-        # to know how many solutions we have for this.
-        targetContract = state.solver.eval(state.registers[state.curr_stmt.arg1_var], raw=True)
-        if state.solver.is_formula_sat(NotEqual(state.registers[state.curr_stmt.arg1_var], targetContract)):
-            log.info(f"Multiple resolutions for CALL targetContract!")
-        # TODO rest
-    else:
+    if len(target_call_info.contractAddresses) == 1:
         log.info(f"Fixated CALL targetContract at {hex(target_call_info.contractAddresses[0])}")
-
-    import ipdb; ipdb.set_trace()
-
-    log.info(f"Getting solution for memory at CALL")
-    mem_offset_call = state.solver.eval(state.registers[state.curr_stmt.arg4_var], raw=True)        
-    memory_at_call = state.solver.eval_memory_at(state.memory, mem_offset_call, BVV(4,256), raw=True)
-    
-    # Check if memory_at_call depends on SHAs (if any)
-    if len(state.sha_observed) != 0:
-        assert(state.solver.frame==1)
-        state.solver.pop()
-        # Check: if I change SHA concretization, can I keep the memory_at_call the same or not?
-        sha_models = shaResolver.fix_shas()
-        assert(state.solver.frame==1)
-        if state.solver.are_formulas_sat([Equal(state.registers[state.curr_stmt.arg4_var], mem_offset_call),
-                                          Equal(state.memory.readn(mem_offset_call, BVV(4,256)), memory_at_call)]):
-            log.info("Memory at call didn't change!")
-        else:
-            log.info("Memory at call changed with different SHA!")
-        
-    import ipdb; ipdb.set_trace()
-
-    # Check how many solutions we have for memory_at_call
-    if state.solver.is_formula_sat(NotEqual(state.memory.readn(mem_offset_call, BVV(4,256)), memory_at_call)):
-        # If yes, this must be untainted, unless, maybe we want to try to change (1) mem_offset_call (if there are 
-        # other solutions), or, the value of the SHAs we have fixated before
-        # TODO TODO TODO
-        log.info(f"Multiple resolutions for CALL targetFunction!")
+        static_targetContract = True
     else:
-        # If we are here we have a single solution, however it might be that this is just because 
-        # we fixated the previous SHA. Let's try to fixate them to other values and see if it changes 
-        # anything.
-        log.info(f"CALL targets UNTAINTED function at {hex(bv_unsigned_value(memory_at_call))}")
+        #ta1 = CalldataToContractTarget(state, source_start=68, source_end=77)
+        ta1 = CalldataToContractTarget(state, source_start=4)
+        ta1.run()
+        tainted_targetContract = ta1.is_tainted
+    
+    assert(state.solver.frame==0)
 
-    return
+    if len(target_call_info.functionAddresses) == 1:
+        log.info(f"Fixated CALL targetFunc at {hex(target_call_info.functionAddresses[0])}")
+    else:
+        if static_targetContract:
+            sha_deps = None
+        else:
+            sha_deps = ta1.sha_resolver.sha_deps
+        ta2 = CalldataToFuncTarget(state, source_start=4, sha_deps=sha_deps)
+        ta2.run()
+        tainted_targetFunc = ta2.is_tainted
+    
+    return tainted_targetContract, tainted_targetFunc
+    
 
 def get_init_ctx_for(func):
     # This function will use the prototype recovery to 
@@ -134,8 +106,15 @@ def analyze_call_from_ep(entry_point, target_call_info):
     
     # HACK 
     init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
+    
+    # This is init_ctx for CallerTTU
+    init_ctx = {"CALLDATA": "0x7214ae990000000000000000000000002fSS96349c51abfce8f7eb2326233f3eb387fa7b000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000SSSSSSSSSS00000000000000000000000000000000000000000000000000000000"}
+    
+    # This is a good init_ctx for JustTest002/JustTest001
+    #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
+
     #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
-    max_calldatasize = 100 
+    max_calldatasize =  132
 
     # Some state options
     options.GREEDY_SHA = False
@@ -162,8 +141,9 @@ def analyze_call_from_ep(entry_point, target_call_info):
 
     for state in simgr.found:
         assert(state.solver.frame==0)
-        analyze_state_at_call(state, target_call_info)
-
+        tainted_targetContract, tatined_targetFunc = analyze_state_at_call(state, target_call_info)
+        target_call_info.taintedContractAddress = tainted_targetContract
+        target_call_info.taintedFunction = tatined_targetFunc
 
 # Here we want to understand from which function
 # it is possible to reach this specific CALL statement. 

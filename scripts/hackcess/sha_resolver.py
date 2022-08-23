@@ -24,7 +24,10 @@ class ShaSolution():
 class ShaResolver():
     def __init__(self, state, sha_deps=None, sha_models=None):
         self.state = state
-        self.sha_deps = nx.DiGraph()
+        self.starting_frame = self.state.solver.frame
+
+        self.sha_deps = nx.DiGraph() if not sha_deps else sha_deps
+
         # Mantaining sha solutions 
         # <argOffset, argSize, inputBuffer, shaResult>
         # This is a dict of list of ShaSolutions
@@ -34,14 +37,19 @@ class ShaResolver():
         self.num_models = len(self.sha_models.keys())
     
     def clear_solutions(self):
-        self.sha_models = list()
+        self.sha_models = dict()
     
     def clear_sha_frame(self):
         self.state.solver.pop()
     
+    # Zero sum solver frames.
     def detect_sha_dependencies(self):
         
         sha_deps = self.sha_deps
+
+        if len(sha_deps.nodes) != 0:
+            return
+
         state = self.state
 
         if len(state.sha_observed) == 1:
@@ -82,7 +90,7 @@ class ShaResolver():
             state.solver.pop()
         
         # We'll leave this clean
-        assert(state.solver.frame == 0)
+        assert(state.solver.frame == self.starting_frame)
 
         # We save the transitive reduction :)
         self.sha_deps = nx.transitive_reduction(sha_deps)
@@ -90,14 +98,6 @@ class ShaResolver():
     def fix_shas(self):
 
         state = self.state
-
-        # Shas are fixed only at a new frame
-        if self.state.solver.frame != 0:
-            log.warning(f"Clean the previous SHA-frame before pushing more constraints. (curr frame {self.state.solver.frame})")
-            return 
-
-        assert(self.state.solver.frame==0)
-
         state.solver.push()
 
         sha_model = list()
@@ -105,10 +105,10 @@ class ShaResolver():
         last_shas = [sha for sha in self.sha_deps.nodes() if self.sha_deps.out_degree(sha) == 0]
 
         for sha_observed in last_shas:
-            log.info(f" Fixing {sha_observed.symbol.name}")
+            log.debug(f" Fixing {sha_observed.symbol.name}")
             sha_model.append(self._fix_sha(sha_observed))
             for pred_sha in nx.ancestors(self.sha_deps, sha_observed):
-                log.info(f" Fixing {pred_sha.symbol.name}")
+                log.debug(f" Fixing {pred_sha.symbol.name}")
                 sha_models.append(self._fix_sha(pred_sha))
         
         # Save this model
@@ -125,13 +125,13 @@ class ShaResolver():
         state.add_constraint(NotEqual(sha_observed.size, BVV(0,256)))
 
         # Get some solutions 
-        log.info(f"  [{sha_observed.symbol.name}] getting solution for argOffset")
+        log.debug(f"  [{sha_observed.symbol.name}] getting solution for argOffset")
         sha_arg_offset = state.solver.eval(sha_observed.start, raw=True)
-        log.info(f"  [{sha_observed.symbol.name}] offsetArg at {hex(bv_unsigned_value(sha_arg_offset))}")
-        log.info(f"  [{sha_observed.symbol.name}] getting solution for argSize")
+        log.debug(f"  [{sha_observed.symbol.name}] offsetArg at {hex(bv_unsigned_value(sha_arg_offset))}")
+        log.debug(f"  [{sha_observed.symbol.name}] getting solution for argSize")
         sha_size = state.solver.eval(sha_observed.size, raw=True)
-        log.info(f"  [{sha_observed.symbol.name}] argSize at {hex(bv_unsigned_value(sha_size))}")
-        log.info(f"  [{sha_observed.symbol.name}] getting solution for inputBuffer")
+        log.debug(f"  [{sha_observed.symbol.name}] argSize at {hex(bv_unsigned_value(sha_size))}")
+        log.debug(f"  [{sha_observed.symbol.name}] getting solution for inputBuffer")
 
         # Let's exclude previous solutions for the inputBuffer for this SHA
         blocked_solutions = []
@@ -139,7 +139,7 @@ class ShaResolver():
         for sha_model in self.sha_models.values():
             for sol in sha_model:
                 if sol.symbol_name == sha_observed.symbol.name:
-                    log.info(f"Skipping solution for {sol.symbol_name}")
+                    log.debug(f"Skipping solution for {sol.symbol_name}")
                     blocked_solutions.append(sol.inputBuffer)
         
         # Blocking already provided solutions
@@ -153,10 +153,10 @@ class ShaResolver():
 
         sha_input_buffer = state.solver.eval_memory_at(sha_observed, BVV(0,256), sha_size, raw=True)
 
-        log.info(f"Buffer for {sha_observed.symbol.name} set at {hex(bv_unsigned_value(sha_input_buffer))}")
-        log.info(f"  [{sha_observed.symbol.name}] calculating concrete SHA")
+        log.debug(f"Buffer for {sha_observed.symbol.name} set at {hex(bv_unsigned_value(sha_input_buffer))}")
+        log.debug(f"  [{sha_observed.symbol.name}] calculating concrete SHA")
         sha_result = self.get_keccak256(sha_input_buffer, sha_size)
-        log.info(f"    [{sha_observed.symbol.name}] concrete SHA is {sha_result}")
+        log.debug(f"    [{sha_observed.symbol.name}] concrete SHA is {sha_result}")
 
         # Set constraints accordingly
         state.add_constraint(Equal(sha_observed.start, sha_arg_offset))
