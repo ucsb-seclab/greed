@@ -1,7 +1,8 @@
+import json
 import logging
-
 import networkx as nx
-
+import os 
+import sha3
 from SEtaac.TAC.TAC_parser import TAC_parser
 from SEtaac.factory import Factory
 from SEtaac.utils.solver.shortcuts import *
@@ -24,6 +25,28 @@ class Project(object):
         self.statement_at = tac_parser.parse_statements()
         self.block_at = tac_parser.parse_blocks()
         self.function_at = tac_parser.parse_functions()
+        
+        self.has_abi = False
+        self.abi = None
+
+        # Importing the ABI if there is one
+        sig_to_name = {}
+        if os.path.exists(f"{target_dir}/abi.json"):
+            with open(f"{target_dir}/abi.json", "rb") as abi_file:
+                abi = json.load(abi_file)
+            funcs = [e for e in abi if e['type'] == 'function']
+            for f in funcs:
+                f_proto = f['name'] + '(' + ",".join([i['internalType'] for i in f['inputs']]) + ')'
+                k = sha3.keccak_256()
+                f_sig = k.update(f_proto.encode('utf-8'))
+                sig_to_name[f"0x{k.hexdigest()[0:8]}"] = f_proto
+
+            for f in self.function_at.values():
+                if f.signature in sig_to_name.keys():
+                    f.name = sig_to_name[f.signature]
+            
+            self.has_abi = True
+            self.abi = abi
 
         # build callgraph
         self.callgraph = nx.DiGraph()
