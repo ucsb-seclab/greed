@@ -3,162 +3,49 @@ import logging
 from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 
+from SEtaac.memory.lambda_constraint import LambdaConstraint, LambdaMemsetConstraint, LambdaMemsetInfiniteConstraint, \
+                                            LambdaMemcopyConstraint, LambdaMemcopyInfiniteConstraint
+
 
 log = logging.getLogger(__name__)
 
 
-class LambdaConstraint:
-    def __init__(self):
-        self.following_writes = dict()
-
-    def instantiate(self, index):
-        return []
-
-    def __str__(self):
-        return f"[{len(self.following_writes)} following writes]\n" \
-               f"LambdaConstraint"
-
-
-class LambdaMemsetConstraint(LambdaConstraint):
-    def __init__(self, array, start, value, size, new_array, parent):
-        super().__init__()
-        self.array = array
-        self.start = start
-        self.value = value
-        self.size = size
-
-        self.new_array = new_array
-        self.parent = parent
-
-    def instantiate(self, index):
-        if index in self.following_writes:
-            return []
-
-        index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
-        instance = Equal(Array_Select(self.new_array, index),
-                         If(index_in_range,
-                            self.value,
-                            Array_Select(self.array, index)))
-
-        return [instance] + self.parent.instantiate(index)
-
-    def __str__(self):
-        return f"[{len(self.following_writes)} following writes]\n" \
-               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},value:{self.value.pp()})\n" \
-               f"{self.parent}"
-
-
-class LambdaMemsetInfiniteConstraint(LambdaConstraint):
-    def __init__(self, array, start, value, new_array, parent):
-        super().__init__()
-        self.array = array
-        self.start = start
-        self.value = value
-
-        self.new_array = new_array
-        self.parent = parent
-
-    def instantiate(self, index):
-        if index in self.following_writes:
-            return []
-
-        index_in_range = BV_ULE(self.start, index)
-        instance = Equal(Array_Select(self.new_array, index),
-                         If(index_in_range,
-                            self.value,
-                            Array_Select(self.array, index)))
-
-        return [instance] + self.parent.instantiate(index)
-
-    def __str__(self):
-        return f"[{len(self.following_writes)} following writes]\n" \
-               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},value:{self.value.pp()})\n" \
-               f"{self.parent}"
-
-
-class LambdaMemcopyConstraint(LambdaConstraint):
-    def __init__(self, array, start, source, source_start, size, new_array, parent):
-        super().__init__()
-        self.array = array
-        self.start = start
-        # WARNING: memcopy source is of type "memory", CALLER SHOULD TAKE CARE OF .copy()ing IT
-        self.source = source
-        self.source_start = source_start
-        self.size = size
-
-        self.new_array = new_array
-        self.parent = parent
-
-    def instantiate(self, index):
-        if index in self.following_writes:
-            return []
-
-        index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
-
-        shift_to_source_offset = If(BV_UGE(self.source_start, self.start), 
-                                        BV_Sub(self.source_start, self.start),
-                                        BV_Sub(self.start, self.source_start))
-        
-        instance = Equal(Array_Select(self.new_array, index),
-                         If(index_in_range,
-                            # memcopy source is of type "memory", don't access directly as an array
-                            self.source[ If( 
-                                            BV_UGE(self.source_start, self.start), 
-                                                BV_Add(index, shift_to_source_offset),
-                                                BV_Sub(index, shift_to_source_offset)
-                                           )
-                                       ],
-                            Array_Select(self.array, index)))
-
-        return [instance] + self.parent.instantiate(index)
-
-    def __str__(self):
-        return f"[{len(self.following_writes)} following writes]\n" \
-               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},source:{self.source.pp()},source_start:{self.source_start.pp()})\n" \
-               f"{self.parent}"
-
-
-class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
-    def __init__(self, array, start, source, source_start, new_array, parent):
-        super().__init__()
-        self.array = array
-        self.start = start
-        # WARNING: memcopy source is of type "memory", CALLER SHOULD TAKE CARE OF .copy()ing IT
-        self.source = source
-        self.source_start = source_start
-
-        self.new_array = new_array
-        self.parent = parent
-
-    def instantiate(self, index):
-        if index in self.following_writes:
-            return []
-
-        index_in_range = BV_ULE(self.start, index)
-        shift_to_source_offset = If(BV_UGE(self.source_start, self.start), 
-                                        BV_Sub(self.source_start, self.start),
-                                        BV_Sub(self.start, self.source_start))
-    
-        instance = Equal(Array_Select(self.new_array, index),
-                         If(index_in_range,
-                            # memcopy source is of type "memory", don't access directly as an array
-                            self.source[ If( 
-                                            BV_UGE(self.source_start, self.start), 
-                                                BV_Add(index, shift_to_source_offset),
-                                                BV_Sub(index, shift_to_source_offset)
-                                           )
-                                       ],
-                            Array_Select(self.array, index)))
-
-        return [instance] + self.parent.instantiate(index)
-
-    def __str__(self):
-        return f"[{len(self.following_writes)} following writes]\n" \
-               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},source:{self.source.pp()},source_start:{self.source_start.pp()})\n" \
-               f"{self.parent}"
-
-
 class LambdaMemory:
+    """
+    Implementation of an instantiation-based lambda memory
+
+    Extending the Theory of Arrays: memset, memcpy, and Beyond
+    (https://llbmc.org/files/papers/VSTTE13.pdf)
+    see 5.3 "Instantiating Quantifiers"
+
+    This is a memory implementation with memset/memsetinfinite/memcpy/memcpyinfinite primitives
+
+    To provide such primitives, we generate constraints such as "for all indices in the copied range,
+    read from the source array, else read from the old array"
+
+    To make such constraints compatible with a Quantifier-Free logic, we use an instantiation-based approach,
+    with layers of "uninstantiated constraints". The constraints are then instantiated ON READ (i.e., after reading
+    index 42: "if 42 is in the copied range, read from the source array, else read from the old array").
+
+    Two successive copies can overlap with each other (RANGES CAN BE SYMBOLIC), which is why the layered architecture
+    -and possibly useless constraints- are needed.
+
+    Example:
+        memcopy(start1, end1, source1, memory1)
+        # uninstantiated constraints: "for all indices i in (start1, end1), memory2[i] == source1[i], else memory2[i] == memory1[i]"
+        # instantiated constraints:
+
+        memcopy(start2, end2, source2, memory2)
+        # uninstantiated constraints: "for all indices i in (start1, end1), memory2[i] == source1[i], else memory2[i] == memory1[i]"
+                                      "for all indices i in (start2, end2), memory3[i] == source2[i], else memory3[i] == memory2[i]"
+        # instantiated constraints:
+
+        read(42) --> return memory3[42]
+        # uninstantiated constraints: "for all indices i in (start1, end1), memory2[i] == source1[i], else memory2[i] == memory1[i]"
+                                      "for all indices i in (start2, end2), memory3[i] == source2[i], else memory3[i] == memory2[i]"
+        # instantiated constraints:   "if 42 in (start1, end1), memory2[42] == source1[42], else memory2[42] == memory1[42]"
+                                      "if 42 in (start2, end2), memory3[42] == source2[42], else memory3[42] == memory2[42]"
+    """
     uuid_generator = UUIDGenerator()
 
     def __init__(self, tag=None, value_sort=None, default=None, state=None, partial_init=False):
