@@ -25,8 +25,7 @@ class Block(object):
         self._ancestors = None
         self._descendants = None
 
-        self._shortest_paths = None
-
+        self._subgraph = None
         self._acyclic_subgraph = None
 
     @property
@@ -68,26 +67,20 @@ class Block(object):
         return self._descendants
 
     @property
-    def shortest_paths(self):
-        if self._shortest_paths is None:
-            self._shortest_paths = nx.single_source_shortest_path(self.graph, self.root)
-        return self._shortest_paths
+    def subgraph(self):
+        if self._subgraph is None:
+            self._subgraph = nx.dfs_tree(self.cfg.graph, source=self)
+            for node in self._subgraph.nodes():
+                for succ in node.succ:
+                    if not self._subgraph.has_edge(node, succ):
+                        self._subgraph.add_edge(node, succ)
+
+        return self._subgraph
 
     @property
     def acyclic_subgraph(self):
         if self._acyclic_subgraph is None:
             self._acyclic_subgraph = nx.dfs_tree(self.cfg.graph, source=self)
-
-        return self._acyclic_subgraph
-
-    @property
-    def subgraph(self):
-        if self._acyclic_subgraph is None:
-            self._acyclic_subgraph = nx.dfs_tree(self.cfg.graph, source=self)
-            for node in self._acyclic_subgraph.nodes():
-                for succ in node.succ:
-                    if not self._acyclic_subgraph.has_edge(node, succ):
-                        self._acyclic_subgraph.add_edge(node, succ)
 
         return self._acyclic_subgraph
 
