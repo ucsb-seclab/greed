@@ -1,5 +1,9 @@
-import networkx as nx
+import logging
 from typing import List
+
+import networkx as nx
+
+log = logging.getLogger(__name__)
 
 
 class CFG(object):
@@ -24,6 +28,8 @@ class CFG(object):
         return self._dominators
 
     def dump(self, filename):
+        log.info(f"Dumping cfg .dot output to file {filename}")
+
         dot = "digraph g {\n"
         dot += "splines=ortho;\n"
         dot += "node[fontname=\"courier\"];\n"

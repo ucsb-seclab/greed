@@ -4,10 +4,8 @@ import tempfile
 
 from . import ExplorationTechnique
 
-LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
-logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
-log = logging.getLogger("HeartBeat")
-log.setLevel(logging.INFO)
+log = logging.getLogger(__name__)
+
 
 class HeartBeat(ExplorationTechnique):
     def __init__(self, beat_interval=100):

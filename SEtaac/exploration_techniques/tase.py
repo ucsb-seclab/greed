@@ -6,7 +6,6 @@ from . import ExplorationTechnique
 from SEtaac import options
 
 log = logging.getLogger(__name__)
-#log.setLevel(logging.DEBUG)
 
 # This ET implement the technique discussed in 
 # https://www.researchgate.net/publication/351421422_SigRec_Automatic_Recovery_of_Function_Signatures_in_Smart_Contracts

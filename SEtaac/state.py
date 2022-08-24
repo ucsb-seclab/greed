@@ -1,6 +1,5 @@
 import datetime
 import logging
-from copy import copy
 
 from SEtaac import options as opt
 from SEtaac.memory import LambdaMemory
