@@ -1,5 +1,5 @@
-
 from SEtaac.state_plugins import SimStatePlugin
+
 
 class SimStateGlobals(SimStatePlugin):
 
@@ -36,7 +36,8 @@ class SimStateGlobals(SimStatePlugin):
         return self._backer.pop(k, alt)
  
     def copy(self):
-        return SimStateGlobals(dict(self._backer))
+        new_backer = dict(self._backer)
+        return SimStateGlobals(new_backer)
 
     def __str__(self):
-        return ''.join(f"{k}:{v}" for k,v in self._backer.items())
+        return ''.join(f"{k}:{v}" for k, v in self._backer.items())

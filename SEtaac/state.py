@@ -185,7 +185,7 @@ class SymbolicEVMState:
         if opt.STATE_INSPECT:
             self.register_plugin("inspect", SimStateInspect())
 
-    def register_plugin(self, name:str, plugin:SimStatePlugin):
+    def register_plugin(self, name: str, plugin: SimStatePlugin):
         self.active_plugins[name] = plugin
         setattr(self, name, plugin)
         plugin.set_state(self)
