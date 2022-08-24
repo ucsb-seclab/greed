@@ -1,16 +1,11 @@
-import hashlib
 import logging
-import networkx
 import os
 import sys
 from typing import Callable
 
-from SEtaac.utils.exceptions import VMException
 from SEtaac.state import SymbolicEVMState
-from SEtaac import options
 
 log = logging.getLogger(__name__)
-#log.setLevel(logging.DEBUG)
 
 class SimulationManager:
     def __init__(self, entry_state: SymbolicEVMState, project):
