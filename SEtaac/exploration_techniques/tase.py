@@ -1,23 +1,23 @@
-import random
-import logging 
-
-from . import ExplorationTechnique
+import logging
 
 from SEtaac import options
+from . import ExplorationTechnique
 
 log = logging.getLogger(__name__)
 
-# This ET implement the technique discussed in 
-# https://www.researchgate.net/publication/351421422_SigRec_Automatic_Recovery_of_Function_Signatures_in_Smart_Contracts
-# https://ieeexplore.ieee.org/ielx7/32/4359463/9426396/supp1-3078342.pdf?arnumber=9426396&tag=1
-# for ABI recovery.
-#
-# The main features of this ET are:
-#    - Target a single function
-#    - No SAT checking (i.e., enforced LAZY_SOLVE)
-#    - For every function, the ET executes the block ONLY once.
 
 class TypeAware(ExplorationTechnique):
+    """
+    This ET implement the technique discussed in
+    https://www.researchgate.net/publication/351421422_SigRec_Automatic_Recovery_of_Function_Signatures_in_Smart_Contracts
+    https://ieeexplore.ieee.org/ielx7/32/4359463/9426396/supp1-3078342.pdf?arnumber=9426396&tag=1
+    for ABI recovery.
+
+    The main features of this ET are:
+       - Target a single function
+       - No SAT checking (i.e., enforced LAZY_SOLVE)
+       - For every function, the ET executes the block ONLY once.
+    """
     def __init__(self, func_target):
         super(TypeAware, self).__init__()
         
@@ -44,6 +44,9 @@ class TypeAware(ExplorationTechnique):
         self.rules = {}
         for x in range(1,31):
             self.rules[f"R{x}"] = 0
+
+        # TODO: implement this
+        raise NotImplemented("TypeAware SE is not implemented. Please have a look")
 
     def setup(self, simgr):
         return

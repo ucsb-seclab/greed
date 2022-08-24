@@ -10,6 +10,10 @@ log = logging.getLogger(__name__)
 
 
 class SimgrViz(ExplorationTechnique):
+    """
+    This Exploration technique implements visualizes and dumps the simulation manager progress.
+    The .dot output file will be logged during _dump_graph.
+    """
     def __init__(self):
         super(SimgrViz, self).__init__()
         self._simgGraph = networkx.DiGraph()
