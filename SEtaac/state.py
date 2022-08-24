@@ -55,6 +55,12 @@ class SymbolicEVMState:
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
         self.MAX_CALLDATA_SIZE = max_calldatasize or opt.MAX_CALLDATA_SIZE
 
+        self.calldata = None
+        self.calldatasize = None
+
+        self.set_init_ctx(init_ctx)
+
+    def set_init_ctx(self, init_ctx=None):
         init_ctx = init_ctx or dict()
         if "CALLDATA" in init_ctx:
             # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
