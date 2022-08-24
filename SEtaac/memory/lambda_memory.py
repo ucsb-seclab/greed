@@ -5,7 +5,6 @@ from SEtaac.utils.solver.shortcuts import *
 
 
 log = logging.getLogger(__name__)
-#log.setLevel(logging.DEBUG)
 
 
 class LambdaConstraint:
@@ -16,10 +15,8 @@ class LambdaConstraint:
         return []
 
     def __str__(self):
-        formatted_following_writes = ",".join([str(w) for w in self.following_writes.items()])
         return f"[{len(self.following_writes)} following writes]\n" \
                f"LambdaConstraint"
-
 
 
 class LambdaMemsetConstraint(LambdaConstraint):
@@ -34,7 +31,7 @@ class LambdaMemsetConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes.keys():
+        if index in self.following_writes:
             return []
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -62,7 +59,7 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes.keys():
+        if index in self.following_writes:
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -93,7 +90,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes.keys():
+        if index in self.following_writes:
             return []
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
@@ -134,7 +131,7 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         self.parent = parent
 
     def instantiate(self, index):
-        if index in self.following_writes.keys():
+        if index in self.following_writes:
             return []
 
         index_in_range = BV_ULE(self.start, index)
@@ -201,9 +198,6 @@ class LambdaMemory:
         assert not isinstance(index, slice), "slice memory read not implemented"
 
         self.read_count += 1
-
-        # if index in self.lambda_constraint.following_writes:
-        #     return Array_Select(self._base, index)
 
         # instantiate and add lambda constraints
         new_constraints = self.lambda_constraint.instantiate(index)
