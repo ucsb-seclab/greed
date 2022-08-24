@@ -1,7 +1,11 @@
 import itertools
+import json
 import logging
+import os
 from collections import defaultdict
 from typing import Mapping, List, Tuple
+
+import sha3
 
 from SEtaac.TAC import tac_opcode_to_class_map
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
@@ -168,3 +172,25 @@ class TAC_parser:
                 b.function = function
 
         return functions
+
+    def parse_abi(self):
+        if not os.path.exists(f"{self.target_dir}/abi.json"):
+            return None
+
+        with open(f"{self.target_dir}/abi.json", "rb") as abi_file:
+            abi = json.load(abi_file)
+
+        sig_to_name = {}
+        funcs = [e for e in abi if e['type'] == 'function']
+        for f in funcs:
+            f_proto = f['name'] + '(' + ",".join([i['internalType'] for i in f['inputs']]) + ')'
+            k = sha3.keccak_256()
+            k.update(f_proto.encode('utf-8'))
+            sig_to_name[f"0x{k.hexdigest()[0:8]}"] = f_proto
+
+        # Set the function names
+        for f in self.factory.project.function_at.values():
+            if f.signature in sig_to_name.keys():
+                f.name = sig_to_name[f.signature]
+
+        return abi
