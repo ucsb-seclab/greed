@@ -19,7 +19,6 @@ class Project(object):
             self.code = contract_file.read()
 
         self.factory = Factory(project=self)
-        init_solver_shortcuts()
 
         tac_parser = TAC_parser(self.factory, target_dir)
         self.statement_at = tac_parser.parse_statements()
