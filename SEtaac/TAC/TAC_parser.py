@@ -1,14 +1,14 @@
 import itertools
 import logging
 from collections import defaultdict
+from typing import Mapping, List, Tuple
 
-from SEtaac import TAC
 from SEtaac.TAC import tac_opcode_to_class_map
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.TAC.special_ops import TAC_Stop
 from SEtaac.block import Block
-from SEtaac.function import TAC_Function
 from SEtaac.factory import Factory
+from SEtaac.function import TAC_Function
 from SEtaac.utils import load_csv, load_csv_map, load_csv_multimap
 
 log = logging.getLogger("tac_parser")
