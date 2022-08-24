@@ -42,7 +42,8 @@ def parse_log(state):
     # value_ptr = log_stmt.topic_val + 32
     # value = bytes(state.memory.read(value_ptr, length)).decode()
 
-    value = utils.int_to_big_endian(bv_unsigned_value(log_stmt.topic_val)).decode().split('\x00')[0]
+    value_int = bv_unsigned_value(log_stmt.topic_val)
+    value = value_int.to_bytes(length=(value_int.bit_length() + 7) // 8, byteorder='big').decode().split('\x00')[0]
 
     print(f"---> {value}")
     outcome, testname = value.split(":")

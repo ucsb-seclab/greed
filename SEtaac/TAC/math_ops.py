@@ -154,7 +154,7 @@ class TAC_Exp(TAC_Statement):
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         if is_concrete(self.base_val) and is_concrete(self.exp_val):
-            res = pow(bv_unsigned_value(self.base_val), bv_unsigned_value(self.exp_val), utils.TT256)
+            res = pow(bv_unsigned_value(self.base_val), bv_unsigned_value(self.exp_val), 2 ** 256)
             state.registers[self.res1_var] = BVV(res, 256)
         else:
             raise VMSymbolicError('exponentiation with symbolic exponent currently not supported :-/')
