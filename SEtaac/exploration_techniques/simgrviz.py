@@ -1,8 +1,12 @@
 import hashlib
+import logging
+import tempfile
 
 import networkx
 
 from . import ExplorationTechnique
+
+log = logging.getLogger(__name__)
 
 
 class SimgrViz(ExplorationTechnique):
@@ -59,6 +63,9 @@ class SimgrViz(ExplorationTechnique):
         self._simgGraph.add_edge(new_state_id, parent_state_id)
 
     def _dump_graph(self):
+        output_filename = tempfile.NamedTemporaryFile(prefix="SEtaac_simgrviz_", suffix=".dot", delete=False).name
+        log.info(f"Dumping simgrviz .dot output to file {output_filename}")
+
         s = 'digraph g {\n'
         s += '\tnode[fontname="courier"];\n'
         for node_id in self._simgGraph.nodes:
@@ -82,5 +89,5 @@ class SimgrViz(ExplorationTechnique):
 
         s += '}'
 
-        with open("./simgr_viz.dot", "w") as simgrviz_file:
+        with open(output_filename, "w") as simgrviz_file:
             simgrviz_file.write(s)
