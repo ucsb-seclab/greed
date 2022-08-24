@@ -229,6 +229,37 @@ class SymbolicEVMState:
 
         return new_state
 
+    def reset(self, xid):
+        self.xid = xid
+        self.uuid = SymbolicEVMState.uuid_generator.next()
+
+        # Register default plugins
+        self.active_plugins = dict()
+        self._register_default_plugins()
+
+        self._pc = None
+        self.trace = list()
+        self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
+        self.registers = dict()
+        self.ctx = dict()  # todo: is it okay to reset this between transactions??
+
+        self.callstack = list()
+        self.returndata = {'size': None, 'instruction_count': None}
+        self.instruction_count = 0
+        self.halt = False
+        self.revert = False
+        self.error = None
+        self.gas = BVS(f'GAS_{self.xid}', 256)
+        self.start_balance = BVS(f'BALANCE_{self.xid}', 256)
+        self.balance = BV_Add(self.start_balance, ctx_or_symbolic('CALLVALUE', self.ctx, self.xid))
+        self.ctx['CODESIZE-ADDRESS'] = BVV(len(self.code), 256)
+        self.sha_observed = list()
+
+        self.calldata = None
+        self.calldatasize = None
+
+        return self
+
     def __str__(self):
         return f"State {self.uuid} at {self.pc}"
 
