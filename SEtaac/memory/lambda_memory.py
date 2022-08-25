@@ -1,11 +1,9 @@
-import logging 
-
-from SEtaac.utils.extra import UUIDGenerator
-from SEtaac.utils.solver.shortcuts import *
+import logging
 
 from SEtaac.memory.lambda_constraint import LambdaConstraint, LambdaMemsetConstraint, LambdaMemsetInfiniteConstraint, \
-                                            LambdaMemcopyConstraint, LambdaMemcopyInfiniteConstraint
-
+    LambdaMemcopyConstraint, LambdaMemcopyInfiniteConstraint
+from SEtaac.solver.shortcuts import *
+from SEtaac.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
 

@@ -1,13 +1,10 @@
-import sys 
+import sys
 
 from SEtaac import Project
-from SEtaac import options
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
+from SEtaac.solver.shortcuts import *
 from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.shortcuts import *
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz
 
-import networkx as nx 
-import random
 
 def run_it(entry_state, target_stmt):
     simgr = p.factory.simgr(entry_state=entry_state)

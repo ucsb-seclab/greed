@@ -1,6 +1,6 @@
-from SEtaac.utils.solver.shortcuts import *
-from .base import TAC_Statement
-from ..state import SymbolicEVMState
+from SEtaac.solver.shortcuts import *
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.state import SymbolicEVMState
 
 __all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize']
 

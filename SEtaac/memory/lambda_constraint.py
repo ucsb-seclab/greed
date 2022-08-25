@@ -1,6 +1,6 @@
 import logging
 
-from SEtaac.utils.solver.shortcuts import *
+from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 

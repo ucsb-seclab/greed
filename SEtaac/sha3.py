@@ -1,7 +1,7 @@
-from SEtaac.memory import LambdaMemory
-from SEtaac.utils.extra import UUIDGenerator
-from SEtaac.utils.solver.shortcuts import *
 from SEtaac import options
+from SEtaac.memory import LambdaMemory
+from SEtaac.solver.shortcuts import *
+from SEtaac.utils.extra import UUIDGenerator
 
 
 class Sha3(LambdaMemory):

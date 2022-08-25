@@ -4,7 +4,8 @@ from typing import List, Mapping
 from SEtaac.block import Block
 from SEtaac.cfg import CFG
 from SEtaac.factory import Factory
-from SEtaac.utils.solver.shortcuts import *
+from SEtaac.solver.shortcuts import *
+
 
 # id: block id at wich the function start
 # signature: four bytes signature of the function

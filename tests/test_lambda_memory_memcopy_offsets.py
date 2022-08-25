@@ -5,7 +5,7 @@ import os
 import IPython
 
 from SEtaac import Project
-from SEtaac.utils.solver.shortcuts import *
+from SEtaac.solver.shortcuts import *
 
 if __package__:
     from . import common

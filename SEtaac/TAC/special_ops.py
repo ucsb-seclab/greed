@@ -1,15 +1,14 @@
 import logging
-import sha3 
-import SEtaac.options as opts
 
-from SEtaac import utils
+import sha3
+
+from SEtaac import options, utils
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac.sha3 import Sha3
+from SEtaac.solver.shortcuts import *
 from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.utils.extra import UUIDGenerator
-from SEtaac.utils.solver.shortcuts import *
-
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -41,7 +40,7 @@ class TAC_Sha3(TAC_Statement):
         # Checks to see if we have only one solution, if not, as of now we give up and 
         # keep thre unconstrained symbol + the ackermann constraints, otherwise let's 
         # calculate the possible solutions and apply the constraints.
-        if opts.GREEDY_SHA:
+        if options.GREEDY_SHA:
             log.info(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
             size_sol = state.solver.eval_one(self.size_val, raw=True)
             offset_sol = state.solver.eval_one(self.offset_val, raw=True)

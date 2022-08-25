@@ -1,8 +1,7 @@
-from SEtaac import utils
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.solver.shortcuts import *
+from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.exceptions import VMSymbolicError
-from SEtaac.utils.solver.shortcuts import *
-from .base import TAC_Statement
-from ..state import SymbolicEVMState
 
 __all__ = [
     'TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv', 'TAC_Mod', 'TAC_Smod', 'TAC_Addmod', 'TAC_Mulmod',
