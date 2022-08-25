@@ -15,7 +15,7 @@ from SEtaac.factory import Factory
 from SEtaac.function import TAC_Function
 from SEtaac.utils import load_csv, load_csv_map, load_csv_multimap
 
-log = logging.getLogger("tac_parser")
+log = logging.getLogger(__name__)
 
 
 class TAC_parser:
