@@ -1,6 +1,5 @@
 import datetime
 import logging
-from copy import copy
 
 from SEtaac import options as opt
 from SEtaac.memory import LambdaMemory
@@ -55,6 +54,12 @@ class SymbolicEVMState:
         self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
         self.MAX_CALLDATA_SIZE = max_calldatasize or opt.MAX_CALLDATA_SIZE
 
+        self.calldata = None
+        self.calldatasize = None
+
+        self.set_init_ctx(init_ctx)
+
+    def set_init_ctx(self, init_ctx=None):
         init_ctx = init_ctx or dict()
         if "CALLDATA" in init_ctx:
             # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
@@ -180,7 +185,7 @@ class SymbolicEVMState:
         if opt.STATE_INSPECT:
             self.register_plugin("inspect", SimStateInspect())
 
-    def register_plugin(self, name:str, plugin:SimStatePlugin):
+    def register_plugin(self, name: str, plugin: SimStatePlugin):
         self.active_plugins[name] = plugin
         setattr(self, name, plugin)
         plugin.set_state(self)
@@ -222,6 +227,37 @@ class SymbolicEVMState:
             new_state.register_plugin(p_name, p.copy())
 
         return new_state
+
+    def reset(self, xid):
+        self.xid = xid
+        self.uuid = SymbolicEVMState.uuid_generator.next()
+
+        # Register default plugins
+        self.active_plugins = dict()
+        self._register_default_plugins()
+
+        self._pc = None
+        self.trace = list()
+        self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
+        self.registers = dict()
+        self.ctx = dict()  # todo: is it okay to reset this between transactions??
+
+        self.callstack = list()
+        self.returndata = {'size': None, 'instruction_count': None}
+        self.instruction_count = 0
+        self.halt = False
+        self.revert = False
+        self.error = None
+        self.gas = BVS(f'GAS_{self.xid}', 256)
+        self.start_balance = BVS(f'BALANCE_{self.xid}', 256)
+        self.balance = BV_Add(self.start_balance, ctx_or_symbolic('CALLVALUE', self.ctx, self.xid))
+        self.ctx['CODESIZE-ADDRESS'] = BVV(len(self.code), 256)
+        self.sha_observed = list()
+
+        self.calldata = None
+        self.calldatasize = None
+
+        return self
 
     def __str__(self):
         return f"State {self.uuid} at {self.pc}"

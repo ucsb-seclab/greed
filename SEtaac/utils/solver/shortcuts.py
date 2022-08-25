@@ -1,17 +1,10 @@
-from . import Solver
+from SEtaac import options
 
-# solver is completely stateless now.
-_SOLVER = Solver()
-
-
-def init_solver_shortcuts():
-    global _SOLVER
-    from SEtaac import options
-    if options.SOLVER == options.SOLVER_YICES2:
-        from SEtaac.utils.solver.yices2 import Yices2
-        _SOLVER = Yices2()
-    else:
-        raise Exception(f"Unsupported solver {options.SOLVER}. Aborting.")
+if options.SOLVER == options.SOLVER_YICES2:
+    from SEtaac.utils.solver.yices2 import Yices2
+    _SOLVER = Yices2()
+else:
+    raise Exception(f"Unsupported solver {options.SOLVER}. Aborting.")
 
 
 def ctx_or_symbolic(v, ctx, xid):

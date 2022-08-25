@@ -3,11 +3,11 @@ from SEtaac.utils.extra import UUIDGenerator
 from SEtaac.utils.solver.shortcuts import *
 from SEtaac import options
 
-# SHA3 needs to be of type LambdaMemory 
-# because we NEED to put those extra zero 
-# at the end to be able to do the check at line 50.
 
 class Sha3(LambdaMemory):
+    """
+    SHA3 needs to be of type LambdaMemory to allow the (bounded) comparison between two SHA(s) (see ca. line 50).
+    """
     uuid_generator = UUIDGenerator()
 
     def __init__(self, state=None, memory=None, start=None, size=None, partial_init=False):

@@ -1,16 +1,13 @@
+import logging
 
-import logging 
-
-from enum import Enum
-from SEtaac import options
-from SEtaac.utils.solver import Solver
 from SEtaac.state_plugins import SimStatePlugin
 from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
+
 class SimStateSolver(SimStatePlugin):
-    def __init__(self, solver=options.SOLVER_YICES2, partial_init=False):
+    def __init__(self, partial_init=False):
         super(SimStateSolver, self).__init__()
 
         if partial_init:
@@ -24,7 +21,7 @@ class SimStateSolver(SimStatePlugin):
             raise Exception(f"Unsupported solver {options.SOLVER}. Aborting.")
 
         # The solver backend
-        assert(self._solver)
+        assert(self._solver is not None)
 
         self._curr_frame_level = 0
 

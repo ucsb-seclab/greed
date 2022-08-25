@@ -1,13 +1,12 @@
+import logging
 
-import logging 
-
-from enum import Enum
 from SEtaac.state_plugins import SimStatePlugin
 
 log = logging.getLogger(__name__)
 
 OP_BEFORE = 0
 OP_AFTER = 1
+
 
 class SimStateInspect(SimStatePlugin):
 
@@ -28,9 +27,12 @@ class SimStateInspect(SimStatePlugin):
     def stop_at_stmt(self, stmt_name=None, func=None, when=OP_BEFORE):
         if not func:
             def justStop(state):
-                import ipdb; ipdb.set_trace()
+                import ipdb
+                ipdb.set_trace()
             func = justStop
         self.breakpoints_stmt[stmt_name] = func
 
     def copy(self):
-        return SimStateInspect(dict(self.breakpoints_stmt_ids), dict(self.breakpoints_stmt)) 
+        new_breakpoints_stmt_ids = dict(self.breakpoints_stmt_ids)
+        new_breakpoints_stmt = dict(self.breakpoints_stmt)
+        return SimStateInspect(new_breakpoints_stmt_ids, new_breakpoints_stmt)

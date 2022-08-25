@@ -4,6 +4,9 @@ from . import ExplorationTechnique
 
 
 class DFS(ExplorationTechnique):
+    """
+    This Exploration technique implements a Classic Depth-First Search exploration
+    """
     def __init__(self, deferred_stash='deferred'):
         super(DFS, self).__init__()
         self._random = random.Random()

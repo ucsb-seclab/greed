@@ -3,10 +3,20 @@ import networkx as nx
 from . import ExplorationTechnique
 
 
-# Shortest Distance Symbolic Execution.
-# This technique tries to prune states that cannot reach the 
-# block of a specific target statement.
 class DirectedSearch(ExplorationTechnique):
+    """
+    This technique prunes all states that cannot reach the block of a specified target statement.
+
+    Possibly more effective when combined with DFS if only one path is needed:
+
+    directed_search = DirectedSearch(target_stmt)
+    simgr.use_technique(directed_search)
+
+    dfs = DFS()
+    simgr.use_technique(dfs)
+
+    simgr.run(find=lambda s: s.curr_stmt.id == target_stmt_id)
+    """
     def __init__(self, target_stmt, pruned_stash='pruned'):
         super(DirectedSearch, self).__init__()
         self._target_stmt = target_stmt

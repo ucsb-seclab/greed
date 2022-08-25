@@ -26,5 +26,5 @@ class Factory:
     def block(self, block_id: str) -> Block:
         return self.project.block_at.get(block_id, None)
 
-    def statement(self, stmt_id: str) -> Block:
+    def statement(self, stmt_id: str) -> "TAC_Statement":
         return self.project.statement_at.get(stmt_id, None)

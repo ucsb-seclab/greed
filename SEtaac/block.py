@@ -5,6 +5,9 @@ from SEtaac.TAC import TAC_Statement
 
 
 class Block(object):
+    """
+    Basic Block object
+    """
     def __init__(self, statements: List[TAC_Statement], block_id: str):
         # WARNING: assuming BB indexes are UNIQUE.
         self.id = block_id
@@ -25,24 +28,32 @@ class Block(object):
         self._ancestors = None
         self._descendants = None
 
-        self._shortest_paths = None
-
+        self._subgraph = None
         self._acyclic_subgraph = None
 
     @property
     def succ(self):
+        """
+        Returns: List of successors blocks
+        """
         if self._succ is None:
             self._succ = list(self.cfg.graph.successors(self))
         return self._succ
 
     @property
     def pred(self):
+        """
+        Returns: List of predecessors blocks
+        """
         if self._pred is None:
             self._pred = list(self.cfg.graph.predecessors(self))
         return self._pred
 
     @property
     def ancestors(self):
+        """
+        Returns: List of ancestors blocks
+        """
         if self._ancestors is None:
             reversed_subtree = nx.dfs_tree(self.cfg.graph.reverse(), source=self)
             self._ancestors = list(set(reversed_subtree) - {self})
@@ -55,6 +66,9 @@ class Block(object):
 
     @property
     def descendants(self):
+        """
+        Returns: List of descendants blocks
+        """
         if self._descendants is None:
             subtree = nx.dfs_tree(self.cfg.graph, source=self)
             self._descendants = list(set(subtree) - {self})
@@ -68,26 +82,26 @@ class Block(object):
         return self._descendants
 
     @property
-    def shortest_paths(self):
-        if self._shortest_paths is None:
-            self._shortest_paths = nx.single_source_shortest_path(self.graph, self.root)
-        return self._shortest_paths
+    def subgraph(self):
+        """
+        Returns: Subgraph with this basic block as the root node (with cycles)
+        """
+        if self._subgraph is None:
+            self._subgraph = nx.dfs_tree(self.cfg.graph, source=self)
+            for node in self._subgraph.nodes():
+                for succ in node.succ:
+                    if not self._subgraph.has_edge(node, succ):
+                        self._subgraph.add_edge(node, succ)
+
+        return self._subgraph
 
     @property
     def acyclic_subgraph(self):
+        """
+        Returns: Subgraph with this basic block as the root node (without cycles)
+        """
         if self._acyclic_subgraph is None:
             self._acyclic_subgraph = nx.dfs_tree(self.cfg.graph, source=self)
-
-        return self._acyclic_subgraph
-
-    @property
-    def subgraph(self):
-        if self._acyclic_subgraph is None:
-            self._acyclic_subgraph = nx.dfs_tree(self.cfg.graph, source=self)
-            for node in self._acyclic_subgraph.nodes():
-                for succ in node.succ:
-                    if not self._acyclic_subgraph.has_edge(node, succ):
-                        self._acyclic_subgraph.add_edge(node, succ)
 
         return self._acyclic_subgraph
 
