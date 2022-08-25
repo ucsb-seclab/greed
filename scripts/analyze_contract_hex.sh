@@ -1,10 +1,12 @@
 #!/bin/bash
 
 INLINING_ROUNDS=6
+CONTEXT_DEPTH=8
 
 while (( $# >= 1 )); do
     case $1 in
     --file) HEX_FILE=$2; shift; shift;;
+    --context-depth) CONTEXT_DEPTH=$2; shift; shift;;
     --inlining-rounds) INLINING_ROUNDS=$2; shift; shift;;
     *) break;
     esac;
@@ -38,9 +40,11 @@ fi
 
 echo "Running main.dl"
 $GIGAHORSE_DIR/generatefacts $HEX_FILE facts &&
+echo "Using context depth: $CONTEXT_DEPTH (override with --context-depth)" &&
+echo $CONTEXT_DEPTH > facts/MaxContextDepth.csv &&
 LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/main.dl_compiled -F facts || { echo "${bold}${red}Failed to run main.dl_compiled${normal}"; exit 1; }
 
-echo "Running $INLINING_ROUNDS of inlining (override with --rounds)"
+echo "Running $INLINING_ROUNDS rounds of inlining (override with --inlining-rounds)"
 for i in $(seq 1 $INLINING_ROUNDS); do
   echo "Running inlining round $i.."
   LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/function_inliner.dl_compiled || { echo "${bold}${red}Failed to run function_inliner.dl_compiled${normal}"; exit 1; }
