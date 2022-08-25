@@ -35,7 +35,7 @@ class TAC_Callprivate(TAC_Statement):
         alias_arg_map = dict(zip(args_alias, args))
 
         for alias, arg in alias_arg_map.items():
-            state.registers['v' + alias.replace('0x', '')] = state.registers[arg]
+            state.registers[alias] = state.registers[arg]
 
         # read destination
         dest = target_bb.first_ins.id
