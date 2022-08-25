@@ -48,9 +48,11 @@ class DirectedSearch(ExplorationTechnique):
         block_a = factory.block(state_a.curr_stmt.block_id)
         if self._is_reachable_without_returns(block_a, block_b, factory, callgraph):
             # this is the simple case, no need to look at the callstack
+            log.debug(f"{state_a} -> {block_b} reachable without returns")
             return True
         elif not state_a.callstack:
             # not reachable without returns, but the callstack is empty
+            log.debug(f"[PRUNED] {state_a} -> {block_b} not reachable without returns and callstack is empty")
             return False
         else:
             # otherwise we can look at the callstack
@@ -70,7 +72,9 @@ class DirectedSearch(ExplorationTechnique):
                     return False
 
                 if self._is_reachable_without_returns(return_block, block_b, factory, callgraph):
+                    log.debug(f"{state_a} -> {block_b} reachable with returns")
                     return True
+            log.debug(f"[PRUNED] {state_a} -> {block_b} not reachable with returns")
             return False
 
     # Check if 'block_a' can reach 'block_b'
@@ -90,6 +94,7 @@ class DirectedSearch(ExplorationTechnique):
                 # check if we can reach the first call (i.e., any "CALLPRIVATE <first_call_target>" in function_a)
                 for callprivate_block_id in function_a.callprivate_target_sources[first_call_target.id]:
                     callprivate_block = factory.block(callprivate_block_id)
-                    return self._is_reachable_without_returns(block_a, callprivate_block, factory, callgraph)
+                    if self._is_reachable_without_returns(block_a, callprivate_block, factory, callgraph):
+                        return True
         else:
             return False

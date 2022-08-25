@@ -31,14 +31,14 @@ def main(args):
         print('Please specify a target address.')
         exit(1)
 
-    init_ctx = {}  # "CALLDATA": "6ecd23060"}
+    init_ctx = {}  # "CALLDATA": "6ecd2306"}
     xid = gen_exec_id()
     entry_state = p.factory.entry_state(xid=xid)
     entry_state.set_init_ctx(init_ctx=init_ctx)
 
     simgr = p.factory.simgr(entry_state=entry_state)
 
-    options.LAZY_SOLVES = True
+    options.LAZY_SOLVES = False
 
     directed_search = DirectedSearch(target_stmt)
     simgr.use_technique(directed_search)
