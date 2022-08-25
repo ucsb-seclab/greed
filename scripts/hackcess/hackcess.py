@@ -1,17 +1,13 @@
 import sys 
 import logging 
 import networkx as nx
-import re
-import sha3 
 
 from SEtaac import Project
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz
-from SEtaac.utils.solver.shortcuts import *
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
 
-from sha_resolver import ShaResolver
 from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
 from init_ctx_generator import get_calldata_for
 

@@ -1,9 +1,9 @@
 import logging
 from typing import List, Mapping, Callable
 
-from SEtaac.utils.solver.shortcuts import BVV
-from SEtaac.utils.exceptions import VMException
+from SEtaac.solver.shortcuts import *
 from SEtaac.state import SymbolicEVMState
+from SEtaac.utils.exceptions import VMException
 
 log = logging.getLogger(__name__)
 

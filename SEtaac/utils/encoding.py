@@ -1,4 +1,4 @@
-from SEtaac.utils.solver.shortcuts import *
+from SEtaac.solver.shortcuts import *
 
 
 def addr(expr):

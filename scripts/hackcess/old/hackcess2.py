@@ -1,17 +1,15 @@
-import sys 
-import logging 
+import logging
+import sys
+
 import networkx as nx
-import sha3 
+import sha3
 
 from SEtaac import Project
-from SEtaac.TAC.base import TAC_Statement
 from SEtaac import options
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
+from SEtaac.solver.shortcuts import *
 from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.shortcuts import *
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz
-
-import networkx as nx 
-import random
 
 log = logging.getLogger("Hackcess")
 log.setLevel(logging.INFO)

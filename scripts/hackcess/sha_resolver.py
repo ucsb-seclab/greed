@@ -1,9 +1,9 @@
+import logging
 
-import logging 
-import networkx as nx 
-import sha3 
+import networkx as nx
+import sha3
 
-from SEtaac.utils.solver.shortcuts import *
+from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger("ShaResolver")
 log.setLevel(logging.INFO)

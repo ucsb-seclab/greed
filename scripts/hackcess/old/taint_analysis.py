@@ -1,10 +1,7 @@
+import logging
 
-import random
-import logging 
-
-from SEtaac.utils.solver.shortcuts import *
 from SEtaac.memory.lambda_memory import LambdaMemcopyConstraint, LambdaMemsetInfiniteConstraint
-from SEtaac.memory.utils import get_array_base
+from SEtaac.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)

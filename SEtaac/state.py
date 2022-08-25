@@ -3,10 +3,10 @@ import logging
 
 from SEtaac import options as opt
 from SEtaac.memory import LambdaMemory
+from SEtaac.solver.shortcuts import *
 from SEtaac.state_plugins import SimStatePlugin, SimStateSolver, SimStateGlobals, SimStateInspect
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from SEtaac.utils.extra import UUIDGenerator
-from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 

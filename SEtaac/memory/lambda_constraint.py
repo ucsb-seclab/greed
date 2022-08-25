@@ -1,6 +1,6 @@
 import logging
 
-from SEtaac.utils.solver.shortcuts import *
+from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
@@ -109,19 +109,12 @@ class LambdaMemcopyConstraint(LambdaConstraint):
 
         index_in_range = And(BV_ULE(self.start, index), BV_ULT(index, BV_Add(self.start, self.size)))
 
-        shift_to_source_offset = If(BV_UGE(self.source_start, self.start), 
-                                        BV_Sub(self.source_start, self.start),
-                                        BV_Sub(self.start, self.source_start))
+        shift_to_source_offset = BV_Sub(self.source_start, self.start)
         
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,
                             # memcopy source is of type "memory", don't access directly as an array
-                            self.source[ If( 
-                                            BV_UGE(self.source_start, self.start), 
-                                                BV_Add(index, shift_to_source_offset),
-                                                BV_Sub(index, shift_to_source_offset)
-                                           )
-                                       ],
+                            self.source[BV_Add(index, shift_to_source_offset)],
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)
@@ -148,19 +141,12 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
             return []
 
         index_in_range = BV_ULE(self.start, index)
-        shift_to_source_offset = If(BV_UGE(self.source_start, self.start), 
-                                        BV_Sub(self.source_start, self.start),
-                                        BV_Sub(self.start, self.source_start))
+        shift_to_source_offset = BV_Sub(self.source_start, self.start)
     
         instance = Equal(Array_Select(self.new_array, index),
                          If(index_in_range,
                             # memcopy source is of type "memory", don't access directly as an array
-                            self.source[ If( 
-                                            BV_UGE(self.source_start, self.start), 
-                                                BV_Add(index, shift_to_source_offset),
-                                                BV_Sub(index, shift_to_source_offset)
-                                           )
-                                       ],
+                            self.source[BV_Add(index, shift_to_source_offset)],
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)

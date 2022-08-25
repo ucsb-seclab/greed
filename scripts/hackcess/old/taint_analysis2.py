@@ -28,6 +28,7 @@ class CalldataTaintAnalysis(ExplorationTechnique):
         for succ in successors:
             prev_stmt = succ.trace[-1]
             if prev_stmt.__internal_name__ == "CALLDATACOPY":
+                pass
                 
         return successors
 

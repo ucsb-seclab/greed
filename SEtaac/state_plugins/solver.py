@@ -1,7 +1,8 @@
 import logging
 
+from SEtaac import options
+from SEtaac.solver.shortcuts import *
 from SEtaac.state_plugins import SimStatePlugin
-from SEtaac.utils.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ class SimStateSolver(SimStatePlugin):
             return
 
         if options.SOLVER == options.SOLVER_YICES2:
-            from SEtaac.utils.solver.yices2 import Yices2
+            from SEtaac.solver import Yices2
             self._solver = Yices2()
         else:
             raise Exception(f"Unsupported solver {options.SOLVER}. Aborting.")
@@ -70,7 +71,7 @@ class SimStateSolver(SimStatePlugin):
     # If frame is None, returns ALL the currently active constraints,
     # otherwise, just return the constraints at a specific frame.
     @property
-    def path_constraints(self, frame:int=None):
+    def path_constraints(self, frame: int = None):
         if not frame:
             all_csts = [c_set for c_set in self._path_constraints.values()]
             return list(set().union(*all_csts))
@@ -130,7 +131,7 @@ class SimStateSolver(SimStatePlugin):
     
     def eval_memory(self, memory, length, raw=False):
         assert(self.is_concrete(length))
-        memory_to_eval = memory.readn(BVV(0,256), length)
+        memory_to_eval = memory.readn(BVV(0, 256), length)
         return self.eval(memory_to_eval, raw=raw)
 
     def eval_memory_at(self, array, offset, length, raw=False):

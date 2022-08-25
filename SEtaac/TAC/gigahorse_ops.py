@@ -1,9 +1,9 @@
 import logging
 
 from SEtaac.TAC.base import TAC_Statement
-from SEtaac.utils.exceptions import VMNoSuccessors
+from SEtaac.solver.shortcuts import *
 from SEtaac.state import SymbolicEVMState
-from SEtaac.utils.solver.shortcuts import bv_unsigned_value
+from SEtaac.utils.exceptions import VMNoSuccessors
 
 __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
@@ -35,7 +35,7 @@ class TAC_Callprivate(TAC_Statement):
         alias_arg_map = dict(zip(args_alias, args))
 
         for alias, arg in alias_arg_map.items():
-            state.registers['v' + alias.replace('0x', '')] = state.registers[arg]
+            state.registers[alias] = state.registers[arg]
 
         # read destination
         dest = target_bb.first_ins.id

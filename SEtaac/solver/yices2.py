@@ -1,7 +1,7 @@
 import re
 import yices
 
-from SEtaac.utils.solver.solver import Solver
+from SEtaac.solver import Solver
 from typing import List
 
 

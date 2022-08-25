@@ -3,9 +3,9 @@ import logging
 
 import IPython
 
-from SEtaac import Project, utils
+from SEtaac import Project
+from SEtaac.solver.shortcuts import *
 from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.shortcuts import *
 
 
 def setup_logging():

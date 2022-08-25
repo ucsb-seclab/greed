@@ -2,10 +2,10 @@ import logging
 
 from SEtaac import options
 from SEtaac import utils
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.solver.shortcuts import *
+from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.exceptions import VMSymbolicError
-from SEtaac.utils.solver.shortcuts import *
-from .base import TAC_Statement
-from ..state import SymbolicEVMState
 
 __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode', 'TAC_Delegatecall', 'TAC_Staticcall', ]
 

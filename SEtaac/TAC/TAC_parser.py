@@ -15,13 +15,15 @@ from SEtaac.factory import Factory
 from SEtaac.function import TAC_Function
 from SEtaac.utils import load_csv, load_csv_map, load_csv_multimap
 
-log = logging.getLogger("tac_parser")
+log = logging.getLogger(__name__)
 
 
 class TAC_parser:
     def __init__(self, factory: Factory, target_dir: str):
         self.factory = factory
         self.target_dir = target_dir
+
+        self.phimap = None
 
     @staticmethod
     def stmt_sort_key(stmt_id: str) -> int:
@@ -73,6 +75,7 @@ class TAC_parser:
         for stmt in statements.values():
             if stmt.__internal_name__ != 'PHI':
                 continue
+            #phimap[stmt.res1_var] = stmt.res1_var
             for v in stmt.arg_vars:
                 if v in phimap:
                     phimap[stmt.res1_var] = phimap[v]
@@ -89,7 +92,9 @@ class TAC_parser:
                     phimap[v_old] = phimap[v_new]
                     fixpoint = False
 
-        # rewrite statements
+        self.phimap = phimap
+
+        # rewrite statements according to PHI map
         for stmt in statements.values():
             if stmt.__internal_name__ == "PHI":
                 # remove all phi statements
@@ -170,6 +175,11 @@ class TAC_parser:
 
             for b in blocks:
                 b.function = function
+
+        # rewrite aliases according to PHI map
+        translate_alias = lambda alias: 'v' + alias.replace('0x', '')
+        for function in functions.values():
+            function.arguments = [self.phimap.get(translate_alias(a), translate_alias(a)) for a in function.arguments]
 
         return functions
 

@@ -1,9 +1,7 @@
+import logging
 
-import logging 
-
+from SEtaac.solver.shortcuts import *
 from sha_resolver import ShaResolver
-from SEtaac.utils.solver.shortcuts import *
-
 from utils import bcolors
 
 
