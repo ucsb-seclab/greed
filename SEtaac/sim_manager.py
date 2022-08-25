@@ -3,6 +3,7 @@ import os
 import sys
 from typing import Callable
 
+from SEtaac import options
 from SEtaac.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
@@ -18,7 +19,8 @@ class SimulationManager:
             'active': [],
             'deadended': [],
             'found': [],
-            'pruned': []
+            'pruned': [],
+            'unsat': []
         }
 
         self.insns_count = 0
@@ -133,6 +135,9 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='found', filter_func=find)
         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
+
+        if options.LAZY_SOLVES:
+            self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(f"Stepping {state}")
