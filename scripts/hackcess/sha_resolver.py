@@ -101,6 +101,7 @@ class ShaResolver():
         state = self.state
         state.solver.push()
 
+        # Store here the new generated model
         sha_model = list()
 
         last_shas = [sha for sha in self.sha_deps.nodes() if self.sha_deps.out_degree(sha) == 0]
@@ -110,9 +111,9 @@ class ShaResolver():
             sha_model.append(self._fix_sha(sha_observed))
             for pred_sha in nx.ancestors(self.sha_deps, sha_observed):
                 log.debug(f" Fixing {pred_sha.symbol.name}")
-                sha_models.append(self._fix_sha(pred_sha))
+                sha_model.append(self._fix_sha(pred_sha))
         
-        # Save this model
+        # Save this model in the global dict
         self.sha_models[self.num_models] = sha_model
 
         # Return the last generated model for SHAs
