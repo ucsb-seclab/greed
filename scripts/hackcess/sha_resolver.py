@@ -5,7 +5,7 @@ import sha3
 
 from SEtaac.solver.shortcuts import *
 
-log = logging.getLogger("ShaResolver")
+log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 class ShaSolution():
@@ -76,11 +76,7 @@ class ShaResolver():
                     # OPTIMIZATION: if sha1 depends from sha2, sha2 CANNOT depend from sha1, so skip that.
                     continue
 
-                # Can this other SHA still be concretized to 0? If yes, constraining the 
-                # input buffer of 'sha_observed' didn't influence this SHA, hence, there 
-                # is no dependency between these two SHAs.
-                sha_model.add(Equal(other_sha.symbol, BVV(0,256)))
-                if state.solver.are_formulas_sat(list(sha_model)):
+                if state.solver.is_formula_sat(Equal(other_sha.symbol, BVV(0,256))):
                     continue
                 else:
                     # Register the dependency
@@ -96,6 +92,9 @@ class ShaResolver():
         # We save the transitive reduction :)
         self.sha_deps = nx.transitive_reduction(sha_deps)
 
+    # This method uses the sha_deps graph to fix all the 
+    # SHAs, starting from the leaves, back to the top.
+    # WARNING: it adds constraints to the state in a new frame.
     def fix_shas(self):
 
         state = self.state
@@ -118,8 +117,10 @@ class ShaResolver():
 
         # Return the last generated model for SHAs
         return sha_model
-        
-    def _fix_sha(self, sha_observed):
+    
+    # This method fixes a specific sha_observed.
+    # WARNING: it adds constraints to the state in the current frame!
+    def _fix_sha(self, sha_observed) -> ShaSolution:
         
         state = self.state
 
@@ -172,7 +173,7 @@ class ShaResolver():
         state.add_constraint(Equal(sha_observed.symbol, BVV(int(sha_result,16),256)))
 
         return ShaSolution(sha_observed.symbol.name, sha_arg_offset, sha_size, sha_input_buffer, BVV(int(sha_result,16),256))
-
+    
     def get_keccak256(self, input_buffer, sha_size):
         keccak256 = sha3.keccak_256()
         input_buffer = bv_unsigned_value(input_buffer).to_bytes(bv_unsigned_value(sha_size), 'big')
