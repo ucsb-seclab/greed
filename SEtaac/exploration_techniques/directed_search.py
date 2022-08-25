@@ -53,9 +53,9 @@ class DirectedSearch(ExplorationTechnique):
                 return_block = factory.block(return_stmt.block_id)
 
                 # check if any RETURNPRIVATE is reachable
-                for returnprivate_block_id in block_b.function.returnprivate_block_ids:
+                for returnprivate_block_id in block_a.function.returnprivate_block_ids:
                     returnprivate_block = factory.block(returnprivate_block_id)
-                    if self._is_reachable_without_returns(block_b, returnprivate_block, factory, callgraph):
+                    if self._is_reachable_without_returns(block_a, returnprivate_block, factory, callgraph):
                         break
                 else:
                     # executed if there is no break
