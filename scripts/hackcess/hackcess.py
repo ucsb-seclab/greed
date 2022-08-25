@@ -1,6 +1,7 @@
 import sys 
 import logging 
 import networkx as nx
+import re
 import sha3 
 
 from SEtaac import Project
@@ -12,6 +13,7 @@ from SEtaac.utils.solver.shortcuts import *
 
 from sha_resolver import ShaResolver
 from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
+from init_ctx_generator import get_calldata_for
 
 import random
 
@@ -44,13 +46,13 @@ class CallInfo():
     def call_type(self):
         type_str = ""
         if self.taintedContractAddress:
-            type_str += "T"
+            type_str += "*"
         else:
-            type_str += "U"
+            type_str += "*"
         if self.taintedFunction:
-            type_str += "T"
+            type_str += "*"
         else:
-            type_str += "U"
+            type_str += "*"
         if self.taintedArguments:
             type_str += "*"
         else:
@@ -91,36 +93,34 @@ def analyze_state_at_call(state, target_call_info):
     return tainted_targetContract, tainted_targetFunc
     
 
-def get_init_ctx_for(func):
-    # This function will use the prototype recovery to 
-    # return an appropiate init_ctx.
-    # TODO TODO TODO TODO
-    assert(func.public and func.name)
-    
-    data = ""
-    return {"CALLDATA": func.name + data}, 100
-
 def analyze_call_from_ep(entry_point, target_call_info):
 
-    init_ctx, max_calldatasize = get_init_ctx_for(entry_point)
+    calldata, calldatasize = get_calldata_for(entry_point)
+
+    if not calldata:
+        return None
     
     # HACK 
-    init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
+    #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
     
-    # This is init_ctx for CallerTTU
-    init_ctx = {"CALLDATA": "0x7214ae990000000000000000000000002fSS96349c51abfce8f7eb2326233f3eb387fa7b000000000000000000000000000000000000000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000SSSSSSSSSS00000000000000000000000000000000000000000000000000000000"}
-    
+    # This is init_ctx for CallerTTU/CallerTUT
+    #init_ctx =  {"CALLDATA": "0x7214ae99000000000000000000000000SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000004SSSSSSSS00000000000000000000000000000000000000000000000000000000", "CALLDATASIZE":132}
+
     # This is a good init_ctx for JustTest002/JustTest001
     #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
 
     #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
-    max_calldatasize =  132
+    init_ctx = {"CALLDATA": calldata , "CALLDATASIZE": calldatasize}
+
+    #max_calldatasize =  132
 
     # Some state options
     options.GREEDY_SHA = False
     #options.LAZY_SOLVES = True
 
-    entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=max_calldatasize)    
+    entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=calldatasize)    
+
+    
     simgr = p.factory.simgr(entry_state=entry_state)
     
     #simgrviz = SimgrViz()
@@ -177,13 +177,16 @@ if __name__ == "__main__":
     p = Project(target_dir=sys.argv[1])
     xid = gen_exec_id()
 
-
     # First of all, let's find all the CALL statements
     CallInfos = {s.id:CallInfo(s) for s in p.statement_at.values() if s.__internal_name__ == "CALL"}
+    log.info(f"Found {len(CallInfos.keys())} CALLs:")
+    for n, call in enumerate(CallInfos.values()):
+        log.info(f" [{n}] CALL at {call.call_stmt.id}")
 
     # Collect static information that can be useful for symbolic execution 
     # and for the classification of the CALL.
     for c_id, call in CallInfos.items():
+        log.info(f"Investigating CALL at {c_id}")
         # [1] 
         # In the simplest case, the contract address should have been already 
         # propagated by Gigahorse, if this is statically known, in these cases
@@ -224,6 +227,8 @@ if __name__ == "__main__":
             continue
         
         for ep in entry_points:
+            if "bytes" not in ep.name:
+                continue
             analyze_call_from_ep(ep, call)
 
     log.info("CALLS SUMMARY")
