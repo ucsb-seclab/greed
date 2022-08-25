@@ -17,8 +17,9 @@ from init_ctx_generator import get_calldata_for
 
 import random
 
-log = logging.getLogger("Hackcess")
+log = logging.getLogger("HackcessLOL")
 log.setLevel(logging.INFO)
+
 
 class CallInfo():
     def __init__(self, call_stmt):
@@ -132,7 +133,7 @@ def analyze_call_from_ep(entry_point, target_call_info):
     directed_search = DirectedSearch(p.factory.statement(target_call_info.call_stmt.id))
     simgr.use_technique(directed_search)
 
-    heartbeat = HeartBeat()
+    heartbeat = HeartBeat(beat_interval=1)
     simgr.use_technique(heartbeat)
 
     log.info(f"Symbolically executing from {entry_point.id} to CALL at {target_call_info.call_stmt.id}")
@@ -227,8 +228,6 @@ if __name__ == "__main__":
             continue
         
         for ep in entry_points:
-            if "bytes" not in ep.name:
-                continue
             analyze_call_from_ep(ep, call)
 
     log.info("CALLS SUMMARY")
