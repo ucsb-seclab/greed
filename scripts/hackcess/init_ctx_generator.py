@@ -87,6 +87,7 @@ def get_calldata_for(func):
 
         # Replace our data with "SS"
         replacements = sort_tuple(replacements)
+        replacements = replacements[::-1]
         for r in replacements:
             calldata = calldata.replace(r[0], r[1])
         

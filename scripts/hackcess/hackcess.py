@@ -17,8 +17,9 @@ from init_ctx_generator import get_calldata_for
 
 import random
 
-log = logging.getLogger("HackcessLOL")
+log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
+
 
 
 class CallInfo():
@@ -168,6 +169,8 @@ def how_to_reach(p: Project, target_call:TAC_Statement):
     entry_points = set()
     for ep in possible_entry_points:
         if nx.has_path(p.callgraph, source=ep, target=target_function):
+            for path in nx.all_simple_paths(p.callgraph, source=ep, target=target_function):
+                print(path)
             entry_points.add(ep)
     
     return entry_points
