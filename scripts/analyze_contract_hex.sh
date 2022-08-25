@@ -50,6 +50,9 @@ for i in $(seq 1 $INLINING_ROUNDS); do
   LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/function_inliner.dl_compiled || { echo "${bold}${red}Failed to run function_inliner.dl_compiled${normal}"; exit 1; }
 done
 
+echo "Running loops_semantics.dl"
+LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled || { echo "${bold}${red}Failed to run loops_semantics.dl_compiled${normal}"; exit 1; }
+
 echo "Running guards.dl"
 LD_LIBRARY_PATH=$GIGAHORSE_DIR/souffle-addon/ $GIGAHORSE_DIR/clients/guards.dl_compiled || { echo "${bold}${red}Failed to run guards.dl_compiled${normal}"; exit 1; }
 
