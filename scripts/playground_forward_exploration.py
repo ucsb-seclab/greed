@@ -124,8 +124,10 @@ def main(args):
     print(simgr)
     critical_path = simgr.one_found
     print(f"SAT: {critical_path.solver.is_sat()}")
-    calldata = bytes(critical_path.solver.eval_one_array(critical_path.calldata, critical_path.MAX_CALLDATA_SIZE)).hex()
-    print(f'CALLDATA: {calldata}')
+    calldata_size = critical_path.MAX_CALLDATA_SIZE
+    calldata = critical_path.solver.eval_memory(critical_path.calldata, BVV(calldata_size, 256)).to_bytes(calldata_size, 'big').hex()
+    log.info(f'CALLDATA: {calldata}')
+
 
     # # find storage reads in critical path
     # critical_reads = dict()
