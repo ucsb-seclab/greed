@@ -384,8 +384,8 @@ class TAC_Timestamp(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         ts = ctx_or_symbolic('TIMESTAMP', state.ctx, state.xid)
         if not is_concrete(ts):
-            state.add_constraint(BV_UGE(ts, state.min_timestamp))
-            state.add_constraint(BV_ULE(ts, state.max_timestamp))
+            state.add_constraint(BV_UGE(ts, BVV(int(state.min_timestamp),256)))
+            state.add_constraint(BV_ULE(ts, BVV(int(state.max_timestamp),256)))
         state.registers[self.res1_var] = ts
 
         state.set_next_pc()
