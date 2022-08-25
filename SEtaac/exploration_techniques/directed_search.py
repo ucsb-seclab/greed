@@ -1,7 +1,9 @@
+import logging
 import networkx as nx
 
 from . import ExplorationTechnique
 
+log = logging.getLogger(__name__)
 
 class DirectedSearch(ExplorationTechnique):
     """
@@ -28,11 +30,17 @@ class DirectedSearch(ExplorationTechnique):
 
     def check_successors(self, simgr, successors):
         new_successors = []
+        pruned_cnt = 0
         for succ in successors:
             if self._is_reachable(succ, self._target_block, simgr.project.factory, simgr.project.callgraph):
                 new_successors.append(succ)
             else:
+                pruned_cnt += 1
                 simgr.stashes[self.pruned_stash].append(succ)
+        if pruned_cnt == len(successors):
+            log.warning(f"Pruned all the successors! [{pruned_cnt}/{len(successors)}]")
+        elif pruned_cnt != 0:
+            log.warning(f"Pruned {pruned_cnt}/{len(successors)} successors")
         return new_successors
 
     # Check if the current state can reach 'block_b'
