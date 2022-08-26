@@ -26,7 +26,7 @@ class HeartBeat(ExplorationTechnique):
         self.steps_cnt += 1
         if self.beat_cnt == self.beat_interval:
             log.info("Exploration is alive <3. Step {}".format(self.steps_cnt))
-            log.info("    Succs are: {}".format(successors))
+            log.info(f"Simgr: {simgr} (active: {simgr.active})")
             self.beat_cnt = 0
             if not os.path.isfile(self.heart_beat_file):
                 log.info("HeartBeat stopped, need help? </3")
