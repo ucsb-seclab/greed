@@ -146,7 +146,7 @@ class SimStateSolver(SimStatePlugin):
 
     def copy(self):
         new_solver = SimStateSolver(partial_init=True)
-        new_solver._solver = self._solver  # no need to copy if solver is stateless
+        new_solver._solver = self._solver.copy()
 
         new_solver._curr_frame_level = 0
         new_solver._path_constraints = dict()
