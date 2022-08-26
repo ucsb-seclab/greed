@@ -91,7 +91,6 @@ class SimulationManager:
             return None
 
     def use_technique(self, technique: "ExplorationTechnique"):
-        # All good, let's install it.
         technique.project = self.project
         technique.setup(self)
         self._techniques.append(technique)
@@ -131,8 +130,10 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='found', filter_func=find)
         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
-
         self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
+
+        for s in self.stashes['pruned'] + self.stashes['unsat']:
+            s.solver.dispose_context()
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(f"Stepping {state}")

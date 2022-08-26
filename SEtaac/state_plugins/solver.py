@@ -106,6 +106,10 @@ class SimStateSolver(SimStatePlugin):
             mem_csts = self._memory_constraints[frame]
             return list(path_csts.union(mem_csts))
 
+    def dispose_context(self):
+        if self._solver.solver.context:
+            self._solver.solver.dispose()
+
     def is_concrete(self, term) -> bool:
         return self._solver.is_concrete(term)
 
