@@ -132,8 +132,7 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
 
-        if options.LAZY_SOLVES:
-            self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
+        self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
 
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(f"Stepping {state}")
