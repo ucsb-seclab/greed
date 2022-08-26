@@ -422,6 +422,6 @@ class Yices2(Solver):
         else:
             return self.bv_unsigned_value(YicesTermBV(model.get_value_as_term(term)))
 
-    def copy(self):
-        new_solver = Yices2()
-        return new_solver
+    # def copy(self):
+    #     new_solver = Yices2()
+    #     return new_solver
