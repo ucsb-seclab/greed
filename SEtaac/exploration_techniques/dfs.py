@@ -1,5 +1,3 @@
-import random
-
 from . import ExplorationTechnique
 
 
@@ -9,8 +7,6 @@ class DFS(ExplorationTechnique):
     """
     def __init__(self, deferred_stash='deferred'):
         super(DFS, self).__init__()
-        self._random = random.Random()
-        self._random.seed(10)
         self.deferred_stash = deferred_stash
 
     def setup(self, simgr):
@@ -18,23 +14,16 @@ class DFS(ExplorationTechnique):
             simgr.stashes[self.deferred_stash] = []
 
     def check_stashes(self, simgr, stashes, stash='active'):
-        # If we have more than one active, let's just pick
-        # one randomly and step it.
         if len(stashes[stash]) > 1:
-            # Pick the last after the shuffling
-            keep = self._random.choice(stashes[stash])
-            # Move everything else to the deferred
+            # Pick the oldest state
+            keep = sorted(stashes[stash], key=lambda s: s.uuid)[0]
+            # Move everything else to the deferred stash
             simgr.move(from_stash=stash, to_stash=self.deferred_stash, filter_func=lambda s: s != keep)
-            # Re-define the active stash
-            stashes[stash] = [keep]
-
-        # Ok, we are out of active
-        if len(stashes[stash]) == 0:
-            # Do we have any deferred?
-            if len(stashes[self.deferred_stash]) == 0:
-                return stashes
-            # Add last deferred to the active queue
-            stashes[stash].append(stashes[self.deferred_stash].pop())
+        elif len(stashes[stash]) == 0:
+            # We are out of active. Do we have any deferred?
+            if len(stashes[self.deferred_stash]) > 0:
+                # Add last deferred to the active queue
+                stashes[stash].append(stashes[self.deferred_stash].pop())
 
         return stashes
 

@@ -38,9 +38,9 @@ class DirectedSearch(ExplorationTechnique):
                 pruned_cnt += 1
                 simgr.stashes[self.pruned_stash].append(succ)
         if pruned_cnt == len(successors):
-            log.warning(f"Pruned all the successors! [{pruned_cnt}/{len(successors)}]")
+            log.debug(f"Pruned all the successors! [{pruned_cnt}/{len(successors)}]")
         elif pruned_cnt != 0:
-            log.warning(f"Pruned {pruned_cnt}/{len(successors)} successors")
+            log.debug(f"Pruned {pruned_cnt}/{len(successors)} successors")
         return new_successors
 
     # Check if the current state can reach 'block_b'

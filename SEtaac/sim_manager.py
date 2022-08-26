@@ -113,7 +113,6 @@ class SimulationManager:
                    prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
         log.debug('-' * 30)
         new_active = list()
-        
         # Let the techniques manipulate the stashes
         for tech in self._techniques: 
             self.stashes = tech.check_stashes(self, self.stashes)
