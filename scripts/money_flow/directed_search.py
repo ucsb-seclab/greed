@@ -38,7 +38,7 @@ def main(args):
 
     simgr = p.factory.simgr(entry_state=entry_state)
 
-    options.LAZY_SOLVES = False
+    options.LAZY_SOLVES = args.lazy
 
     directed_search = DirectedSearch(target_stmt)
     simgr.use_technique(directed_search)
@@ -73,6 +73,7 @@ if __name__ == "__main__":
 
     parser.add_argument("target", type=str, action="store", help="Path to Gigahorse output folder")
     parser.add_argument("--addr", type=str, action="store", help="Target address", required=True)
+    parser.add_argument("--lazy", action="store_true", help="Enable lazy solves")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
 
     args = parser.parse_args()
