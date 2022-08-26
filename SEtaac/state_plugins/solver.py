@@ -56,14 +56,12 @@ class SimStateSolver(SimStatePlugin):
             return self._curr_frame_level
     
     def add_path_constraints(self, constraint):
-        if constraint not in self._path_constraints[self._curr_frame_level]:
-            self._path_constraints[self._curr_frame_level].add(constraint)
-            self._add_assertion(constraint)
+        self._path_constraints[self._curr_frame_level].add(constraint)
+        self._add_assertion(constraint)
 
     def add_memory_constraints(self, constraint):
-        if constraint not in self._memory_constraints[self._curr_frame_level]:
-            self._memory_constraints[self._curr_frame_level].add(constraint)
-            self._add_assertion(constraint)
+        self._memory_constraints[self._curr_frame_level].add(constraint)
+        self._add_assertion(constraint)
 
     @property
     def frame(self):
