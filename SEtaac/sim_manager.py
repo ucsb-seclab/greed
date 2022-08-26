@@ -90,11 +90,7 @@ class SimulationManager:
         else:
             return None
 
-    def use_technique(self, technique):
-        # Pre-check 
-        if not isinstance(technique, ExplorationTechnique):
-            raise Exception(f"{technique} is not an instance of ExplorationTechnique")
-        
+    def use_technique(self, technique: "ExplorationTechnique"):
         # All good, let's install it.
         technique.project = self.project
         technique.setup(self)
@@ -227,6 +223,3 @@ class SimulationManager:
 
     def __repr__(self):
         return self.__str__()
-
-
-from .exploration_techniques import ExplorationTechnique
