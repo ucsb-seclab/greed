@@ -37,6 +37,10 @@ class SimStateSolver(SimStatePlugin):
         # Adding the constraint to the backend
         self._solver.add_assertion(assertion)
 
+    def _add_assertions(self, assertions):
+        # Adding the constraints to the backend
+        self._solver.add_assertions(assertions)
+
     def push(self):
         self._curr_frame_level += 1
         self._path_constraints[self._curr_frame_level] = set()
@@ -147,16 +151,15 @@ class SimStateSolver(SimStatePlugin):
         new_solver._curr_frame_level = 0
         new_solver._path_constraints = dict()
         new_solver._memory_constraints = dict()
-        new_solver._path_constraints[new_solver._curr_frame_level] = set()
-        new_solver._memory_constraints[new_solver._curr_frame_level] = set()
         
         # Re-add all the constraints (Maybe one day Yices2 will do it for us with 
         # a full Context clone, as of now this is the "cloning dei poveri".
         while True:
-            for path_constraint in self._path_constraints[new_solver._curr_frame_level]:
-                new_solver.add_path_constraints(path_constraint)
-            for mem_constraint in self._memory_constraints[new_solver._curr_frame_level]:
-                new_solver.add_memory_constraints(mem_constraint)
+            level = new_solver._curr_frame_level
+            new_solver._path_constraints[level] = set(self._path_constraints[level])
+            new_solver._add_assertions(new_solver._path_constraints[level])
+            new_solver._memory_constraints[level] = set(self._memory_constraints[level])
+            new_solver._add_assertions(new_solver._memory_constraints[level])
             
             if new_solver._curr_frame_level == self._curr_frame_level:
                 break
