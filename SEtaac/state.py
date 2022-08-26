@@ -214,7 +214,7 @@ class SymbolicEVMState:
         new_state.balance = self.balance
 
         #new_state.sha_observed = [sha.copy(new_state=new_state) for sha in self.sha_observed]
-        new_state.sha_observed = self.sha_observed
+        new_state.sha_observed = list(self.sha_observed)
         new_state.min_timestamp = self.min_timestamp
         new_state.max_timestamp = self.max_timestamp
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
