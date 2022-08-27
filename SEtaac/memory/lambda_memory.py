@@ -155,7 +155,7 @@ class LambdaMemory:
         new_memory.tag = self.tag
         new_memory._base = self._base
         new_memory.state = new_state
-        new_memory.lambda_constraint = self.lambda_constraint
+        new_memory.lambda_constraint = self.lambda_constraint.copy(new_state=new_state)
         new_memory._constraints = list(self._constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count

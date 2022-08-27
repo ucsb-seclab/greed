@@ -70,7 +70,7 @@ class Sha3(LambdaMemory):
         new_sha_memory.uuid = self.uuid
         new_sha_memory.tag = self.tag
         new_sha_memory._base = self._base
-        new_sha_memory.lambda_constraint = self.lambda_constraint
+        new_sha_memory.lambda_constraint = self.lambda_constraint.copy(new_state=new_state)
         new_sha_memory._constraints = list(self._constraints)
         new_sha_memory.write_count = self.write_count
         new_sha_memory.read_count = self.read_count
