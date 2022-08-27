@@ -23,7 +23,7 @@ class Sha3(LambdaMemory):
         self.state = state
         
         # The source memory where we are fetching data from
-        self.memory = memory.copy(self.state)
+        self.memory = memory.copy(new_state=self.state)
         # Where to start to hash in the source memory
         self.start = start
         # How much we should hash 
@@ -70,6 +70,7 @@ class Sha3(LambdaMemory):
         new_sha_memory.uuid = self.uuid
         new_sha_memory.tag = self.tag
         new_sha_memory._base = self._base
+        new_sha_memory.state = new_state
         new_sha_memory.lambda_constraint = self.lambda_constraint.copy(new_state=new_state)
         new_sha_memory._constraints = list(self._constraints)
         new_sha_memory.write_count = self.write_count
@@ -77,10 +78,9 @@ class Sha3(LambdaMemory):
         new_sha_memory.layer_level = self.layer_level
         new_sha_memory.symbol = self.symbol
 
-        new_sha_memory.state = new_state
 
         # WARNING: does this need a deep copy?
-        new_sha_memory.memory = self.memory
+        new_sha_memory.memory = self.memory.copy(new_state=new_state)
 
         new_sha_memory.start = self.start
         new_sha_memory.size = self.size
