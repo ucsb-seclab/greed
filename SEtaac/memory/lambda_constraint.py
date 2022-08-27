@@ -121,7 +121,7 @@ class LambdaMemcopyConstraint(LambdaConstraint):
 
     def __str__(self):
         return f"[{len(self.following_writes)} following writes]\n" \
-               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},source:{self.source.pp()},source_start:{self.source_start.pp()})\n" \
+               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},source:{self.source.tag},source_start:{self.source_start.pp()})\n" \
                f"{self.parent}"
 
 
@@ -153,5 +153,5 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
 
     def __str__(self):
         return f"[{len(self.following_writes)} following writes]\n" \
-               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},source:{self.source.pp()},source_start:{self.source_start.pp()})\n" \
+               f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},source:{self.source.tag},source_start:{self.source_start.pp()})\n" \
                f"{self.parent}"
