@@ -31,6 +31,11 @@ class LambdaConstraint:
         """
         return []
 
+    def copy(self, new_state):
+        new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
+        new_lambda_constraint = LambdaConstraint(array=self.array, new_array=self.new_array, parent=new_parent)
+        return new_lambda_constraint
+
     def __str__(self):
         return f"[{len(self.following_writes)} following writes]\n" \
                f"LambdaConstraint"
@@ -58,6 +63,12 @@ class LambdaMemsetConstraint(LambdaConstraint):
 
         return [instance] + self.parent.instantiate(index)
 
+    def copy(self, new_state):
+        new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
+        new_lambda_constraint = LambdaMemsetConstraint(array=self.array, start=self.start, value=self.value, size=self.size,
+                                                       new_array=self.new_array, parent=new_parent)
+        return new_lambda_constraint
+
     def __str__(self):
         return f"[{len(self.following_writes)} following writes]\n" \
                f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},value:{self.value.pp()})\n" \
@@ -84,6 +95,12 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)
+
+    def copy(self, new_state):
+        new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
+        new_lambda_constraint = LambdaMemsetInfiniteConstraint(array=self.array, start=self.start, value=self.value,
+                                                               new_array=self.new_array, parent=new_parent)
+        return new_lambda_constraint
 
     def __str__(self):
         return f"[{len(self.following_writes)} following writes]\n" \
@@ -119,6 +136,15 @@ class LambdaMemcopyConstraint(LambdaConstraint):
 
         return [instance] + self.parent.instantiate(index)
 
+    def copy(self, new_state):
+        new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
+        new_source = self.source.copy(new_state=new_state)
+        print(f'copying source {self.source.tag} ({self.source.state}) -> {new_source.tag} ({new_source.state})')
+        new_lambda_constraint = LambdaMemcopyConstraint(array=self.array, start=self.start, source=new_source,
+                                                        source_start=self.source_start, size=self.size,
+                                                        new_array=self.new_array, parent=new_parent)
+        return new_lambda_constraint
+
     def __str__(self):
         return f"[{len(self.following_writes)} following writes]\n" \
                f"LambdaMemsetInfiniteConstraint(old:{self.array.pp()},new:{self.new_array.pp()},start:{self.start.pp()},size:{self.size.pp()},source:{self.source.tag},source_start:{self.source_start.pp()})\n" \
@@ -150,6 +176,14 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
                             Array_Select(self.array, index)))
 
         return [instance] + self.parent.instantiate(index)
+
+    def copy(self, new_state):
+        new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
+        new_source = self.source.copy(new_state=new_state)
+        new_lambda_constraint = LambdaMemcopyInfiniteConstraint(array=self.array, start=self.start, source=new_source,
+                                                                source_start=self.source_start,
+                                                                new_array=self.new_array, parent=new_parent)
+        return new_lambda_constraint
 
     def __str__(self):
         return f"[{len(self.following_writes)} following writes]\n" \
