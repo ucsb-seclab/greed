@@ -139,7 +139,6 @@ class LambdaMemcopyConstraint(LambdaConstraint):
     def copy(self, new_state):
         new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
         new_source = self.source.copy(new_state=new_state)
-        print(f'copying source {self.source.tag} ({self.source.state}) -> {new_source.tag} ({new_source.state})')
         new_lambda_constraint = LambdaMemcopyConstraint(array=self.array, start=self.start, source=new_source,
                                                         source_start=self.source_start, size=self.size,
                                                         new_array=self.new_array, parent=new_parent)
