@@ -77,6 +77,8 @@ class Sha3(LambdaMemory):
         new_sha_memory.layer_level = self.layer_level
         new_sha_memory.symbol = self.symbol
 
+        new_sha_memory.state = new_state
+
         # WARNING: does this need a deep copy?
         new_sha_memory.memory = self.memory
 
