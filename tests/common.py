@@ -3,10 +3,9 @@ import logging
 
 import IPython
 
-from SEtaac import Project, utils
+from SEtaac import Project
+from SEtaac.solver.shortcuts import *
 from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.bitwuzla import Bitwuzla
-from SEtaac.utils.solver.shortcuts import *
 
 
 def setup_logging():
@@ -43,29 +42,37 @@ def parse_log(state):
     # value_ptr = log_stmt.topic_val + 32
     # value = bytes(state.memory.read(value_ptr, length)).decode()
 
-    value = utils.int_to_big_endian(bv_unsigned_value(log_stmt.topic_val)).decode().split('\x00')[0]
+    value_int = bv_unsigned_value(log_stmt.topic_val)
+    value = value_int.to_bytes(length=(value_int.bit_length() + 7) // 8, byteorder='big').decode().split('\x00')[0]
 
     print(f"---> {value}")
     outcome, testname = value.split(":")
     assert outcome == "success", f"{testname} failed"
+    return outcome, testname
 
 
 def run_test(target_dir, debug=False):
-    set_solver(Bitwuzla)
     p = Project(target_dir=target_dir)
 
     xid = gen_exec_id()
     entry_state = p.factory.entry_state(xid=xid)
     simgr = p.factory.simgr(entry_state=entry_state)
 
+    run_test_simgr(simgr, debug=debug)
+
+
+def run_test_simgr(simgr, debug=False):
+    outcome = testname = None
     while len(simgr.active) > 0:
         simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")
         for s in simgr.found:
-            parse_log(s)
+            outcome, testname = parse_log(s)
 
         simgr.move(from_stash="found", to_stash="active")
 
+    
     assert not any([s.error for s in simgr.states]), f"Simulation Manager has errored states: {simgr}"
+    assert outcome == "success" and testname == "", f"Simulation Manager did not reach final success state: {simgr}"
 
     if debug:
         IPython.embed()

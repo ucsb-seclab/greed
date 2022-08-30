@@ -1,6 +1,6 @@
-from SEtaac.utils.solver.shortcuts import *
-from .base import TAC_Statement
-from ..state import SymbolicEVMState
+from SEtaac.solver.shortcuts import *
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.state import SymbolicEVMState
 
 __all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize']
 
@@ -14,14 +14,12 @@ class TAC_Mstore(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
         for i in range(32):
             m = BV_Extract((31 - i) * 8, (31 - i) * 8 + 7, self.value_val)
-            succ.memory[BV_Add(self.offset_val, BVV(i, 256))] = m
+            state.memory[BV_Add(self.offset_val, BVV(i, 256))] = m
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Mstore8(TAC_Statement):
@@ -33,12 +31,10 @@ class TAC_Mstore8(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.memory[self.offset_val] = BV_Extract(0, 7, self.value_val)
 
-        succ.memory[self.offset_val] = BV_Extract(0, 7, self.value_val)
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Mload(TAC_Statement):
@@ -50,14 +46,10 @@ class TAC_Mload(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.registers[self.res1_var] = state.memory.readn(self.offset_val, BVV(32, 256))
 
-        mm = [succ.memory[BV_Add(self.offset_val, BVV(i, 256))] for i in range(32)]
-        v = BV_Concat([m for m in mm])
-        succ.registers[self.res1_var] = v
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Sload(TAC_Statement):
@@ -69,13 +61,11 @@ class TAC_Sload(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        v = state.storage[self.key_val]
+        state.registers[self.res1_var] = v
 
-        v = succ.storage[self.key_val]
-        succ.registers[self.res1_var] = v
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Sstore(TAC_Statement):
@@ -87,12 +77,10 @@ class TAC_Sstore(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.storage[self.key_val] = self.value_val
 
-        succ.storage[self.key_val] = self.value_val
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Msize(TAC_Statement):
@@ -103,9 +91,6 @@ class TAC_Msize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        succ.registers[self.res1_var] = len(succ.memory)
-
-        succ.set_next_pc()
-        return [succ]
+        raise Exception("MSIZE not implemented. Please have a look")
+        # state.set_next_pc()
+        # return [state]

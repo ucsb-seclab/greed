@@ -51,6 +51,8 @@ if [ -z $NO_GIGAHORSE ]; then
   cd $GIGAHORSE_DIR
   PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_guards_client.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
+  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_loops_semantics_client.patch
+  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
   cd $SETAAC_DIR
 
   # compile gigahorse clients
@@ -77,6 +79,13 @@ if [ -z $NO_GIGAHORSE ]; then
   mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled &&
   mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.cpp &&
   echo "Successfully compiled function_inliner.dl.."
+
+  # loop semantics
+  echo "Compiling loops_semantics.dl.."
+  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/loops_semantics.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build loops_semantics.dl_compiled${normal}"; exit 1; } &&
+  mv $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled &&
+  mv $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.cpp &&
+  echo "Successfully compiled loops_semantics.dl.."
 
   # guards analysis
   echo "Compiling guards.dl.."

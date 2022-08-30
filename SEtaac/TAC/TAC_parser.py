@@ -1,23 +1,29 @@
 import itertools
+import json
 import logging
+import os
 from collections import defaultdict
+from typing import Mapping, List, Tuple
 
-from SEtaac import TAC
+import sha3
+
 from SEtaac.TAC import tac_opcode_to_class_map
 from SEtaac.TAC.gigahorse_ops import TAC_Nop
 from SEtaac.TAC.special_ops import TAC_Stop
 from SEtaac.block import Block
-from SEtaac.function import TAC_Function
 from SEtaac.factory import Factory
+from SEtaac.function import TAC_Function
 from SEtaac.utils import load_csv, load_csv_map, load_csv_multimap
 
-log = logging.getLogger("tac_parser")
+log = logging.getLogger(__name__)
 
 
 class TAC_parser:
     def __init__(self, factory: Factory, target_dir: str):
         self.factory = factory
         self.target_dir = target_dir
+
+        self.phimap = None
 
     @staticmethod
     def stmt_sort_key(stmt_id: str) -> int:
@@ -69,6 +75,7 @@ class TAC_parser:
         for stmt in statements.values():
             if stmt.__internal_name__ != 'PHI':
                 continue
+            #phimap[stmt.res1_var] = stmt.res1_var
             for v in stmt.arg_vars:
                 if v in phimap:
                     phimap[stmt.res1_var] = phimap[v]
@@ -80,11 +87,14 @@ class TAC_parser:
         while not fixpoint:
             fixpoint = True
             for v_old, v_new in phimap.items():
-                if v_new in phimap:
+                # (phimap[v_old] != phimap[v_new]) --> means "not already at local fixpoint"
+                if v_new in phimap and (phimap[v_old] != phimap[v_new]):
                     phimap[v_old] = phimap[v_new]
                     fixpoint = False
 
-        # rewrite statements
+        self.phimap = phimap
+
+        # rewrite statements according to PHI map
         for stmt in statements.values():
             if stmt.__internal_name__ == "PHI":
                 # remove all phi statements
@@ -166,4 +176,31 @@ class TAC_parser:
             for b in blocks:
                 b.function = function
 
+        # rewrite aliases according to PHI map
+        translate_alias = lambda alias: 'v' + alias.replace('0x', '')
+        for function in functions.values():
+            function.arguments = [self.phimap.get(translate_alias(a), translate_alias(a)) for a in function.arguments]
+
         return functions
+
+    def parse_abi(self):
+        if not os.path.exists(f"{self.target_dir}/abi.json"):
+            return None
+
+        with open(f"{self.target_dir}/abi.json", "rb") as abi_file:
+            abi = json.load(abi_file)
+
+        sig_to_name = {}
+        funcs = [e for e in abi if e['type'] == 'function']
+        for f in funcs:
+            f_proto = f['name'] + '(' + ",".join([i['internalType'] for i in f['inputs']]) + ')'
+            k = sha3.keccak_256()
+            k.update(f_proto.encode('utf-8'))
+            sig_to_name[f"0x{k.hexdigest()[0:8]}"] = f_proto
+
+        # Set the function names
+        for f in self.factory.project.function_at.values():
+            if f.signature in sig_to_name.keys():
+                f.name = sig_to_name[f.signature]
+
+        return abi

@@ -2,13 +2,12 @@ import logging
 
 from SEtaac import options
 from SEtaac import utils
+from SEtaac.TAC.base import TAC_Statement
+from SEtaac.solver.shortcuts import *
+from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.exceptions import VMSymbolicError
-from SEtaac.utils.solver.shortcuts import *
-from .base import TAC_Statement
-from ..state import SymbolicEVMState
 
-__all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode',
-           'TAC_Delegatecall', 'TAC_Staticcall', ]
+__all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode', 'TAC_Delegatecall', 'TAC_Staticcall', ]
 
 log = logging.getLogger(__name__)
 
@@ -19,10 +18,8 @@ class TAC_Jump(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Jumpi(TAC_Statement):
@@ -32,19 +29,17 @@ class TAC_Jumpi(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-
-        dest = succ.get_non_fallthrough_pc()
+        dest = state.get_non_fallthrough_pc()
         cond = self.condition_val
 
         if is_concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
             if bv_unsigned_value(cond) != 0:
-                succ.pc = dest
-                return [succ]
+                state.pc = dest
+                return [state]
             else:
-                succ.set_next_pc()
-                return [succ]
+                state.set_next_pc()
+                return [state]
         else:
             if options.LAZY_SOLVES:
                 # just collect the constraints
@@ -52,14 +47,13 @@ class TAC_Jumpi(TAC_Statement):
                 sat_false = True
             else:
                 # let's check if both branches are sat
-                with new_solver_context(state) as solver:
-                    sat_true = solver.is_formula_sat(NotEqual(cond, BVV(0, 256)))
-                    sat_false = solver.is_formula_sat(Equal(cond, BVV(0, 256)))
+                sat_true = state.solver.is_formula_sat(NotEqual(cond, BVV(0, 256)))
+                sat_false = state.solver.is_formula_sat(Equal(cond, BVV(0, 256)))
 
             if sat_true and sat_false:
                 # actually fork here
-                succ_true = succ.copy()
-                succ_false = succ
+                succ_true = state.copy()
+                succ_false = state
 
                 succ_true.pc = dest
                 succ_true.add_constraint(NotEqual(cond, BVV(0, 256)))
@@ -70,27 +64,25 @@ class TAC_Jumpi(TAC_Statement):
                 return [succ_true, succ_false]
             elif sat_true:
                 # if only the true branch is sat, jump
-                succ.pc = dest
-                succ.add_constraint(NotEqual(cond, BVV(0, 256)))
-
-                return [succ]
+                state.pc = dest
+                state.add_constraint(NotEqual(cond, BVV(0, 256)))
+                return [state]
             elif sat_false:
                 # if only the false branch is sat, step to the fallthrough branch
-                succ.set_next_pc()
-                succ.add_constraint(Equal(cond, BVV(0, 256)))
-
-                return [succ]
+                state.set_next_pc()
+                state.add_constraint(Equal(cond, BVV(0, 256)))
+                return [state]
             else:
                 # nothing is sat
-                log.debug(f"Unsat branch ({succ})")
-                succ.halt = True
-                return [succ]
+                log.debug(f"Unsat branch ({state})")
+                state.halt = True
+                return [state]
 
 
 class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
 
-    def _handle(self, succ: SymbolicEVMState, gas_val=None, address_val=None, value_val=None,
+    def _handle(self, state: SymbolicEVMState, gas_val=None, address_val=None, value_val=None,
                 argsOffset_val=None, argsSize_val=None, retOffset_val=None, retSize_val=None):
         gas_val = gas_val if gas_val is not None else self.gas_val
         address_val = address_val if address_val is not None else self.address_val
@@ -103,25 +95,29 @@ class TAC_BaseCall(TAC_Statement):
         ostart = retOffset_val
         olen = retSize_val
 
+        state.returndata['size'] = olen
+        state.returndata['instruction_count'] = state.instruction_count
+
         if is_concrete(address_val) and bv_unsigned_value(address_val) <= 8:
             if bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
                 istart = argsOffset_val
                 ilen = argsSize_val
-                succ.memory.copy_return_data(istart, ilen, ostart, olen)
-                succ.registers[self.res1_var] = 1
+                state.memory.copy_return_data(istart, ilen, ostart, olen)
+                state.registers[self.res1_var] = BVV(1, 256)
             else:
                 raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
-        else:
-            assert is_concrete(ostart) and is_concrete(olen)
+        elif is_concrete(olen):
             for i in range(bv_unsigned_value(olen)):
-                succ.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{succ.instruction_count}_{i}_{succ.xid}', 8)
+                state.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{state.instruction_count}_{i}_{state.xid}', 8)
             log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
-            logging.info(f"Calling contract {log_address_val} ({succ.instruction_count}_{succ.xid})")
-            succ.registers[self.res1_var] = BVS(f'CALLRESULT_{succ.instruction_count}_{succ.xid}', 256)
+            logging.info(f"Calling contract {log_address_val} ({state.instruction_count}_{state.xid})")
+            state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
+        else:
+            raise VMSymbolicError("Unsupported symbolic retSize_val in CALL")
 
-        succ.set_next_pc()
-        return [succ]
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Call(TAC_BaseCall):
@@ -139,12 +135,10 @@ class TAC_Call(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
+        state.add_constraint(BV_UGE(state.balance, self.value_val))
+        state.balance = BV_Sub(state.balance, self.value_val)
 
-        succ.add_constraint(BV_UGE(succ.balance, self.value_val))
-        succ.balance = BV_Sub(succ.balance, self.value_val)
-
-        return self._handle(succ, value_val=self.value_val)
+        return self._handle(state, value_val=self.value_val)
 
 
 class TAC_Callcode(TAC_BaseCall):
@@ -162,8 +156,7 @@ class TAC_Callcode(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-        return self._handle(succ)
+        return self._handle(state)
 
 
 class TAC_Delegatecall(TAC_BaseCall):
@@ -180,10 +173,9 @@ class TAC_Delegatecall(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-        value_val = utils.ctx_or_symbolic('CALLVALUE', succ.ctx, succ.xid)
+        value_val = utils.ctx_or_symbolic('CALLVALUE', state.ctx, state.xid)
 
-        return self._handle(succ, value_val=value_val)
+        return self._handle(state, value_val=value_val)
 
 
 class TAC_Staticcall(TAC_BaseCall):
@@ -200,7 +192,6 @@ class TAC_Staticcall(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        succ = state
-        value_val = 0
+        value_val = BVV(0, 256)
 
-        return self._handle(succ, value_val=value_val)
+        return self._handle(state, value_val=value_val)

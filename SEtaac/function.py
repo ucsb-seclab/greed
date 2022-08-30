@@ -1,12 +1,18 @@
-import logging
 from collections import defaultdict
 from typing import List, Mapping
 
 from SEtaac.block import Block
 from SEtaac.cfg import CFG
 from SEtaac.factory import Factory
+from SEtaac.solver.shortcuts import *
 
 
+# id: block id at wich the function start
+# signature: four bytes signature of the function
+# name: full prototype of the function if retrieved by Gigahorse
+# public: wether the function is public or not
+# blocks: list of blocks belonging to this function
+# arguments: TAC names of the arguments of this function
 class TAC_Function:
     def __init__(self, id: str, signature: str, name: str, public: bool, blocks: List[Block], arguments: List[str]):
         self.id = id
@@ -35,7 +41,7 @@ class TAC_Function:
         for bb in self.blocks:
             for stmt in bb.statements:
                 if stmt.__internal_name__ == "CALLPRIVATE":
-                    target_bb_id = stmt.get_target_bb_id()
+                    target_bb_id = hex(bv_unsigned_value(stmt.arg1_val))
                     call_targets[stmt.block_id] = target_bb_id
         return call_targets
 

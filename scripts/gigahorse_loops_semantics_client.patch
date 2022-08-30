@@ -1,0 +1,11 @@
+diff --git a/clientlib/loops_semantics.dl b/clientlib/loops_semantics.dl
+index a14d148..28b1427 100644
+--- a/clientlib/loops_semantics.dl
++++ b/clientlib/loops_semantics.dl
+@@ -1,4 +1,6 @@
+ #pragma once
++
++#include "decompiler_imports.dl"
+ #include "loops.dl"
+ #include "flows.dl"
+ 
