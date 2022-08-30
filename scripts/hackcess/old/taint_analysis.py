@@ -20,7 +20,7 @@ class CalldataTaintAnalysis:
         self.curr_mem_read_index = None
 
     def is_mem_read_tainted(self, mem_read_index:int):
-        self._is_mem_read_tainted(self.state.memory.lambda_constraint, mem_read_index)
+        self._is_mem_read_tainted(self.state.memory.root_lambda_constraint, mem_read_index)
 
 
     def _is_mem_read_tainted(self, lambda_layer, mem_read_index:int):
