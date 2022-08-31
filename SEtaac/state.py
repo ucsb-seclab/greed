@@ -50,8 +50,8 @@ class SymbolicEVMState:
         self.sha_observed = list()
 
         # make sure we can exploit it in the foreseeable future
-        self.min_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
-        self.max_timestamp = (datetime.datetime(2020, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
+        self.min_timestamp = (datetime.datetime(2022, 1, 1) - datetime.datetime(1970, 1, 1)).total_seconds()
+        self.max_timestamp = (datetime.datetime.now() - datetime.datetime(1970, 1, 1)).total_seconds()
         self.MAX_CALLDATA_SIZE = max_calldatasize or opt.MAX_CALLDATA_SIZE
 
         self.calldata = None
