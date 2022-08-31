@@ -284,7 +284,9 @@ class TAC_Extcodesize(TAC_Statement):
         elif state.solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', state.ctx, state.xid)
         else:
-            raise VMSymbolicError('codesize of symblic address')
+            state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-SYMBOLIC', state.ctx, state.xid)
+            log.warning('CODESIZE of symblic address')
+            # raise VMSymbolicError('codesize of symblic address')
 
         state.set_next_pc()
         return [state]
