@@ -16,6 +16,8 @@ class CFG(object):
         self._bb_at = dict()
         self._dominators = None
 
+        self.root = None
+
     def filter_stmt(self, names: List[str]):
         if isinstance(names, str):
             names = [names]

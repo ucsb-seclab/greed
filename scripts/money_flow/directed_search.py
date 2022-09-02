@@ -31,7 +31,7 @@ def main(args):
         print('Please specify a target address.')
         exit(1)
 
-    init_ctx = {}  # "CALLDATA": "6ecd2306"}
+    init_ctx = {}  # "CALLDATA": "b88d4fde"}
     xid = gen_exec_id()
     entry_state = p.factory.entry_state(xid=xid)
     entry_state.set_init_ctx(init_ctx=init_ctx)
@@ -43,8 +43,8 @@ def main(args):
     directed_search = DirectedSearch(target_stmt)
     simgr.use_technique(directed_search)
 
-    dfs = DFS()
-    simgr.use_technique(dfs)
+    # dfs = DFS()
+    # simgr.use_technique(dfs)
 
     heartbeat = HeartBeat()
     simgr.use_technique(heartbeat)
@@ -54,7 +54,7 @@ def main(args):
     except KeyboardInterrupt:
         pass
 
-    # import IPython; IPython.embed(); exit()
+    import IPython; IPython.embed(); exit()
 
     if not simgr.found:
         log.fatal('No paths found')
