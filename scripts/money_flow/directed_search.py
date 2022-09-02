@@ -4,7 +4,7 @@ import logging
 
 from SEtaac import Project
 from SEtaac import options
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
+from SEtaac.exploration_techniques import Prioritizer, DirectedSearch, HeartBeat
 from SEtaac.solver.shortcuts import *
 from SEtaac.utils import gen_exec_id
 
@@ -43,6 +43,9 @@ def main(args):
     directed_search = DirectedSearch(target_stmt)
     simgr.use_technique(directed_search)
 
+    prioritizer = Prioritizer(scoring_function=lambda s: -s.globals['directed_search_distance'])
+    simgr.use_technique(prioritizer)
+
     # dfs = DFS()
     # simgr.use_technique(dfs)
 
@@ -54,7 +57,7 @@ def main(args):
     except KeyboardInterrupt:
         pass
 
-    import IPython; IPython.embed(); exit()
+    # import IPython; IPython.embed(); exit()
 
     if not simgr.found:
         log.fatal('No paths found')
