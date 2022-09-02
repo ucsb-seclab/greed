@@ -99,21 +99,29 @@ class DirectedSearch(ExplorationTechnique):
         elif function_a and function_b:
             # for each path (in the callgraph) from function_a to function_b
             callgraph_paths = nx.all_simple_paths(callgraph, function_a, function_b)
+            dist_candidates_for_path = list()
             for path in sorted(callgraph_paths, key=lambda p: len(p)):
                 total_dist = 0
+
                 # check if we can reach the first call (i.e., any "CALLPRIVATE <first_call_target>" in function_a)
                 dist_candidates_for_step = list()
                 first_call_target = path[1]
+
+                # check callprivates for first step (function_a -> first_call_target)
+                # NOTE: the first step is different because we are not stepping from the root, but from block_a
                 for callprivate_block_id in function_a.callprivate_target_sources[first_call_target.id]:
                     callprivate_block = factory.block(callprivate_block_id)
                     reachable, dist = self._is_reachable_without_returns(block_a, callprivate_block, factory,
                                                                          callgraph)
                     if reachable is True:
                         dist_candidates_for_step.append(dist)
+
                 if dist_candidates_for_step:
+                    # at least one reachable callprivate
                     total_dist += min(dist_candidates_for_step)
                 else:
-                    return False, None
+                    # no reachable callprivate
+                    continue
 
                 # approximate shortest path in the callgraph
                 for a, b in zip(path[1:-1], path[2:]):
@@ -125,9 +133,15 @@ class DirectedSearch(ExplorationTechnique):
                     if dist_candidates_for_step:
                         total_dist += min(dist_candidates_for_step)
                     else:
-                        return False, None
+                        continue
 
-                print([f.id for f in path], total_dist)
-                return True, total_dist
+                # print([f.id for f in path], total_dist)
+                dist_candidates_for_path.append(total_dist)
+
+            if dist_candidates_for_path:
+                return True, min(dist_candidates_for_path)
+            else:
+                return False, None
+
 
         return False, None
