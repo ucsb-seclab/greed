@@ -138,16 +138,14 @@ class SimulationManager:
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
-        old_pc = state.pc
-
         # Some inspect capabilities, uses the plugin.
         if hasattr(state, "inspect"):
             # Trigger breakpoints on specific stmt_id
             if state.pc in state.inspect.breakpoints_stmt_ids.keys():
-                state.inspect.breakpoints_stmt_ids[state.pc](state)
+                state.inspect.breakpoints_stmt_ids[state.pc](self, state)
             # Trigger breakpoints on all the stmt with that name
             if state.curr_stmt.__internal_name__ in state.inspect.breakpoints_stmt.keys():
-                state.inspect.breakpoints_stmt[state.curr_stmt.__internal_name__](state)
+                state.inspect.breakpoints_stmt[state.curr_stmt.__internal_name__](self, state)
         successors = list()
         
         # Let exploration techniques manipulate the state

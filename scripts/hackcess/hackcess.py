@@ -6,16 +6,21 @@ from SEtaac import Project
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, TraceExplore
+
+from SEtaac.static_analyses import run_backward_slice
 
 from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
 from init_ctx_generator import get_calldata_for
 
+
+
 import random
 
-log = logging.getLogger(__name__)
+LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
+logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
+log = logging.getLogger("Hackcess")
 log.setLevel(logging.INFO)
-
 
 
 class CallInfo():
@@ -92,56 +97,78 @@ def analyze_state_at_call(state, target_call_info):
     
 
 def analyze_call_from_ep(entry_point, target_call_info):
-
+    
     calldata, calldatasize = get_calldata_for(entry_point)
-
-    if not calldata:
-        return None
     
-    # HACK 
-    #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
+    first_block = [n for n,d in entry_point.cfg.graph.in_degree() if d==0][0]
     
-    # This is init_ctx for CallerTTU/CallerTUT
-    #init_ctx =  {"CALLDATA": "0x7214ae99000000000000000000000000SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000004SSSSSSSS00000000000000000000000000000000000000000000000000000000", "CALLDATASIZE":132}
+    first_block = p.factory.block("0x0")
+    for bslice in run_backward_slice(p, first_block, p.factory.block(target_call_info.call_stmt.block_id)):
+        if not calldata:
+            return None
+        
+        # HACK 
+        #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
+        
+        # This is init_ctx for CallerTTU/CallerTUT
+        #init_ctx =  {"CALLDATA": "0x7214ae99000000000000000000000000SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000004SSSSSSSS00000000000000000000000000000000000000000000000000000000", "CALLDATASIZE":132}
 
-    # This is a good init_ctx for JustTest002/JustTest001
-    #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
+        # This is a good init_ctx for JustTest002/JustTest001
+        #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
 
-    #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
-    init_ctx = {"CALLDATA": calldata , "CALLDATASIZE": calldatasize}
+        #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
+        #init_ctx = {"CALLDATA": "0x6ecd2306"}
 
-    #max_calldatasize =  132
+        #max_calldatasize =  132
 
-    # Some state options
-    options.GREEDY_SHA = False
-    #options.LAZY_SOLVES = True
+        # Some state options
+        options.GREEDY_SHA = False
+        options.LAZY_SOLVES = False
+        #options.STATE_INSPECT = True
+        
+        log.info(f"CALLDATA: {calldata}")
+        #log.info(f"CALLDATASIZE is {calldatasize}")
 
-    entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=calldatasize)    
+        init_ctx = {"CALLDATA": calldata, "CALLDATASIZE": calldatasize}
 
-    
-    simgr = p.factory.simgr(entry_state=entry_state)
-    
-    #simgrviz = SimgrViz()
-    #simgr.use_technique(simgrviz)
-    
-    dfs = DFS()
-    simgr.use_technique(dfs)
+        entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx)    
 
-    directed_search = DirectedSearch(p.factory.statement(target_call_info.call_stmt.id))
-    simgr.use_technique(directed_search)
+        #entry_state.inspect.stop_at_stmt_id("0x1975")
+        
+        simgr = p.factory.simgr(entry_state=entry_state)
+        
+        trace_explore = TraceExplore(bslice)
+        simgr.use_technique(trace_explore)
 
-    heartbeat = HeartBeat(beat_interval=1)
-    simgr.use_technique(heartbeat)
+        #dfs = DFS()
+        #simgr.use_technique(dfs)
 
-    log.info(f"Symbolically executing from {entry_point.id} to CALL at {target_call_info.call_stmt.id}")
-    simgr.run(find=lambda s: s.curr_stmt.id == target_call_info.call_stmt.id)
-    log.info(f"✅ Found state for CALL at {target_call_info.call_stmt.id}!")
+        #directed_search = DirectedSearch(target_call_info.call_stmt)
+        #simgr.use_technique(directed_search)
 
-    for state in simgr.found:
-        assert(state.solver.frame==0)
-        tainted_targetContract, tatined_targetFunc = analyze_state_at_call(state, target_call_info)
-        target_call_info.taintedContractAddress = tainted_targetContract
-        target_call_info.taintedFunction = tatined_targetFunc
+        #simgrviz = SimgrViz()
+        #simgr.use_technique(simgrviz)
+
+        heartbeat = HeartBeat(beat_interval=100)
+        simgr.use_technique(heartbeat)
+
+        log.info(f"Symbolically executing from {entry_point.name} to CALL at {target_call_info.call_stmt.id}")
+        simgr.run(find=lambda s: s.curr_stmt.id == target_call_info.call_stmt.id)
+        
+        for state in simgr.found:
+            log.info(f"✅ Found state for CALL at {target_call_info.call_stmt.id}!")
+            
+            # If LAZY_SOLVES is ON, we need to check if the state is SAT
+            if not state.solver.is_sat():
+                log.warning(f"❌ Found state is UNSAT :(")
+                continue
+
+            assert(state.solver.frame==0)
+            tainted_targetContract, tainted_targetFunc = analyze_state_at_call(state, target_call_info)
+            target_call_info.taintedContractAddress = tainted_targetContract
+            target_call_info.taintedFunction = tainted_targetFunc
+        else:
+            log.info(f"❌ Could not reach state for CALL at {target_call_info.call_stmt.id}!")
 
 # Here we want to understand from which function
 # it is possible to reach this specific CALL statement. 
@@ -166,12 +193,13 @@ def how_to_reach(p: Project, target_call:TAC_Statement):
     for ep in possible_entry_points:
         if nx.has_path(p.callgraph, source=ep, target=target_function):
             for path in nx.all_simple_paths(p.callgraph, source=ep, target=target_function):
-                print(path)
+                log.info(f"{[func.name for func in path]}")
             entry_points.add(ep)
     
     return entry_points
 
 CallInfos = dict()
+
 
 if __name__ == "__main__":
     p = Project(target_dir=sys.argv[1])
@@ -227,6 +255,9 @@ if __name__ == "__main__":
             continue
         
         for ep in entry_points:
+            if ep.name != "safeTransferFrom(address,address,uint256,bytes)":
+                continue
+        
             analyze_call_from_ep(ep, call)
 
     log.info("CALLS SUMMARY")

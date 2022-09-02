@@ -8,8 +8,8 @@ import eth_abi
 
 from eth_abi.tools import get_abi_strategy
 
-log = logging.getLogger("InitCtxGenerator2")
-log.setLevel(logging.INFO)
+log = logging.getLogger(__name__)
+#log.setLevel(logging.INFO)
 
 
 # Whenever there is an array, we put X elements
@@ -87,9 +87,12 @@ def get_calldata_for(func):
 
         # Replace our data with "SS"
         replacements = sort_tuple(replacements)
+
+        # Descendent order
         replacements = replacements[::-1]
         for r in replacements:
             calldata = calldata.replace(r[0], r[1])
+               
+    calldata = func.signature + calldata
         
-        calldata = func.signature + calldata
-        return calldata,len(calldata)
+    return calldata,len(calldata.replace("0x",''))//2

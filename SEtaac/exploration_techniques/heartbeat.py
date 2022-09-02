@@ -5,7 +5,7 @@ import tempfile
 from . import ExplorationTechnique
 
 log = logging.getLogger(__name__)
-
+#log.setLevel(logging.INFO)
 
 class HeartBeat(ExplorationTechnique):
     """
@@ -34,3 +34,7 @@ class HeartBeat(ExplorationTechnique):
                 ipdb.set_trace()
 
         return successors
+    
+    def change_beat(self, new_beat_interval):
+        self.beat_interval = new_beat_interval
+        self.beat_cnt = 0
