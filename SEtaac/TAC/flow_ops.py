@@ -31,7 +31,7 @@ class TAC_Jumpi(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         dest = state.get_non_fallthrough_pc()
         cond = self.condition_val
-
+        
         if is_concrete(cond):
             # if the jump condition is concrete, use it to determine the jump target
             if bv_unsigned_value(cond) != 0:
