@@ -20,6 +20,12 @@ class LambdaConstraint:
         self.new_array = new_array
         self.parent = parent
 
+        self.depth = 1
+        node = self.parent
+        while node is not None:
+            self.depth += 1
+            node = node.parent
+
     def instantiate(self, index):
         """
         Instantiate the constraint (on read)

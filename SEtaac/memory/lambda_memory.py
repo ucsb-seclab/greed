@@ -52,15 +52,14 @@ class LambdaMemory:
         assert tag is not None and value_sort is not None, "Invalid LambdaMemory initialization"
 
         self.tag = tag
-        self.layer_level = 0
         self.value_sort = value_sort
-        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
 
         self.state = state
 
-        self.lambda_constraint = LambdaConstraint()
+        self.root_lambda_constraint = LambdaConstraint()
         self._constraints = list()
 
+        self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
         if default is not None:
             # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
             self.memsetinfinite(BVV(0, 256), default)
@@ -76,6 +75,10 @@ class LambdaMemory:
             self.add_constraint(formula)
 
     @property
+    def layer_level(self):
+        return self.root_lambda_constraint.depth - 1
+
+    @property
     def constraints(self):
         return self._constraints
 
@@ -85,14 +88,14 @@ class LambdaMemory:
         self.read_count += 1
 
         # instantiate and add lambda constraints
-        new_constraints = self.lambda_constraint.instantiate(index)
+        new_constraints = self.root_lambda_constraint.instantiate(index)
         self.add_constraints(new_constraints)
 
         return Array_Select(self._base, index)
 
     def __setitem__(self, index, v):
         self.write_count += 1
-        self.lambda_constraint.following_writes[index] = v
+        self.root_lambda_constraint.following_writes[index] = v
         self._base = Array_Store(self._base, index, v)
 
     def readn(self, index, n):
@@ -109,35 +112,31 @@ class LambdaMemory:
 
     def memset(self, start, value, size):
         old_base = self._base
-        self.layer_level += 1
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
-        self.lambda_constraint = LambdaMemsetConstraint(old_base, start, value, size, self._base,
-                                                        parent=self.lambda_constraint)
+        self.root_lambda_constraint = LambdaMemsetConstraint(old_base, start, value, size, self._base,
+                                                             parent=self.root_lambda_constraint)
 
     def memsetinfinite(self, start, value):
         old_base = self._base
-        self.layer_level += 1
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
-        self.lambda_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self._base,
-                                                                parent=self.lambda_constraint)
+        self.root_lambda_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self._base,
+                                                                     parent=self.root_lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
         old_base = self._base
-        self.layer_level += 1
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
-        self.lambda_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self._base,
-                                                         parent=self.lambda_constraint)
+        self.root_lambda_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self._base,
+                                                              parent=self.root_lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
         old_base = self._base
-        self.layer_level += 1
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
-        self.lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
-                                                                 parent=self.lambda_constraint)
+        self.root_lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
+                                                                      parent=self.root_lambda_constraint)
 
     def copy_return_data(self, istart, ilen, ostart, olen):
         raise Exception("NOT IMPLEMENTED. Please have a look")
@@ -155,14 +154,13 @@ class LambdaMemory:
         new_memory.tag = self.tag
         new_memory._base = self._base
         new_memory.state = new_state
-        new_memory.lambda_constraint = self.lambda_constraint.copy(new_state=new_state)
+        new_memory.root_lambda_constraint = self.root_lambda_constraint.copy(new_state=new_state)
         new_memory._constraints = list(self._constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
-        new_memory.layer_level = self.layer_level
 
         return new_memory
 
     def __str__(self):
         return f"LambdaMemory\n" \
-               f"{self.lambda_constraint}"
+               f"{self.root_lambda_constraint}"

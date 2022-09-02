@@ -71,15 +71,12 @@ class Sha3(LambdaMemory):
         new_sha_memory.tag = self.tag
         new_sha_memory._base = self._base
         new_sha_memory.state = new_state
-        new_sha_memory.lambda_constraint = self.lambda_constraint.copy(new_state=new_state)
+        new_sha_memory.root_lambda_constraint = self.root_lambda_constraint.copy(new_state=new_state)
         new_sha_memory._constraints = list(self._constraints)
         new_sha_memory.write_count = self.write_count
         new_sha_memory.read_count = self.read_count
-        new_sha_memory.layer_level = self.layer_level
         new_sha_memory.symbol = self.symbol
 
-
-        # WARNING: does this need a deep copy?
         new_sha_memory.memory = self.memory.copy(new_state=new_state)
 
         new_sha_memory.start = self.start

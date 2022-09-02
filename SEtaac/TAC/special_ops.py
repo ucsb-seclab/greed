@@ -284,7 +284,9 @@ class TAC_Extcodesize(TAC_Statement):
         elif state.solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', state.ctx, state.xid)
         else:
-            raise VMSymbolicError('codesize of symblic address')
+            state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-SYMBOLIC', state.ctx, state.xid)
+            log.warning('CODESIZE of symblic address')
+            # raise VMSymbolicError('codesize of symblic address')
 
         state.set_next_pc()
         return [state]
@@ -384,8 +386,8 @@ class TAC_Timestamp(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         ts = ctx_or_symbolic('TIMESTAMP', state.ctx, state.xid)
         if not is_concrete(ts):
-            state.add_constraint(BV_UGE(ts, BVV(int(state.min_timestamp),256)))
-            state.add_constraint(BV_ULE(ts, BVV(int(state.max_timestamp),256)))
+            state.add_constraint(BV_UGE(ts, BVV(int(state.min_timestamp), 256)))
+            state.add_constraint(BV_ULE(ts, BVV(int(state.max_timestamp), 256)))
         state.registers[self.res1_var] = ts
 
         state.set_next_pc()

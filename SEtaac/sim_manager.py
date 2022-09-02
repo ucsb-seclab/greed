@@ -138,8 +138,6 @@ class SimulationManager:
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
-        old_pc = state.pc
-
         # Some inspect capabilities, uses the plugin.
         if hasattr(state, "inspect"):
             # Trigger breakpoints on specific stmt_id
