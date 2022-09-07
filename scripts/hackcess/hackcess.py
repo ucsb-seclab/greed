@@ -6,7 +6,7 @@ from SEtaac import Project
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, TraceExplore
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, Prioritizer
 
 from SEtaac.static_analyses import run_backward_slice
 
@@ -85,11 +85,7 @@ def analyze_state_at_call(state, target_call_info):
     if len(target_call_info.functionAddresses) == 1:
         log.info(f"Fixated CALL targetFunc at {hex(target_call_info.functionAddresses[0])}")
     else:
-        if static_targetContract:
-            sha_deps = None
-        else:
-            sha_deps = ta1.sha_resolver.sha_deps
-        ta2 = CalldataToFuncTarget(state, source_start=4, sha_deps=sha_deps)
+        ta2 = CalldataToFuncTarget(state, source_start=4)
         ta2.run()
         tainted_targetFunc = ta2.is_tainted
     
@@ -99,76 +95,69 @@ def analyze_state_at_call(state, target_call_info):
 def analyze_call_from_ep(entry_point, target_call_info):
     
     calldata, calldatasize = get_calldata_for(entry_point)
+
+    if calldata is None or calldatasize is None:
+        return None
+
+    # HACK 
+    #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
     
-    first_block = [n for n,d in entry_point.cfg.graph.in_degree() if d==0][0]
+    # This is init_ctx for CallerTTU/CallerTUT
+    #init_ctx =  {"CALLDATA": "0x7214ae99000000000000000000000000SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000004SSSSSSSS00000000000000000000000000000000000000000000000000000000", "CALLDATASIZE":132}
+
+    # This is a good init_ctx for JustTest002/JustTest001
+    #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
+
+    #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
+    #init_ctx = {"CALLDATA": "0x6ecd2306"}
+
+    #max_calldatasize =  132
+
+    # Some state options
+    options.GREEDY_SHA = False
+    options.LAZY_SOLVES = False
+    options.STATE_INSPECT = True
     
-    first_block = p.factory.block("0x0")
-    for bslice in run_backward_slice(p, first_block, p.factory.block(target_call_info.call_stmt.block_id)):
-        if not calldata:
-            return None
+    log.info(f"CALLDATA: {calldata}")
+    log.info(f"CALLDATASIZE is {calldatasize}")
+
+    init_ctx = {"CALLDATA": calldata, "CALLDATASIZE": calldatasize}
+
+    entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx)    
+
+    entry_state.inspect.stop_at_stmt(stmt_name="SHA3")
+    
+    simgr = p.factory.simgr(entry_state=entry_state)
+    
+    directed_search = DirectedSearch(target_call_info.call_stmt)
+    simgr.use_technique(directed_search)
+
+    prioritizer = Prioritizer(scoring_function=lambda s: -s.globals['directed_search_distance'])
+    simgr.use_technique(prioritizer)
+
+    #simgrviz = SimgrViz()
+    #simgr.use_technique(simgrviz)
+
+    heartbeat = HeartBeat(beat_interval=100)
+    simgr.use_technique(heartbeat)
+
+    log.info(f"Symbolically executing from {entry_point.name} to CALL at {target_call_info.call_stmt.id}")
+    simgr.run(find=lambda s: s.curr_stmt.id == target_call_info.call_stmt.id)
+    
+    for state in simgr.found:
+        log.info(f"✅ Found state for CALL at {target_call_info.call_stmt.id}!")
         
-        # HACK 
-        #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
-        
-        # This is init_ctx for CallerTTU/CallerTUT
-        #init_ctx =  {"CALLDATA": "0x7214ae99000000000000000000000000SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000004SSSSSSSS00000000000000000000000000000000000000000000000000000000", "CALLDATASIZE":132}
+        # If LAZY_SOLVES is ON, we need to check if the state is SAT
+        if not state.solver.is_sat():
+            log.warning(f"❌ Found state is UNSAT :(")
+            continue
 
-        # This is a good init_ctx for JustTest002/JustTest001
-        #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
-
-        #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
-        #init_ctx = {"CALLDATA": "0x6ecd2306"}
-
-        #max_calldatasize =  132
-
-        # Some state options
-        options.GREEDY_SHA = False
-        options.LAZY_SOLVES = False
-        #options.STATE_INSPECT = True
-        
-        log.info(f"CALLDATA: {calldata}")
-        #log.info(f"CALLDATASIZE is {calldatasize}")
-
-        init_ctx = {"CALLDATA": calldata, "CALLDATASIZE": calldatasize}
-
-        entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx)    
-
-        #entry_state.inspect.stop_at_stmt_id("0x1975")
-        
-        simgr = p.factory.simgr(entry_state=entry_state)
-        
-        trace_explore = TraceExplore(bslice)
-        simgr.use_technique(trace_explore)
-
-        #dfs = DFS()
-        #simgr.use_technique(dfs)
-
-        #directed_search = DirectedSearch(target_call_info.call_stmt)
-        #simgr.use_technique(directed_search)
-
-        #simgrviz = SimgrViz()
-        #simgr.use_technique(simgrviz)
-
-        heartbeat = HeartBeat(beat_interval=100)
-        simgr.use_technique(heartbeat)
-
-        log.info(f"Symbolically executing from {entry_point.name} to CALL at {target_call_info.call_stmt.id}")
-        simgr.run(find=lambda s: s.curr_stmt.id == target_call_info.call_stmt.id)
-        
-        for state in simgr.found:
-            log.info(f"✅ Found state for CALL at {target_call_info.call_stmt.id}!")
-            
-            # If LAZY_SOLVES is ON, we need to check if the state is SAT
-            if not state.solver.is_sat():
-                log.warning(f"❌ Found state is UNSAT :(")
-                continue
-
-            assert(state.solver.frame==0)
-            tainted_targetContract, tainted_targetFunc = analyze_state_at_call(state, target_call_info)
-            target_call_info.taintedContractAddress = tainted_targetContract
-            target_call_info.taintedFunction = tainted_targetFunc
-        else:
-            log.info(f"❌ Could not reach state for CALL at {target_call_info.call_stmt.id}!")
+        assert(state.solver.frame==0)
+        tainted_targetContract, tainted_targetFunc = analyze_state_at_call(state, target_call_info)
+        target_call_info.taintedContractAddress = tainted_targetContract
+        target_call_info.taintedFunction = tainted_targetFunc
+    else:
+        log.info(f"❌ Could not reach state for CALL at {target_call_info.call_stmt.id}!")
 
 # Here we want to understand from which function
 # it is possible to reach this specific CALL statement. 
