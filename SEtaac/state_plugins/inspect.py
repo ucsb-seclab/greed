@@ -26,7 +26,7 @@ class SimStateInspect(SimStatePlugin):
 
     def stop_at_stmt(self, stmt_name=None, func=None, when=OP_BEFORE):
         if not func:
-            def justStop(state):
+            def justStop(simgr, state):
                 import ipdb
                 ipdb.set_trace()
             func = justStop
