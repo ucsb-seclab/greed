@@ -96,10 +96,10 @@ def analyze_state_at_call(state, target_call_info):
     
 
 def analyze_call_from_ep(entry_point, target_call_info):
-    #calldata, calldatasize = get_calldata_for(entry_point)
+    calldata, calldatasize = get_calldata_for(entry_point)
 
-    #if calldata is None or calldatasize is None:
-    #    return None
+    if calldata is None or calldatasize is None:
+        return None
 
     # HACK 
     #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000aSSSSSSSSSSSSSSSSSSSS00000000000000000000000000"}
@@ -108,7 +108,7 @@ def analyze_call_from_ep(entry_point, target_call_info):
     #init_ctx =  {"CALLDATA": "0x7214ae99000000000000000000000000SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS00000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000004SSSSSSSS00000000000000000000000000000000000000000000000000000000", "CALLDATASIZE":132}
 
     # This is a good init_ctx for JustTest002/JustTest001/ShaDepsTest
-    init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
+    #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
 
     #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
     #init_ctx = {"CALLDATA": "0x6ecd2306"}
@@ -120,10 +120,10 @@ def analyze_call_from_ep(entry_point, target_call_info):
     options.LAZY_SOLVES = False
     #options.STATE_INSPECT = True
     
-    #log.info(f"CALLDATA: {calldata}")
-    #log.info(f"CALLDATASIZE is {calldatasize}")
+    log.info(f"CALLDATA: {calldata}")
+    log.info(f"CALLDATASIZE is {calldatasize}")
 
-    #init_ctx = {"CALLDATA": calldata, "CALLDATASIZE": calldatasize}
+    init_ctx = {"CALLDATA": calldata, "CALLDATASIZE": calldatasize}
 
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx)    
 
