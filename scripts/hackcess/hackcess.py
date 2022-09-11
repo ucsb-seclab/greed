@@ -49,13 +49,13 @@ class CallInfo():
     def call_type(self):
         type_str = ""
         if self.taintedContractAddress:
-            type_str += "*"
+            type_str += "T"
         else:
-            type_str += "*"
+            type_str += "U"
         if self.taintedFunction:
-            type_str += "*"
+            type_str += "T"
         else:
-            type_str += "*"
+            type_str += "U"
         if self.taintedArguments:
             type_str += "*"
         else:
@@ -85,7 +85,10 @@ def analyze_state_at_call(state, target_call_info):
     if len(target_call_info.functionAddresses) == 1:
         log.info(f"Fixated CALL targetFunc at {hex(target_call_info.functionAddresses[0])}")
     else:
-        ta2 = CalldataToFuncTarget(state, source_start=4)
+        if not static_targetContract:
+            ta2 = CalldataToFuncTarget(state, source_start=4, sha_deps=ta1.sha_resolver.sha_deps)
+        else:
+            ta2 = CalldataToFuncTarget(state, source_start=4)
         ta2.run()
         tainted_targetFunc = ta2.is_tainted
     

@@ -6,7 +6,7 @@ import sha3
 from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 class ShaSolution():
     def __init__(self, symbol_name, argOffset, argSize, inputBuffer, shaResult):

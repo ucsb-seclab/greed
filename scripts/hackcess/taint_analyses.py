@@ -56,9 +56,10 @@ class CalldataToFuncTarget():
             self.log.warning(f"Some CALLDATA bytes tainted, but initialized with concrete data.")
         
         # Get an instance for the sha resolver
-        
         self.sha_resolver = ShaResolver(self.state, sha_deps=sha_deps)
-        self.sha_resolver.detect_sha_dependencies()
+        if sha_deps == None:
+            # Calculate dependencies if were not provided before
+            self.sha_resolver.detect_sha_dependencies()
         
         self.state_has_shas = True if len(self.sha_resolver.sha_deps) != 0 else False
 
@@ -104,7 +105,7 @@ class CalldataToFuncTarget():
         # Maybe make sure the argSize is at least greater than 4 for every possible solution?
         #assert(self.state.solver.is_formula_true(BV_UGT(mem_argSize_raw, BVV(4,256))))
 
-        self.log.info(f"Using {mem_argSize} as argSize for CALL state")
+        self.log.info(f"Using only {mem_argSize} as argSize for CALL state (wanna check only target func)")
 
         # Fix the offset (+1)
         self.state.solver.push()
@@ -125,7 +126,6 @@ class CalldataToFuncTarget():
 
         # remove calldata constraints (-1)
         self.state.solver.pop()
-
 
         # HERE FRAMEs ARE CLEAN (0)
         assert(self.state.solver.frame == 0 )
@@ -151,7 +151,6 @@ class CalldataToFuncTarget():
 
         # NOTE: This might impact the solutions for CALLDATA later.
         if self.state_has_shas:
-            self.sha_resolver.clear_solutions()
             self.sha_resolver.fix_shas() # (+1)
 
         # If this is not SAT, we cannot reach the same state with a different CALLDATA!
@@ -220,7 +219,10 @@ class CalldataToContractTarget():
     
         # Get an instance for the sha resolver
         self.sha_resolver = ShaResolver(self.state, sha_deps=sha_deps)
-        self.sha_resolver.detect_sha_dependencies()
+        if sha_deps == None:
+            # Calculate dependencies if were not provided before
+            self.sha_resolver.detect_sha_dependencies()
+
         self.state_has_shas = True if len(self.sha_resolver.sha_deps) != 0 else False
 
         self.log.debug(f"Taint applied to CALLDATA[{self.source_start}:{self.source_end}] (size: {self.source_size})")
@@ -273,7 +275,6 @@ class CalldataToContractTarget():
         self.state.add_constraint(NotEqual(calldata_sol, self.state.calldata.readn(self.source_start, self.source_size)))
         
         if self.state_has_shas:
-            self.sha_resolver.clear_solutions()
             self.sha_resolver.fix_shas() # (+1)
 
         # If this is not SAT, we cannot reach the same state with a different CALLDATA!
@@ -295,7 +296,7 @@ class CalldataToContractTarget():
                 self.is_tainted = True
         
         # DISCUSSION/NOTE: Shall we keep the constraints over the targetContract to evaluate the 
-        # funcTarget?
+        # funcTarget? THIS IS IMPORTANT, DO NOT FORGET.
         # As of now, let's pop everything.
         if self.state_has_shas:
             self.state.solver.pop() # (-1)
