@@ -285,7 +285,7 @@ class TAC_Extcodesize(TAC_Statement):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', state.ctx, state.xid)
         else:
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-SYMBOLIC', state.ctx, state.xid)
-            log.warning('CODESIZE of symblic address')
+            log.warning('CODESIZE of symbolic address')
             # raise VMSymbolicError('codesize of symblic address')
 
         state.set_next_pc()
