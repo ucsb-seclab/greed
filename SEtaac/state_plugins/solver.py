@@ -70,12 +70,23 @@ class SimStateSolver(SimStatePlugin):
     @property
     def frame(self):
         return self._curr_frame_level
+    
+    @property
+    def constraints(self):
+        return self.constraints_at()
+
+    @property
+    def memory_constraints(self):
+        return self.memory_constraints_at()
+    
+    @property
+    def path_constraints(self):
+        return self.path_constraints_at()
 
     # returns path constraints
     # If frame is None, returns ALL the currently active constraints,
     # otherwise, just return the constraints at a specific frame.
-    @property
-    def path_constraints(self, frame: int = None):
+    def path_constraints_at(self, frame: int = None):
         if not frame:
             all_csts = [c_set for c_set in self._path_constraints.values()]
             return list(set().union(*all_csts))
@@ -85,8 +96,7 @@ class SimStateSolver(SimStatePlugin):
     # returns memory constraints
     # If frame is None, returns ALL the currently active constraints,
     # otherwise, just return the constraints at a specific frame.
-    @property
-    def memory_constraints(self, frame=None):
+    def memory_constraints_at(self, frame=None):
         if not frame:
             all_csts = [c_set for c_set in self._memory_constraints.values()]
             return list(set().union(*all_csts))
@@ -94,8 +104,7 @@ class SimStateSolver(SimStatePlugin):
             return list(self._memory_constraints[frame])
     
     # returns ALL the active constraints in all the stashes
-    @property
-    def constraints(self, frame=None):
+    def constraints_at(self, frame=None):
         if not frame:
             all_path_csts = [c_set for c_set in self._path_constraints.values()]
             all_mem_csts = [c_set for c_set in self._memory_constraints.values()]
