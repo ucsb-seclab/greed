@@ -72,9 +72,10 @@ class ShaResolver():
                 if other_sha.symbol.name == curr_sha.symbol.name:
                     # Skip the current SHA under analysis
                     continue
-                if sha_deps.has_edge(other_sha, curr_sha):
+                
+                #if sha_deps.has_edge(other_sha, curr_sha):
                     # OPTIMIZATION: if sha1 depends from sha2, sha2 CANNOT depend from sha1, so skip that.
-                    continue
+                #    continue
 
                 if state.solver.is_formula_sat(Equal(other_sha.symbol, BVV(0,256))):
                     continue
@@ -171,7 +172,7 @@ class ShaResolver():
 
         # Finally set the SHA result
         state.add_constraint(Equal(sha_observed.symbol, BVV(int(sha_result,16),256)))
-
+        
         return ShaSolution(sha_observed.symbol.name, sha_arg_offset, sha_size, sha_input_buffer, BVV(int(sha_result,16),256))
     
     def get_keccak256(self, input_buffer, sha_size):

@@ -6,7 +6,7 @@ import sha3
 from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 class ShaSolution():
     def __init__(self, symbol_name, argOffset, argSize, inputBuffer, shaResult):
@@ -21,8 +21,8 @@ class ShaSolution():
         return f"{self.symbol} | inputBuffer {hex(bv_unsigned_value(self.inputBuffer))} | SHA3 {hex(bv_unsigned_value(self.shaResult))}"
 
 
-class SimpleShaResolver():
-    def __init__(self, state, sha_models=None):
+class ShaResolver():
+    def __init__(self, state, sha_deps=None, sha_models=None):
         self.state = state
         self.starting_frame = self.state.solver.frame
 
@@ -108,8 +108,10 @@ class SimpleShaResolver():
         state.add_constraint(Equal(sha_observed.start, sha_arg_offset))
         state.add_constraint(Equal(sha_observed.size, sha_size))
 
+        #log.debug(f"  Setting constraints to {sha_observed.symbol.name} input")
         for x,b in zip(range(0, bv_unsigned_value(sha_size)), 
                                 bv_unsigned_value(sha_input_buffer).to_bytes(bv_unsigned_value(sha_size), 'big')):
+            #log.debug(f"    Constraining byte {x}")
             state.add_constraint(Equal(sha_observed[BVV(x,256)], BVV(b,8)))
 
         # Finally set the SHA result

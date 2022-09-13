@@ -10,7 +10,8 @@ from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrV
 
 from SEtaac.static_analyses import run_backward_slice
 
-from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
+#from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
+from taint_analyses_v2 import CalldataToFuncTarget, CalldataToContractTarget
 from init_ctx_generator import get_calldata_for
 
 
@@ -29,9 +30,9 @@ class CallInfo():
         self.call_stmt = call_stmt
 
         # Classification TTT,UTT,UUU,...
-        self.taintedContractAddress = True
-        self.taintedFunction = True
-        self.taintedArguments = True
+        self.taintedContractAddress = None
+        self.taintedFunction = None
+        self.taintedArguments = None
 
         # list of destination contracts that can be called
         self.contractAddresses = list()
@@ -48,18 +49,31 @@ class CallInfo():
     @property
     def call_type(self):
         type_str = ""
-        if self.taintedContractAddress:
-            type_str += "T"
-        else:
-            type_str += "U"
-        if self.taintedFunction:
-            type_str += "T"
-        else:
-            type_str += "U"
-        if self.taintedArguments:
+        
+        if self.taintedContractAddress is None:
             type_str += "*"
         else:
+            if self.taintedContractAddress:
+                type_str += "T"
+            else:
+                type_str += "U"
+
+        if self.taintedFunction is None:
             type_str += "*"
+        else:
+            if self.taintedFunction:
+                type_str += "T"
+            else:
+                type_str += "U"
+        
+        if self.taintedArguments is None:
+            type_str += "*"
+        else:
+            if self.taintedArguments:
+                type_str += "*"
+            else:
+                type_str += "*"
+        
         return type_str
         
     def __str__(self):
@@ -70,7 +84,7 @@ def analyze_state_at_call(state, target_call_info):
     static_targetContract = False
     tainted_targetContract = False
     tainted_targetFunc = False 
-
+    
     if len(target_call_info.contractAddresses) == 1:
         log.info(f"Fixated CALL targetContract at {hex(target_call_info.contractAddresses[0])}")
         static_targetContract = True
@@ -86,7 +100,7 @@ def analyze_state_at_call(state, target_call_info):
         log.info(f"Fixated CALL targetFunc at {hex(target_call_info.functionAddresses[0])}")
     else:
         if not static_targetContract:
-            ta2 = CalldataToFuncTarget(state, source_start=4, sha_deps=ta1.sha_resolver.sha_deps)
+            ta2 = CalldataToFuncTarget(state, source_start=4, sha_deps=None)
         else:
             ta2 = CalldataToFuncTarget(state, source_start=4)
         ta2.run()
@@ -118,7 +132,7 @@ def analyze_call_from_ep(entry_point, target_call_info):
     # Some state options
     options.GREEDY_SHA = False
     options.LAZY_SOLVES = False
-    #options.STATE_INSPECT = True
+    options.STATE_INSPECT = True
     
     log.info(f"CALLDATA: {calldata}")
     log.info(f"CALLDATASIZE is {calldatasize}")
@@ -127,7 +141,14 @@ def analyze_call_from_ep(entry_point, target_call_info):
 
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx)    
 
-    #entry_state.inspect.stop_at_stmt(stmt_name="SHA3")
+    def bp(simgr, state):
+        log.info(f"[💥] State at {state.pc} does SHA!")
+    def bp2(simgr, state):
+        log.info(f"[💥] Exiting OwnershipOf [{state.pc}]")
+
+    entry_state.inspect.stop_at_stmt(stmt_name="SHA3", func=bp)
+    entry_state.inspect.stop_at_stmt_id(stmt_id="0x1c03", func=bp2)
+    #entry_state.inspect.stop_at_stmt_id(stmt_id="0x1ac1") # Calculating nextTokenId
     
     simgr = p.factory.simgr(entry_state=entry_state)
     
@@ -197,6 +218,8 @@ if __name__ == "__main__":
     p = Project(target_dir=sys.argv[1])
     xid = gen_exec_id()
 
+    #import ipdb; ipdb.set_trace()
+
     # First of all, let's find all the CALL statements
     CallInfos = {s.id:CallInfo(s) for s in p.statement_at.values() if s.__internal_name__ == "CALL"}
     log.info(f"Found {len(CallInfos.keys())} CALLs:")
@@ -247,17 +270,12 @@ if __name__ == "__main__":
             continue
         
         for ep in entry_points:
-            #if ep.name != "safeTransferFrom(address,address,uint256,bytes)":
-            #    continue
-        
+            if ep.name != "safeTransferFrom(address,address,uint256,bytes)":
+                continue
             analyze_call_from_ep(ep, call)
 
     log.info("CALLS SUMMARY")
     for call in CallInfos.values():
         log.info(" > "+str(call))
-
-
-    import ipdb; ipdb.set_trace()
-
     
 

@@ -19,7 +19,7 @@ class SimStateInspect(SimStatePlugin):
     def stop_at_stmt_id(self, stmt_id=None, func=None, when=OP_BEFORE):
         if not func:
             def justStop(simgr, state):
-                log.warning("⚡ Triggered breakpoint at {}".format(state.pc))
+                log.warning("💥 Triggered breakpoint at {}".format(state.pc))
                 import ipdb; ipdb.set_trace()
             func = justStop
         self.breakpoints_stmt_ids[stmt_id] = func
