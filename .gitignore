@@ -406,6 +406,7 @@ tests/*/**
 
 bitwuzla/**
 boolector/**
+yices2
 yices2/**
 yices2_python_bindings/**
 

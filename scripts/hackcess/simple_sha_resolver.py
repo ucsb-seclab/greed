@@ -6,7 +6,7 @@ import sha3
 from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+log.setLevel(logging.CRITICAL)
 
 class ShaSolution():
     def __init__(self, symbol_name, argOffset, argSize, inputBuffer, shaResult):
@@ -53,7 +53,11 @@ class ShaResolver():
         # Just fix the SHAs in chronological order
         for sha_observed in state.sha_observed:
             log.debug(f" Fixing {sha_observed.symbol.name}")
-            sha_model.append(self._fix_sha(sha_observed))
+            sha_sol = self._fix_sha(sha_observed)
+            if sha_sol:
+                sha_model.append(sha_sol)
+            else:
+                return None
         
         # Save this model in the global dict
         self.sha_models[self.num_models] = sha_model
@@ -89,13 +93,13 @@ class ShaResolver():
                     blocked_solutions.append(sol.inputBuffer)
         
         # Blocking already provided solutions
-        # You can clean this throug the clear_solutions API
+        # You can clean this through the clear_solutions API
         for blocked_solution in blocked_solutions:
             state.add_constraint(NotEqual(blocked_solution, sha_observed.readn(BVV(0,256), sha_size)))
         
         if not state.solver.is_sat():
             log.fatal("No solutions for SHAs")
-            return ShaSolution()
+            return None
 
         sha_input_buffer = state.solver.eval_memory_at(sha_observed, BVV(0,256), sha_size, raw=True)
 

@@ -2,6 +2,7 @@ import logging
 import networkx as nx
 
 from . import ExplorationTechnique
+from utils import bcolors
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class DirectedSearch(ExplorationTechnique):
                 pruned_cnt += 1
                 simgr.stashes[self.pruned_stash].append(succ)
         if pruned_cnt == len(successors):
-            log.debug(f"Pruned all the successors! [{pruned_cnt}/{len(successors)}]")
+            log.fatal(f"{bcolors.REDBG}DirectedSearch pruned all the successors! [{pruned_cnt}/{len(successors)}]{bcolors.ENDC}")
         elif pruned_cnt != 0:
             log.debug(f"Pruned {pruned_cnt}/{len(successors)} successors")
         return new_successors

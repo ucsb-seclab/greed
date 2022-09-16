@@ -7,9 +7,10 @@ import re
 import eth_abi
 
 from eth_abi.tools import get_abi_strategy
+from utils import bcolors
 
 log = logging.getLogger(__name__)
-#log.setLevel(logging.INFO)
+log.setLevel(logging.CRITICAL)
 
 
 # Whenever there is an array, we put X elements
@@ -49,7 +50,7 @@ def sort_tuple(tup):
     return tup
 
 def get_calldata_for(func):
-    log.warning(f"Analyzing {func.name}")
+    log.warning(f"{bcolors.GREENBG}Analyzing {func.name}{bcolors.ENDC}")
     f_proto = func.name
     
     # Drop the function's name

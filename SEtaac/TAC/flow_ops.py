@@ -74,7 +74,7 @@ class TAC_Jumpi(TAC_Statement):
                 return [state]
             else:
                 # nothing is sat
-                log.debug(f"Unsat branch ({state})")
+                log.fatal(f"JUMPI with UNSAT branches at ({state.pc})")
                 state.halt = True
                 return [state]
 

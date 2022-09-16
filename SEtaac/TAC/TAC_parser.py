@@ -186,7 +186,6 @@ class TAC_parser:
     def parse_abi(self):
         if not os.path.exists(f"{self.target_dir}/abi.json"):
             return None
-
         with open(f"{self.target_dir}/abi.json", "rb") as abi_file:
             abi = json.load(abi_file)
 
@@ -203,4 +202,26 @@ class TAC_parser:
             if f.signature in sig_to_name.keys():
                 f.name = sig_to_name[f.signature]
 
+        return abi
+
+    # The r_abi json is expected to be a dictionary of this kind:
+    # <function_id>:<function_prototype>
+    #
+    # e.g.
+    # {"0xd450e04c":"0xd450e04c(bytes,bytes,bytes,bytes,bytes)"  
+    #
+    def parse_recovered_abi(self):
+        if not os.path.exists(f"{self.target_dir}/r_abi.json"):
+            return None
+        
+        log.warning("Working with an automatically recovered abi")
+
+        with open(f"{self.target_dir}/r_abi.json", "rb") as abi_file:
+            abi = json.load(abi_file)
+
+        for f in self.factory.project.function_at.values():
+            proto = abi.get(f.signature, None) 
+            if proto:
+                f.name = proto
+        
         return abi

@@ -7,6 +7,8 @@ from . import ExplorationTechnique
 log = logging.getLogger(__name__)
 #log.setLevel(logging.INFO)
 
+from utils import bcolors
+
 class HeartBeat(ExplorationTechnique):
     """
     This Exploration technique implements a Classic heartbeat.
@@ -21,6 +23,14 @@ class HeartBeat(ExplorationTechnique):
         self.beat_cnt = 0
         self.steps_cnt = 0
 
+        self.check_state_warning_printed = False
+
+    def check_state(self, simgr, state):
+        if not self.check_state_warning_printed:
+            log.fatal("{bcolors.YELLOWBG}Heartbeat is checking is_sat() for every state{bcolors.ENDC}")
+            self.check_state_warning_printed = True
+        state.solver.is_sat()
+    
     def check_successors(self, simgr, successors):
         self.beat_cnt += 1
         self.steps_cnt += 1
@@ -32,7 +42,7 @@ class HeartBeat(ExplorationTechnique):
                 log.info("HeartBeat stopped, need help? </3")
                 import ipdb
                 ipdb.set_trace()
-
+        
         return successors
     
     def change_beat(self, new_beat_interval):
