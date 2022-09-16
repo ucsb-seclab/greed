@@ -20,9 +20,19 @@ class Project(object):
         self.statement_at = tac_parser.parse_statements()
         self.block_at = tac_parser.parse_blocks()
         self.function_at = tac_parser.parse_functions()
+        
+        # Do we have an official abi?
         self.abi = tac_parser.parse_abi()
+        
+        '''
+        if not self.abi:
+            # Do we have a reconstructed abi?
+            self.abi = tac_parser.parse_recovered_abi()
+        '''
 
         self.has_abi = (self.abi is not None)
+        if not self.has_abi:
+            log.warning("No abi was found for this contract, working with none, this may impact symbolic execution")
 
         # build callgraph
         self.callgraph = nx.DiGraph()
