@@ -22,15 +22,7 @@ class HeartBeat(ExplorationTechnique):
         self.beat_interval = beat_interval
         self.beat_cnt = 0
         self.steps_cnt = 0
-
-        self.check_state_warning_printed = False
-
-    def check_state(self, simgr, state):
-        if not self.check_state_warning_printed:
-            log.fatal("{bcolors.YELLOWBG}Heartbeat is checking is_sat() for every state{bcolors.ENDC}")
-            self.check_state_warning_printed = True
-        state.solver.is_sat()
-    
+ 
     def check_successors(self, simgr, successors):
         self.beat_cnt += 1
         self.steps_cnt += 1
