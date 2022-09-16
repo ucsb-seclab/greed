@@ -59,6 +59,10 @@ class SimStateSolver(SimStatePlugin):
             self._solver.pop()
             return self._curr_frame_level
     
+    def pop_all(self):
+        while self._curr_frame_level != 0:
+            self.pop()
+    
     def add_path_constraints(self, constraint):
         self._path_constraints[self._curr_frame_level].add(constraint)
         self._add_assertion(constraint)
