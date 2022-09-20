@@ -1,9 +1,8 @@
 import logging
 
 from SEtaac.solver.shortcuts import *
-from simple_sha_resolver import ShaResolver
+from sha_resolver import ShaResolver
 from utils import bcolors
-
 
 # source_start: this is an offset in CALLDATA 
 # source_end: this is an offset in CALLDATA
@@ -23,7 +22,7 @@ class CalldataToFuncTarget():
         
         assert(self.state.curr_stmt.__internal_name__ == "CALL")
 
-        self.log = logging.getLogger("taint_analysis")
+        self.log = logging.getLogger("CalldataToFuncTarget")
         self.log.setLevel(logging.INFO)
 
         self.starting_frame = self.state.solver.frame
@@ -144,7 +143,7 @@ class CalldataToFuncTarget():
 
         #self.log.info(f" Using CALLDATA[4:] {self.to_human(new_calldata_sol, self.source_size)}")
         #new_whole_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
-        #print(f"{self.to_human(new_whole_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
+        #log.debug(f"{self.to_human(new_whole_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
 
         # Resolve SHAs if any (this also fix the solutions in the solver in a new frame)
         # We have to do this to avoid spurious solutions related to the fact that as of now
@@ -190,8 +189,8 @@ class CalldataToContractTarget():
         
         assert(self.state.curr_stmt.__internal_name__ == "CALL")
 
-        self.log = logging.getLogger("taint_analysis")
-        self.log.setLevel(logging.INFO)
+        self.log = logging.getLogger("CalldataToContractTarget")
+        self.log.setLevel(logging.DEBUG)
 
         self.starting_frame = self.state.solver.frame
 
@@ -239,7 +238,7 @@ class CalldataToContractTarget():
 
     def run(self):
 
-        self.log.info("Starting CALLDATA to tagetContract taint analysis")
+        self.log.info("Starting CALLDATA to targetContract taint analysis")
 
         calldata_sol = self.state.solver.eval_memory_at(self.state.calldata, self.source_start, self.source_size, raw=True)
 
@@ -248,14 +247,17 @@ class CalldataToContractTarget():
         whole_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
         self.log.debug(f"{self.mem_to_human(whole_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
 
-        # Fix this solution in a new frame (+1)
+        # Fix CALLDATA solution in a new frame (+1)
         self.state.solver.push()
+        
+        assert(self.state.solver.frame == 1)
         self.state.add_constraint(Equal(calldata_sol, self.state.calldata.readn(self.source_start, self.source_size)))
 
         # Resolve SHAs if any (this also fix the solutions in the solver in a new frame) (+1)
         if self.state_has_shas:
             if not self.sha_resolver.fix_shas():
                 self.state.solver.pop_all() # Clean frames (0)
+                assert(self.state.solver.freame==0)
                 # If we cannot fix SHAs, let's call it a day
                 return
         
@@ -276,12 +278,14 @@ class CalldataToContractTarget():
         # Add frame to avoid previous CALLDATA solution (+1)
         self.state.solver.push()
         
-        # We don't want the previous one
+        assert(self.state.solver.frame != 0 )
+        # We don't want the previous CALLDATA
         self.state.add_constraint(NotEqual(calldata_sol, self.state.calldata.readn(self.source_start, self.source_size)))
         
         if self.state_has_shas:
             if not self.sha_resolver.fix_shas(): # (+1)
                 self.state.solver.pop_all() # Clean frames (0)
+                assert(self.state.solver.frame==0)
                 # If we cannot fix SHAs let's call it a day
                 return
 

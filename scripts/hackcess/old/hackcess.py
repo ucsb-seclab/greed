@@ -12,7 +12,7 @@ from SEtaac.solver.shortcuts import *
 from SEtaac.utils import gen_exec_id
 
 log = logging.getLogger("Hackcess")
-log.setLevel(logging.INFO)
+log.setLevel(logging.DEBUG)
 
 class CallInfo():
     def __init__(self, call_stmt):
