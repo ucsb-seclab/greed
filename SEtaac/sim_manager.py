@@ -129,6 +129,10 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='found', filter_func=find)
         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
+
+        if not options.LAZY_SOLVES:
+            self.move(from_stash='active', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
+        
         self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
 
         for s in self.stashes['pruned'] + self.stashes['unsat']:
