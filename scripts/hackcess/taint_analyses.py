@@ -7,7 +7,7 @@ from utils import bcolors
 
 
 class CalldataToFuncTarget():
-    def __init__(self, state, source_start=4, source_end=-1, sha_deps=None):
+    def __init__(self, state):
         
         self.state = state
         
@@ -18,20 +18,14 @@ class CalldataToFuncTarget():
 
         self.starting_frame = self.state.solver.frame
 
-        # Source parameters
-        self.source_start = source_start
-        self.source_start = BVV(self.source_start, 256)
-
-        assert(is_concrete(self.source_start))
-        
         # Get an instance for the sha resolver
-        self.sha_resolver = ShaResolver(self.state, sha_deps=sha_deps)
+        self.sha_resolver = ShaResolver(self.state)
         
         self.state_has_shas = True if len(self.state.sha_observed) != 0 else False
 
         self.is_tainted = None
 
-    def to_human(self, val, size):
+    def mem_to_human(self, val, size):
         return bv_unsigned_value(val).to_bytes(bv_unsigned_value(size), 'big').hex()
     
     def run(self):
@@ -40,25 +34,25 @@ class CalldataToFuncTarget():
 
         self.log.info("Starting CALLDATA to funcTarget taint analysis")
 
-        calldata_sol = self.state.solver.eval_memory_at(self.state.calldata, self.source_start, self.source_size, raw=True)
+        calldata_sol = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
 
-        self.log.debug(f"Using CALLDATA[{self.source_start.value}:{self.source_end.value}] {self.to_human(calldata_sol, self.source_size)}")
+        self.log.debug(f"{self.mem_to_human(calldata_sol, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
 
-        whole_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
-        self.log.debug(f"{self.to_human(whole_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
-
-        # Fix this solution in a new frame (+1)
+        # Fix CALLDATA solution in a new frame (+1)
         self.state.solver.push()
-        self.state.add_constraint(Equal(calldata_sol, self.state.calldata.readn(self.source_start, self.source_size)))
+        
+        assert(self.state.solver.frame == 1)
+        self.state.add_constraint(Equal(calldata_sol, self.state.calldata.readn(BVV(0,256), BVV(self.state.MAX_CALLDATA_SIZE,256))))
 
         # Resolve SHAs if any (this also fix the solutions in the solver in a new frame) (+1)
         if self.state_has_shas:
             if not self.sha_resolver.fix_shas():
                 self.state.solver.pop_all() # Clean frames (0)
-                # If we cannot fix SHAs, let's call it a day.
+                assert(self.state.solver.frame==0)
+                # If we cannot fix SHAs, let's call it a day
                 return
         else:
-            assert(self.state.solver.frame == 1)
+            assert(self.state.solver.frame==1)
 
         # Get solution for CALL parameters
         mem_offset_call_raw = self.state.solver.eval(self.state.registers[self.state.curr_stmt.arg4_var], raw=True)
@@ -80,7 +74,7 @@ class CalldataToFuncTarget():
 
         mem_at_call_raw = self.state.solver.eval_memory_at(self.state.memory, mem_offset_call_raw, mem_argSize_raw, raw=True)
         mem_at_call = bv_unsigned_value(mem_at_call_raw)
-        self.log.debug(f"funcTarget at CALL is: 0x{self.to_human(mem_at_call_raw, mem_argSize_raw)}")
+        self.log.debug(f"funcTarget at CALL is: 0x{self.mem_to_human(mem_at_call_raw, mem_argSize_raw)}")
 
         # Now, we want to see what happen when we change CALLDATA and SHAs.
 
@@ -97,72 +91,75 @@ class CalldataToFuncTarget():
         # HERE FRAMEs ARE CLEAN (0)
         assert(self.state.solver.frame == 0 )
 
-        # Add frame to avoid previous CALLDATA solution (+1)
-        self.state.solver.push()
-        # We don't want the previous one
-        self.state.add_constraint(NotEqual(calldata_sol, self.state.calldata.readn(self.source_start, self.source_size)))
-        # We want to re-use the same offset as before as of now
-        self.state.add_constraint(Equal(mem_offset_call_raw, self.state.registers[self.state.curr_stmt.arg4_var]))
-
-        # Get new solution for CALLDATA
-        #new_calldata_sol = self.state.solver.eval_memory_at(self.state.calldata, self.source_start, self.source_size, raw=True)
-        #self.state.add_constraint(Equal(new_calldata_sol, self.state.calldata.readn(self.source_start, self.source_size)))
-
-        #self.log.info(f" Using CALLDATA[4:] {self.to_human(new_calldata_sol, self.source_size)}")
-        #new_whole_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
-        #log.debug(f"{self.to_human(new_whole_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
-
-        # Resolve SHAs if any (this also fix the solutions in the solver in a new frame)
-        # We have to do this to avoid spurious solutions related to the fact that as of now
-        # there is no correlation between SHAs input buffers and the symbolic variable representing the SHAs.
-
-        # NOTE: This might impact the solutions for CALLDATA later.
-        if self.state_has_shas:
-            if not self.sha_resolver.fix_shas(): # (+1)
-                self.state.solver.pop_all() # Clean frames (0)
-                # If we cannot fix SHAs, let's call it.
-                return 
-
-        # If this is not SAT, we cannot reach the same state with a different CALLDATA!
-        if not self.state.solver.is_sat():
-            self.log.fatal("Cannot reach same state with a different CALLDATA!")
-        else:
-            # DISCUSSION: at this point, if the state is sat, it means that there exist CALLDATA values (different from the 
-            # previous one) that respect the SHAs solutions we just set.
+        for target_byte in range(4,self.state.MAX_CALLDATA_SIZE):
             
-            # DISCUSSION: if the memory at CALL is ALWAYS equal to the mem calculated before ( i.e., a different CALLDATA cannot change
-            # the outcome of the bytes at this location, then we conclude that the mem_at_call is not dependent from the CALLDATA bytes)
-            if self.state.solver.is_formula_true(Equal(mem_at_call_raw, self.state.memory.readn(mem_offset_call_raw, BVV(4,256)))):
-                self.log.info(f"{bcolors.BLUEBG}funcTarget at CALL does NOT depend from source!{bcolors.ENDC}")
-                self.is_tainted = False
-            else:
-                # DISCUSSION: in this case it means that there exist a possibility for a different CALLDATA to create a different 
-                # mem_at_call, hence, we conclude this is tainted!
-                self.log.info(f"{bcolors.PINKBG}funcTarget at CALL depends from source!{bcolors.ENDC}")
-                # Let's create a solution for that :) 
-                self.state.add_constraint(NotEqual(mem_at_call_raw, self.state.memory.readn(mem_offset_call_raw, mem_argSize_raw)))
-                new_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
-                new_memory_at_call = self.state.solver.eval_memory_at(self.state.memory, mem_offset_call_raw, mem_argSize_raw, raw=True)
-                self.log.debug(f"Possible solution:")
-                self.log.debug(f" CALLDATA: {self.to_human(new_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
-                self.log.debug(f"funcTarget at CALL: 0x{self.to_human(new_memory_at_call, mem_argSize_raw)}")
-                
-                self.is_tainted = True
-                
+            #self.log.debug(f"Flipping byte {target_byte}")
 
-class CalldataMutator():
-    def __init__(self, state, initial_calldata):
-        self.state = state
-        self.initial_calldata = initial_calldata
-        
-        # The first 4 bytes are the function signature. 
-        self.curr_flipped_byte = 4
-    
-    def mutate(self):
-        pass
+            # Flip all the bytes but the target one
+            self.state.solver.push() # Adding the current sol +1 frame
+            assert(self.state.solver.frame == 1)
+            self.sha_resolver.clear_solutions()
+            
+            for x,b in zip(range(0, self.state.MAX_CALLDATA_SIZE), 
+                                    bv_unsigned_value(calldata_sol).to_bytes(self.state.MAX_CALLDATA_SIZE, 'big')):
+                
+                # The current target byte to flip is kept symbolic, the rest is set equal to the previous
+                # solution.
+                if x != target_byte:
+                    #self.log.debug(f"calldata[{x}]={hex(b)}")
+                    self.state.add_constraint(Equal(self.state.calldata[BVV(x,256)], BVV(b,8)))
+                else:
+                    self.state.add_constraint(NotEqual(self.state.calldata[BVV(x,256)], BVV(b,8)))
+                    #self.log.debug(f"calldata[{x}]!={hex(b)}")
+                    #self.log.warning(f"Skipping byte {target_byte}, leaving it symbolic!")
+            
+            if not self.state.solver.is_sat():
+                #self.log.debug("UNSAT state")
+                pass
+            else:
+                if self.state_has_shas:
+                    if not self.sha_resolver.fix_shas(): # (+1)
+                        self.state.solver.pop_all() # Clean frames (0)
+                        assert(self.state.solver.frame==0)
+                
+                # If this is not SAT, we cannot reach the same state with a different CALLDATA!
+                if not self.state.solver.is_sat():
+                    self.log.fatal("Cannot reach same state with a different CALLDATA!")
+                else:
+                    # DISCUSSION: at this point, if the state is sat, it means that there exist CALLDATA values (different from the 
+                    # previous one) that respect the SHAs solutions we just set.
+                    
+                    # DISCUSSION: if the memory at CALL is ALWAYS equal to the mem calculated before ( i.e., a different CALLDATA cannot change
+                    # the outcome of the bytes at this location, then we conclude that the mem_at_call is not dependent from the CALLDATA bytes)
+                    if self.state.solver.is_formula_true(Equal(mem_at_call_raw, self.state.memory.readn(mem_offset_call_raw, BVV(4,256)))):
+                        #self.log.info(f"{bcolors.BLUEBG}funcTarget at CALL does NOT depend from source!{bcolors.ENDC}")
+                        self.is_tainted = False
+                    else:
+                        # DISCUSSION: in this case it means that there exist a possibility for a different CALLDATA to create a different 
+                        # mem_at_call, hence, we conclude this is tainted!
+                        self.log.info(f"{bcolors.PINKBG}funcTarget at CALL depends from source byte {target_byte}!{bcolors.ENDC}")
+                        # Let's create a solution for that :) 
+                        self.state.add_constraint(NotEqual(mem_at_call_raw, self.state.memory.readn(mem_offset_call_raw, mem_argSize_raw)))
+                        new_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
+                        new_memory_at_call = self.state.solver.eval_memory_at(self.state.memory, mem_offset_call_raw, mem_argSize_raw, raw=True)
+                        #self.log.debug(f"Possible solution:")
+                        #self.log.debug(f" CALLDATA: {self.mem_to_human(new_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
+                        #self.log.debug(f"funcTarget at CALL: 0x{self.mem_to_human(new_memory_at_call, mem_argSize_raw)}")
+                        self.is_tainted = True
+                        break
+
+            self.state.solver.pop_all()
+            assert(self.state.solver.frame==0)
+
+        if not self.is_tainted:
+            self.log.info(f"{bcolors.BLUEBG}funcTarget at CALL does NOT depend from source!{bcolors.ENDC}")
+
+        # Leave this clean before exiting
+        self.state.solver.pop_all()
+                
 
 class CalldataToContractTarget():
-    def __init__(self, state, source_start=4):
+    def __init__(self, state):
         self.state = state
         
         assert(self.state.curr_stmt.__internal_name__ == "CALL")
@@ -171,11 +168,6 @@ class CalldataToContractTarget():
         self.log.setLevel(logging.DEBUG)
 
         self.starting_frame = self.state.solver.frame
-
-        # Convert to solver types
-        self.source_start = BVV(source_start, 256)
-
-        assert(is_concrete(self.source_start))
     
         # Get an instance for the sha resolver
         self.sha_resolver = ShaResolver(self.state)
@@ -192,8 +184,6 @@ class CalldataToContractTarget():
     def run(self):
 
         self.log.info("Starting CALLDATA to targetContract taint analysis")
-
-        #calldata_sol = self.state.solver.eval_memory_at(self.state.calldata, self.source_start, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
         
         calldata_sol = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
 
@@ -238,7 +228,7 @@ class CalldataToContractTarget():
               
         for target_byte in range(4,self.state.MAX_CALLDATA_SIZE):
             
-            self.log.debug(f"Flipping byte {target_byte}")
+            #self.log.debug(f"Flipping byte {target_byte}")
 
             # Flip all the bytes but the target one
             self.state.solver.push() # Adding the current sol +1 frame
@@ -261,7 +251,8 @@ class CalldataToContractTarget():
             # We don't want the previous CALLDATA!
             #self.state.add_constraint(NotEqual(calldata_sol, self.state.calldata.readn(BVV(0,256), BVV(self.state.MAX_CALLDATA_SIZE,256))))
             if not self.state.solver.is_sat():
-                self.log.debug("UNSAT state")
+                #self.log.debug("UNSAT state")
+                pass
             else:
                 # If we are here, we found a bitflip that keeps the path constraints SAT
                 #calldata_sol = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
@@ -275,61 +266,27 @@ class CalldataToContractTarget():
                     self.log.fatal("Cannot reach same state with a different CALLDATA!")
                 else:            
                     if self.state.solver.is_formula_true(Equal(targetContract_raw, self.state.registers[self.state.curr_stmt.arg2_var])):
-                        self.log.info(f"{bcolors.BLUEBG}targetContract at CALL does NOT depend from source!{bcolors.ENDC}")
+                        #self.log.info(f"{bcolors.BLUEBG}targetContract at CALL does NOT depend from source {target_byte}!{bcolors.ENDC}")
                         self.is_tainted = False
                     else:
-                        self.log.info(f"{bcolors.PINKBG}targetContract at CALL depends from source!{bcolors.ENDC}")
+                        self.log.info(f"{bcolors.PINKBG}targetContract at CALL depends from source byte {target_byte}!{bcolors.ENDC}")
                         # Let's create a solution for that :) 
                         self.state.add_constraint(NotEqual(targetContract_raw, self.state.registers[self.state.curr_stmt.arg2_var]))
                         new_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
-                        new_targetContract_raw = self.state.solver.eval(self.state.registers[self.state.curr_stmt.arg2_var], raw=True)
-                        
-                        self.log.debug(f"Possible solution:")
-                        self.log.debug(f" CALLDATA: {self.mem_to_human(new_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
-                        self.log.debug(f"targetContract at CALL: {self.reg_to_human(new_targetContract_raw)}")
+                        new_targetContract_raw = self.state.solver.eval(self.state.registers[self.state.curr_stmt.arg2_var], raw=True)    
+                        #self.log.debug(f"Possible solution:")
+                        #self.log.debug(f" CALLDATA: {self.mem_to_human(new_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
+                        #self.log.debug(f"targetContract at CALL: {self.reg_to_human(new_targetContract_raw)}")
                         self.is_tainted = True
+                        
+                        # We can stop here for now.
+                        break
                         
             self.state.solver.pop_all()
             assert(self.state.solver.frame==0)
-            
-
-        import ipdb; ipdb.set_trace()
         
-        '''
-        # We don't want the previous CALLDATA
-        
-        
-        if self.state_has_shas:
-            if not self.sha_resolver.fix_shas(): # (+1)
-                self.state.solver.pop_all() # Clean frames (0)
-                assert(self.state.solver.frame==0)
-                # If we cannot fix SHAs let's call it a day
-                return
-
-        # If this is not SAT, we cannot reach the same state with a different CALLDATA!
-        if not self.state.solver.is_sat():
-            self.log.fatal("Cannot reach same state with a different CALLDATA!")
-        else:            
-            if self.state.solver.is_formula_true(Equal(targetContract_raw, self.state.registers[self.state.curr_stmt.arg2_var])):
-                self.log.info(f"{bcolors.BLUEBG}targetContract at CALL does NOT depend from source!{bcolors.ENDC}")
-                self.is_tainted = False
-            else:
-                self.log.info(f"{bcolors.PINKBG}targetContract at CALL depends from source!{bcolors.ENDC}")
-                # Let's create a solution for that :) 
-                self.state.add_constraint(NotEqual(targetContract_raw, self.state.registers[self.state.curr_stmt.arg2_var]))
-                new_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
-                new_targetContract_raw = self.state.solver.eval(self.state.registers[self.state.curr_stmt.arg2_var], raw=True)
-                
-                self.log.debug(f"Possible solution:")
-                self.log.debug(f" CALLDATA: {self.mem_to_human(new_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
-                self.log.debug(f"targetContract at CALL: {self.reg_to_human(new_targetContract_raw)}")
-                self.is_tainted = True
-        
-        # DISCUSSION/NOTE: Shall we keep the constraints over the targetContract to evaluate the 
-        # funcTarget? THIS IS IMPORTANT, DO NOT FORGET.
-        # As of now, let's pop everything.
-        if self.state_has_shas:
-            self.state.solver.pop() # (-1)
-        self.state.solver.pop() # (-1)
-        '''
-        assert(False)
+        if not self.is_tainted:
+            self.log.info(f"{bcolors.BLUEBG}targetContract at CALL does NOT depend from source!{bcolors.ENDC}")
+    
+        # Leave this clean before exiting
+        self.state.solver.pop_all()
