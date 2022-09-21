@@ -6,7 +6,7 @@ import sha3
 from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.CRITICAL)
+log.setLevel(logging.DEBUG)
 
 class ShaSolution():
     def __init__(self, symbol_name, argOffset, argSize, inputBuffer, shaResult):
@@ -72,7 +72,7 @@ class ShaResolver():
         state = self.state
 
         assert(state.solver.frame != 0)
-        
+
         # Null size doesn't make any sense for SHA, let's rule this out
         state.add_constraint(NotEqual(sha_observed.size, BVV(0,256)))
         if not state.solver.is_sat():
