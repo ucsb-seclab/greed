@@ -74,10 +74,10 @@ class ShaResolver():
         assert(state.solver.frame != 0)
 
         # Null size doesn't make any sense for SHA, let's rule this out
-        state.add_constraint(NotEqual(sha_observed.size, BVV(0,256)))
-        if not state.solver.is_sat():
-            log.critical(f"Setting the size to NOT ZERO makes everything unsat?!")
-            assert(False)
+        #state.add_constraint(NotEqual(sha_observed.size, BVV(0,256)))
+        #if not state.solver.is_sat():
+        #    log.critical(f"Setting the size to NOT ZERO makes everything unsat?!")
+        #    assert(False)
 
         # Get some solutions 
         log.debug(f"  [{sha_observed.symbol.name}] getting solution for argOffset")

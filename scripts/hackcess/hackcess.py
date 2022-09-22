@@ -348,9 +348,9 @@ if __name__ == "__main__":
             continue
         
         for ep in entry_points:
-            if ep.name == "safeTransferFrom(address,address,uint256,bytes)":
+            #if ep.name == "safeTransferFrom(address,address,uint256,bytes)":
             #if ep.name == "verifyHeaderAndExecuteTx(bytes,bytes,bytes,bytes,bytes)":
-                analyze_call_from_ep(ep, call)
+            analyze_call_from_ep(ep, call)
             #else:
             #print(f"Skipping {ep.name}")
 
