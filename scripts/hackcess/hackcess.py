@@ -137,7 +137,7 @@ def analyze_call_from_ep(entry_point, target_call_info):
     # Some state options
     options.GREEDY_SHA = False
     options.LAZY_SOLVES = False
-    #options.STATE_INSPECT = True
+    options.STATE_INSPECT = True
     
     #log.info(f"CALLDATA: {calldata}")
     #log.info(f"CALLDATASIZE is {calldatasize}")
@@ -217,9 +217,10 @@ def analyze_call_from_ep(entry_point, target_call_info):
     '''
 
     #entry_state.inspect.stop_at_stmt_id(stmt_id="0x3360")
+    #entry_state.inspect.stop_at_stmt(stmt_name="CALLER")
 
     '''
-    
+     
     entry_state.inspect.stop_at_stmt(stmt_name="SHA3", func=bp)
     entry_state.inspect.stop_at_stmt_id(stmt_id="0x1c03", func=bp2)
     entry_state.inspect.stop_at_stmt_id(stmt_id="0x1ac1") # Calculating nextTokenId
@@ -268,8 +269,10 @@ def how_to_reach(p: Project, target_call:TAC_Statement):
     # basically reversing the chain even more.
 
     target_function = p.factory.block(target_call.block_id).function
+
     # If the function containing the CALL is public we are done.
     if target_function.public:
+        log.info(f"Path {[target_function.name]}")
         return [target_function]
 
     # Otherwise, we need to find the entry points that lead to this CALL
@@ -281,7 +284,7 @@ def how_to_reach(p: Project, target_call:TAC_Statement):
     for ep in possible_entry_points:
         if nx.has_path(p.callgraph, source=ep, target=target_function):
             for path in nx.all_simple_paths(p.callgraph, source=ep, target=target_function):
-                log.info(f"{[func.name for func in path]}")
+                log.info(f"Path: {[func.name for func in path]}")
             entry_points.add(ep)
     
     return entry_points
@@ -350,6 +353,7 @@ if __name__ == "__main__":
         for ep in entry_points:
             #if ep.name == "safeTransferFrom(address,address,uint256,bytes)":
             #if ep.name == "verifyHeaderAndExecuteTx(bytes,bytes,bytes,bytes,bytes)":
+            #if ep.name == "withdraw()":
             analyze_call_from_ep(ep, call)
             #else:
             #print(f"Skipping {ep.name}")
