@@ -171,6 +171,7 @@ class TAC_parser:
 
             function = TAC_Function(block_id, signature, high_level_name, is_public, blocks, formals)
             function.cfg = function.build_cfg(self.factory, tac_block_succ)
+            function.build_use_def_graph()
             functions[func_id] = function
 
             for b in blocks:
