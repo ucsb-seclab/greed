@@ -83,14 +83,13 @@ class TAC_Function:
                     if arg not in self.usedef_graph.nodes:
                         # Check if there is a value 
                         if stmt.arg_vals.get(arg, None):
-                            print(f"adding use {arg}")
-                            self.usedef_graph.add_node(arg, type="var", index=use_index, value=hex(stmt.arg_vals[arg].value))
+                            self.usedef_graph.add_node(arg, type="var", value=hex(stmt.arg_vals[arg].value))
                         else:
-                            print(f"adding use {arg}")
-                            self.usedef_graph.add_node(arg, type="var", index=use_index, value='')
+                            self.usedef_graph.add_node(arg, type="var", value='')
 
                     # add the edge between the argument and the statement
-                    self.usedef_graph.add_edge(stmt.id, arg, type='use')
+                    self.usedef_graph.add_edge(arg,stmt.id, index=use_index, type='use')
+                    use_index+=1
                 
                 # Defs are the return values of the statement
                 def_index = 0
@@ -100,14 +99,13 @@ class TAC_Function:
                         # add the return value as node 
                         # Check if there is a value 
                         if stmt.res_vals.get(ret, None):
-                            print(f"adding def {ret}")
-                            self.usedef_graph.add_node(ret, type="var", index=def_index, value=hex(stmt.res_vals[ret].value))
+                            self.usedef_graph.add_node(ret, type="var", value=hex(stmt.res_vals[ret].value))
                         else:
-                            print(f"adding def {ret}")
-                            self.usedef_graph.add_node(ret, type="var", index=def_index, value='')
+                            self.usedef_graph.add_node(ret, type="var", value='')
 
                     # add the edge between the def and the statement
-                    self.usedef_graph.add_edge(stmt.id, ret, type='def')
+                    self.usedef_graph.add_edge(stmt.id, ret, index=def_index, type='def')
+                    def_index+=1
 
     
     def dump_use_def_graph(self,filename):
@@ -119,21 +117,18 @@ class TAC_Function:
 
         # Iterate though the nodes in the graph
         for node in self.usedef_graph.nodes:
-            print(f"Got node {node}")
             label = []
             # Get the node attributes
             node_attr = self.usedef_graph.nodes[node]
 
             if node_attr["type"] == "stmt":
                 label.append(f"id: {node}")
-                label.append(f"opcode: {node_attr['stmt_name']}")
+                label.append(f"stmt_name: {node_attr['stmt_name']}")
                 label.append(f"block_id: {node_attr['block_id']}")
                 label = "\n".join(label)
             else:
-                print(f"Adding var {node}")
                 label.append(f"var: {node}")
                 label.append(f"value: {node_attr['value']}")
-                label.append(f"index: {node_attr['index']}")
                 label = "\n".join(label)
 
             dot += f"\"{node}\" [shape=box, color=black, \nlabel=\"{label}\"];\n\n"
@@ -141,12 +136,17 @@ class TAC_Function:
         dot += "\n"
 
         for a, b in self.usedef_graph.edges:
+            elabel = []
             # Get the edge attributes
             edge_attr = self.usedef_graph.edges[a, b]
             if edge_attr["type"] == "use":
-                dot += f"\"{a}\" -> \"{b}\" [color=blue];\n"
+                elabel.append(f'used_{edge_attr.get("index")}')
+                elabel = "\n".join(elabel)
+                dot += f"\"{a}\" -> \"{b}\" [color=blue, \nlabel=\"{elabel}\"];\n"
             else:
-                dot += f"\"{a}\" -> \"{b}\" [color=green];\n"
+                elabel.append(f'def_{edge_attr.get("index")}')
+                elabel = "\n".join(elabel)
+                dot += f"\"{a}\" -> \"{b}\" [color=green, \nlabel=\"{elabel}\"];\n"
 
         dot += "}"
 
