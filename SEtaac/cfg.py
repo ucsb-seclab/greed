@@ -44,7 +44,29 @@ class CFG(object):
             label.append(f"block_addr: {block_id}")
 
             for stmt in block.statements:
-                label.append(f"{stmt.id}: {stmt}")
+                stmt_str = ""
+
+                for res_var in stmt.res_vars:
+                    stmt_str += f"{res_var}"
+
+                    if stmt.res_vals.get(res_var,None):
+                        stmt_str += f"({hex(stmt.res_vals[res_var].value)})"
+                    stmt_str += " "
+                # Finishing parsing results 
+                stmt_str += "= "
+                
+                # Add opcode
+                stmt_str += f"{stmt.__internal_name__} "
+                
+                # Add args
+                for arg_var in stmt.arg_vars:
+                    stmt_str += f"{arg_var}"
+
+                    if stmt.arg_vals.get(arg_var,None):
+                        stmt_str += f"({hex(stmt.arg_vals[arg_var].value)})"
+                    stmt_str += " "
+
+                label.append(f"{stmt.id}: {stmt_str}")
                 if "REVERT" in stmt.__internal_name__:
                     color = "red"
                 if "CALLDATA" in stmt.__internal_name__:
