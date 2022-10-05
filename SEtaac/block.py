@@ -31,6 +31,8 @@ class Block(object):
         self._subgraph = None
         self._acyclic_subgraph = None
 
+        self.guarded_by_caller = None
+
     @property
     def succ(self):
         """

@@ -116,6 +116,7 @@ class TAC_parser:
         tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_fallthrough_edge = load_csv_map(f"{self.target_dir}/IRFallthroughEdge.csv")
+        tac_guarded_blocks = load_csv_map(f"{self.target_dir}/StaticallyGuardedBlock.csv")
 
         # parse all blocks
         blocks = dict()
@@ -135,6 +136,13 @@ class TAC_parser:
             fallthrough_block_id = tac_fallthrough_edge.get(block_id, None)
             if fallthrough_block_id is not None:
                 blocks[block_id].fallthrough_edge = blocks[fallthrough_block_id]
+        
+        # Import the guard information
+        for block_id in blocks:
+            if tac_guarded_blocks.get(block_id, None) is not None:
+                blocks[block_id].guarded_by_caller = True
+            else:
+                blocks[block_id].guarded_by_caller = False
 
         # inject a fake exit block to simplify the handling of CALLPRIVATE without successors
         fake_exit_stmt = self.factory.statement('fake_exit')
@@ -152,7 +160,7 @@ class TAC_parser:
         tac_high_level_func_name = load_csv_map(f"{self.target_dir}/HighLevelFunctionName.csv")
         tac_block_succ = load_csv_multimap(f"{self.target_dir}/LocalBlockEdge.csv")
         tac_function_entry = load_csv(f"{self.target_dir}/IRFunctionEntry.csv")
-
+        
         tac_formal_args: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
         for func_id, arg, pos in load_csv(f"{self.target_dir}/FormalArgs.csv"):
             tac_formal_args[func_id].append((arg, int(pos)))
