@@ -86,13 +86,10 @@ class PartialConcreteStorage:
             
             if index_val not in self.concrete_cache:
                 log.info(f"Concrete read from chain for storage index [{index_val}]")
-                
                 storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val,  block_identifier=self.chain_at)
                 log.info(f"   Value read is: {storage_value.hex()}")
-                
                 storage_value = int(storage_value.hex(),16)
                 storage_value_bvv = BVV(storage_value, 256)
-                import ipdb; ipdb.set_trace()
                 return storage_value_bvv
             else:
                 log.debug(f"Concrete read from concrete cache")
