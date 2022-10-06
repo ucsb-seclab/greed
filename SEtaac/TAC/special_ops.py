@@ -48,6 +48,7 @@ class TAC_Sha3(TAC_Statement):
             if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
                                 not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
 
+                # Get a solution for the input buffer
                 buffer_sol = state.solver.eval_memory_at(state.memory, offset_sol, 
                                                                         size_sol, 
                                                                         raw=True)
@@ -72,7 +73,11 @@ class TAC_Sha3(TAC_Statement):
                         state.add_constraint(Equal(state.memory[BVV(bv_unsigned_value(offset_sol)+x,256)], BVV(b,8)))
                     
                     # Just set the solution here
-                    #state.registers[self.res1_var] = BVV(int(res,16),256)
+                    state.registers[self.res1_var] = BVV(int(res,16),256)
+                else:
+                    log.info(f"Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
+            else:
+                log.info(f"Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
 
         state.set_next_pc()
 
