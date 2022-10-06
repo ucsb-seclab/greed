@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 class Project(object):
-    def __init__(self, target_dir: str):
+    def __init__(self, target_dir: str, contract_addr: str=None, chain_at:str=None, partial_concrete_storage=False):
         # Load the contract code
         with open(f"{target_dir}/contract.hex", "rb") as contract_file:
             self.code = contract_file.read()
@@ -40,6 +40,14 @@ class Project(object):
             for target_function_id in source_function.callprivate_target_sources.keys():
                 target_function = self.factory.function(target_function_id)
                 self.callgraph.add_edge(source_function, target_function)
+        
+        self.contract_addr = contract_addr
+        if chain_at is None:
+            self.chain_at = "latest"
+        else:
+            self.chain_at = chain_at
+            
+        self.partial_concrete_storage = partial_concrete_storage
         
     def dump_callgraph(self, filename):
         dot = "digraph g {\n"

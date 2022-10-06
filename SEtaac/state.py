@@ -2,7 +2,7 @@ import datetime
 import logging
 
 from SEtaac import options as opt
-from SEtaac.memory import LambdaMemory
+from SEtaac.memory import LambdaMemory, PartialConcreteStorage
 from SEtaac.solver.shortcuts import *
 from SEtaac.state_plugins import SimStatePlugin, SimStateSolver, SimStateGlobals, SimStateInspect
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
@@ -30,7 +30,14 @@ class SymbolicEVMState:
         self._pc = None
         self.trace = list()
         self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
-        self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
+        
+        if not project.partial_concrete_storage:
+            # Fully symbolic storage
+            self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
+        else:
+            log.info("Using PartialConcreteStorage")
+            self.storage = PartialConcreteStorage(tag=f"PCONCR_STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
+            
         self.registers = dict()
         self.ctx = dict()
 
@@ -108,6 +115,7 @@ class SymbolicEVMState:
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             # CALLDATASIZE < MAX_CALLDATA_SIZE
             self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+            
 
         if "CALLER" in init_ctx:
             self.ctx["CALLER"] = BVV(init_ctx["CALLER"], 256)
