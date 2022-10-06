@@ -17,8 +17,6 @@ def get_storage(contract_address, index):
     Retrieve storage value from the blockchain
     """
     
-
-
 class PartialConcreteStorage:
 
     uuid_generator = UUIDGenerator()
@@ -85,7 +83,7 @@ class PartialConcreteStorage:
             index_val = index.value
             
             if index_val not in self.concrete_cache.keys():
-                log.info(f"Concrete read from chain for storage index [{index_val}]")
+                log.info(f"Concrete read from chain for storage index [{hex(index_val)}]")
                 storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val,  block_identifier=self.chain_at)
                 log.info(f"   Value read is: {storage_value.hex()}")
                 storage_value = int(storage_value.hex(),16)
@@ -96,7 +94,7 @@ class PartialConcreteStorage:
                 return self.concrete_cache[index_val]
         
         # TODO: also check if we have one possible solution and concretize it?
-
+        import ipdb; ipdb.set_trace()
         # instantiate and add lambda constraints
         new_constraints = self.root_lambda_constraint.instantiate(index)
         self.add_constraints(new_constraints)
