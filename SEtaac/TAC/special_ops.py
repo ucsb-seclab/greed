@@ -42,13 +42,13 @@ class TAC_Sha3(TAC_Statement):
         # calculate the possible solutions and apply the constraints.
         if options.GREEDY_SHA:
             log.info(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
-            size_sol = state.solver.eval_one(self.size_val, raw=True)
-            offset_sol = state.solver.eval_one(self.offset_val, raw=True)
+            size_sol = state.solver.eval(self.size_val, raw=True)
+            offset_sol = state.solver.eval(self.offset_val, raw=True)
             
             if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
                                 not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
 
-                buffer_sol = state.solver.eval_one_array_at(state.memory, offset_sol, 
+                buffer_sol = state.solver.eval_memory_at(state.memory, offset_sol, 
                                                                         size_sol, 
                                                                         raw=True)
 
@@ -70,6 +70,9 @@ class TAC_Sha3(TAC_Statement):
                     # Constraining the SHA3 input buffer to the solution just calculated
                     for x,b in zip(range(0, bv_unsigned_value(size_sol)), buffer_sol):
                         state.add_constraint(Equal(state.memory[BVV(bv_unsigned_value(offset_sol)+x,256)], BVV(b,8)))
+                    
+                    # Just set the solution here
+                    #state.registers[self.res1_var] = BVV(int(res,16),256)
 
         state.set_next_pc()
 
