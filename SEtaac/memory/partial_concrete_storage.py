@@ -84,7 +84,7 @@ class PartialConcreteStorage:
             # Grab the concrete value
             index_val = index.value
             
-            if index_val not in self.concrete_cache:
+            if index_val not in self.concrete_cache.keys():
                 log.info(f"Concrete read from chain for storage index [{index_val}]")
                 storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val,  block_identifier=self.chain_at)
                 log.info(f"   Value read is: {storage_value.hex()}")
