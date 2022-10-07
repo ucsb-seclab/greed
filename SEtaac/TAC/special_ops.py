@@ -30,9 +30,11 @@ class TAC_Sha3(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
+
         new_sha = Sha3(state, state.memory, self.offset_val, self.size_val)
         for sha in state.sha_observed:
             new_sha.instantiate_ackermann_constraints(sha)
+            
         state.sha_observed.append(new_sha)
 
         state.registers[self.res1_var] = new_sha.symbol
@@ -43,7 +45,9 @@ class TAC_Sha3(TAC_Statement):
         if options.GREEDY_SHA:
             log.info(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
             size_sol = state.solver.eval(self.size_val, raw=True)
+            log.info(f"    Size solution: {bv_unsigned_value(size_sol)}")
             offset_sol = state.solver.eval(self.offset_val, raw=True)
+            log.info(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
             
             if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
                                 not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
@@ -59,7 +63,7 @@ class TAC_Sha3(TAC_Statement):
                     buffer_sol = bv_unsigned_value(buffer_sol).to_bytes(bv_unsigned_value(size_sol), 'big')
                     keccak256.update(buffer_sol)
                     res = keccak256.hexdigest()
-                    log.info(f"Calculated concrete SHA3 {res}")
+                    log.info(f"    Calculated concrete SHA3 {res}")
                     
                     # Constraining parameters to their calculated solutions
                     state.add_constraint(Equal(self.offset_val, offset_sol))
@@ -75,9 +79,9 @@ class TAC_Sha3(TAC_Statement):
                     # Just set the solution here
                     state.registers[self.res1_var] = BVV(int(res,16),256)
                 else:
-                    log.info(f"Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
+                    log.info(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
             else:
-                log.info(f"Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
+                log.info(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
 
         state.set_next_pc()
 
@@ -393,9 +397,11 @@ class TAC_Timestamp(TAC_Statement):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         ts = ctx_or_symbolic('TIMESTAMP', state.ctx, state.xid)
+        
         if not is_concrete(ts):
             state.add_constraint(BV_UGE(ts, BVV(int(state.min_timestamp), 256)))
             state.add_constraint(BV_ULE(ts, BVV(int(state.max_timestamp), 256)))
+        
         state.registers[self.res1_var] = ts
 
         state.set_next_pc()

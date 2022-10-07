@@ -46,7 +46,7 @@ class PartialConcreteStorage:
         self.root_lambda_constraint = LambdaConstraint()
         self._constraints = list()
         
-        self.chain_at = self.state.project.chain_at
+        self.chain_at = self.state.chain_at
 
         self._base = Array(f"{self.tag}_{PartialConcreteStorage.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
         if default is not None:
@@ -83,7 +83,7 @@ class PartialConcreteStorage:
             index_val = index.value
             
             if index_val not in self.concrete_cache.keys():
-                log.info(f"Concrete read from chain for storage index [{hex(index_val)}]")
+                log.info(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
                 storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val,  block_identifier=self.chain_at)
                 log.info(f"   Value read is: {storage_value.hex()}")
                 storage_value = int(storage_value.hex(),16)
@@ -94,7 +94,7 @@ class PartialConcreteStorage:
                 return self.concrete_cache[index_val]
         
         # TODO: also check if we have one possible solution and concretize it?
-        import ipdb; ipdb.set_trace()
+        
         # instantiate and add lambda constraints
         new_constraints = self.root_lambda_constraint.instantiate(index)
         self.add_constraints(new_constraints)

@@ -30,7 +30,16 @@ class SymbolicEVMState:
         self._pc = None
         self.trace = list()
         self.memory = LambdaMemory(tag=f"MEMORY_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
-        
+
+        # We want every state to have an individual set
+        # of options.
+        self.options = options or dict()
+
+        if self.options.get("chain_at", None):
+            self.chain_at = self.options.get("chain_at")
+        else:
+            self.chain_at = "latest"
+
         if not project.partial_concrete_storage:
             # Fully symbolic storage
             self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
@@ -40,10 +49,6 @@ class SymbolicEVMState:
             
         self.registers = dict()
         self.ctx = dict()
-
-        # We want every state to have an individual set
-        # of options.
-        self.options = options or list()
         self.callstack = list()
         self.returndata = {'size': None, 'instruction_count': None}
         self.instruction_count = 0

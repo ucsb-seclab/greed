@@ -62,7 +62,6 @@ class Sha3(LambdaMemory):
         bounded_ackermann_constraint = If(And(*([sha_data_len_is_equal] + bounded_bytes_are_equal)),
                                           sha_equal,
                                           sha_not_equal)
-
         self.add_constraint(bounded_ackermann_constraint)
     
     def copy(self, new_state):

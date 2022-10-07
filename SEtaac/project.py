@@ -41,12 +41,7 @@ class Project(object):
                 target_function = self.factory.function(target_function_id)
                 self.callgraph.add_edge(source_function, target_function)
         
-        self.contract_addr = contract_addr
-        if chain_at is None:
-            self.chain_at = "latest"
-        else:
-            self.chain_at = chain_at
-            
+        self.contract_addr = contract_addr            
         self.partial_concrete_storage = partial_concrete_storage
         
     def dump_callgraph(self, filename):
