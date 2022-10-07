@@ -6,7 +6,7 @@ from SEtaac import Project
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac import options
 from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, Prioritizer
+from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, Prioritizer, SizeLimiter
 
 from SEtaac.static_analyses import run_backward_slice
 
@@ -14,6 +14,7 @@ from SEtaac.static_analyses import run_backward_slice
 from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
 from init_ctx_generator import get_calldata_for
 
+from SEtaac.solver.shortcuts import *
 
 
 import random
@@ -124,10 +125,8 @@ def analyze_call_from_ep(entry_point, target_call_info):
     # This is a good init_ctx for JustTest002/JustTest001/ShaDepsTest
     #init_ctx = {"CALLDATA": "0x7da1083a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000a000000SS00220000SS1100000000000000000000000000"}
 
-    #init_ctx = {"CALLDATA": "0xe0ead80300000000000000000000000000000000000000000000000000000000000000SS"}
-    #init_ctx = {"CALLDATA": "0x7214ae99"}
-
-    #max_calldatasize =  132
+    #init_ctx = {"CALLDATA": "0xd88ac9a6"}
+    #max_calldatasize =  512
     
     # Poly CALLDATA
     #calldata = "0xd450e04c00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000420000000000000000000000000000000000000000000000000000000000000044000000000000000000000000000000000000000000000000000000000000004600000000000000000000000000000000000000000000000000000000000000143fd40012032be87b9bb23436540bc76314dd592bb74ceaba41f2bf693cabb82d67425d087050000000000000020f9ee9af32f0bfd0cc1a2cd29c1ad9e3370728f9c02545df490d55d9d1668aa3d0293f1141a785cfc5dbec2e1518e1b1d369154d0ce5796400200000000000000149a016ce184a22dbf6c17daa59eb7d3140dbd1c5406756e6c6f636bb90463656c3114aaaebe6fe48e54f431b0c390cfaf0b017d09d42d1429ecbae96a9b478d9c29e15444039658d24db635b45b29000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001408d8f59e475830d9a1bb97d74285c4d34c6dac08140bf451b2ab886ef67b12d2246afeaa3b37333555a091000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001c6000000000000000000000000d2341c31f78f30d6ce46a78d9a54efe05bb1febf991cc79a1056aedf06737ac60000000000000000000000000000000000000000000000000000000000000000a7c7dd8851de5f6d6ac013ed027f21a635685ba0b271d3a837c0d318db751e31080fc0d03cbeafcbc4560caaeb6fd784be5786cdbc397d878903ed1b7e38280b41ef2163438b5c0199c999de4b8fedb5fd13017b226c6561646572223a322c227672665f76616c7565223a22425042643452795571686a65654a3947786f76686575585a4861596558523156694939572b3848723877734c4330334d624b7356584c6547676a453049393133763165385434685943775337676942727a46684a51306b3d222c227672665f70726f6f66223a2254356b77594c4e494251644e37694a78764473614874695272416b616545734856384c684167613772744946357646454c59746b3457385a414159705a4435554b45774e3551476841647650586e7a594d2b6c756f673d3d222c226c6173745f636f6e6669675f626c6f636b5f6e756d223a32323830303030302c226e65775f636861696e5f636f6e666967223a6e756c6c7d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000c3f14300728fbe7a547c3643ddddafa0f8c97e54c23a76740cfeb4291ee527a5212d02219d9606637c73f6d7fad8270da734d9ecc61be2a6509e577f7640bc78bd0086405224535813f9cf386d236634da81c8fedcaf7a4914437bbf46acc8a9bac23c17d7cf8db521df9ff72d777160b698731f15819000b0db346875843067c93c00718a34cbc401906b657afe3c7410f48a25809b6e668830bf522875f135d83c7c32ed4d3e7c94643cb3af3ae1cbbd62e29abced3f6dc520289bcdafa424e09fd6000000000000000000000000000000000000000000000000000000000000"
@@ -145,8 +144,14 @@ def analyze_call_from_ep(entry_point, target_call_info):
     #init_ctx = {"CALLDATA": calldata, "CALLDATASIZE": calldatasize}
 
     #entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=max_calldatasize)
-    entry_state = p.factory.entry_state(xid=xid, max_calldatasize=200)
+    
+    # Try the CALLER
+    #init_ctx = {"CALLER": 959061185672641011829007580945085091744652922260} 
+    
+    #entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=512)
 
+    entry_state = p.factory.entry_state(xid=xid, max_calldatasize=512)
+    
     '''
     def bp(simgr, state):
         log.info(f"[💥] State at {state.pc} does SHA!")
@@ -161,7 +166,7 @@ def analyze_call_from_ep(entry_point, target_call_info):
     #entry_state.inspect.stop_at_stmt(stmt_name="CALLPRIVATE", func=bp3)
     #entry_state.inspect.stop_at_stmt(stmt_name="RETURNPRIVATE", func=bp4)
     #entry_state.inspect.stop_at_stmt(stmt_name="STATICCALL")
-    #entry_state.inspect.stop_at_stmt(stmt_name="CALL")
+    #entry_state.inspect.stop_at_stmt(stmt_name="CALLER")
 
     # Being of NextUint32
     def bp5(simgr, state):
@@ -217,7 +222,7 @@ def analyze_call_from_ep(entry_point, target_call_info):
     '''
 
     #entry_state.inspect.stop_at_stmt_id(stmt_id="0x3360")
-    #entry_state.inspect.stop_at_stmt(stmt_name="CALLER")
+    #entry_state.inspect.stop_at_stmt_id(stmt_id="0xc850x46b")
 
     '''
      
@@ -234,6 +239,9 @@ def analyze_call_from_ep(entry_point, target_call_info):
     prioritizer = Prioritizer(scoring_function=lambda s: -s.globals['directed_search_distance'])
     simgr.use_technique(prioritizer)
 
+    #sizelimiter = SizeLimiter()
+    #simgr.use_technique(sizelimiter)
+
     #simgrviz = SimgrViz()
     #simgr.use_technique(simgrviz)
 
@@ -241,23 +249,41 @@ def analyze_call_from_ep(entry_point, target_call_info):
     simgr.use_technique(heartbeat)
 
     log.info(f"Symbolically executing from {entry_point.name} to CALL at {target_call_info.call_stmt.id}")
-    simgr.run(find=lambda s: s.curr_stmt.id == target_call_info.call_stmt.id)
     
-    for state in simgr.found:
-        log.info(f"✅ Found state for CALL at {target_call_info.call_stmt.id}!")
-        
-        # If LAZY_SOLVES is ON, we need to check if the state is SAT
-        if not state.solver.is_sat():
-            log.warning(f"❌ Found state is UNSAT :(")
-            continue
+    while True:
+        simgr.run(find=lambda s: s.curr_stmt.id == target_call_info.call_stmt.id)
+    
+        if len(simgr.found) == 1:
+            log.info(f"✅ Found state for CALL at {target_call_info.call_stmt.id}!")
+            state = simgr.one_found
 
-        assert(state.solver.frame==0)
-        tainted_targetContract, tainted_targetFunc = analyze_state_at_call(state, target_call_info)
-        target_call_info.taintedContractAddress = tainted_targetContract
-        target_call_info.taintedFunction = tainted_targetFunc
-    
-    if len(simgr.found) == 0:
-        log.info(f"❌ Could not reach state for CALL at {target_call_info.call_stmt.id}!")
+            # We want to avoid 
+            #for sha in state.sha_observed:
+            #    state.add_constraint(NotEqual(sha.size, BVV(0,256)))
+            
+            # If LAZY_SOLVES is ON, we need to check if the state is SAT
+            if not state.solver.is_sat():
+                log.warning(f"❌ Found state is UNSAT :(")
+                simgr.found.pop()
+                continue
+            
+            assert(state.solver.frame==0)
+
+            tainted_targetContract, tainted_targetFunc = analyze_state_at_call(state, target_call_info)
+            target_call_info.taintedContractAddress = tainted_targetContract
+            target_call_info.taintedFunction = tainted_targetFunc
+            
+            # Find a way to merge results of analysis? 
+            # How many paths should we consider? There might be an infinite amount of paths that 
+            # reaches the CALL. For instance, if there is parsing of a stream of bytes every lenght of 
+            # that stream if gonna create a new path downt to the CALL. 
+
+            # As of now let's consider only the first path.
+            break
+            
+        else:
+            log.info(f"❌ Could not reach state for CALL at {target_call_info.call_stmt.id}!")
+            break
 
 # Here we want to understand from which function
 # it is possible to reach this specific CALL statement. 

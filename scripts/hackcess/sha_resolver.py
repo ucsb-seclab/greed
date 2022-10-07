@@ -107,22 +107,32 @@ class ShaResolver():
             log.fatal("No solutions for SHAs")
             return None
 
-        sha_input_buffer = state.solver.eval_memory_at(sha_observed, BVV(0,256), sha_size, raw=True)
+        null_sha = False
+        if bv_unsigned_value(sha_size) == 0:
+            null_sha = True
+            #log.warning("SHA with 0 size!")
+            # if sha_size==0 then we return the null sha.
+            sha_result = "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
 
-        log.debug(f"  [{sha_observed.symbol.name}] Buffer for {sha_observed.symbol.name} set at {hex(bv_unsigned_value(sha_input_buffer))}")
-        log.debug(f"  [{sha_observed.symbol.name}] calculating concrete SHA")
-        sha_result = self.get_keccak256(sha_input_buffer, sha_size)
-        log.debug(f"  [{sha_observed.symbol.name}] concrete SHA is {sha_result}")
+        if not null_sha:
+            sha_input_buffer = state.solver.eval_memory_at(sha_observed, BVV(0,256), sha_size, raw=True)
+            log.debug(f"  [{sha_observed.symbol.name}] Buffer for {sha_observed.symbol.name} set at {hex(bv_unsigned_value(sha_input_buffer))}")
+            log.debug(f"  [{sha_observed.symbol.name}] calculating concrete SHA")
+            sha_result = self.get_keccak256(sha_input_buffer, sha_size)
+            log.debug(f"  [{sha_observed.symbol.name}] concrete SHA is {sha_result}")
+        else:
+            sha_input_buffer = None
 
         # Set constraints accordingly
         state.add_constraint(Equal(sha_observed.start, sha_arg_offset))
         state.add_constraint(Equal(sha_observed.size, sha_size))
 
         #log.debug(f"  Setting constraints to {sha_observed.symbol.name} input")
-        for x,b in zip(range(0, bv_unsigned_value(sha_size)), 
-                                bv_unsigned_value(sha_input_buffer).to_bytes(bv_unsigned_value(sha_size), 'big')):
-            #log.debug(f"    Constraining byte {x}")
-            state.add_constraint(Equal(sha_observed[BVV(x,256)], BVV(b,8)))
+        if not null_sha:
+            for x,b in zip(range(0, bv_unsigned_value(sha_size)), 
+                                    bv_unsigned_value(sha_input_buffer).to_bytes(bv_unsigned_value(sha_size), 'big')):
+                #log.debug(f"    Constraining byte {x}")
+                state.add_constraint(Equal(sha_observed[BVV(x,256)], BVV(b,8)))
 
         # Finally set the SHA result
         state.add_constraint(Equal(sha_observed.symbol, BVV(int(sha_result,16),256)))

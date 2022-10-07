@@ -18,7 +18,7 @@ from utils import bcolors
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
-log = logging.getLogger("func_analyzer")
+log = logging.getLogger("owner_analysis")
 log.setLevel(logging.INFO)
 
 # ATTACH TO GETH

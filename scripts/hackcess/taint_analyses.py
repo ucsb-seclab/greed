@@ -14,7 +14,7 @@ class CalldataToFuncTarget():
         assert(self.state.curr_stmt.__internal_name__ == "CALL")
 
         self.log = logging.getLogger("CalldataToFuncTarget")
-        self.log.setLevel(logging.INFO)
+        self.log.setLevel(logging.DEBUG)
 
         self.starting_frame = self.state.solver.frame
 
@@ -60,13 +60,12 @@ class CalldataToFuncTarget():
         self.log.debug(f"Using {mem_offset_call} as argOffset for CALL state")
         
         # Here we consider only the first 4 bytes
-        mem_argSize = mem_offset_call + 4 - mem_offset_call
-        mem_argSize_raw = BVV(mem_argSize, 256)
+        mem_argSize_raw = BVV(4, 256)
 
         # Maybe make sure the argSize is at least greater than 4 for every possible solution?
         #assert(self.state.solver.is_formula_true(BV_UGT(mem_argSize_raw, BVV(4,256))))
 
-        self.log.debug(f"Using only {mem_argSize} as argSize for CALL state (wanna check only target func)")
+        self.log.debug(f"Using only 4 as argSize for CALL state (wanna check only target func)")
 
         # Fix the offset (+1)
         self.state.solver.push()
@@ -131,7 +130,7 @@ class CalldataToFuncTarget():
                     
                     # DISCUSSION: if the memory at CALL is ALWAYS equal to the mem calculated before ( i.e., a different CALLDATA cannot change
                     # the outcome of the bytes at this location, then we conclude that the mem_at_call is not dependent from the CALLDATA bytes)
-                    if self.state.solver.is_formula_true(Equal(mem_at_call_raw, self.state.memory.readn(mem_offset_call_raw, BVV(4,256)))):
+                    if self.state.solver.is_formula_sat(Equal(mem_at_call_raw, self.state.memory.readn(mem_offset_call_raw, BVV(4,256)))):
                         #self.log.info(f"{bcolors.BLUEBG}funcTarget at CALL does NOT depend from source!{bcolors.ENDC}")
                         self.is_tainted = False
                     else:
@@ -254,7 +253,7 @@ class CalldataToContractTarget():
                 #self.log.debug("UNSAT state")
                 pass
             else:
-                # If we are here, we found a bitflip that keeps the path constraints SAT
+                # If we are here, we found a byteflip that keeps the path constraints SAT
                 #calldata_sol = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
                 if self.state_has_shas:
                     if not self.sha_resolver.fix_shas(): # (+1)
@@ -265,8 +264,14 @@ class CalldataToContractTarget():
                 if not self.state.solver.is_sat():
                     self.log.fatal("Cannot reach same state with a different CALLDATA!")
                 else:            
-                    if self.state.solver.is_formula_true(Equal(targetContract_raw, self.state.registers[self.state.curr_stmt.arg2_var])):
-                        #self.log.info(f"{bcolors.BLUEBG}targetContract at CALL does NOT depend from source {target_byte}!{bcolors.ENDC}")
+                    if self.state.solver.is_formula_sat(Equal(targetContract_raw, self.state.registers[self.state.curr_stmt.arg2_var])):
+                        # WARNING: 
+                        #    Here we MUST use is_formula_sat. 
+                        #    Using is_formula_true is wrong because the solver can change other symbolic variables to make the formula false
+                        #    and then detect a spurious dependency. (e.g, the CALLER flows in the contractTaget).
+                        #    Using "is_formula_sat" we are basically askig ourself: "can we observe the same result as before with a 
+                        #    CALLDATA flipped by one byte?". Of course this opens to false negatives, if flipping that byte CAN ALSO 
+                        #    generate a different result later, but it's better to be conservative.
                         self.is_tainted = False
                     else:
                         self.log.info(f"{bcolors.PINKBG}targetContract at CALL depends from source byte {target_byte}!{bcolors.ENDC}")
@@ -274,9 +279,9 @@ class CalldataToContractTarget():
                         self.state.add_constraint(NotEqual(targetContract_raw, self.state.registers[self.state.curr_stmt.arg2_var]))
                         new_calldata = self.state.solver.eval_memory(self.state.calldata, BVV(self.state.MAX_CALLDATA_SIZE,256), raw=True)
                         new_targetContract_raw = self.state.solver.eval(self.state.registers[self.state.curr_stmt.arg2_var], raw=True)    
-                        #self.log.debug(f"Possible solution:")
-                        #self.log.debug(f" CALLDATA: {self.mem_to_human(new_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
-                        #self.log.debug(f"targetContract at CALL: {self.reg_to_human(new_targetContract_raw)}")
+                        self.log.debug(f"Possible solution:")
+                        self.log.debug(f" CALLDATA: {self.mem_to_human(new_calldata, BVV(self.state.MAX_CALLDATA_SIZE,256))}")
+                        self.log.debug(f" targetContract at CALL: {self.reg_to_human(new_targetContract_raw)}")
                         self.is_tainted = True
                         
                         # We can stop here for now.

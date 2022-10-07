@@ -131,8 +131,7 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
 
         if not options.LAZY_SOLVES:
-            self.move(from_stash='active', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
-        
+            self.move(from_stash='active', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())        
         self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
 
         for s in self.stashes['pruned'] + self.stashes['unsat']:
@@ -191,7 +190,6 @@ class SimulationManager:
         :param prune: Function that will be called after each step. The matching states will be moved to the pruned stash
         :return: None
         """
-
         try:
             # We iterate until we have active states, 
             # OR, if any of the ET is not done.
@@ -212,6 +210,7 @@ class SimulationManager:
             log.exception(f'Exception while stepping the Simulation Manager')
             self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
             sys.exit(1)
+
 
     def __str__(self):
         stashes_str = [f'{len(stash)} {stash_name}'  # {[s for s in stash]}'

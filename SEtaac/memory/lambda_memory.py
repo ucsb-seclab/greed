@@ -84,7 +84,6 @@ class LambdaMemory:
 
     def __getitem__(self, index):
         assert not isinstance(index, slice), "slice memory read not implemented"
-
         self.read_count += 1
 
         # instantiate and add lambda constraints
