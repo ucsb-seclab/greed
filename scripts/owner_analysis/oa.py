@@ -14,6 +14,8 @@ from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrV
 
 from guard_blocks_checker import GuardedBlockChecker
 
+from utils import bcolors
+
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger("func_analyzer")
@@ -25,18 +27,11 @@ assert(w3.isConnected())
 
 import db 
 
+# List of function we want to check
 FUNCS_TO_CHECK = set()
-GUARDED_BASIC_BLOCKS = set()
-
-# This is going to be of this kind:
-# GUARDED_BASIC_BLOCKS_COVERAGE[0x12345] = [CALLER1, CALLER2]
-# this means that when using CALLER1 OR CALLER2, we covered that basic block.
-GUARDED_BASIC_BLOCKS_COVERAGE = dict()
 
 # Check a batch of 100 transactions every time.
 LIMIT_BATCH_TX = 100
-
-VALID_OWNERS = list()
 
 
 def get_public_caller(p, f):
@@ -108,7 +103,7 @@ def tx_to_init_ctx(tx_hash):
     return init_ctx
 
 
-def replay_transaction_with_context(p, init_ctx):
+def replay_transaction_with_context(p, init_ctx, all_guarded_bbs):
     options.GREEDY_SHA = True
     options.LAZY_SOLVES = False
     options.STATE_INSPECT = False 
@@ -129,12 +124,14 @@ def replay_transaction_with_context(p, init_ctx):
     #simgrviz = SimgrViz()
     #simgr.use_technique(simgrviz)
 
-    gbc = GuardedBlockChecker(GUARDED_BASIC_BLOCKS)
+    gbc = GuardedBlockChecker(all_guarded_bbs)
     simgr.use_technique(gbc)
 
     heartbeat = HeartBeat(beat_interval=100)
     simgr.use_technique(heartbeat)
- 
+    
+    # We should be able to reach the end since we have all concrete!
+    # TODO, plug a termination ET to avoid exploring forever if something goes wrong.
     simgr.run()
 
     return simgr._techniques[1].checked_blocks_covered  
@@ -156,7 +153,7 @@ def get_tx_to_replay(contract_addr, limit, offset, filtered_from):
             offset += len(transactions)
             for tx in transactions:
                 func_id = tx.data[:10]
-                if func_id in FUNCS_TO_CHECK_SIG and tx.sender not in filtered_from:
+                if func_id in FUNCS_TO_CHECK_SIG and tx.sender.lower() not in filtered_from:
                     log.info(f"Tx {tx.transaction_hash} calls the target function {func_id} | caller is {tx.sender}!")
                     tx_to_replay.append(tx)
 
@@ -180,8 +177,10 @@ if __name__ == "__main__":
     
     all_guarded_bbs_covered = set()
 
+    valid_owners = list()
+
     while True:
-        all_tx_to_replay, offset = get_tx_to_replay(contract_addr, LIMIT_BATCH_TX, offset, VALID_OWNERS)
+        all_tx_to_replay, offset = get_tx_to_replay(contract_addr, LIMIT_BATCH_TX, offset, valid_owners)
         
         # No more txs?
         if len(all_tx_to_replay) == 0:
@@ -190,23 +189,25 @@ if __name__ == "__main__":
         for tx_to_replay in all_tx_to_replay:
             
             # Skip TXs coming from account that we already know are owners
-            if tx_to_replay.sender.lower() in VALID_OWNERS:
+            if tx_to_replay.sender.lower() in valid_owners:
                 continue
             
             init_ctx = tx_to_init_ctx(tx_to_replay.transaction_hash)
             log.info(f"Replaying tx {tx_to_replay.transaction_hash} with initial context {init_ctx}")
-            guarded_blocks_covered = replay_transaction_with_context(p, init_ctx)
+            guarded_blocks_covered = replay_transaction_with_context(p, init_ctx, all_guarded_bbs)
             all_guarded_bbs_covered = all_guarded_bbs_covered.union(guarded_blocks_covered)
             if len(guarded_blocks_covered) != 0:
+                log.info(f"{bcolors.BLUEBG}Owner {  hex(init_ctx['CALLER'])  } covered guarded basic blocks!{bcolors.ENDC}")
                 # This means the caller was able to cover at least one guarded basic block
                 # hence, the caller is an "owner"
                 # We are not going to consider this CALLER anymore.
-                VALID_OWNERS.append(hex(init_ctx["CALLER"]))
+                valid_owners.append(hex(init_ctx["CALLER"]))
         
         if len(all_guarded_bbs_covered) == len(all_guarded_bbs):
             log.info(f"All guarded basic blocks have been covered!")
             break
     
     log.info("Extracted valid owners are:")
-    for o in VALID_OWNERS:
-        log.info(">> {o}")
+    for owner in valid_owners:
+        log.info(f">> {owner}")
+    

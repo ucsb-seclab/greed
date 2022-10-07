@@ -9,6 +9,7 @@ logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
 log = logging.getLogger("GuardedBlockChecker")
 log.setLevel(logging.INFO)
 
+
 class GuardedBlockChecker(ExplorationTechnique):
     def __init__(self, checked_blocks:dict):
         super(GuardedBlockChecker, self).__init__()
@@ -17,7 +18,6 @@ class GuardedBlockChecker(ExplorationTechnique):
         self.deadended_checked = set()
         self.done = False
         
-
     def check_stashes(self, simgr, stashes, stash='active'):
         if len(stashes['deadended']) > 1:
             for deadended_state in stashes['deadended']:
@@ -27,6 +27,8 @@ class GuardedBlockChecker(ExplorationTechnique):
                         if stmt.block_id in self.checked_blocks_ids:
                             log.debug(f"   >>>Covered guarded basic block at {stmt.block_id}")
                             self.checked_blocks_covered.add(stmt.block_id)  
+        
+        # We covered all the checked basic blocks.
         if len(self.checked_blocks_covered) == len(self.checked_blocks_ids):
             self.done = True
         
