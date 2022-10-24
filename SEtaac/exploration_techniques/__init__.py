@@ -4,4 +4,3 @@ from .directed_search import DirectedSearch
 from .heartbeat import HeartBeat
 from .prioritizer import Prioritizer
 from .simgrviz import SimgrViz
-from .size_limiter import SizeLimiter
