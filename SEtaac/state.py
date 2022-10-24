@@ -146,6 +146,8 @@ class SymbolicEVMState:
             self.pc = self.get_fallthrough_pc()
         except VMNoSuccessors:
             self.halt = True
+        except VMUnexpectedSuccessors:
+            self.halt = True
 
     def get_fallthrough_pc(self):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
