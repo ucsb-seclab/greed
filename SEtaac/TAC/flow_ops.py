@@ -106,7 +106,7 @@ class TAC_BaseCall(TAC_Statement):
                 state.memory.copy_return_data(istart, ilen, ostart, olen)
                 state.registers[self.res1_var] = BVV(1, 256)
             else:
-                raise VMSymbolicError("Precompiled contract %d not implemented" % address_val)
+                raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
         elif is_concrete(olen):
             for i in range(bv_unsigned_value(olen)):
                 state.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{state.instruction_count}_{i}_{state.xid}', 8)
