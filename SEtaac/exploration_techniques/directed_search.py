@@ -42,7 +42,7 @@ class DirectedSearch(ExplorationTechnique):
             else:
                 pruned_cnt += 1
                 simgr.stashes[self.pruned_stash].append(succ)
-        if pruned_cnt == len(successors):
+        if pruned_cnt > 0 and pruned_cnt == len(successors):
             log.fatal(f"DirectedSearch pruned all the successors! [{pruned_cnt}/{len(successors)}]")
         elif pruned_cnt != 0:
             log.debug(f"Pruned {pruned_cnt}/{len(successors)} successors")
