@@ -7,8 +7,6 @@ from . import ExplorationTechnique
 log = logging.getLogger(__name__)
 #log.setLevel(logging.INFO)
 
-from utils import bcolors
-
 class HeartBeat(ExplorationTechnique):
     """
     This Exploration technique implements a Classic heartbeat.
