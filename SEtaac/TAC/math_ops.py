@@ -2,6 +2,8 @@ from SEtaac.TAC.base import TAC_Statement
 from SEtaac.solver.shortcuts import *
 from SEtaac.state import SymbolicEVMState
 from SEtaac.utils.exceptions import VMSymbolicError
+from SEtaac.utils.extra import is_pow2, log2
+from SEtaac import options
 
 __all__ = [
     'TAC_Add', 'TAC_Sub', 'TAC_Mul', 'TAC_Div', 'TAC_Sdiv', 'TAC_Mod', 'TAC_Smod', 'TAC_Addmod', 'TAC_Mulmod',
@@ -152,11 +154,65 @@ class TAC_Exp(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        if is_concrete(self.base_val) and is_concrete(self.exp_val):
-            res = pow(bv_unsigned_value(self.base_val), bv_unsigned_value(self.exp_val), 2 ** 256)
-            state.registers[self.res1_var] = BVV(res, 256)
+        if is_concrete(self.base_val):
+            # Concrete base
+            base_concrete_val = bv_unsigned_value(self.base_val)
+            if is_concrete(self.exp_val):
+                # Concrete base, concrete exponent
+                exp_concrete_val = bv_unsigned_value(self.exp_val)
+                res = pow(base_concrete_val, exp_concrete_val, 2 ** 256)
+                state.registers[self.res1_var] = BVV(res, 256)
+            else:
+                # Concrete base, symbolic exponent
+                if is_pow2(base_concrete_val):
+                    # Base is a power of 2, we can do a trick to simplify
+                    l2 = log2(base_concrete_val)
+                    state.registers[self.res1_var] = BV_Shl(BVV(1,256), BV_Mul(BVV(l2,256), self.exp_val))
+                else:
+                    # Base is not a power of 2.
+                    if options.MATH_CONCRETIZE_SYMBOLIC_EXP_EXP:
+                        # Let's grab a solution
+                        exp_concrete_val = state.solver.eval(self.exp_val, raw=True)
+                        # Add it to the constraints
+                        state.add_constraint(Equal(self.exp_val, exp_concrete_val))
+                        # Calculate the result
+                        res = pow(base_concrete_val, bv_unsigned_value(exp_concrete_val), 2 ** 256)
+                    else:
+                        raise VMSymbolicError('Exponentiation with symbolic exponent currently not supported.')
         else:
-            raise VMSymbolicError('exponentiation with symbolic exponent currently not supported :-/')
+            # Symbolic base
+            if is_concrete(self.exp_val):
+                # Symbolic base, concrete exponent
+                exp_concrete_val = bv_unsigned_value(self.exp_val)
+                if exp_concrete_val == 0:
+                    state.registers[self.res1_var] = BVV(1, 256)
+                elif exp_concrete_val == 1:
+                    state.registers[self.res1_var] = self.base_val
+                elif exp_concrete_val < options.MATH_MULTIPLY_EXP_THRESHOLD:
+                    # Exponentiation by multiplications
+                    res = self.base_val
+                    for i in range(1, exp_concrete_val):
+                        res = BV_Mul(res, self.base_val)
+                    state.registers[self.res1_var] = res
+                else:
+                    raise VMSymbolicError('Exponentiation with symbolic base currently not supported.')
+            else:
+                # Symbolic base, symbolic exponent
+                if options.MATH_CONCRETIZE_SYMBOLIC_EXP_EXP and options.MATH_CONCRETIZE_SYMBOLIC_EXP_BASE:
+                    # Let's grab a solution
+                    exp_concrete_val = state.solver.eval(self.exp_val, raw=True)
+                    base_concrete_val = state.solver.eval(self.base_val, raw=True)
+                    
+                    # Add it to the constraints
+                    state.add_constraint(Equal(self.exp_val, exp_concrete_val))
+                    state.add_constraint(Equal(self.base_val, base_concrete_val))
+
+                    # Calculate the result
+                    res = pow(base_concrete_val, exp_concrete_val, 2 ** 256)
+                    state.registers[self.res1_var] = BVV(res, 256)
+                    
+                else:
+                    raise VMSymbolicError('Exponentiation with symbolic base and exponent currently not supported.')
 
         state.set_next_pc()
         return [state]
