@@ -164,14 +164,12 @@ class SymbolicEVMState:
         elif len(curr_bb.succ) == 1:
             log.debug("Next stmt is {}".format(curr_bb.succ[0].first_ins.id))
             return curr_bb.succ[0].first_ins.id
-        elif len(curr_bb.succ) == 2:
-            #  case 3: end of the block and two targets
+        else:
+            #  case 3: end of the block and more than one target
             fallthrough_bb = curr_bb.fallthrough_edge
 
             log.debug("Next stmt is {}".format(fallthrough_bb.first_ins.id))
             return fallthrough_bb.first_ins.id
-        else:
-            raise VMUnexpectedSuccessors("More than two successors for {}?!".format(curr_bb))
 
     def get_non_fallthrough_pc(self):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
