@@ -120,10 +120,10 @@ class SymbolicEVMState:
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             # CALLDATASIZE < MAX_CALLDATA_SIZE
             self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
-            
 
         if "CALLER" in init_ctx:
-            self.ctx["CALLER"] = BVV(init_ctx["CALLER"], 256)
+            assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
+            self.ctx["CALLER"] = BVV(int(init_ctx["CALLER"],16), 256)
 
     @property
     def pc(self):
