@@ -36,6 +36,18 @@ STATE_INSPECT = False
 # Can be overwritten by the entry_state constructor.
 MAX_CALLDATA_SIZE = 256
 
+# Wether or not to try to concretize the exponent 
+# of a EXP instruction.
+MATH_CONCRETIZE_SYMBOLIC_EXP_EXP = False
+
+# Wether or not to try to concretize the base 
+# of a EXP instruction.
+MATH_CONCRETIZE_SYMBOLIC_EXP_BASE = False
+
+# Whenever there is a symbolic base, but concrete exponent,
+# this is the max amount of supported nested multiplications.
+MATH_MULTIPLY_EXP_THRESHOLD = 10
+
 # STATE OPTIONS
 # =============================================
 # Per-state options, can be enabled/disabled 
