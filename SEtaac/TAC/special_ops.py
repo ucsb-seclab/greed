@@ -124,7 +124,7 @@ class TAC_Balance(TAC_Statement):
         if is_concrete(self.address_val):
             state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
         elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
-            state.registers[self.res1_var] = self.balance
+            state.registers[self.res1_var] = state.balance
         elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ORIGIN', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-ORIGIN', state.ctx, state.xid)
         elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
