@@ -32,7 +32,7 @@ class Project(object):
 
         self.has_abi = (self.abi is not None)
         if not self.has_abi:
-            log.warning("No abi was found for this contract, working with none, this may impact symbolic execution")
+            log.debug("No abi was found for this contract, working with none, this may impact symbolic execution")
 
         # build callgraph
         self.callgraph = nx.DiGraph()
