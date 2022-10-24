@@ -9,10 +9,22 @@ class YicesTerm:
     def __init__(self, yices_id, operator=None, children=None, name=None, value=None):
         self.id = yices_id
         self.name = name
-        self.value = value
+        self._value = value
         self.children = children if children else []
         self.num_children = len(self.children)
         self.operator = operator
+
+    @property
+    def value(self):
+        if self._value is not None:
+            return self._value
+        elif yices.Terms.constructor(self.id) == yices.Constructor.BV_CONSTANT:
+            res_str = yices.Terms.to_string(self.id, width=-1)
+            self._value = int(res_str[2:], 2)
+
+            return self._value
+        else:
+            raise Exception(f'Symbolic term has no .value')
 
     def dump(self, pp=False):
         _dump = yices.Terms.to_string(self.id, width=-1, height=-1, offset=0)
