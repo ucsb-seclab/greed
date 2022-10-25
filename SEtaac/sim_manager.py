@@ -20,7 +20,8 @@ class SimulationManager:
             'deadended': [],
             'found': [],
             'pruned': [],
-            'unsat': []
+            'unsat': [],
+            'errored': []
         }
 
         self.insns_count = 0
@@ -127,6 +128,7 @@ class SimulationManager:
         self.insns_count += 1
 
         self.move(from_stash='active', to_stash='found', filter_func=find)
+        self.move(from_stash='active', to_stash='errored', filter_func=lambda s: s.error != None)
         self.move(from_stash='active', to_stash='deadended', filter_func=lambda s: s.halt)
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
 
@@ -134,7 +136,7 @@ class SimulationManager:
             self.move(from_stash='active', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())        
         self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
 
-        for s in self.stashes['pruned'] + self.stashes['unsat']:
+        for s in self.stashes['pruned'] + self.stashes['unsat'] + self.stashes['errored']:
             s.solver.dispose_context()
 
     def single_step_state(self, state: SymbolicEVMState):
