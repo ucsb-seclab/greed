@@ -111,7 +111,10 @@ class TAC_BaseCall(TAC_Statement):
             for i in range(bv_unsigned_value(olen)):
                 state.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{state.instruction_count}_{i}_{state.xid}', 8)
             log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
-            logging.info(f"Calling contract {hex(log_address_val)} ({state.instruction_count}_{state.xid})")
+            
+            if log_address_val != "<SYMBOLIC>":
+                logging.info(f"Calling contract {hex(log_address_val)} ({state.instruction_count}_{state.xid})")
+            
             state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
         else:
             raise VMSymbolicError("Unsupported symbolic retSize_val in CALL")
