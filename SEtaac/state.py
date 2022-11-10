@@ -125,6 +125,10 @@ class SymbolicEVMState:
             assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
             self.ctx["CALLER"] = BVV(int(init_ctx["CALLER"],16), 256)
 
+        if "ORIGIN" in init_ctx:
+            assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
+            self.ctx["ORIGIN"] = BVV(int(init_ctx["ORIGIN"],16), 256)
+
     @property
     def pc(self):
         return self._pc
