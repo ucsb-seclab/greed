@@ -24,7 +24,8 @@ class YicesTerm:
 
             return self._value
         else:
-            raise Exception(f'Symbolic term has no .value')
+            # raise Exception(f'Symbolic term has no .value')
+            return None
 
     def dump(self, pp=False):
         _dump = yices.Terms.to_string(self.id, width=-1, height=-1, offset=0)
