@@ -11,8 +11,8 @@ log = logging.getLogger("geth2postgres")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("address", type=str, action="store", help="Target address")
-    parser.add_argument("dir", type=str, action="store", help="Target directory", default=".")
+    parser.add_argument("--address", type=str, action="store", help="Target address")
+    parser.add_argument("--dir", type=str, action="store", help="Target directory", default=".")
     parser.add_argument("--w3", type=str, default="http://127.0.0.1:8545")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
 
