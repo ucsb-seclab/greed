@@ -48,6 +48,16 @@ MATH_CONCRETIZE_SYMBOLIC_EXP_BASE = False
 # this is the max amount of supported nested multiplications.
 MATH_MULTIPLY_EXP_THRESHOLD = 10
 
+# Weather we should always consider CALLS as succeeded or not.
+# (Setting this to True will always set in the res_var a value of 1)
+OPTIMISTIC_CALL_RESULTS = False 
+
+# Wether we should use a default constant value for EXTCODESIZE
+# If this is True, we will use a default value of 42 for EXTCODESIZE 
+# (Unless the address is concrete, then we'll pick it from the context IF provided)
+# Otherwise, the value is going to be symbolic.
+DEFAULT_EXTCODESIZE = False
+
 # STATE OPTIONS
 # =============================================
 # Per-state options, can be enabled/disabled 

@@ -115,7 +115,10 @@ class TAC_BaseCall(TAC_Statement):
             if log_address_val != "<SYMBOLIC>":
                 logging.info(f"Calling contract {hex(log_address_val)} ({state.instruction_count}_{state.xid})")
             
-            state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
+            if options.OPTIMISTIC_CALL_RESULTS:
+                state.registers[self.res1_var] = BVV(1, 256)
+            else:
+                state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
         else:
             raise VMSymbolicError("Unsupported symbolic retSize_val in CALL")
 

@@ -289,6 +289,12 @@ class TAC_Extcodesize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
+
+        if options.DEFAULT_EXTCODESIZE:
+            state.registers[self.res1_var] = BVV(42,256)
+            state.set_next_pc()
+            return [state]
+        
         if is_concrete(self.address_val):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
         elif state.solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
