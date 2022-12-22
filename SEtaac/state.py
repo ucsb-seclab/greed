@@ -148,7 +148,13 @@ class SymbolicEVMState:
 
     def set_next_pc(self):
         try:
-            self.pc = self.get_fallthrough_pc()
+            curr_bb = self.project.factory.block(self.curr_stmt.block_id)
+            stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
+            remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
+            if remaining_stmts:
+                self.pc = remaining_stmts[0].id
+            else:
+                self.pc = self.get_fallthrough_pc()
         except VMNoSuccessors:
             self.halt = True
         except VMUnexpectedSuccessors:
@@ -159,14 +165,12 @@ class SymbolicEVMState:
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
         remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
 
-        # case 1: middle of the block
-        if remaining_stmts:
-            log.debug("Next stmt is {}".format(remaining_stmts[0].id))
-            return remaining_stmts[0].id
-        elif len(curr_bb.succ) == 0:
+        if len(curr_bb.succ) == 0:
+            #  case 1: end of the block and no targets
             log.debug("Next stmt is NONE")
             raise VMNoSuccessors
         elif len(curr_bb.succ) == 1:
+            #  case 2: end of the block and one target
             log.debug("Next stmt is {}".format(curr_bb.succ[0].first_ins.id))
             return curr_bb.succ[0].first_ins.id
         else:
@@ -178,11 +182,6 @@ class SymbolicEVMState:
 
     def get_non_fallthrough_pc(self, destination_val):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
-        stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
-        remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
-
-        assert len(remaining_stmts) == 0, "Cannot jump in the middle of a block"
-        # assert len(curr_bb.succ) == 2, f"{len(curr_bb.succ)} successors for block {curr_bb}"
 
         if not is_concrete(destination_val):
             raise VMSymbolicError('Symbolic jump destination currently not supported.')
@@ -191,7 +190,11 @@ class SymbolicEVMState:
 
         candidate_bbs = [bb for bb in curr_bb.succ if bb.id == destination_val or bb.id.startswith(destination_val+"0x")]
 
-        assert len(candidate_bbs) == 1
+        if len(candidate_bbs) == 0:
+            raise VMSymbolicError('Unable to find jump destination.')
+        elif len(candidate_bbs) > 1:
+            raise VMSymbolicError('Multiple jump destinations.')
+
         non_fallthrough_bb = candidate_bbs[0]
 
         log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))
