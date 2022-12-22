@@ -18,7 +18,7 @@ class TAC_Jump(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        state.set_next_pc()
+        state.pc = state.get_non_fallthrough_pc(self.destination_val)
         return [state]
 
 
@@ -29,7 +29,7 @@ class TAC_Jumpi(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        dest = state.get_non_fallthrough_pc()
+        dest = state.get_non_fallthrough_pc(self.destination_val)
         cond = self.condition_val
         
         if is_concrete(cond):

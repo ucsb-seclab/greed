@@ -6,6 +6,7 @@ from SEtaac.memory import LambdaMemory, PartialConcreteStorage
 from SEtaac.solver.shortcuts import *
 from SEtaac.state_plugins import SimStatePlugin, SimStateSolver, SimStateGlobals, SimStateInspect
 from SEtaac.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
+from SEtaac.utils.exceptions import VMSymbolicError
 from SEtaac.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
@@ -175,19 +176,23 @@ class SymbolicEVMState:
             log.debug("Next stmt is {}".format(fallthrough_bb.first_ins.id))
             return fallthrough_bb.first_ins.id
 
-    def get_non_fallthrough_pc(self):
+    def get_non_fallthrough_pc(self, destination_val):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
         stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
         remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
 
         assert len(remaining_stmts) == 0, "Cannot jump in the middle of a block"
-        assert len(curr_bb.succ) == 2, f"{len(curr_bb.succ)} successors for block {curr_bb}"
+        # assert len(curr_bb.succ) == 2, f"{len(curr_bb.succ)} successors for block {curr_bb}"
 
-        fallthrough_bb = curr_bb.fallthrough_edge
+        if not is_concrete(destination_val):
+            raise VMSymbolicError('Symbolic jump destination currently not supported.')
+        else:
+            destination_val = hex(bv_unsigned_value(destination_val))
 
-        all_non_fallthrough_bbs = [bb for bb in curr_bb.succ if bb != fallthrough_bb]
-        assert len(all_non_fallthrough_bbs) == 1
-        non_fallthrough_bb = all_non_fallthrough_bbs[0]
+        candidate_bbs = [bb for bb in curr_bb.succ if bb.id == destination_val or bb.id.startswith(destination_val+"0x")]
+
+        assert len(candidate_bbs) == 1
+        non_fallthrough_bb = candidate_bbs[0]
 
         log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))
         return non_fallthrough_bb.first_ins.id
