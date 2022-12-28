@@ -128,6 +128,10 @@ class SymbolicEVMState:
         if "ORIGIN" in init_ctx:
             assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
             self.ctx["ORIGIN"] = BVV(int(init_ctx["ORIGIN"],16), 256)
+        
+        if "BALANCE" in init_ctx:
+            assert isinstance(init_ctx['BALANCE'], str), "Wrong type for BALANCE initial context"
+            self.add_constraint(Equal(self.start_balance, BVV(int(init_ctx['BALANCE'],16), 256)))
 
     @property
     def pc(self):
