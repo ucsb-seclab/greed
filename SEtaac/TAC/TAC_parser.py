@@ -49,7 +49,11 @@ class TAC_parser:
         fixed_calls : Mapping[str, List[Tuple[str, str]]] = defaultdict(list)
         for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignature.csv"):
             # We want to skip the "LOCKXXX" target and keep only the one
-            # that Gigahorse successfully solved
+            # that Gigahorse successfully resolved
+            if "LOCK" in func_target: continue
+            fixed_calls[stmt_id] = func_target
+
+        for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignatureFromSHA3.csv"):
             if "LOCK" in func_target: continue
             fixed_calls[stmt_id] = func_target
 
