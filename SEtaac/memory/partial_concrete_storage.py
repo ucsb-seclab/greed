@@ -32,7 +32,6 @@ class PartialConcreteStorage:
         self.value_sort = value_sort
 
         self.state = state
-        
         if "ADDRESS" not in self.state.ctx:
             raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
         else:
@@ -86,7 +85,7 @@ class PartialConcreteStorage:
             index_val = index.value
             
             if index_val not in self.concrete_cache.keys():
-                log.info(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
+                log.debug(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
                 storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val,  block_identifier=self.chain_at)
                 log.info(f"   Value read is: {storage_value.hex()}")
                 storage_value = int(storage_value.hex(),16)
