@@ -77,6 +77,7 @@ class TAC_parser:
                 statement = OpcodeClass(block_id=block_id, stmt_id=stmt_id, uses=uses, defs=defs, values=values)
                 statements[stmt_id] = statement
                 
+                # Adding metadata for CALL statements
                 if stmt_id in fixed_calls:
                     log.debug(f"Setting {statement} as fixed call to {fixed_calls[stmt_id]}")
                     statement.set_fixed_call(fixed_calls[stmt_id])
@@ -195,6 +196,11 @@ class TAC_parser:
             is_public = func_id in tac_func_id_to_public or func_id == '0x0'
             is_fallback = tac_func_id_to_public.get(func_id, None) == '0x0'
             signature = tac_func_id_to_public.get(func_id, None)
+
+            # Pad signature over 4 bytes
+            if signature:
+                signature = "0x"+signature[2:].zfill(8)
+
             high_level_name = 'fallback()' if is_fallback else tac_high_level_func_name[func_id]
 
             formals = [var for var, _ in sorted(tac_formal_args[func_id], key=lambda x: x[1])]
