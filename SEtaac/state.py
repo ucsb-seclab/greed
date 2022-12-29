@@ -255,7 +255,6 @@ class SymbolicEVMState:
         new_state.MAX_CALLDATA_SIZE = self.MAX_CALLDATA_SIZE
         new_state.calldata = self.calldata.copy(new_state=new_state)
         new_state.calldatasize = self.calldatasize
-        new_state.partial_concrete_storage = self.partial_concrete_storage
 
         new_state.active_plugins = dict()
         # Copy all the plugins
