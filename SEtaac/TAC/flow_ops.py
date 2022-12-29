@@ -83,7 +83,8 @@ class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
 
     def _handle(self, state: SymbolicEVMState, gas_val=None, address_val=None, value_val=None,
-                argsOffset_val=None, argsSize_val=None, retOffset_val=None, retSize_val=None):
+                argsOffset_val=None, argsSize_val=None, retOffset_val=None, retSize_val=None,
+                ):
         gas_val = gas_val if gas_val is not None else self.gas_val
         address_val = address_val if address_val is not None else self.address_val
         value_val = value_val if value_val is not None else self.value_val
@@ -94,6 +95,11 @@ class TAC_BaseCall(TAC_Statement):
 
         ostart = retOffset_val
         olen = retSize_val
+        
+        # Weather the call has hardcoded function signature (retrieved by Gigahorse data flow analysis)
+        is_fixed = False
+        # If the call is fixed, here we store the function
+        call_to = ''
 
         state.returndata['size'] = olen
         state.returndata['instruction_count'] = state.instruction_count
@@ -124,6 +130,10 @@ class TAC_BaseCall(TAC_Statement):
 
         state.set_next_pc()
         return [state]
+    
+    def set_fixed_call(self, call_to):
+        self.is_fixed = True
+        self.call_to = call_to
 
 
 class TAC_Call(TAC_BaseCall):

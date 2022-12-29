@@ -45,7 +45,14 @@ class TAC_parser:
         tac_uses: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
         for stmt_id, var, pos in load_csv(f"{self.target_dir}/TAC_Use.csv"):
             tac_uses[stmt_id].append((var, int(pos)))
-
+        
+        fixed_calls : Mapping[str, List[Tuple[str, str]]] = defaultdict(list)
+        for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignature.csv"):
+            # We want to skip the "LOCKXXX" target and keep only the one
+            # that Gigahorse successfully solved
+            if "LOCK" in func_target: continue
+            fixed_calls[stmt_id] = func_target
+        
         # parse all statements block after block
         statements = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
@@ -59,6 +66,9 @@ class TAC_parser:
                 OpcodeClass = tac_opcode_to_class_map[opcode]
                 statement = OpcodeClass(block_id=block_id, stmt_id=stmt_id, uses=uses, defs=defs, values=values)
                 statements[stmt_id] = statement
+                if stmt_id in fixed_calls:
+                    log.debug(f"Setting {statement} to {fixed_calls[stmt_id]}")
+                    statement.set_fixed_call(fixed_calls[stmt_id])
 
             if not tac_block_stmts[block_id]:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP statement
