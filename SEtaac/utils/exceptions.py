@@ -16,3 +16,6 @@ class VMSymbolicError(VMException):
 
 class VMExternalData(VMException):
     pass
+
+class GreedException(Exception):
+    pass

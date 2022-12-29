@@ -3,8 +3,10 @@ import logging
 import web3
 import sys 
 
+from SEtaac import options as opt
 from SEtaac.memory.lambda_constraint import LambdaConstraint
 from SEtaac.memory import LambdaMemory
+from SEtaac.utils.exceptions import GreedException
 from SEtaac.solver.shortcuts import *
 from SEtaac.utils.extra import UUIDGenerator
 
@@ -31,23 +33,24 @@ class PartialConcreteStorage:
 
         self.state = state
         
-        if self.state.project.contract_addr is None:
-            log.fatal("Cannot initialize the PartialConcreteStorage with no contract address")
-            sys.exit(0)
+        if "ADDRESS" not in self.state.ctx:
+            raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
         else:
-            # Let's store it here for convenience
-            self.contract_address = self.state.project.contract_addr
-            
+            self.contract_address = self.state.ctx["ADDRESS"]
+
+        if "NUMBER" not in self.state.ctx:
+            raise GreedException("Cannot initialize the PartialConcreteStorage with no reference block")
+        else:
+            self.chain_at = self.state.ctx["NUMBER"]
+        
         # Configure web3py
         # The connection string can be put in a config file.
-        self.w3 = web3.Web3(web3.Web3.HTTPProvider('http://0.0.0.0:8545'))
+        self.w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
         assert(self.w3.isConnected())
         
         self.root_lambda_constraint = LambdaConstraint()
         self._constraints = list()
         
-        self.chain_at = self.state.chain_at
-
         self._base = Array(f"{self.tag}_{PartialConcreteStorage.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
         if default is not None:
             # use memsetinfinite to make this a ConstArray with default BVV(0, 8)

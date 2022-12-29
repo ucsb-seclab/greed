@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 class SymbolicEVMState:
     uuid_generator = UUIDGenerator()
 
-    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None, partial_concrete_storage=False):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -34,20 +34,7 @@ class SymbolicEVMState:
 
         # We want every state to have an individual set
         # of options.
-        self.options = options or dict()
-
-        if self.options.get("chain_at", None):
-            self.chain_at = self.options.get("chain_at")
-        else:
-            self.chain_at = "latest"
-
-        if not project.partial_concrete_storage:
-            # Fully symbolic storage
-            self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
-        else:
-            log.info("Using PartialConcreteStorage")
-            self.storage = PartialConcreteStorage(tag=f"PCONCR_STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
-            
+        self.options = options or dict()            
         self.registers = dict()
         self.ctx = dict()
         self.callstack = list()
@@ -70,7 +57,15 @@ class SymbolicEVMState:
         self.calldata = None
         self.calldatasize = None
 
+        # Apply init context to the state
         self.set_init_ctx(init_ctx)
+
+        if not partial_concrete_storage:
+            # Fully symbolic storage
+            self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
+        else:
+            log.debug("Using PartialConcreteStorage")
+            self.storage = PartialConcreteStorage(tag=f"PCONCR_STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
 
     def set_init_ctx(self, init_ctx=None):
         init_ctx = init_ctx or dict()
@@ -133,6 +128,14 @@ class SymbolicEVMState:
         if "BALANCE" in init_ctx:
             assert isinstance(init_ctx['BALANCE'], str), "Wrong type for BALANCE initial context"
             self.add_constraint(Equal(self.start_balance, BVV(int(init_ctx['BALANCE'],16), 256)))
+        
+        if "ADDRESS" in init_ctx:
+            assert isinstance(init_ctx['ADDRESS'], str), "Wrong type for ADDRESS initial context"
+            self.ctx["ADDRESS"] = BVV(int(init_ctx["ADDRESS"],16), 256)
+
+        if "NUMBER" in init_ctx:
+            assert isinstance(init_ctx['NUMBER'], str), "Wrong type for ADDRESS initial context"
+            self.ctx["NUMBER"] = BVV(int(init_ctx["NUMBER"],16), 256)
 
     @property
     def pc(self):

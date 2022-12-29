@@ -6,6 +6,11 @@
 # generated during the exploration.
 # ===============
 
+# web3 provider URI.
+# As of now, this is used when the partial concrete
+# storage is initialized.
+WEB3_PROVIDER = 'http://0.0.0.0:8545'
+
 # Wether we want to check for satisfiability 
 # every time the execution can fork.
 # Checking for SAT at every branch may considerably
