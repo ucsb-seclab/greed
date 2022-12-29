@@ -164,8 +164,6 @@ class SimulationManager:
             successors += state.curr_stmt.handle(state)
         except Exception as e:
             log.error(f"Something went wrong while generating successor for {state}")
-            if state.project.contract_addr:
-                log.fatal(f"Contract address is: {state.project.contract_addr}")
             state.error = e
             state.halt = True
             successors += [state]
