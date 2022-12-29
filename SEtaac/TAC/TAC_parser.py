@@ -52,6 +52,12 @@ class TAC_parser:
             # that Gigahorse successfully solved
             if "LOCK" in func_target: continue
             fixed_calls[stmt_id] = func_target
+
+        # Loading arbitray call detected by Gigahorse: CALL statements for 
+        # that has its entire call-data provided by a caller.
+        arbitrary_call : List[str] = []
+        for stmt_id in load_csv(f"{self.target_dir}/ArbitraryCall.csv"):
+            arbitrary_call.append(stmt_id[0])
         
         # parse all statements block after block
         statements = dict()
@@ -66,9 +72,13 @@ class TAC_parser:
                 OpcodeClass = tac_opcode_to_class_map[opcode]
                 statement = OpcodeClass(block_id=block_id, stmt_id=stmt_id, uses=uses, defs=defs, values=values)
                 statements[stmt_id] = statement
+                
                 if stmt_id in fixed_calls:
-                    log.debug(f"Setting {statement} to {fixed_calls[stmt_id]}")
+                    log.debug(f"Setting {statement} as fixed call to {fixed_calls[stmt_id]}")
                     statement.set_fixed_call(fixed_calls[stmt_id])
+                elif stmt_id in arbitrary_call:
+                    log.debug(f"Setting {statement} as arbitrary call")
+                    statement.set_arbitrary_call()
 
             if not tac_block_stmts[block_id]:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP statement

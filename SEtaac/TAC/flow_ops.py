@@ -95,11 +95,6 @@ class TAC_BaseCall(TAC_Statement):
 
         ostart = retOffset_val
         olen = retSize_val
-        
-        # Weather the call has hardcoded function signature (retrieved by Gigahorse data flow analysis)
-        is_fixed = False
-        # If the call is fixed, here we store the function
-        call_to = ''
 
         state.returndata['size'] = olen
         state.returndata['instruction_count'] = state.instruction_count
@@ -134,6 +129,9 @@ class TAC_BaseCall(TAC_Statement):
     def set_fixed_call(self, call_to):
         self.is_fixed = True
         self.call_to = call_to
+    
+    def set_arbitrary_call(self):
+        self.is_arbitrary = True
 
 
 class TAC_Call(TAC_BaseCall):
