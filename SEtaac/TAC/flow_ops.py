@@ -105,7 +105,19 @@ class TAC_BaseCall(TAC_Statement):
         if is_concrete(address_val) and bv_unsigned_value(address_val) == 0:
             logging.info("Calling into burn contract")
         elif is_concrete(address_val) and bv_unsigned_value(address_val) >= 1 and bv_unsigned_value(address_val) <= 8:
-            if bv_unsigned_value(address_val) == 4:
+            # This is a pre-compiled contract
+            #  --> https://www.evm.codes/precompiled?fork=arrowGlacier
+            if bv_unsigned_value(address_val) == 1:
+                # ECRecover precompiled contract
+                # FIXME
+                logging.info("Calling precompiled ecRecover contract")
+                raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
+            elif bv_unsigned_value(address_val) == 2:
+                # SHA256 precompiled contract
+                # FIXME
+                logging.info("Calling precompiled SHA2-256 contract")
+                raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
+            elif bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
                 istart = argsOffset_val
                 ilen = argsSize_val
