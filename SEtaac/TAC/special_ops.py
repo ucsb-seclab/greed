@@ -106,11 +106,7 @@ class TAC_Address(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        if state.project.contract_addr != None:
-            state.registers[self.res1_var] = BVV(state.project.contract_addr, 256)
-        else:
-            state.registers[self.res1_var] = BVS(f'ADDRESS_{state.xid}', 256)
-
+        state.registers[self.res1_var] = ctx_or_symbolic('ADDRESS', state.ctx, state.xid)
         state.set_next_pc()
         return [state]
 
