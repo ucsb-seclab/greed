@@ -127,6 +127,7 @@ class TAC_BaseCall(TAC_Statement):
             else:
                 raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
         elif is_concrete(olen):
+            # If we have a concrete len for the return value we set the output memory to symbolic data
             for i in range(bv_unsigned_value(olen)):
                 state.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{state.instruction_count}_{i}_{state.xid}', 8)
             log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
@@ -139,6 +140,7 @@ class TAC_BaseCall(TAC_Statement):
             else:
                 state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
         else:
+            # FIXME: maybe consider a MAX_RETURN_SIZE option and use similar strategy used in SHA3
             raise VMSymbolicError("Unsupported symbolic retSize_val in CALL")
 
         state.set_next_pc()
