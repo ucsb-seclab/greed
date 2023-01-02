@@ -359,7 +359,13 @@ class TAC_Extcodehash(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise VMExternalData('EXTCODEHASH')
+        if not is_concrete(self.address_val):
+            state.registers[self.res1_var] = BVS('EXTCODEHASH[%d]' % self.address_val.id, 256)
+        else:
+            state.registers[self.res1_var] = ctx_or_symbolic('EXTCODEHASH[%s]' % hex(bv_unsigned_value(self.address_val)), state.ctx, state.xid)
+
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Blockhash(TAC_Statement):
