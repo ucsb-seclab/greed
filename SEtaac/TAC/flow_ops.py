@@ -111,12 +111,12 @@ class TAC_BaseCall(TAC_Statement):
                 # ECRecover precompiled contract
                 # FIXME
                 logging.info("Calling precompiled ecRecover contract")
-                raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
+                raise VMSymbolicError(f"Precompiled contract [ecRecover] not implemented")
             elif bv_unsigned_value(address_val) == 2:
                 # SHA256 precompiled contract
                 # FIXME
                 logging.info("Calling precompiled SHA2-256 contract")
-                raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
+                raise VMSymbolicError(f"Precompiled contract [SHA2-256] not implemented")
             elif bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
                 istart = argsOffset_val
