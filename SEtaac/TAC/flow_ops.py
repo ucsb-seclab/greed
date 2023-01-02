@@ -101,8 +101,10 @@ class TAC_BaseCall(TAC_Statement):
 
         state.returndata['size'] = olen
         state.returndata['instruction_count'] = state.instruction_count
-
-        if is_concrete(address_val) and bv_unsigned_value(address_val) <= 8:
+        
+        if is_concrete(address_val) and bv_unsigned_value(address_val) == 0:
+            logging.info("Calling into burn contract")
+        elif is_concrete(address_val) and bv_unsigned_value(address_val) >= 1 and bv_unsigned_value(address_val) <= 8:
             if bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
                 istart = argsOffset_val
