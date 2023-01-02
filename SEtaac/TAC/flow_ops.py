@@ -82,6 +82,10 @@ class TAC_Jumpi(TAC_Statement):
 class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
 
+    # Metadata for _CALL statements.
+    known_target_function = False
+    target_function = ''
+
     def _handle(self, state: SymbolicEVMState, gas_val=None, address_val=None, value_val=None,
                 argsOffset_val=None, argsSize_val=None, retOffset_val=None, retSize_val=None,
                 ):
@@ -126,13 +130,9 @@ class TAC_BaseCall(TAC_Statement):
         state.set_next_pc()
         return [state]
     
-    def set_fixed_call(self, call_to):
-        self.is_fixed = True
-        self.call_to = call_to
-    
-    def set_arbitrary_call(self):
-        self.is_arbitrary = True
-
+    def set_known_target_func(self, target_function):
+        self.known_target_function = True
+        self.target_function = target_function
 
 class TAC_Call(TAC_BaseCall):
     __internal_name__ = "CALL"
