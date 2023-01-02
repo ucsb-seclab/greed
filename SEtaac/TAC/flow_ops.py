@@ -122,6 +122,7 @@ class TAC_BaseCall(TAC_Statement):
                 istart = argsOffset_val
                 ilen = argsSize_val
                 state.memory.copy_return_data(istart, ilen, ostart, olen)
+                # Assuming this always succeeds
                 state.registers[self.res1_var] = BVV(1, 256)
             else:
                 raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
