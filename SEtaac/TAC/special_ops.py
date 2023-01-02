@@ -372,8 +372,9 @@ class TAC_Blockhash(TAC_Statement):
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         if not is_concrete(self.blockNumber_val):
-            raise VMSymbolicError('symbolic blockhash index')
-        state.registers[self.res1_var] = ctx_or_symbolic('BLOCKHASH[%d]' % bv_unsigned_value(self.blockNumber_val), state.ctx, state.xid)
+            state.registers[self.res1_var] = BVS('BLOCKHASH[%d]' % self.blockNumber_val.id, 256)
+        else:
+            state.registers[self.res1_var] = ctx_or_symbolic('BLOCKHASH[%d]' % bv_unsigned_value(self.blockNumber_val), state.ctx, state.xid)
 
         state.set_next_pc()
         return [state]
