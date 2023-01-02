@@ -95,7 +95,7 @@ class SymbolicEVMState:
                 # If the CALLDATASIZE is fixed, we change the MAX_CALLDATASIZE to that value.                
                 self.MAX_CALLDATA_SIZE = self.solver.eval(self.calldatasize)
             else:
-                log.info(f"CALLDATASIZE MIN{len(calldata_bytes)}-MAX{self.MAX_CALLDATA_SIZE + 1}")
+                log.debug(f"CALLDATASIZE MIN{len(calldata_bytes)}-MAX{self.MAX_CALLDATA_SIZE + 1}")
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
