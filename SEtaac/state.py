@@ -127,7 +127,7 @@ class SymbolicEVMState:
         
         if "BALANCE" in init_ctx:
             assert isinstance(init_ctx['BALANCE'], str), "Wrong type for BALANCE initial context"
-            self.add_constraint(Equal(self.start_balance, BVV(int(init_ctx['BALANCE'],16), 256)))
+            self.add_constraint(Equal(self.start_balance, BVV(int(init_ctx['BALANCE'],10), 256)))
         
         if "ADDRESS" in init_ctx:
             assert isinstance(init_ctx['ADDRESS'], str), "Wrong type for ADDRESS initial context"
@@ -135,7 +135,15 @@ class SymbolicEVMState:
 
         if "NUMBER" in init_ctx:
             assert isinstance(init_ctx['NUMBER'], str), "Wrong type for ADDRESS initial context"
-            self.ctx["NUMBER"] = BVV(int(init_ctx["NUMBER"],16), 256)
+            self.ctx["NUMBER"] = BVV(int(init_ctx["NUMBER"],10), 256)
+
+        if "DIFFICULTY" in init_ctx:
+            assert isinstance(init_ctx['DIFFICULTY'], str), "Wrong type for DIFFICULTY initial context"
+            self.ctx["DIFFICULTY"] = BVV(int(init_ctx["DIFFICULTY"],10), 256)
+
+        if "TIMESTAMP" in init_ctx:
+            assert isinstance(init_ctx['TIMESTAMP'], str), "Wrong type for TIMESTAMP initial context"
+            self.ctx["TIMESTAMP"] = BVV(int(init_ctx["TIMESTAMP"],10), 256)
 
     @property
     def pc(self):
