@@ -138,7 +138,7 @@ class LambdaMemory:
                                                                       parent=self.root_lambda_constraint)
 
     def copy_return_data(self, istart, ilen, ostart, olen):
-        raise Exception("NOT IMPLEMENTED. Please have a look")
+        self.memcopy(ostart, self, istart, ilen)
         # if concrete(ilen) and concrete(olen):
         #     self.write(ostart, olen, self.read(istart, min(ilen, olen)) + [0] * max(olen - ilen, 0))
         # elif concrete(olen):
