@@ -122,28 +122,28 @@ class SymbolicEVMState:
             self.ctx["CALLER"] = BVV(int(init_ctx["CALLER"],16), 256)
 
         if "ORIGIN" in init_ctx:
-            assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
+            assert isinstance(init_ctx['ORIGIN'], str), "Wrong type for ORIGIN initial context"
             self.ctx["ORIGIN"] = BVV(int(init_ctx["ORIGIN"],16), 256)
         
         if "BALANCE" in init_ctx:
-            assert isinstance(init_ctx['BALANCE'], str), "Wrong type for BALANCE initial context"
-            self.add_constraint(Equal(self.start_balance, BVV(int(init_ctx['BALANCE'],10), 256)))
+            assert isinstance(init_ctx['BALANCE'], int), "Wrong type for BALANCE initial context"
+            self.add_constraint(Equal(self.start_balance, BVV(init_ctx['BALANCE'], 256)))
         
         if "ADDRESS" in init_ctx:
             assert isinstance(init_ctx['ADDRESS'], str), "Wrong type for ADDRESS initial context"
             self.ctx["ADDRESS"] = BVV(int(init_ctx["ADDRESS"],16), 256)
 
         if "NUMBER" in init_ctx:
-            assert isinstance(init_ctx['NUMBER'], str), "Wrong type for ADDRESS initial context"
-            self.ctx["NUMBER"] = BVV(int(init_ctx["NUMBER"],10), 256)
+            assert isinstance(init_ctx['NUMBER'], int), "Wrong type for NUMBER initial context"
+            self.ctx["NUMBER"] = BVV(init_ctx["NUMBER"], 256)
 
         if "DIFFICULTY" in init_ctx:
-            assert isinstance(init_ctx['DIFFICULTY'], str), "Wrong type for DIFFICULTY initial context"
-            self.ctx["DIFFICULTY"] = BVV(int(init_ctx["DIFFICULTY"],10), 256)
+            assert isinstance(init_ctx['DIFFICULTY'], int), "Wrong type for DIFFICULTY initial context"
+            self.ctx["DIFFICULTY"] = BVV(init_ctx["DIFFICULTY"], 256)
 
         if "TIMESTAMP" in init_ctx:
-            assert isinstance(init_ctx['TIMESTAMP'], str), "Wrong type for TIMESTAMP initial context"
-            self.ctx["TIMESTAMP"] = BVV(int(init_ctx["TIMESTAMP"],10), 256)
+            assert isinstance(init_ctx['TIMESTAMP'], int), "Wrong type for TIMESTAMP initial context"
+            self.ctx["TIMESTAMP"] = BVV(init_ctx["TIMESTAMP"], 256)
 
     @property
     def pc(self):
