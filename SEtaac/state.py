@@ -144,6 +144,10 @@ class SymbolicEVMState:
         if "TIMESTAMP" in init_ctx:
             assert isinstance(init_ctx['TIMESTAMP'], int), "Wrong type for TIMESTAMP initial context"
             self.ctx["TIMESTAMP"] = BVV(init_ctx["TIMESTAMP"], 256)
+        
+        if "CALLVALUE" in init_ctx:
+            assert isinstance(init_ctx['CALLVALUE'], int), "Wrong type for CALLVALUE initial context"
+            self.ctx["CALLVALUE"] = BVV(init_ctx["CALLVALUE"], 256)
 
     @property
     def pc(self):
