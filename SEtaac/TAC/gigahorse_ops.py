@@ -32,6 +32,7 @@ class TAC_Callprivate(TAC_Statement):
         # read arg-alias map
         args = self.arg_vars[1:]
         args_alias = target_bb.function.arguments
+        assert len(args) == len(args_alias), "Invalid CALLPRIVATE arguments"
         alias_arg_map = dict(zip(args_alias, args))
 
         for alias, arg in alias_arg_map.items():
