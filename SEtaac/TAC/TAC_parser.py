@@ -51,15 +51,25 @@ class TAC_parser:
         func_name_to_sig = {name:"0x"+signature[2:].zfill(8) for signature, name in func_name_to_sig.items() if len(signature) <= 10}
 
         fixed_calls : Mapping[str, List[Tuple[str, str]]] = defaultdict(list)
+
+        import ipdb; ipdb.set_trace()
+
         for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignature.csv"):
             # We want to skip the "LOCKXXX" target and keep only the one
             # that Gigahorse successfully resolved
             if "LOCK" in func_target: continue
-            fixed_calls[stmt_id] = func_name_to_sig[func_target]
+            if func_target in func_name_to_sig:
+                fixed_calls[stmt_id] = func_name_to_sig[func_target]
+            else:
+                fixed_calls[stmt_id] = "0x"
 
+        
         for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignatureFromSHA3.csv"):
             if "LOCK" in func_target: continue
-            fixed_calls[stmt_id] = func_name_to_sig[func_target]
+            if func_target in func_name_to_sig:
+                fixed_calls[stmt_id] = func_name_to_sig[func_target]
+            else:
+                fixed_calls[stmt_id] = "0x"
         
         # parse all statements block after block
         statements = dict()
