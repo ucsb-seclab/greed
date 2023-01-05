@@ -11,7 +11,6 @@ from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
 
 __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Callvalue', 'TAC_Calldataload', 'TAC_Calldatasize', 'TAC_Calldatacopy',
