@@ -52,8 +52,6 @@ class TAC_parser:
 
         fixed_calls : Mapping[str, List[Tuple[str, str]]] = defaultdict(list)
 
-        import ipdb; ipdb.set_trace()
-
         for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignature.csv"):
             # We want to skip the "LOCKXXX" target and keep only the one
             # that Gigahorse successfully resolved
