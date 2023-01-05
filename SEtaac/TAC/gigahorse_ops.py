@@ -43,7 +43,14 @@ class TAC_Callprivate(TAC_Statement):
 
         # push stack frame
         try:
-            saved_return_pc = state.get_fallthrough_pc()
+            # there is no saved_return_pc for non-returning functions
+            has_returnprivate = any([stmt.__internal_name__ == "RETURNPRIVATE"
+                                     for bb in target_bb.function.blocks
+                                     for stmt in bb.statements])
+            if has_returnprivate:
+                saved_return_pc = state.get_non_fallthrough_pc(state.registers[self.arg_vars[-1]])
+            else:
+                raise VMNoSuccessors
         except VMNoSuccessors:
             fake_exit_bb = state.project.factory.block('fake_exit')
             saved_return_pc = fake_exit_bb.statements[0].id
