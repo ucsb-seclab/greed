@@ -134,14 +134,14 @@ class TAC_BaseCall(TAC_Statement):
             
             if log_address_val != "<SYMBOLIC>":
                 logging.info(f"Calling contract {hex(log_address_val)} ({state.instruction_count}_{state.xid})")
-            
-            if options.OPTIMISTIC_CALL_RESULTS:
-                state.registers[self.res1_var] = BVV(1, 256)
-            else:
-                state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
         else:
             # FIXME: maybe consider a MAX_RETURN_SIZE option and use similar strategy used in SHA3
             raise VMSymbolicError("Unsupported symbolic retSize_val in CALL")
+
+        if options.OPTIMISTIC_CALL_RESULTS:
+            state.registers[self.res1_var] = BVV(1, 256)
+        else:
+            state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
 
         state.set_next_pc()
         return [state]
@@ -166,7 +166,6 @@ class TAC_Call(TAC_BaseCall):
     def handle(self, state: SymbolicEVMState):
         state.add_constraint(BV_UGE(state.balance, self.value_val))
         state.balance = BV_Sub(state.balance, self.value_val)
-
         return self._handle(state, value_val=self.value_val)
 
 
