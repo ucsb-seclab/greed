@@ -89,7 +89,10 @@ class TAC_Statement(Aliased):
             # todo: the fact that we are reading the original state's registers here (not succ) could cause issues e.g.,
             # if we need some kind of translation
             if var not in state.registers:
-                raise VMException(f"Uninitialized var {var}")
+                if arg_val is not None:
+                    log.warning(f"Uninitialized var {var} RECOVERED WITH CACHED CONSTANT VALUE")
+                else:
+                    raise VMException(f"Uninitialized var {var}")
             val = state.registers.get(var, None) if arg_val is None else arg_val
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)
