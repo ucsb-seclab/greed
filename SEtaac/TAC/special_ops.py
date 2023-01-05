@@ -129,7 +129,7 @@ class TAC_Balance(TAC_Statement):
         elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', state.ctx, state.xid)
         else:
-            raise VMSymbolicError('balance of symbolic address (%s)' % str(self.address_val))
+            state.registers[self.res1_var] = BVS('SYM-BALANCE-%x' % self.address_val.id, 256)
 
         state.set_next_pc()
         return [state]
@@ -259,7 +259,7 @@ class TAC_Codecopy(TAC_Statement):
                 else:
                     state.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(0, 8)
         else:
-            raise VMSymbolicError('Symbolic code index @ %s' % state.pc)
+            raise VMSymbolicError('Symbolic code index @ %s (CODECOPY)' % state.pc)
 
         state.set_next_pc()
         return [state]
