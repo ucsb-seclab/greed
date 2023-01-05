@@ -181,8 +181,6 @@ class SymbolicEVMState:
 
     def get_fallthrough_pc(self):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
-        stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
-        remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
 
         if len(curr_bb.succ) == 0:
             #  case 1: end of the block and no targets
