@@ -32,21 +32,22 @@ class PartialConcreteStorage:
         self.value_sort = value_sort
 
         self.state = state
-        if "ADDRESS" not in self.state.ctx:
-            raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
-        else:
-            self.contract_address = self.state.ctx["ADDRESS"]
 
-        if "NUMBER" not in self.state.ctx:
-            raise GreedException("Cannot initialize the PartialConcreteStorage with no reference block")
-        else:
-            self.chain_at = self.state.ctx["NUMBER"]
-        
         # Configure web3py
         # The connection string can be put in a config file.
         self.w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
         assert(self.w3.isConnected())
-        
+
+        if "ADDRESS" not in self.state.ctx:
+            raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
+        else:
+            self.contract_address = self.w3.toChecksumAddress(hex(bv_unsigned_value(self.state.ctx["ADDRESS"])))
+
+        if "NUMBER" not in self.state.ctx:
+            raise GreedException("Cannot initialize the PartialConcreteStorage with no reference block")
+        else:
+            self.chain_at = bv_unsigned_value(self.state.ctx["NUMBER"])
+
         self.root_lambda_constraint = LambdaConstraint()
         self._constraints = list()
         
