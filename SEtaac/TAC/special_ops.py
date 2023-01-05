@@ -43,11 +43,11 @@ class TAC_Sha3(TAC_Statement):
         # keep thre unconstrained symbol + the ackermann constraints, otherwise let's 
         # calculate the possible solutions and apply the constraints.
         if options.GREEDY_SHA:
-            log.info(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
+            log.debug(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
             size_sol = state.solver.eval(self.size_val, raw=True)
-            log.info(f"    Size solution: {bv_unsigned_value(size_sol)}")
+            log.debug(f"    Size solution: {bv_unsigned_value(size_sol)}")
             offset_sol = state.solver.eval(self.offset_val, raw=True)
-            log.info(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
+            log.debug(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
             
             if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
                                 not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
@@ -63,7 +63,7 @@ class TAC_Sha3(TAC_Statement):
                     buffer_sol = bv_unsigned_value(buffer_sol).to_bytes(bv_unsigned_value(size_sol), 'big')
                     keccak256.update(buffer_sol)
                     res = keccak256.hexdigest()
-                    log.info(f"    Calculated concrete SHA3 {res}")
+                    log.debug(f"    Calculated concrete SHA3 {res}")
                     
                     # Constraining parameters to their calculated solutions
                     state.add_constraint(Equal(self.offset_val, offset_sol))
@@ -79,9 +79,9 @@ class TAC_Sha3(TAC_Statement):
                     # Just set the solution here
                     state.registers[self.res1_var] = BVV(int(res,16),256)
                 else:
-                    log.info(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
+                    log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
             else:
-                log.info(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
+                log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
 
         state.set_next_pc()
 
