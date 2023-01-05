@@ -41,7 +41,11 @@ class PartialConcreteStorage:
         if "ADDRESS" not in self.state.ctx:
             raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
         else:
-            self.contract_address = self.w3.toChecksumAddress(hex(bv_unsigned_value(self.state.ctx["ADDRESS"])))
+            ca = hex(bv_unsigned_value(self.state.ctx["ADDRESS"]))
+            # Normalizing the string over 20 bytes if we need to.
+            if len(ca[2:]) < 40:
+                ca = "0x" + ca[2:].zfill(40)
+            self.contract_address = self.w3.toChecksumAddress(ca)
 
         if "NUMBER" not in self.state.ctx:
             raise GreedException("Cannot initialize the PartialConcreteStorage with no reference block")
@@ -86,7 +90,7 @@ class PartialConcreteStorage:
             index_val = index.value
             
             if index_val not in self.concrete_cache.keys():
-                log.debug(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
+                log.info(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
                 storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val,  block_identifier=self.chain_at)
                 log.info(f"   Value read is: {storage_value.hex()}")
                 storage_value = int(storage_value.hex(),16)
