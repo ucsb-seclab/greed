@@ -82,7 +82,7 @@ class Tracer(BaseAnalysisAddOn):
             op, pc, tac_pcs, arg_vals = self.trace.pop()
             res_vals = dict()
             if op is not None and op.arg_vars:
-                arg_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.res_vars)}
+                res_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.res_vars)}
 
             self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
 
