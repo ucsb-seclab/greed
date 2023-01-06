@@ -112,27 +112,34 @@ def retrace(tracer, tx_data):
         if pyevm_op is None:
             continue
 
+        old_state = state.copy()
         successors = state.curr_stmt.handle(state)
 
-        if len(successors) != 1:
-            # try to recover multiple successors
-            successors = [s for s in successors if s.pc in tac_pcs]
-            assert len(successors) == 1, f"Unrecoverable de-sync ({successors})"
-            state = successors[0]
-
-        if state.pc not in tac_pcs:
-            greed_str = f"[{state.pc}] {state.curr_stmt}"
-            print(f"{' ':<60} | {greed_str:<60}")
-
-            # try to get greed back in sync, stepping bfs
+        if len(successors) == 0:
+            # there are no successors
+            print(f"Unrecoverable de-sync ({successors}), expected {tac_pcs}")
+            exit(1)
+        elif sum([s.pc in tac_pcs for s in successors]) > 1:
+            # there are successors, and more than one is valid
+            print(f"Unrecoverable de-sync ({successors}), expected {tac_pcs}")
+            exit(1)
+        elif sum([s.pc in tac_pcs for s in successors]) == 1:
+            # there are successors, and one of them is valid
+            filtered_successors = [s for s in successors if s.pc in tac_pcs]
+            state = filtered_successors[0]
+        else:
+            # there are successors, but none of them is valid. Try to get greed back in sync, stepping BFS
+            state = old_state
             simgr = tracer.p.factory.simgr(entry_state=state)
-            offset = len(state.trace)
+            offset = len(state.trace) + 1
 
             for i in range(MAX_DESYNC):
                 if simgr.found:
                     break
                 simgr.step(find=lambda s: s.pc in tac_pcs)
-            assert simgr.found, f"Unrecoverable de-sync, expected {tac_pcs}"
+            if not simgr.found:
+                print(f"Unrecoverable de-sync({simgr}), expected {tac_pcs}")
+                exit(1)
             state = simgr.one_found
 
             for op in state.trace[offset:]:
