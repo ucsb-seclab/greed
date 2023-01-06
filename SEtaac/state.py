@@ -205,7 +205,7 @@ class SymbolicEVMState:
             destination_val = hex(bv_unsigned_value(destination_val))
 
         # translation using TAC_OriginalStatement_Block
-        candidate_destination_vals = self.project.tac_parser.statement_to_blocks_map[destination_val]
+        candidate_destination_vals = self.project.tac_parser.statement_to_blocks_map[destination_val] + [destination_val]
         candidate_bbs = [bb for bb in curr_bb.succ if bb.id in candidate_destination_vals]
 
         if len(candidate_bbs) == 0:
