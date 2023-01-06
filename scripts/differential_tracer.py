@@ -496,25 +496,26 @@ for (pyevm_op, pc, tac_pcs, arg_vals, res_vals) in trace[1:]:
         # try to recover multiple successors
         successors = [s for s in successors if s.pc in tac_pcs]
         assert len(successors) == 1, f"Unrecoverable de-sync ({successors})"
-        import IPython; IPython.embed(); exit()
+        state = successors[0]
 
     if state.pc not in tac_pcs:
         greed_str = f"[{state.pc}] {state.curr_stmt}"
         print(f"{' ':<60} | {greed_str:<60}")
-        # try to get greed back in sync, expect no branches
-        # print(f"Unrecognized pc {state.pc}, expected {tac_pcs}")
 
-        while state.pc not in tac_pcs:
-            successors = state.curr_stmt.handle(state)
-            # print(successors)
-            if len(successors) > 1:
-                # recover branch if it gets us back in sync
-                successors = [s for s in successors if s.pc in tac_pcs]
-            assert len(successors) == 1, f"Unrecoverable de-sync ({successors}, expected {tac_pcs})"
+        # try to get greed back in sync, stepping bfs
+        simgr = p.factory.simgr(entry_state=state)
+        offset = len(state.trace)
+        for i in range(10):
+            if simgr.found:
+                break
+            simgr.step(find=lambda s: s.pc in tac_pcs)
+        assert simgr.found, f"Unrecoverable de-sync, expected {tac_pcs}"
+        state = simgr.one_found
 
-            if state.pc not in tac_pcs:
-                greed_str = f"[{state.pc}] {state.curr_stmt}"
-                print(f"{' ':<60} | {greed_str:<60}")
+        for op in state.trace[offset:]:
+            greed_str = f"[{op.id}] {op}"
+            print(f"{' ':<60} | {greed_str:<60}")
+
         # import IPython; IPython.embed(); exit()
 
     pyevm_str = f"[{pc}] {pyevm_op}"
