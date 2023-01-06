@@ -48,8 +48,8 @@ class Tracer(BaseAnalysisAddOn):
             this = self.call_tracer.call_stack[0].callee
             this = w3.toChecksumAddress(this)
             if target == this:
-                print("Detected re-entrant call, aborting..")
-                exit(1)
+                print("DETECTED RE-ENTRANT CALL")
+                # exit(1)
 
         if self.depth == 0:
             op = None
