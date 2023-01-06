@@ -24,6 +24,7 @@ class TAC_parser:
         self.target_dir = target_dir
 
         self.phimap = None
+        self.statement_to_blocks_map = None
 
     @staticmethod
     def stmt_sort_key(stmt_id: str) -> int:
@@ -34,6 +35,8 @@ class TAC_parser:
         tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_op = load_csv_map(f"{self.target_dir}/TAC_Op.csv")
+
+        self.statement_to_blocks_map = load_csv_multimap(f"{self.target_dir}/TAC_OriginalStatement_Block.csv")
 
         tac_variable_value = load_csv_map(f"{self.target_dir}/TAC_Variable_Value.csv")
         tac_variable_value = {'v' + v.replace('0x', ''): val for v, val in tac_variable_value.items()}

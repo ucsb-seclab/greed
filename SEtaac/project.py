@@ -16,13 +16,13 @@ class Project(object):
 
         self.factory = Factory(project=self)
 
-        tac_parser = TAC_parser(self.factory, target_dir)
-        self.statement_at = tac_parser.parse_statements()
-        self.block_at = tac_parser.parse_blocks()
-        self.function_at = tac_parser.parse_functions()
+        self.tac_parser = TAC_parser(self.factory, target_dir)
+        self.statement_at = self.tac_parser.parse_statements()
+        self.block_at = self.tac_parser.parse_blocks()
+        self.function_at = self.tac_parser.parse_functions()
         
         # Do we have an official abi?
-        self.abi = tac_parser.parse_abi()
+        self.abi = self.tac_parser.parse_abi()
         self.has_abi = (self.abi is not None)
 
         # build callgraph
