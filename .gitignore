@@ -400,6 +400,10 @@ tests/*/**
 !tests/test_*/TAC_Op.csv
 !tests/test_*/TAC_Use.csv
 !tests/test_*/TAC_Variable_Value.csv
+!tests/test_*/StaticallyGuardedBlock.csv
+!tests/test_*/ConstantPossibleSigHash.csv
+!tests/test_*/CallToSignature.csv
+!tests/test_*/CallToSignatureFromSHA3.csv
 
 
 !gigahorse_clients/lib/**.so
