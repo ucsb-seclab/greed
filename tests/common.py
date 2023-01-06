@@ -6,7 +6,7 @@ import IPython
 from SEtaac import Project
 from SEtaac.solver.shortcuts import *
 from SEtaac.utils import gen_exec_id
-
+from SEtaac.exploration_techniques import HeartBeat
 
 def setup_logging():
     LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
@@ -57,6 +57,8 @@ def run_test(target_dir, debug=False):
     xid = gen_exec_id()
     entry_state = p.factory.entry_state(xid=xid)
     simgr = p.factory.simgr(entry_state=entry_state)
+    heartbeat = HeartBeat(beat_interval=1, show_op=True)
+    simgr.use_technique(heartbeat)
 
     run_test_simgr(simgr, debug=debug)
 
