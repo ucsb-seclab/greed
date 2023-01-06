@@ -485,6 +485,8 @@ state = p.factory.entry_state(xid=xid, max_calldatasize=len(txn.data))
 print("\n\n")
 print('-'*20)
 
+MAX_DESYNC = 10
+
 print(f"{'py-evm':^60} | {'greed':^60}")
 pyevm_str = f"[{trace[0][1]}] {trace[0][0]}"
 greed_str = f"[{state.pc}] {state.curr_stmt}"
@@ -505,7 +507,8 @@ for (pyevm_op, pc, tac_pcs, arg_vals, res_vals) in trace[1:]:
         # try to get greed back in sync, stepping bfs
         simgr = p.factory.simgr(entry_state=state)
         offset = len(state.trace)
-        for i in range(10):
+
+        for i in range(MAX_DESYNC):
             if simgr.found:
                 break
             simgr.step(find=lambda s: s.pc in tac_pcs)
