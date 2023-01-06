@@ -9,8 +9,8 @@ from SEtaac.utils import load_csv, gen_exec_id
 
 
 class Tracer(BaseAnalysisAddOn):
-    PRE_OPERATION_PRIORITY: int = 90
-    POST_OPERATION_PRIORITY: int = 90
+    PRE_OPERATION_PRIORITY: int = 110
+    POST_OPERATION_PRIORITY: int = 110
     POST_TRANSACTION_PRIORITY: int = 90
 
     def __init__(self, call_tracer: CallTracer, target_dir: str):
@@ -72,14 +72,21 @@ class Tracer(BaseAnalysisAddOn):
             print(f"[{pc}] {opcode.mnemonic} --> {op or '???'}")
 
             arg_vals = dict()
+            res_vals = dict()
             if op is not None and op.arg_vars:
                 arg_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.arg_vars)}
 
-            self.trace.append((op, pc, tac_pcs, arg_vals))
+            self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
 
     def post_opcode_hook(self, opcode, computation):
         if self.depth == 0:
-            op, pc, tac_pcs, arg_vals = self.trace.pop()
+            op, pc, tac_pcs, arg_vals, res_vals = self.trace[-1]
+
+            if pc != hex(computation.code.program_counter - 0x1):
+                return
+
+            self.trace.pop()
+
             res_vals = dict()
             if op is not None and op.arg_vars:
                 res_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.res_vars)}
