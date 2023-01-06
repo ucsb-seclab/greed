@@ -193,7 +193,6 @@ class SymbolicEVMState:
         else:
             #  case 3: end of the block and more than one target
             fallthrough_bb = curr_bb.fallthrough_edge
-
             log.debug("Next stmt is {}".format(fallthrough_bb.first_ins.id))
             return fallthrough_bb.first_ins.id
 

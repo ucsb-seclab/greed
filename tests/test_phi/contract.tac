@@ -39,7 +39,7 @@ function __function_selector__() public {
     0x26: v26 = ISZERO v25
 
     Begin block 0x27
-    prev=[0x15, 0x1f], succ=[0x2c, 0x55]
+    prev=[0x1f, 0x15], succ=[0x2c, 0x55]
     =================================
     0x27_0x0: v27_0 = PHI v19, v26
     0x28: v28 = ISZERO v27_0

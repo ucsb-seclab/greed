@@ -70,8 +70,9 @@ def run_test_simgr(simgr, debug=False):
 
         simgr.move(from_stash="found", to_stash="active")
 
-    
+    import ipdb; ipdb.set_trace()
     assert not any([s.error for s in simgr.states]), f"Simulation Manager has errored states: {simgr}"
+    
     assert outcome == "success" and testname == "", f"Simulation Manager did not reach final success state: {simgr}"
 
     if debug:
