@@ -46,7 +46,7 @@ class TAC_Callprivate(TAC_Statement):
             for stmt in bb.statements:
                 if stmt.__internal_name__ == "RETURNPRIVATE":
                     try:
-                        known_returns.add(state.get_non_fallthrough_pc(state.registers[stmt.arg1_var]))
+                        known_returns.add(state.get_non_fallthrough_pc(stmt.arg1_val or state.registers[stmt.arg1_var]))
                     except VMSymbolicError:
                         log.exception(f"(Ignored) Failed to lookup RETURNPRIVATE return address")
         known_returns = list(known_returns)
