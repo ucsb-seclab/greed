@@ -3,7 +3,7 @@ import logging
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac.solver.shortcuts import *
 from SEtaac.state import SymbolicEVMState
-from SEtaac.utils.exceptions import VMNoSuccessors
+from SEtaac.utils.exceptions import VMSymbolicError
 
 __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
@@ -47,12 +47,8 @@ class TAC_Callprivate(TAC_Statement):
                 if stmt.__internal_name__ == "RETURNPRIVATE":
                     try:
                         known_returns.add(state.get_non_fallthrough_pc(state.registers[stmt.arg1_var]))
-                    except:
-                        pass
-        try:
-            known_returns.add(state.get_fallthrough_pc())
-        except:
-            pass
+                    except VMSymbolicError:
+                        log.exception(f"(Ignored) Failed to lookup RETURNPRIVATE return address")
         known_returns = list(known_returns)
 
         state.callstack.append((state.pc, known_returns, self.res_vars))
