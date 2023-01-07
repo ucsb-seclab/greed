@@ -78,6 +78,15 @@ class TAC_Statement(Aliased):
         # keep a copy of the arg_vals (for set_arg_val)
         self.raw_arg_vals = dict(self.arg_vals)
 
+    def reset_arg_val(self):
+        # IMPORTANT: we need to reset this every time we re-execute this statement or we'll have the old registers
+        # values in self.arg_vals (as set by this function)
+        self.arg_vals = dict(self.raw_arg_vals)
+        for i in range(self.num_args):
+            var = self.arg_vars[i]
+            arg_val = self.arg_vals[var]
+            object.__setattr__(self, "arg{}_val".format(i + 1), arg_val)
+
     def set_arg_val(self, state: SymbolicEVMState):
         # IMPORTANT: we need to reset this every time we re-execute this statement or we'll have the old registers
         # values in self.arg_vals (as set by this function)
@@ -124,10 +133,12 @@ class TAC_Statement(Aliased):
 
                 succ.set_next_pc()
 
+                self.reset_arg_val()
                 return [succ]
 
             # otherwise, execute the actual handler
             successors = func(self, state)
+            self.reset_arg_val()
             return successors
 
         return wrap
@@ -146,6 +157,7 @@ class TAC_Statement(Aliased):
 
             # always execute the actual handler because we need the side-effects
             successors = func(self, state)
+            self.reset_arg_val()
             return successors
 
         return wrap
