@@ -41,21 +41,21 @@ class TAC_Callprivate(TAC_Statement):
         # read destination
         dest = target_bb.first_ins.id
 
-        # push stack frame
+        known_returns = set()
+        for bb in target_bb.function.blocks:
+            for stmt in bb.statements:
+                if stmt.__internal_name__ == "RETURNPRIVATE":
+                    try:
+                        known_returns.add(state.get_non_fallthrough_pc(state.registers[stmt.arg1_var]))
+                    except:
+                        pass
         try:
-            # there is no saved_return_pc for non-returning functions
-            has_returnprivate = any([stmt.__internal_name__ == "RETURNPRIVATE"
-                                     for bb in target_bb.function.blocks
-                                     for stmt in bb.statements])
-            if has_returnprivate:
-                saved_return_pc = state.get_non_fallthrough_pc(state.registers[self.arg_vars[-1]])
-            else:
-                raise VMNoSuccessors
-        except VMNoSuccessors:
-            fake_exit_bb = state.project.factory.block('fake_exit')
-            saved_return_pc = fake_exit_bb.statements[0].id
+            known_returns.add(state.get_fallthrough_pc())
+        except:
+            pass
+        known_returns = list(known_returns)
 
-        state.callstack.append((saved_return_pc, self.res_vars))
+        state.callstack.append((state.pc, known_returns, self.res_vars))
 
         # jump to target
         state.pc = dest
@@ -68,15 +68,19 @@ class TAC_Returnprivate(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        # pop stack frame (read saved return pc from stack)
-        saved_return_pc, callprivate_return_vars = state.callstack.pop()
+        # pop stack frame (read callprivate pc from stack)
+        callprivate_pc, _, callprivate_return_vars = state.callstack.pop()
 
         # set the return variables to their correct values
         returnprivate_args = self.arg_vars[1:]
         for callprivate_return_var, returnprivate_arg in zip(callprivate_return_vars, returnprivate_args):
             state.registers[callprivate_return_var] = state.registers[returnprivate_arg]
 
-        state.pc = saved_return_pc
+        # restore callprivate pc to translate return pc
+        state.pc = callprivate_pc
+        return_pc = state.get_non_fallthrough_pc(state.registers[self.arg1_var])
+
+        state.pc = return_pc
         return [state]
 
 
