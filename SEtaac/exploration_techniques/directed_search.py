@@ -62,11 +62,10 @@ class DirectedSearch(ExplorationTechnique):
             return False, None
         else:
             # otherwise we can look at the callstack
-            callstack = list(state_a.callstack)
-            while callstack:
-                return_stmt_id, _ = callstack.pop()
-                return_stmt = factory.statement(return_stmt_id)
-                return_block = factory.block(return_stmt.block_id)
+            known_saved_returns = [known_return for call in state_a.callstack for known_return in call[1]]
+            for saved_return_id in known_saved_returns:
+                saved_return_stmt = factory.statement(saved_return_id)
+                saved_return_block = factory.block(saved_return_stmt.block_id)
 
                 # check if any RETURNPRIVATE is reachable
                 for returnprivate_block_id in block_a.function.returnprivate_block_ids:
@@ -78,7 +77,7 @@ class DirectedSearch(ExplorationTechnique):
                     # executed if there is no break
                     return False, None
 
-                reachable, dist2 = self._is_reachable_without_returns(return_block, block_b, factory, callgraph)
+                reachable, dist2 = self._is_reachable_without_returns(saved_return_block, block_b, factory, callgraph)
                 if reachable:
                     log.debug(f"{state_a} -> {block_b} reachable with returns")
                     return True, dist1 + dist2
