@@ -94,6 +94,7 @@ class TAC_Statement(Aliased):
                 else:
                     raise VMException(f"Uninitialized var {var}")
             val = state.registers.get(var, None) if arg_val is None else arg_val
+            state.registers[var] = val
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)
 
