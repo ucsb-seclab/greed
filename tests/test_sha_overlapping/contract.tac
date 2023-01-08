@@ -77,40 +77,37 @@ function __function_selector__() public {
 
 }
 
+function 0x12a(0x12aarg0x0, 0x12aarg0x1) private {
+    Begin block 0x12a
+    prev=[], succ=[]
+    =================================
+    0x12b: v12b(0x0) = CONST 
+    0x133: RETURNPRIVATE v12aarg1, v12aarg0
+
+}
+
 function 0xd4(0xd4arg0x0, 0xd4arg0x1, 0xd4arg0x2) private {
     Begin block 0xd4
-    prev=[], succ=[0x12aB0xd4]
+    prev=[], succ=[0xdf]
     =================================
     0xd5: vd5(0x0) = CONST 
     0xd7: vd7(0xdf) = CONST 
     0xdb: vdb(0x12a) = CONST 
-    0xde: JUMP vdb(0x12a)
-
-    Begin block 0x12aB0xd4
-    prev=[0xd4], succ=[0xdf]
-    =================================
-    0x12b0xd4: v12bVd4(0x0) = CONST 
-    0x1330xd4: JUMP vd7(0xdf)
+    0xde: vde_0 = CALLPRIVATE vdb(0x12a), vd4arg0, vd7(0xdf)
 
     Begin block 0xdf
-    prev=[0x12aB0xd4], succ=[0x12aB0xdf]
+    prev=[0xd4], succ=[0xea]
     =================================
     0xe2: ve2(0xea) = CONST 
     0xe6: ve6(0x12a) = CONST 
-    0xe9: JUMP ve6(0x12a)
-
-    Begin block 0x12aB0xdf
-    prev=[0xdf], succ=[0xea]
-    =================================
-    0x12b0xdf: v12bVdf(0x0) = CONST 
-    0x1330xdf: JUMP ve2(0xea)
+    0xe9: ve9_0 = CALLPRIVATE ve6(0x12a), vd4arg1, ve2(0xea)
 
     Begin block 0xea
-    prev=[0x12aB0xdf], succ=[0x117, 0x11f]
+    prev=[0xdf], succ=[0x117, 0x11f]
     =================================
     0xee: vee(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff) = CONST 
-    0x10f: v10f = SUB vee(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff), vd4arg1
-    0x111: v111 = GT vd4arg0, v10f
+    0x10f: v10f = SUB vee(0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff), ve9_0
+    0x111: v111 = GT vde_0, v10f
     0x112: v112 = ISZERO v111
     0x113: v113(0x11f) = CONST 
     0x116: JUMPI v113(0x11f), v112
@@ -138,7 +135,7 @@ function 0xd4(0xd4arg0x0, 0xd4arg0x1, 0xd4arg0x2) private {
     Begin block 0x11f
     prev=[0xea], succ=[]
     =================================
-    0x122: v122 = ADD vd4arg0, vd4arg1
+    0x122: v122 = ADD vde_0, ve9_0
     0x129: RETURNPRIVATE vd4arg2, v122
 
 }
