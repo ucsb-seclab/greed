@@ -167,7 +167,7 @@ class SimulationManager:
         try:
             successors += state.curr_stmt.handle(state)
         except Exception as e:
-            log.error(f"Something went wrong while generating successor for {state}")
+            log.exception(f"Something went wrong while generating successor for {state}")
             state.error = e
             state.halt = True
             successors += [state]
