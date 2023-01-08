@@ -547,11 +547,13 @@ class TAC_Create(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
-        #succ.balance -= self.value_val
-        #succ.registers[self.res1_var] = utils.addr(
-        #    z3.BitVec('EXT_CREATE_%d_%d' % (succ.instruction_count, succ.xid), 256))
-        log.fatal("CREATE NOT implemented")
+        state.add_constraint(BV_UGE(state.balance, self.value_val))
+        state.balance = BV_Sub(state.balance, self.value_val)
+
+        if options.DEFAULT_CREATE_RESULT_ADDRESS:
+            state.registers[self.address_var] = BVV(0xc0ffee254729296a45a3885639AC7E10F9d54979,256)
+        else:
+            state.registers[self.address_var] = BVS('EXT_CREATE_%d_%d', state.xid, state.instruction_count, 256)
 
         state.set_next_pc()
         return [state]
@@ -569,12 +571,13 @@ class TAC_Create2(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
-        #succ.balance -= self.value_val
-        # todo: this is deployed at a deterministic address
-        #succ.registers[self.res1_var] = utils.addr(
-        #    z3.BitVec('EXT_CREATE2_%d_%d' % (succ.instruction_count, succ.xid), 256))
-        log.fatal("{} NOT implemented".format(self.__internal_name__))
+        state.add_constraint(BV_UGE(state.balance, self.value_val))
+        state.balance = BV_Sub(state.balance, self.value_val)
+
+        if options.DEFAULT_CREATE2_RESULT_ADDRESS:
+            state.registers[self.address_var] = BVV(0xbeefed254729296a45a3885639AC7E10F9d54979,256)
+        else:
+            state.registers[self.address_var] = BVS('EXT_CREATE2_%d_%d', state.xid, state.instruction_count, 256)
 
         state.set_next_pc()
         return [state]
