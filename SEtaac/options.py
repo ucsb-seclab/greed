@@ -63,6 +63,15 @@ OPTIMISTIC_CALL_RESULTS = False
 # Otherwise, the value is going to be symbolic.
 DEFAULT_EXTCODESIZE = False
 
+# Wether we should use a default constant address when 
+# using the CREATE opcode.
+DEFAULT_CREATE_RESULT_ADDRESS = False
+
+# Wether we should use a default constant address when 
+# using the CREATE2 opcode.
+DEFAULT_CREATE2_RESULT_ADDRESS = False
+
+
 # STATE OPTIONS
 # =============================================
 # Per-state options, can be enabled/disabled 
