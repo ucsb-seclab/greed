@@ -48,7 +48,7 @@ class TAC_Callprivate(TAC_Statement):
                     try:
                         known_returns.add(state.get_non_fallthrough_pc(stmt.arg1_val or state.registers[stmt.arg1_var]))
                     except (VMSymbolicError, KeyError):
-                        log.exception(f"(Ignored) Failed to lookup RETURNPRIVATE return address ({stmt.arg1_val or state.registers[stmt.arg1_var]})")
+                        log.exception(f"(Ignored) Failed to lookup RETURNPRIVATE return address ({stmt.arg1_var}:{stmt.arg1_val or state.registers[stmt.arg1_var]})")
         known_returns = list(known_returns)
 
         state.callstack.append((state.pc, known_returns, self.res_vars))
