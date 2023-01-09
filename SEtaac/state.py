@@ -200,7 +200,7 @@ class SymbolicEVMState:
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
 
         if not is_concrete(destination_val):
-            raise VMSymbolicError('Symbolic jump destination currently not supported.')
+            raise VMSymbolicError(f'Symbolic jump destination currently not supported. ({destination_val=})')
         else:
             destination_val = hex(bv_unsigned_value(destination_val))
 
@@ -209,9 +209,9 @@ class SymbolicEVMState:
         candidate_bbs = [bb for bb in curr_bb.succ if bb.id in candidate_destination_vals]
 
         if len(candidate_bbs) == 0:
-            raise VMSymbolicError('Unable to find jump destination.')
+            raise VMSymbolicError(f'Unable to find jump destination. ({candidate_destination_vals=}, {curr_bb.succ=})')
         elif len(candidate_bbs) > 1:
-            raise VMSymbolicError('Multiple jump destinations.')
+            raise VMSymbolicError(f'Multiple jump destinations. ({candidate_destination_vals=}, {curr_bb.succ=})')
 
         non_fallthrough_bb = candidate_bbs[0]
 
