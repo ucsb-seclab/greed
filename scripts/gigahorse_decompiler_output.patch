@@ -1,0 +1,12 @@
+diff --git a/logic/decompiler_output.dl b/logic/decompiler_output.dl
+index 5342f24..102d32c 100644
+--- a/logic/decompiler_output.dl
++++ b/logic/decompiler_output.dl
+@@ -12,6 +12,7 @@
+ .output IRPublicFunction(IO="file", filename = "PublicFunction.csv", delimiter = "\t")
+ .output Statement_IRStatement
+ .output CycleEntry
++.output StaticallyGuardedBlock, Dominates, StorageVariableType
+ 
+ .decl FunctionalBlock_Uses_Local(block: IRBlock, stackIndex: StackIndex)
+ 
