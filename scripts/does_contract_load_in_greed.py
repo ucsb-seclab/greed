@@ -35,6 +35,7 @@ if __name__ == "__main__":
 
     try:
         main(args)
-        exit(0)
     except:
         exit(1)
+
+    exit(0)
