@@ -33,5 +33,5 @@ echo "Running gigahorse.py"
 curr_dir=$(pwd); cd $GIGAHORSE_DIR; gigahorse_version=$(git rev-parse HEAD); cd $curr_dir; printf "\tGigahorse version: $gigahorse_version\n" >> exec_info &&
 curr_dir=$(pwd); cd $SETAAC_DIR; greed_version=$(git rev-parse HEAD); cd $curr_dir; printf "\tgreed version: $greed_version\n" >> exec_info &&
 cp .temp/contract/out/* . &&
-cp .temp/contract/contract.dasm .temp/contract/solidity_version.csv . &&
+cp .temp/contract/contract.dasm .temp/contract/*.csv . &&
 rm -rf .temp bytecode.hex
