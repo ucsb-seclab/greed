@@ -49,7 +49,8 @@ class TAC_parser:
         for stmt_id, var, pos in load_csv(f"{self.target_dir}/TAC_Use.csv"):
             tac_uses[stmt_id].append((var, int(pos)))
         
-        func_name_to_sig = load_csv_map(f"{self.target_dir}/ConstantPossibleSigHash.csv")
+        func_name_to_sig = load_csv(f"{self.target_dir}/ConstantPossibleSigHash.csv")
+        func_name_to_sig = {x: y for x, y in zip(*list(zip(*func_name_to_sig))[-2:])}
         # Entries with a signature longer than 10 characters are most likely false positives of the analysis, not safe to import.
         func_name_to_sig = {name:"0x"+signature[2:].zfill(8) for signature, name in func_name_to_sig.items() if len(signature) <= 10}
 
