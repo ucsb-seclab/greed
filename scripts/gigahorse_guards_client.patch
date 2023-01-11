@@ -1,5 +1,5 @@
 diff --git a/clientlib/guards.dl b/clientlib/guards.dl
-index f0f43d4..f15310a 100644
+index 40a0403..246979b 100644
 --- a/clientlib/guards.dl
 +++ b/clientlib/guards.dl
 @@ -1,5 +1,6 @@
@@ -9,3 +9,12 @@ index f0f43d4..f15310a 100644
  #include "memory_modeling/memory_modeling.dl"
  #include "data_structures.dl"
  #include "flows.dl"
+@@ -15,7 +16,7 @@
+    - `require(msg.sender == storageVar.owner())`
+ */
+ .decl StaticallyGuardedBlock(guardedBlock: Block, globalVal: Value)
+-
++.output StaticallyGuardedBlock, Dominates
+ StaticallyGuardedBlock(guardedBlock, globalVal) :-
+   ControlsWith(_, guardedBlock, predicate),
+   SenderGuard(globalVal, predicate).
