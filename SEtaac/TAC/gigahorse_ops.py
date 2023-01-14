@@ -42,10 +42,7 @@ class TAC_Callprivate(TAC_Statement):
         dest = target_bb.first_ins.id
 
         known_returns = set()
-        curr_bb = state.project.factory.block(state.curr_stmt.block_id);
-        if len(curr_bb.succ) > 1:
-            import IPython; IPython.embed();
-
+        curr_bb = state.project.factory.block(state.curr_stmt.block_id)
         try:
             saved_return_pc = state.get_fallthrough_pc()
         except VMNoSuccessors:

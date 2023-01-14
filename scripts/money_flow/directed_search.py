@@ -33,7 +33,7 @@ def main(args):
 
     init_ctx = {}  # "CALLDATA": "b88d4fde"}
     xid = gen_exec_id()
-    entry_state = p.factory.entry_state(xid=xid)
+    entry_state = p.factory.entry_state(xid=xid, max_calldatasize=1024)
     entry_state.set_init_ctx(init_ctx=init_ctx)
 
     simgr = p.factory.simgr(entry_state=entry_state)
