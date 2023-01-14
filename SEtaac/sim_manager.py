@@ -15,6 +15,7 @@ import requests
 # REPORTING
 # https://medium.com/@ManHay_Hong/how-to-create-a-telegram-bot-and-send-messages-with-python-4cf314d9fa3e 
 # https://api.telegram.org/HackcessWarnings_bot:AAGzjgbofUi5ExDcEiEkVa0nrtXTdL5kXwY/getUpdates
+'''
 def send_to_hackcess_bot(bot_message):
     tg_chat_id = 235086606
     tg_bot_token = "5473179717:AAGzjgbofUi5ExDcEiEkVa0nrtXTdL5kXwY"
@@ -31,6 +32,7 @@ def send_to_hackcess_bot(bot_message):
         response = requests.get(send_text)
     except Exception as e:
         pass 
+'''
 
 class SimulationManager:
     def __init__(self, entry_state: SymbolicEVMState, project):
@@ -191,14 +193,14 @@ class SimulationManager:
             state.error = e
             state.halt = True
             successors += [state]
-            from web3 import Web3
-            w3 = Web3()
-            checksummed_address = w3.toChecksumAddress(hex(bv_unsigned_value(state.ctx["ADDRESS"])))
-            for t in self._techniques:
-                if hasattr(t, "_target_stmt"):
-                    target_pc = t._target_stmt.id
-                    break
-            send_to_hackcess_bot(f"{checksummed_address} : {state.error.args[0]} | target {target_pc}")
+            #from web3 import Web3
+            #w3 = Web3()
+            #checksummed_address = w3.toChecksumAddress(hex(bv_unsigned_value(state.ctx["ADDRESS"])))
+            #for t in self._techniques:
+            #    if hasattr(t, "_target_stmt"):
+            #        target_pc = t._target_stmt.id
+            #        break
+            #send_to_hackcess_bot(f"{checksummed_address} : {state.error.args[0]} | target {target_pc}")
 
         # Let exploration techniques manipulate the successors
         for t in self._techniques: 
