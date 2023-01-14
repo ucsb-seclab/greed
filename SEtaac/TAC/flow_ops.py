@@ -121,7 +121,7 @@ class TAC_BaseCall(TAC_Statement):
                 logging.info("Calling precompiled identity contract")
                 istart = argsOffset_val
                 ilen = argsSize_val
-                state.memory.copy_return_data(istart, ilen, ostart, olen)
+                state.memory.memcopy(ostart, state.memory.copy(state), istart, ilen)
                 # Assuming this always succeeds
                 state.registers[self.res1_var] = BVV(1, 256)
             else:

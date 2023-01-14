@@ -124,6 +124,7 @@ class LambdaMemory:
                                                                      parent=self.root_lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
+        assert(source != self, "ERROR: memcopy source was not copied")
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
@@ -131,22 +132,12 @@ class LambdaMemory:
                                                               parent=self.root_lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
+        assert(source != self, "ERROR: memcopy source was not copied")
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
         self.root_lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
                                                                       parent=self.root_lambda_constraint)
-
-    def copy_return_data(self, istart, ilen, ostart, olen):
-        self.memcopy(ostart, self, istart, ilen)
-        # if concrete(ilen) and concrete(olen):
-        #     self.write(ostart, olen, self.read(istart, min(ilen, olen)) + [0] * max(olen - ilen, 0))
-        # elif concrete(olen):
-        #     self.write(ostart, olen, [z3.If(i < ilen, self[istart + i], 0) for i in range(olen)])
-        # else:
-        #     self.write(ostart, SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE,
-        #                [z3.If(i < olen, z3.If(i < ilen, self[istart + i], 0), self[ostart + i]) for i in
-        #                 range(SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE)])
 
     def copy(self, new_state):
         new_memory = LambdaMemory(partial_init=True)
