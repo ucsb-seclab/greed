@@ -25,7 +25,7 @@ class TAC_Sha3(TAC_Statement):
     __internal_name__ = "SHA3"
     __aliases__ = {'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
                    'size_var': 'arg2_var', 'size_val': 'arg2_val',
-                   'hash_var': 'res_var', 'hash_val': 'res_val'}
+                   'hash_var': 'res1_var', 'hash_val': 'res1_val'}
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -101,7 +101,7 @@ class TAC_Stop(TAC_Statement):
 
 class TAC_Address(TAC_Statement):
     __internal_name__ = "ADDRESS"
-    __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
+    __aliases__ = {'address_var': 'res1_var', 'address_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -114,7 +114,7 @@ class TAC_Balance(TAC_Statement):
     __internal_name__ = "BALANCE"
     __aliases__ = {
         'address_var': 'arg1_var', 'address_val': 'arg1_val',
-        'balance_var': 'res_var', 'balance_val': 'res_val'
+        'balance_var': 'res1_var', 'balance_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -136,7 +136,7 @@ class TAC_Balance(TAC_Statement):
 
 class TAC_Origin(TAC_Statement):
     __internal_name__ = "ORIGIN"
-    __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
+    __aliases__ = {'address_var': 'res1_var', 'address_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -148,7 +148,7 @@ class TAC_Origin(TAC_Statement):
 
 class TAC_Caller(TAC_Statement):
     __internal_name__ = "CALLER"
-    __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
+    __aliases__ = {'address_var': 'res1_var', 'address_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -160,7 +160,7 @@ class TAC_Caller(TAC_Statement):
 
 class TAC_Callvalue(TAC_Statement):
     __internal_name__ = "CALLVALUE"
-    __aliases__ = {'value_var': 'res_var', 'value_val': 'res_val'}
+    __aliases__ = {'value_var': 'res1_var', 'value_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -175,7 +175,7 @@ class TAC_Calldataload(TAC_Statement):
 
     __internal_name__ = "CALLDATALOAD"
     __aliases__ = {'byte_offset_var': 'arg1_var', 'byte_offset_val': 'arg1_val',
-                   'calldata_var': 'res_var', 'calldata_val': 'res_val'}
+                   'calldata_var': 'res1_var', 'calldata_val': 'res1_val'}
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -200,7 +200,7 @@ class TAC_Calldataload(TAC_Statement):
 
 class TAC_Calldatasize(TAC_Statement):
     __internal_name__ = "CALLDATASIZE"
-    __aliases__ = {'calldatasize_var': 'res_var', 'calldatasize_val': 'res_val'}
+    __aliases__ = {'calldatasize_var': 'res1_var', 'calldatasize_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -267,7 +267,7 @@ class TAC_Codecopy(TAC_Statement):
 class TAC_Gasprice(TAC_Statement):
     __internal_name__ = "GASPRICE"
     __aliases__ = {
-        'price_var': 'res_var', 'price_val': 'res_val'
+        'price_var': 'res1_var', 'price_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -282,7 +282,7 @@ class TAC_Extcodesize(TAC_Statement):
     __internal_name__ = "EXTCODESIZE"
     __aliases__ = {
         'address_var': 'arg1_var', 'address_val': 'arg1_val',
-        'size_var': 'res_var', 'size_val': 'res_val'
+        'size_var': 'res1_var', 'size_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -325,7 +325,7 @@ class TAC_Extcodecopy(TAC_Statement):
 class TAC_Returndatasize(TAC_Statement):
     __internal_name__ = "RETURNDATASIZE"
     __aliases__ = {
-        'size_var': 'res_var', 'size_val': 'res_val'
+        'size_var': 'res1_var', 'size_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -353,7 +353,7 @@ class TAC_Extcodehash(TAC_Statement):
     __internal_name__ = "EXTCODEHASH"
     __aliases__ = {
         'address_var': 'arg1_var', 'address_val': 'arg1_val',
-        'hash_var': 'res_var', 'hash_val': 'res_val'
+        'hash_var': 'res1_var', 'hash_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -371,7 +371,7 @@ class TAC_Blockhash(TAC_Statement):
     __internal_name__ = "BLOCKHASH"
     __aliases__ = {
         'blockNumber_var': 'arg1_var', 'blockNumber_val': 'arg1_val',
-        'hash_var': 'res_var', 'hash_val': 'res_val'
+        'hash_var': 'res1_var', 'hash_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -388,7 +388,7 @@ class TAC_Blockhash(TAC_Statement):
 class TAC_Coinbase(TAC_Statement):
     __internal_name__ = "COINBASE"
     __aliases__ = {
-        'address_var': 'res_var', 'address_val': 'res_val',
+        'address_var': 'res1_var', 'address_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -402,7 +402,7 @@ class TAC_Coinbase(TAC_Statement):
 class TAC_Timestamp(TAC_Statement):
     __internal_name__ = "TIMESTAMP"
     __aliases__ = {
-        'timestamp_var': 'res_var', 'timestamp_val': 'res_val',
+        'timestamp_var': 'res1_var', 'timestamp_val': 'res1_val',
     }
 
     @TAC_Statement.handler_with_side_effects
@@ -422,7 +422,7 @@ class TAC_Timestamp(TAC_Statement):
 class TAC_Number(TAC_Statement):
     __internal_name__ = "NUMBER"
     __aliases__ = {
-        'blockNumber_var': 'res_var', 'blockNumber_val': 'res_val',
+        'blockNumber_var': 'res1_var', 'blockNumber_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -436,7 +436,7 @@ class TAC_Number(TAC_Statement):
 class TAC_Difficulty(TAC_Statement):
     __internal_name__ = "DIFFICULTY"
     __aliases__ = {
-        'difficulty_var': 'res_var', 'difficulty_val': 'res_val',
+        'difficulty_var': 'res1_var', 'difficulty_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -450,7 +450,7 @@ class TAC_Difficulty(TAC_Statement):
 class TAC_Gaslimit(TAC_Statement):
     __internal_name__ = "GASLIMIT"
     __aliases__ = {
-        'gasLimit_var': 'res_var', 'gasLimit_val': 'res_val',
+        'gasLimit_var': 'res1_var', 'gasLimit_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -464,7 +464,7 @@ class TAC_Gaslimit(TAC_Statement):
 class TAC_Chainid(TAC_Statement):
     __internal_name__ = "CHAINID"
     __aliases__ = {
-        'chainID_var': 'res_var', 'chainID_val': 'res_val',
+        'chainID_var': 'res1_var', 'chainID_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -480,7 +480,7 @@ class TAC_Chainid(TAC_Statement):
 class TAC_Selfbalance(TAC_Statement):
     __internal_name__ = "SELFBALANCE"
     __aliases__ = {
-        'balance_var': 'res_var', 'balance_val': 'res_val',
+        'balance_var': 'res1_var', 'balance_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -494,7 +494,7 @@ class TAC_Selfbalance(TAC_Statement):
 class TAC_Basefee(TAC_Statement):
     __internal_name__ = "BASEFEE"
     __aliases__ = {
-        'baseFee_var': 'res_var', 'baseFee_val': 'res_val',
+        'baseFee_var': 'res1_var', 'baseFee_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -542,7 +542,7 @@ class TAC_Create(TAC_Statement):
         'value_var': 'arg1_var', 'value_val': 'arg1_val',
         'offset_var': 'arg2_var', 'offset_val': 'arg2_val',
         'size_var': 'arg3_var', 'size_val': 'arg3_val',
-        'address_var': 'res_var', 'address_val': 'res_val'
+        'address_var': 'res1_var', 'address_val': 'res1_val'
     }
 
     @TAC_Statement.handler_with_side_effects
@@ -566,7 +566,7 @@ class TAC_Create2(TAC_Statement):
         'offset_var': 'arg2_var', 'offset_val': 'arg2_val',
         'size_var': 'arg3_var', 'size_val': 'arg3_val',
         'salt_var': 'arg4_var', 'salt_val': 'arg4_val',
-        'address_var': 'res_var', 'address_val': 'res_val'
+        'address_var': 'res1_var', 'address_val': 'res1_val'
     }
 
     @TAC_Statement.handler_with_side_effects
@@ -586,7 +586,7 @@ class TAC_Create2(TAC_Statement):
 class TAC_Pc(TAC_Statement):
     __internal_name__ = "PC"
     __aliases__ = {
-        'counter_var': 'res_var', 'counter_val': 'res_val',
+        'counter_var': 'res1_var', 'counter_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -594,7 +594,7 @@ class TAC_Pc(TAC_Statement):
         # todo: this pc will most probably be different from what the evm expects
         raise VMException("PC not available if executing TAC")
 
-        # state.registers[self.res_var] = state.pc
+        # state.registers[self.res1_var] = state.pc
         # state.set_next_pc()
         # return [state]
 
@@ -628,7 +628,7 @@ class TAC_Selfdestruct(TAC_Statement):
 class TAC_Gas(TAC_Statement):
     __internal_name__ = "GAS"
     __aliases__ = {
-        'gas_var': 'res_var', 'gas_val': 'res_val'
+        'gas_var': 'res1_var', 'gas_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects

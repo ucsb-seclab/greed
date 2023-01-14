@@ -41,15 +41,12 @@ class TAC_Callprivate(TAC_Statement):
         # read destination
         dest = target_bb.first_ins.id
 
-        known_returns = set()
-        curr_bb = state.project.factory.block(state.curr_stmt.block_id)
         try:
             saved_return_pc = state.get_fallthrough_pc()
         except VMNoSuccessors:
             fake_exit_bb = state.project.factory.block('fake_exit')
             saved_return_pc = fake_exit_bb.statements[0].id
 
-        # todo: what happens here if 2 successors?
         state.callstack.append((state.pc, saved_return_pc, self.res_vars))
 
         # jump to target
