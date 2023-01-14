@@ -3,7 +3,7 @@ import logging
 from SEtaac.TAC.base import TAC_Statement
 from SEtaac.solver.shortcuts import *
 from SEtaac.state import SymbolicEVMState
-from SEtaac.utils.exceptions import VMSymbolicError
+from SEtaac.utils.exceptions import VMNoSuccessors
 
 __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_Const', 'TAC_Nop']
 
@@ -42,16 +42,18 @@ class TAC_Callprivate(TAC_Statement):
         dest = target_bb.first_ins.id
 
         known_returns = set()
-        for bb in target_bb.function.blocks:
-            for stmt in bb.statements:
-                if stmt.__internal_name__ == "RETURNPRIVATE":
-                    try:
-                        known_returns.add(state.get_non_fallthrough_pc(stmt.arg1_val or state.registers[stmt.arg1_var]))
-                    except (VMSymbolicError, KeyError):
-                        log.exception(f"(Ignored) Failed to lookup RETURNPRIVATE return address ({stmt.arg1_var}:{stmt.arg1_val or state.registers[stmt.arg1_var]})")
-        known_returns = list(known_returns)
+        curr_bb = state.project.factory.block(state.curr_stmt.block_id);
+        if len(curr_bb.succ) > 1:
+            import IPython; IPython.embed();
 
-        state.callstack.append((state.pc, known_returns, self.res_vars))
+        try:
+            saved_return_pc = state.get_fallthrough_pc()
+        except VMNoSuccessors:
+            fake_exit_bb = state.project.factory.block('fake_exit')
+            saved_return_pc = fake_exit_bb.statements[0].id
+
+        # todo: what happens here if 2 successors?
+        state.callstack.append((state.pc, saved_return_pc, self.res_vars))
 
         # jump to target
         state.pc = dest
@@ -65,18 +67,15 @@ class TAC_Returnprivate(TAC_Statement):
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         # pop stack frame (read callprivate pc from stack)
-        callprivate_pc, _, callprivate_return_vars = state.callstack.pop()
+        callprivate_pc, saved_return_pc, callprivate_return_vars = state.callstack.pop()
 
         # set the return variables to their correct values
         returnprivate_args = self.arg_vars[1:]
         for callprivate_return_var, returnprivate_arg in zip(callprivate_return_vars, returnprivate_args):
             state.registers[callprivate_return_var] = state.registers[returnprivate_arg]
 
-        # restore callprivate pc to translate return pc
-        state.pc = callprivate_pc
-        return_pc = state.get_non_fallthrough_pc(state.registers[self.arg1_var])
+        state.pc = saved_return_pc
 
-        state.pc = return_pc
         return [state]
 
 

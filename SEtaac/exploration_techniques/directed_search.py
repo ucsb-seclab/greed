@@ -62,9 +62,8 @@ class DirectedSearch(ExplorationTechnique):
             return False, None
         else:
             # otherwise we can look at the callstack
-            known_saved_returns = [known_return for call in state_a.callstack for known_return in call[1]]
-            for saved_return_id in known_saved_returns:
-                saved_return_stmt = factory.statement(saved_return_id)
+            for _, saved_return_pc, _ in state_a.callstack:
+                saved_return_stmt = factory.statement(saved_return_pc)
                 saved_return_block = factory.block(saved_return_stmt.block_id)
 
                 # check if any RETURNPRIVATE is reachable
