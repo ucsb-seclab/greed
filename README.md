@@ -15,7 +15,7 @@ pip install -e SEtaac
 # Setup SEtaac and gigahorse
 ./setup.sh
 # Setup the preferred solver (bitwuzla or boolector)
-./setup_bitwuzla.sh
+./setup_yices2.sh
 ```
 
 ### Usage
