@@ -190,6 +190,8 @@ class SymbolicEVMState:
             #  case 2: end of the block and one target
             log.debug("Next stmt is {}".format(curr_bb.succ[0].first_ins.id))
             return curr_bb.succ[0].first_ins.id
+        elif curr_bb.fallthrough_edge is None:
+            raise VMNoSuccessors(f"Block {curr_bb} does not have a fallthrough edge.")
         else:
             #  case 3: end of the block and more than one target
             fallthrough_bb = curr_bb.fallthrough_edge
