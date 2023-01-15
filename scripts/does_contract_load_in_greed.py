@@ -2,6 +2,7 @@
 
 import argparse
 import logging
+import traceback
 
 from SEtaac import Project
 from SEtaac.utils import gen_exec_id
@@ -36,6 +37,7 @@ if __name__ == "__main__":
     try:
         main(args)
     except:
+        traceback.print_exc()
         exit(1)
 
     exit(0)
