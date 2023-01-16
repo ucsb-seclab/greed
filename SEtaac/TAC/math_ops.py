@@ -177,6 +177,7 @@ class TAC_Exp(TAC_Statement):
                         state.add_constraint(Equal(self.exp_val, exp_concrete_val))
                         # Calculate the result
                         res = pow(base_concrete_val, bv_unsigned_value(exp_concrete_val), 2 ** 256)
+                        state.registers[self.res1_var] = BVV(res, 256)
                     else:
                         raise VMSymbolicError('Exponentiation with symbolic exponent currently not supported.')
         else:
