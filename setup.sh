@@ -55,6 +55,8 @@ if [ -z $NO_GIGAHORSE ]; then
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
   PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_data_structures.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
+  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_memlimit.patch
+  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
   cd $SETAAC_DIR
 
   # compile gigahorse clients
