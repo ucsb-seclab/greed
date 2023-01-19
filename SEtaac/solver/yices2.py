@@ -66,7 +66,9 @@ class YicesTermBool(YicesTerm):
 
 
 class YicesTermBV(YicesTerm):
-    pass
+    @property
+    def bitsize(self):
+        return yices.Terms.bitsize(self.id)
 
 
 class YicesTermArray(YicesTerm):
