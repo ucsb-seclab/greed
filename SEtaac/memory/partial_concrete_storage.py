@@ -11,7 +11,7 @@ from SEtaac.solver.shortcuts import *
 from SEtaac.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+
 
 def get_storage(contract_address, index):
     """
