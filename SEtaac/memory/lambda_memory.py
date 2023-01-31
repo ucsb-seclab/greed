@@ -103,11 +103,25 @@ class LambdaMemory:
         if bv_unsigned_value(n) == 1:
             return self[index]
         else:
+            if is_concrete(index):
+                tag = f"READN_{self.tag}_BASE{self._base.id}_{bv_unsigned_value(index)}_{bv_unsigned_value(n)}"
+            else:
+                tag = f"READN_{self.tag}_BASE{self._base.id}_sym{index.id}_{bv_unsigned_value(n)}"
+
+            res = get_bv_by_name(tag)
+            if res is None:
+                res = BVS(tag, bv_unsigned_value(n)*8)
+            else:
+                # cache hit
+                return res
+
             vv = list()
             for i in range(bv_unsigned_value(n)):
                 read_index = BV_Add(index, BVV(i, 256))
                 vv.append(self[read_index])
-            return BV_Concat(vv)
+
+            self.state.add_constraint(Equal(res, BV_Concat(vv)))
+            return res
 
     def memset(self, start, value, size):
         old_base = self._base
