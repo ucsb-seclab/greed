@@ -229,7 +229,7 @@ class TAC_Codesize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        state.registers[self.res1_var] = len(state.code)
+        state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', state.ctx, state.xid)
 
         state.set_next_pc()
         return [state]
