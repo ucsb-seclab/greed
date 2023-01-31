@@ -138,7 +138,7 @@ class LambdaMemory:
                                                                      parent=self.root_lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
-        assert(source != self, "ERROR: memcopy source was not copied")
+        assert source != self, "ERROR: memcopy source was not copied"
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
@@ -146,7 +146,7 @@ class LambdaMemory:
                                                               parent=self.root_lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
-        assert(source != self, "ERROR: memcopy source was not copied")
+        assert source != self, "ERROR: memcopy source was not copied"
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
