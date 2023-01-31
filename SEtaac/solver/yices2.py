@@ -149,6 +149,13 @@ class Yices2(Solver):
         res_str = yices.Terms.to_string(bv.id, width=-1)
         return int(res_str[2:], 2)
 
+    def get_bv_by_name(self, symbol):
+        id = yices.Terms.get_by_name(symbol)
+        if id is None:
+            return None
+        else:
+            return YicesTermBV(operator="bvs", yices_id=id, name=symbol)
+
     def is_concrete(self, bv: YicesTermBV) -> bool:
         assert isinstance(bv, YicesTermBV)
         return yices.Terms.constructor(bv.id) == yices.Constructor.BV_CONSTANT

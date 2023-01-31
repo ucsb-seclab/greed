@@ -1,9 +1,9 @@
 __all__ = [
     "ctx_or_symbolic", "BVSort", "BVV", "BVS", "Array", "If", "Equal", "NotEqual", "Or", "And", "Not",
-    "bv_unsigned_value", "is_concrete", "BV_Extract", "BV_Concat", "BV_Add", "BV_Sub", "BV_Mul", "BV_UDiv",
-    "BV_SDiv", "BV_SMod", "BV_SRem", "BV_URem", "BV_Sign_Extend", "BV_Zero_Extend", "BV_UGE", "BV_ULE",
-    "BV_UGT", "BV_ULT", "BV_SGE", "BV_SLE", "BV_SGT", "BV_SLT", "BV_And", "BV_Or", "BV_Xor", "BV_Not",
-    "BV_Shl", "BV_Shr", "BV_Sar", "Array_Store", "Array_Select"
+    "bv_unsigned_value", "get_bv_by_name", "is_concrete", "BV_Extract", "BV_Concat", "BV_Add", "BV_Sub",
+    "BV_Mul", "BV_UDiv", "BV_SDiv", "BV_SMod", "BV_SRem", "BV_URem", "BV_Sign_Extend", "BV_Zero_Extend",
+    "BV_UGE", "BV_ULE", "BV_UGT", "BV_ULT", "BV_SGE", "BV_SLE", "BV_SGT", "BV_SLT", "BV_And", "BV_Or",
+    "BV_Xor", "BV_Not", "BV_Shl", "BV_Shr", "BV_Sar", "Array_Store", "Array_Select"
 ]
 
 
@@ -76,6 +76,10 @@ def Not(a):
 
 def bv_unsigned_value(bv):
     return _SOLVER.bv_unsigned_value(bv)
+
+
+def get_bv_by_name(symbol):
+    return _SOLVER.get_bv_by_name(symbol)
 
 
 def is_concrete(bv):
