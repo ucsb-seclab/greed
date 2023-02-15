@@ -13,6 +13,7 @@ class YicesTerm:
         self.children = children if children else []
         self.num_children = len(self.children)
         self.operator = operator
+        self.is_simplified = False
 
     @property
     def value(self):
@@ -133,7 +134,9 @@ class Yices2(Solver):
         # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
         # yices_id = yices.Terms.bvconst_integer(width, value)
         yices_id = yices.Terms.parse_bvbin(format(value % (2**width), f'#0{width+2}b')[2:])
-        return YicesTermBV(operator="bvv", yices_id=yices_id, value=value)
+        res = YicesTermBV(operator="bvv", yices_id=yices_id, value=value)
+        res.is_simplified = True
+        return res
 
     def BVS(self, symbol: str, width: int) -> YicesTermBV:
         assert isinstance(symbol, str)

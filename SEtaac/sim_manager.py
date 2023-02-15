@@ -5,34 +5,9 @@ from typing import Callable
 
 from SEtaac import options
 from SEtaac.state import SymbolicEVMState
-from SEtaac.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
-
-import requests
-
-# REPORTING
-# https://medium.com/@ManHay_Hong/how-to-create-a-telegram-bot-and-send-messages-with-python-4cf314d9fa3e 
-# https://api.telegram.org/HackcessWarnings_bot:AAGzjgbofUi5ExDcEiEkVa0nrtXTdL5kXwY/getUpdates
-'''
-def send_to_hackcess_bot(bot_message):
-    tg_chat_id = 235086606
-    tg_bot_token = "5473179717:AAGzjgbofUi5ExDcEiEkVa0nrtXTdL5kXwY"
-    
-    if tg_chat_id == None or tg_bot_token == None:
-        return 
-
-    report_to_bot_token = tg_bot_token
-    report_to_bot_chat = tg_chat_id
-    
-    send_text = 'https://api.telegram.org/bot' + report_to_bot_token + '/sendMessage?chat_id=' + str(report_to_bot_chat) + '&text=' + bot_message 
-    
-    try:
-        response = requests.get(send_text)
-    except Exception as e:
-        pass 
-'''
 
 class SimulationManager:
     def __init__(self, entry_state: SymbolicEVMState, project):
@@ -168,6 +143,8 @@ class SimulationManager:
     def single_step_state(self, state: SymbolicEVMState):
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
+
+        state.solver.simplify()
 
         # Some inspect capabilities, uses the plugin.
         if hasattr(state, "inspect"):
