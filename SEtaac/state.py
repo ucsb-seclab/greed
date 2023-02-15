@@ -82,7 +82,8 @@ class SymbolicEVMState:
 
             if "CALLDATASIZE" in init_ctx:
                 # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
-                self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
+                self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
+                # self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
 
