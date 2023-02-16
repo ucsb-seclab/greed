@@ -148,7 +148,7 @@ class TAC_parser:
         tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_fallthrough_edge = load_csv_map(f"{self.target_dir}/IRFallthroughEdge.csv")
-        tac_guarded_blocks = load_csv_map(f"{self.target_dir}/StaticallyGuardedBlock.csv")
+
 
         # parse all blocks
         blocks = dict()
@@ -168,13 +168,6 @@ class TAC_parser:
             fallthrough_block_id = tac_fallthrough_edge.get(block_id, None)
             if fallthrough_block_id is not None:
                 blocks[block_id].fallthrough_edge = blocks[fallthrough_block_id]
-        
-        # Import the guard information
-        for block_id in blocks:
-            if tac_guarded_blocks.get(block_id, None) is not None:
-                blocks[block_id].guarded_by_caller = True
-            else:
-                blocks[block_id].guarded_by_caller = False
 
         # inject a fake exit block to simplify the handling of CALLPRIVATE without successors
         fake_exit_stmt = self.factory.statement('fake_exit')
@@ -228,6 +221,36 @@ class TAC_parser:
             function.arguments = [self.phimap.get(translate_alias(a), translate_alias(a)) for a in function.arguments]
 
         return functions
+
+    def parse_privileged_slots(self):
+        privileged_slots = set()
+        tac_guarded_blocks = load_csv_map(f"{self.target_dir}/StaticallyGuardedBlock.csv")
+        # tac_dominators = load_csv_map(f"{self.target_dir}/Dominates.csv")
+
+        # find guarding slots
+        guarding_slots = set([g.split('_')[0] for g in tac_guarded_blocks.values() if g.startswith('0x')])
+
+        for slot in guarding_slots:
+            privileged_slots.add(slot)
+            log.debug(f"{slot} is a guard")
+
+        all_fixed_sstores = [s for s in self.factory.project.statement_at.values()
+                             if s.__internal_name__ == "SSTORE"
+                             and s.arg1_val is not None]
+
+        all_guarded_blocks = [id for id in tac_guarded_blocks]
+
+        # find guarded slots
+        all_slots = {s.arg1_val.value for s in all_fixed_sstores}
+
+        for slot in all_slots:
+            access_guarded = [(s.block_id in all_guarded_blocks) for s in all_fixed_sstores if s.arg1_val.value == slot]
+
+            if all(access_guarded):
+                privileged_slots.add(hex(slot))
+                log.debug(f"{hex(slot)} is guarded")
+
+        return privileged_slots
 
     def parse_abi(self):
         if not os.path.exists(f"{self.target_dir}/abi.json"):

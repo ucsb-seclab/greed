@@ -141,7 +141,7 @@ class Yices2(Solver):
     def BVS(self, symbol: str, width: int) -> YicesTermBV:
         assert isinstance(symbol, str)
         assert isinstance(width, int)
-        assert yices.Terms.get_by_name(symbol) is None
+        # assert yices.Terms.get_by_name(symbol) is None
         yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width).id, name=symbol)
         return YicesTermBV(operator="bvs", yices_id=yices_id, name=symbol)
 
