@@ -3,10 +3,10 @@ import logging
 
 import IPython
 
-from SEtaac import Project
-from SEtaac.solver.shortcuts import *
-from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import HeartBeat
+from greed import Project
+from greed.solver.shortcuts import *
+from greed.utils import gen_exec_id
+from greed.exploration_techniques import HeartBeat
 
 def setup_logging():
     LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
@@ -20,9 +20,9 @@ def parse_args():
 
     # setup logging
     if args.debug:
-        logging.getLogger("SEtaac").setLevel("DEBUG")
+        logging.getLogger("greed").setLevel("DEBUG")
     else:
-        logging.getLogger("SEtaac").setLevel("INFO")
+        logging.getLogger("greed").setLevel("INFO")
 
     return args
 

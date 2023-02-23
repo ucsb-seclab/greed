@@ -1,7 +1,7 @@
 
 import logging
 
-from SEtaac.exploration_techniques import ExplorationTechnique
+from greed.exploration_techniques import ExplorationTechnique
 
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"

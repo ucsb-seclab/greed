@@ -1,18 +1,18 @@
-# SEtaac
+# greed
 
 A symbolic executor for the TAC IR used by Gigahorse
 
 ### Installation
 ```bash
 # Clone this repo
-git clone git@github.com:ucsb-seclab/SEtaac.git
+git clone git@github.com:ucsb-seclab/greed.git
 # Create a virtual environment (e.g., using virtualenvwrapper)
-mkvirtualenv SEtaac
+mkvirtualenv greed
 # Activate the virtual environment
-workon SEtaac
-# Install SEtaac
-pip install -e SEtaac
-# Setup SEtaac and gigahorse
+workon greed
+# Install greed
+pip install -e greed
+# Setup greed and gigahorse
 ./setup.sh
 # Setup the preferred solver (bitwuzla or boolector)
 ./setup_yices2.sh
@@ -41,15 +41,15 @@ decompile.sh contract.hex
 
 The source analysis only works on `x86_64` systems. The bytecode analyses should work on any system where `gigahorse` can be properly compiled. 
 
-Finally, to run `SEtaac`:
+Finally, to run `greed`:
 ```bash
-SEtaac /tmp/test_contract --debug
+greed /tmp/test_contract --debug
 ```
 
 ### Testing
 ```bash
 # Manually run a single test using run_testcase.py
-cd SEtaac/tests
+cd greed/tests
 ./run_testcase.py test_math --debug
 # Or run the full suite with pytest
 pytest

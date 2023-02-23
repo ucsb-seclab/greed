@@ -4,12 +4,12 @@ import logging
 
 import IPython
 
-from SEtaac import Project
-from SEtaac.utils import gen_exec_id
+from greed import Project
+from greed.utils import gen_exec_id
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
-log = logging.getLogger("SEtaac")
+log = logging.getLogger("greed")
 
 
 def main(args):

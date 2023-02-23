@@ -6,11 +6,11 @@ import os
 import sha3
 import web3
 
-from SEtaac import Project
-from SEtaac import options
-from SEtaac.solver.shortcuts import *
-from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, Prioritizer, SizeLimiter
+from greed import Project
+from greed import options
+from greed.solver.shortcuts import *
+from greed.utils import gen_exec_id
+from greed.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, Prioritizer, SizeLimiter
 
 from guard_blocks_checker import GuardedBlockChecker
 

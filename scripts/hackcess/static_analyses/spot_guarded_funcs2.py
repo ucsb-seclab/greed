@@ -3,9 +3,9 @@ import logging
 import networkx as nx
 import itertools 
 
-from SEtaac import Project
-from SEtaac.TAC.base import TAC_Statement
-from SEtaac import options
+from greed import Project
+from greed.TAC.base import TAC_Statement
+from greed import options
 
 
 import random

@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 assert 'VIRTUAL_ENV' in os.environ, "Cannot install outside of a Python virtualenv"
 
 setup(
-    name='SEtaac',
+    name='greed',
     version='0.1.0',
     packages=find_packages(),
     install_requires=[

@@ -4,9 +4,9 @@ import os
 
 import IPython
 
-from SEtaac import Project
-from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import SimgrViz
+from greed import Project
+from greed.utils import gen_exec_id
+from greed.exploration_techniques import SimgrViz
 
 if __package__:
     from . import common

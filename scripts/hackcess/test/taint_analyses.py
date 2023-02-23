@@ -1,6 +1,6 @@
 import logging
 
-from SEtaac.solver.shortcuts import *
+from greed.solver.shortcuts import *
 from sha_resolver import ShaResolver
 from utils import bcolors
 

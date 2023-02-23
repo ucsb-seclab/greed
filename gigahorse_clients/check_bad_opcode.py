@@ -7,7 +7,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from clientlib.facts_to_cfg import Statement, Block, Function, construct_cfg, load_csv_map  # type: ignore
 from opcodes import *
-from SEtaac import Project
+from greed import Project
 
 PRINT_UNRESOLVED_OPS = True
 PRINT_UNRESOLVED_OPS_UNREACHABLE = False

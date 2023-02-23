@@ -18,9 +18,9 @@ if __name__ == "__main__":
 
     # setup logging
     if args.debug:
-        logging.getLogger("SEtaac").setLevel("DEBUG")
+        logging.getLogger("greed").setLevel("DEBUG")
     else:
-        logging.getLogger("SEtaac").setLevel("INFO")
+        logging.getLogger("greed").setLevel("INFO")
 
     if args.target is None:
         print("Usage: <bin> --target TARGET_DIR")

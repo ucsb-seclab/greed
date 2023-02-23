@@ -4,8 +4,8 @@ import os
 
 import IPython
 
-from SEtaac import Project
-from SEtaac.solver.shortcuts import *
+from greed import Project
+from greed.solver.shortcuts import *
 
 if __package__:
     from . import common

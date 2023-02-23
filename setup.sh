@@ -13,20 +13,20 @@ j=1
 while (( $# >= 1 )); do
     case $1 in
     -j) j=$2; shift; shift;;
-    --path) SETAAC_DIR=$2; shift; shift;;
+    --path) GREED_DIR=$2; shift; shift;;
     --no-gigahorse) NO_GIGAHORSE=TRUE; shift; shift;;
     *) break;
     esac;
 done
 
 # navigate to this script's directory
-if [ -z $SETAAC_DIR ]; then
-  SETAAC_DIR=`dirname "${BASH_SOURCE[0]}"`
-  SETAAC_DIR=`readlink -f $SETAAC_DIR` || { echo "${bold}${red}Can't find SEtaac absolute path (please specify it with --path PATH)${normal}"; exit 1; }
+if [ -z $GREED_DIR ]; then
+  GREED_DIR=`dirname "${BASH_SOURCE[0]}"`
+  GREED_DIR=`readlink -f $GREED_DIR` || { echo "${bold}${red}Can't find greed absolute path (please specify it with --path PATH)${normal}"; exit 1; }
 fi
-GIGAHORSE_DIR=$SETAAC_DIR/gigahorse-toolchain
+GIGAHORSE_DIR=$GREED_DIR/gigahorse-toolchain
 
-cd $SETAAC_DIR
+cd $GREED_DIR
 
 # init the submodules (gigahorse-toolkit has submodules)
 # echo "Initializing gigahorse submodule.."
@@ -34,13 +34,13 @@ cd $SETAAC_DIR
 
 # link our scripts into virtualenv's bin dir
 echo "Linking scripts into virtualenv's bin directory.."
-for script in $SETAAC_DIR/scripts/{*.sh,*.py}; do
+for script in $GREED_DIR/scripts/{*.sh,*.py}; do
   ln -sf $script $VIRTUAL_ENV/bin/
 done
 
 # create alias for run.py
-echo "Creating alias run.py -> SEtaac.."
-ln -sf $SETAAC_DIR/scripts/run.py $VIRTUAL_ENV/bin/SEtaac
+echo "Creating alias run.py -> greed.."
+ln -sf $GREED_DIR/scripts/run.py $VIRTUAL_ENV/bin/greed
 
 if [ -z $NO_GIGAHORSE ]; then
   echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
@@ -49,15 +49,15 @@ if [ -z $NO_GIGAHORSE ]; then
 
   # apply patches
   cd $GIGAHORSE_DIR
-  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_guards_client.patch
+  PATCH_FILE=$GREED_DIR/scripts/gigahorse_guards_client.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
-  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_loops_semantics_client.patch
+  PATCH_FILE=$GREED_DIR/scripts/gigahorse_loops_semantics_client.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
-  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_data_structures.patch
+  PATCH_FILE=$GREED_DIR/scripts/gigahorse_data_structures.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
-  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_memlimit.patch
+  PATCH_FILE=$GREED_DIR/scripts/gigahorse_memlimit.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
-  cd $SETAAC_DIR
+  cd $GREED_DIR
 
   # compile gigahorse clients
   command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (https://souffle-lang.github.io/build, version 2.0.2 preferred)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
@@ -67,7 +67,7 @@ if [ -z $NO_GIGAHORSE ]; then
 
   cd $GIGAHORSE_DIR/souffle-addon
   make &> /dev/null || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
-  cd $SETAAC_DIR
+  cd $GREED_DIR
 
   # main
   echo "Compiling main.dl.."
@@ -106,6 +106,6 @@ fi
 
 # link our clients into gigahorse-toolkit
 echo "Linking clients into gigahorse-toolchain.."
-for client in $SETAAC_DIR/gigahorse_clients/{*.dl_compiled,*.py,lib} $SETAAC_DIR/gigahorse_clients/lib; do
-  ln -sf $client $SETAAC_DIR/gigahorse-toolchain/clients/
+for client in $GREED_DIR/gigahorse_clients/{*.dl_compiled,*.py,lib} $GREED_DIR/gigahorse_clients/lib; do
+  ln -sf $client $GREED_DIR/gigahorse-toolchain/clients/
 done

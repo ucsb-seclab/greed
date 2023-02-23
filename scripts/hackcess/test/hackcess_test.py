@@ -2,13 +2,13 @@ import sys
 import logging 
 import networkx as nx
 
-from SEtaac import Project
-from SEtaac.TAC.base import TAC_Statement
-from SEtaac import options
-from SEtaac.utils import gen_exec_id
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, Prioritizer
+from greed import Project
+from greed.TAC.base import TAC_Statement
+from greed import options
+from greed.utils import gen_exec_id
+from greed.exploration_techniques import DFS, DirectedSearch, HeartBeat, SimgrViz, Prioritizer
 
-from SEtaac.static_analyses import run_backward_slice
+from greed.static_analyses import run_backward_slice
 
 #from taint_analyses import CalldataToFuncTarget, CalldataToContractTarget
 from taint_analyses_v2 import CalldataToFuncTarget, CalldataToContractTarget

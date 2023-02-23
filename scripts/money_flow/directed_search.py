@@ -2,15 +2,15 @@
 import argparse
 import logging
 
-from SEtaac import Project
-from SEtaac import options
-from SEtaac.exploration_techniques import Prioritizer, DirectedSearch, HeartBeat
-from SEtaac.solver.shortcuts import *
-from SEtaac.utils import gen_exec_id
+from greed import Project
+from greed import options
+from greed.exploration_techniques import Prioritizer, DirectedSearch, HeartBeat
+from greed.solver.shortcuts import *
+from greed.utils import gen_exec_id
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
-log = logging.getLogger("SEtaac")
+log = logging.getLogger("greed")
 
 
 def main(args):

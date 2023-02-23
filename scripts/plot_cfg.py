@@ -2,11 +2,11 @@
 import argparse
 import logging
 
-from SEtaac import Project
+from greed import Project
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
-log = logging.getLogger("SEtaac")
+log = logging.getLogger("greed")
 
 
 def main(args):

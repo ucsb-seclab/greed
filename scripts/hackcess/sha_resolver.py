@@ -3,7 +3,7 @@ import logging
 import networkx as nx
 import sha3
 
-from SEtaac.solver.shortcuts import *
+from greed.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)

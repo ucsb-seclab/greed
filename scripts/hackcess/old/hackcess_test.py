@@ -1,9 +1,9 @@
 import sys
 
-from SEtaac import Project
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
-from SEtaac.solver.shortcuts import *
-from SEtaac.utils import gen_exec_id
+from greed import Project
+from greed.exploration_techniques import DFS, DirectedSearch, HeartBeat
+from greed.solver.shortcuts import *
+from greed.utils import gen_exec_id
 
 
 def run_it(entry_state, target_stmt):

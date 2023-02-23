@@ -10,26 +10,26 @@ red=$(tput setaf 160)
 
 while (( $# >= 1 )); do
     case $1 in
-    --path) SETAAC_DIR=$2; shift; shift;;
+    --path) GREED_DIR=$2; shift; shift;;
     *) break;
     esac;
 done
 
 # navigate to this script's directory
-if [ -z $SETAAC_DIR ]; then
-  SETAAC_DIR=`dirname "${BASH_SOURCE[0]}"`
-  SETAAC_DIR=`readlink -f $SETAAC_DIR` || { echo "${bold}${red}Can't find SEtaac absolute path (please specify it with --path PATH)${normal}"; exit 1; }
+if [ -z $GREED_DIR ]; then
+  GREED_DIR=`dirname "${BASH_SOURCE[0]}"`
+  GREED_DIR=`readlink -f $GREED_DIR` || { echo "${bold}${red}Can't find greed absolute path (please specify it with --path PATH)${normal}"; exit 1; }
 fi
-GIGAHORSE_DIR=$SETAAC_DIR/gigahorse-toolchain
+GIGAHORSE_DIR=$GREED_DIR/gigahorse-toolchain
 
-cd $SETAAC_DIR
+cd $GREED_DIR
 
 # clone the yices2 repo
-if [ ! -d $SETAAC_DIR/yices2 ]; then
+if [ ! -d $GREED_DIR/yices2 ]; then
   git clone git@github.com:SRI-CSL/yices2.git yices2
 fi
 
-cd $SETAAC_DIR/yices2
+cd $GREED_DIR/yices2
 
 # check if all required packages are installed (cmake, cython, libgmp-dev)
 dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
@@ -45,12 +45,12 @@ VIRTUAL_ENV_BIN=$VIRTUAL_ENV/bin
 VIRTUAL_ENV_LIB=`echo $VIRTUAL_ENV/lib/python3.*/site-packages`
 
 # finally, link bitwuzla/build/lib/ to the virtualenv's site-packages dir
-ln -sf $SETAAC_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
-ln -sf $SETAAC_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
+ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
+ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
 cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
 
 # clone the yices2 repo
-if [ ! -d $SETAAC_DIR/yices2_python_bindings ]; then
+if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
   git clone git@github.com:ruaronicola/yices2_python_bindings.git yices2_python_bindings
 fi
 

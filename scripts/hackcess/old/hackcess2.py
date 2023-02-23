@@ -4,12 +4,12 @@ import sys
 import networkx as nx
 import sha3
 
-from SEtaac import Project
-from SEtaac import options
-from SEtaac.TAC.base import TAC_Statement
-from SEtaac.exploration_techniques import DFS, DirectedSearch, HeartBeat
-from SEtaac.solver.shortcuts import *
-from SEtaac.utils import gen_exec_id
+from greed import Project
+from greed import options
+from greed.TAC.base import TAC_Statement
+from greed.exploration_techniques import DFS, DirectedSearch, HeartBeat
+from greed.solver.shortcuts import *
+from greed.utils import gen_exec_id
 
 log = logging.getLogger("Hackcess")
 log.setLevel(logging.INFO)

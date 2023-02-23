@@ -5,15 +5,15 @@ import logging
 
 from web3 import Web3
 
-from SEtaac import Project
-from SEtaac import options
-from SEtaac.exploration_techniques import ExplorationTechnique
-from SEtaac.utils import gen_exec_id
-from SEtaac.utils.solver.shortcuts import *
+from greed import Project
+from greed import options
+from greed.exploration_techniques import ExplorationTechnique
+from greed.utils import gen_exec_id
+from greed.utils.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)
-log = logging.getLogger("SEtaac")
+log = logging.getLogger("greed")
 
 # get w3 instance
 w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545'))

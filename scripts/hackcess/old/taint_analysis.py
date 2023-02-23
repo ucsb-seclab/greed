@@ -1,7 +1,7 @@
 import logging
 
-from SEtaac.memory.lambda_memory import LambdaMemcopyConstraint, LambdaMemsetInfiniteConstraint
-from SEtaac.solver.shortcuts import *
+from greed.memory.lambda_memory import LambdaMemcopyConstraint, LambdaMemsetInfiniteConstraint
+from greed.solver.shortcuts import *
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)

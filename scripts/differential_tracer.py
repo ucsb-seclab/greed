@@ -4,8 +4,8 @@ import argparse
 
 from collections import defaultdict
 from eth_dynamic_tools.analysis import Analyzer, BaseAnalysisAddOn, CallTracer
-from SEtaac import Project
-from SEtaac.utils import load_csv, gen_exec_id
+from greed import Project
+from greed.utils import load_csv, gen_exec_id
 
 
 class Tracer(BaseAnalysisAddOn):

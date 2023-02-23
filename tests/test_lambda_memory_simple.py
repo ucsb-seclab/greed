@@ -4,8 +4,8 @@ import os
 
 import IPython
 
-from SEtaac import Project
-from SEtaac.utils import gen_exec_id
+from greed import Project
+from greed.utils import gen_exec_id
 
 if __package__:
     from . import common
