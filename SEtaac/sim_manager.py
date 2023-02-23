@@ -8,6 +8,7 @@ from SEtaac.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
 
+
 class SimulationManager:
     def __init__(self, entry_state: SymbolicEVMState, project):
         self.project = project
@@ -143,6 +144,8 @@ class SimulationManager:
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
+        state.solver.simplify()
+
         # Some inspect capabilities, uses the plugin.
         if hasattr(state, "inspect"):
             # Trigger breakpoints on specific stmt_id
@@ -163,12 +166,18 @@ class SimulationManager:
         try:
             successors += state.curr_stmt.handle(state)
         except Exception as e:
-            log.error(f"Something went wrong while generating successor for {state}")
-            if state.project.contract_addr:
-                log.fatal(f"Contract address is: {state.project.contract_addr}")
+            log.exception(f"Something went wrong while generating successor for {state}")
             state.error = e
             state.halt = True
             successors += [state]
+            #from web3 import Web3
+            #w3 = Web3()
+            #checksummed_address = w3.toChecksumAddress(hex(bv_unsigned_value(state.ctx["ADDRESS"])))
+            #for t in self._techniques:
+            #    if hasattr(t, "_target_stmt"):
+            #        target_pc = t._target_stmt.id
+            #        break
+            #send_to_hackcess_bot(f"{checksummed_address} : {state.error.args[0]} | target {target_pc}")
 
         # Let exploration techniques manipulate the successors
         for t in self._techniques: 

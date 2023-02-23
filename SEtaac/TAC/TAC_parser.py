@@ -24,6 +24,7 @@ class TAC_parser:
         self.target_dir = target_dir
 
         self.phimap = None
+        self.statement_to_blocks_map = None
 
     @staticmethod
     def stmt_sort_key(stmt_id: str) -> int:
@@ -35,6 +36,8 @@ class TAC_parser:
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_op = load_csv_map(f"{self.target_dir}/TAC_Op.csv")
 
+        self.statement_to_blocks_map = load_csv_multimap(f"{self.target_dir}/TAC_OriginalStatement_Block.csv")
+
         tac_variable_value = load_csv_map(f"{self.target_dir}/TAC_Variable_Value.csv")
         tac_variable_value = {'v' + v.replace('0x', ''): val for v, val in tac_variable_value.items()}
 
@@ -45,7 +48,31 @@ class TAC_parser:
         tac_uses: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
         for stmt_id, var, pos in load_csv(f"{self.target_dir}/TAC_Use.csv"):
             tac_uses[stmt_id].append((var, int(pos)))
+        
+        func_name_to_sig = load_csv(f"{self.target_dir}/ConstantPossibleSigHash.csv")
+        func_name_to_sig = {x: y for x, y in zip(*list(zip(*func_name_to_sig))[-2:])}
+        # Entries with a signature longer than 10 characters are most likely false positives of the analysis, not safe to import.
+        func_name_to_sig = {name:"0x"+signature[2:].zfill(8) for signature, name in func_name_to_sig.items() if len(signature) <= 10}
 
+        fixed_calls : Mapping[str, List[Tuple[str, str]]] = defaultdict(list)
+
+        for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignature.csv"):
+            # We want to skip the "LOCKXXX" target and keep only the one
+            # that Gigahorse successfully resolved
+            if "LOCK" in func_target: continue
+            if func_target in func_name_to_sig:
+                fixed_calls[stmt_id] = func_name_to_sig[func_target]
+            else:
+                fixed_calls[stmt_id] = "0x"
+
+        
+        for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignatureFromSHA3.csv"):
+            if "LOCK" in func_target: continue
+            if func_target in func_name_to_sig:
+                fixed_calls[stmt_id] = func_name_to_sig[func_target]
+            else:
+                fixed_calls[stmt_id] = "0x"
+        
         # parse all statements block after block
         statements = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
@@ -59,6 +86,11 @@ class TAC_parser:
                 OpcodeClass = tac_opcode_to_class_map[opcode]
                 statement = OpcodeClass(block_id=block_id, stmt_id=stmt_id, uses=uses, defs=defs, values=values)
                 statements[stmt_id] = statement
+                
+                # Adding metadata for CALL statements
+                if stmt_id in fixed_calls:
+                    log.debug(f"Setting {statement} as fixed call to {fixed_calls[stmt_id]}")
+                    statement.set_likeyl_known_target_func(fixed_calls[stmt_id])
 
             if not tac_block_stmts[block_id]:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP statement
@@ -116,7 +148,7 @@ class TAC_parser:
         tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_fallthrough_edge = load_csv_map(f"{self.target_dir}/IRFallthroughEdge.csv")
-        tac_guarded_blocks = load_csv_map(f"{self.target_dir}/StaticallyGuardedBlock.csv")
+
 
         # parse all blocks
         blocks = dict()
@@ -136,13 +168,6 @@ class TAC_parser:
             fallthrough_block_id = tac_fallthrough_edge.get(block_id, None)
             if fallthrough_block_id is not None:
                 blocks[block_id].fallthrough_edge = blocks[fallthrough_block_id]
-        
-        # Import the guard information
-        for block_id in blocks:
-            if tac_guarded_blocks.get(block_id, None) is not None:
-                blocks[block_id].guarded_by_caller = True
-            else:
-                blocks[block_id].guarded_by_caller = False
 
         # inject a fake exit block to simplify the handling of CALLPRIVATE without successors
         fake_exit_stmt = self.factory.statement('fake_exit')
@@ -171,6 +196,11 @@ class TAC_parser:
             is_public = func_id in tac_func_id_to_public or func_id == '0x0'
             is_fallback = tac_func_id_to_public.get(func_id, None) == '0x0'
             signature = tac_func_id_to_public.get(func_id, None)
+
+            # Pad signature over 4 bytes
+            if signature:
+                signature = "0x"+signature[2:].zfill(8)
+
             high_level_name = 'fallback()' if is_fallback else tac_high_level_func_name[func_id]
 
             formals = [var for var, _ in sorted(tac_formal_args[func_id], key=lambda x: x[1])]
@@ -191,6 +221,36 @@ class TAC_parser:
             function.arguments = [self.phimap.get(translate_alias(a), translate_alias(a)) for a in function.arguments]
 
         return functions
+
+    def parse_privileged_slots(self):
+        privileged_slots = set()
+        tac_guarded_blocks = load_csv_map(f"{self.target_dir}/StaticallyGuardedBlock.csv")
+        # tac_dominators = load_csv_map(f"{self.target_dir}/Dominates.csv")
+
+        # find guarding slots
+        guarding_slots = set([g.split('_')[0] for g in tac_guarded_blocks.values() if g.startswith('0x')])
+
+        for slot in guarding_slots:
+            privileged_slots.add(slot)
+            log.debug(f"{slot} is a guard")
+
+        all_fixed_sstores = [s for s in self.factory.project.statement_at.values()
+                             if s.__internal_name__ == "SSTORE"
+                             and s.arg1_val is not None]
+
+        all_guarded_blocks = [id for id in tac_guarded_blocks]
+
+        # find guarded slots
+        all_slots = {s.arg1_val.value for s in all_fixed_sstores}
+
+        for slot in all_slots:
+            access_guarded = [(s.block_id in all_guarded_blocks) for s in all_fixed_sstores if s.arg1_val.value == slot]
+
+            if all(access_guarded):
+                privileged_slots.add(hex(slot))
+                log.debug(f"{hex(slot)} is guarded")
+
+        return privileged_slots
 
     def parse_abi(self):
         if not os.path.exists(f"{self.target_dir}/abi.json"):

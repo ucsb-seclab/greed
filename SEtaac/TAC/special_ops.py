@@ -11,7 +11,6 @@ from SEtaac.utils.exceptions import VMExternalData, VMSymbolicError, VMException
 from SEtaac.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
 
 __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Callvalue', 'TAC_Calldataload', 'TAC_Calldatasize', 'TAC_Calldatacopy',
@@ -26,7 +25,7 @@ class TAC_Sha3(TAC_Statement):
     __internal_name__ = "SHA3"
     __aliases__ = {'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
                    'size_var': 'arg2_var', 'size_val': 'arg2_val',
-                   'hash_var': 'res_var', 'hash_val': 'res_val'}
+                   'hash_var': 'res1_var', 'hash_val': 'res1_val'}
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -43,11 +42,11 @@ class TAC_Sha3(TAC_Statement):
         # keep thre unconstrained symbol + the ackermann constraints, otherwise let's 
         # calculate the possible solutions and apply the constraints.
         if options.GREEDY_SHA:
-            log.info(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
+            log.debug(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
             size_sol = state.solver.eval(self.size_val, raw=True)
-            log.info(f"    Size solution: {bv_unsigned_value(size_sol)}")
+            log.debug(f"    Size solution: {bv_unsigned_value(size_sol)}")
             offset_sol = state.solver.eval(self.offset_val, raw=True)
-            log.info(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
+            log.debug(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
             
             if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
                                 not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
@@ -63,7 +62,7 @@ class TAC_Sha3(TAC_Statement):
                     buffer_sol = bv_unsigned_value(buffer_sol).to_bytes(bv_unsigned_value(size_sol), 'big')
                     keccak256.update(buffer_sol)
                     res = keccak256.hexdigest()
-                    log.info(f"    Calculated concrete SHA3 {res}")
+                    log.debug(f"    Calculated concrete SHA3 {res}")
                     
                     # Constraining parameters to their calculated solutions
                     state.add_constraint(Equal(self.offset_val, offset_sol))
@@ -79,9 +78,9 @@ class TAC_Sha3(TAC_Statement):
                     # Just set the solution here
                     state.registers[self.res1_var] = BVV(int(res,16),256)
                 else:
-                    log.info(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
+                    log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
             else:
-                log.info(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
+                log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
 
         state.set_next_pc()
 
@@ -102,15 +101,11 @@ class TAC_Stop(TAC_Statement):
 
 class TAC_Address(TAC_Statement):
     __internal_name__ = "ADDRESS"
-    __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
+    __aliases__ = {'address_var': 'res1_var', 'address_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        if state.project.contract_addr != None:
-            state.registers[self.res1_var] = BVV(state.project.contract_addr, 256)
-        else:
-            state.registers[self.res1_var] = BVS(f'ADDRESS_{state.xid}', 256)
-
+        state.registers[self.res1_var] = ctx_or_symbolic('ADDRESS', state.ctx, state.xid)
         state.set_next_pc()
         return [state]
 
@@ -119,7 +114,7 @@ class TAC_Balance(TAC_Statement):
     __internal_name__ = "BALANCE"
     __aliases__ = {
         'address_var': 'arg1_var', 'address_val': 'arg1_val',
-        'balance_var': 'res_var', 'balance_val': 'res_val'
+        'balance_var': 'res1_var', 'balance_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -133,7 +128,7 @@ class TAC_Balance(TAC_Statement):
         elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', state.ctx, state.xid)
         else:
-            raise VMSymbolicError('balance of symbolic address (%s)' % str(self.address_val))
+            state.registers[self.res1_var] = BVS('SYM-BALANCE-%x' % self.address_val.id, 256)
 
         state.set_next_pc()
         return [state]
@@ -141,7 +136,7 @@ class TAC_Balance(TAC_Statement):
 
 class TAC_Origin(TAC_Statement):
     __internal_name__ = "ORIGIN"
-    __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
+    __aliases__ = {'address_var': 'res1_var', 'address_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -153,7 +148,7 @@ class TAC_Origin(TAC_Statement):
 
 class TAC_Caller(TAC_Statement):
     __internal_name__ = "CALLER"
-    __aliases__ = {'address_var': 'res_var', 'address_val': 'res_val'}
+    __aliases__ = {'address_var': 'res1_var', 'address_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -165,7 +160,7 @@ class TAC_Caller(TAC_Statement):
 
 class TAC_Callvalue(TAC_Statement):
     __internal_name__ = "CALLVALUE"
-    __aliases__ = {'value_var': 'res_var', 'value_val': 'res_val'}
+    __aliases__ = {'value_var': 'res1_var', 'value_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -180,18 +175,13 @@ class TAC_Calldataload(TAC_Statement):
 
     __internal_name__ = "CALLDATALOAD"
     __aliases__ = {'byte_offset_var': 'arg1_var', 'byte_offset_val': 'arg1_val',
-                   'calldata_var': 'res_var', 'calldata_val': 'res_val'}
+                   'calldata_var': 'res1_var', 'calldata_val': 'res1_val'}
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
         # WARNING: According to the EVM specification if your CALLDATA is less than 32 bytes, you read zeroes.
-        if not is_concrete(self.byte_offset_val):
-            state.add_constraint(BV_ULT(self.byte_offset_val, BVV(state.MAX_CALLDATA_SIZE, 256)))
         
-        calldataload_res = BVS(f"CALLDATALOAD_{TAC_Calldataload.uuid_generator.next()}", 256)
-        
-        state.add_constraint(Equal(calldataload_res,
-                                  state.calldata.readn(self.byte_offset_val, BVV(32, 256))))
+        calldataload_res = state.calldata.readn(self.byte_offset_val, BVV(32, 256))
 
         state.registers[self.res1_var] = calldataload_res
 
@@ -205,7 +195,7 @@ class TAC_Calldataload(TAC_Statement):
 
 class TAC_Calldatasize(TAC_Statement):
     __internal_name__ = "CALLDATASIZE"
-    __aliases__ = {'calldatasize_var': 'res_var', 'calldatasize_val': 'res_val'}
+    __aliases__ = {'calldatasize_var': 'res1_var', 'calldatasize_val': 'res1_val'}
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
@@ -239,7 +229,7 @@ class TAC_Codesize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        state.registers[self.res1_var] = len(state.code)
+        state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', state.ctx, state.xid)
 
         state.set_next_pc()
         return [state]
@@ -263,7 +253,7 @@ class TAC_Codecopy(TAC_Statement):
                 else:
                     state.memory[BV_Add(self.destOffset_val, BVV(i, 256))] = BVV(0, 8)
         else:
-            raise VMSymbolicError('Symbolic code index @ %s' % state.pc)
+            raise VMSymbolicError('Symbolic code index @ %s (CODECOPY)' % state.pc)
 
         state.set_next_pc()
         return [state]
@@ -272,7 +262,7 @@ class TAC_Codecopy(TAC_Statement):
 class TAC_Gasprice(TAC_Statement):
     __internal_name__ = "GASPRICE"
     __aliases__ = {
-        'price_var': 'res_var', 'price_val': 'res_val'
+        'price_var': 'res1_var', 'price_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -287,7 +277,7 @@ class TAC_Extcodesize(TAC_Statement):
     __internal_name__ = "EXTCODESIZE"
     __aliases__ = {
         'address_var': 'arg1_var', 'address_val': 'arg1_val',
-        'size_var': 'res_var', 'size_val': 'res_val'
+        'size_var': 'res1_var', 'size_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -330,7 +320,7 @@ class TAC_Extcodecopy(TAC_Statement):
 class TAC_Returndatasize(TAC_Statement):
     __internal_name__ = "RETURNDATASIZE"
     __aliases__ = {
-        'size_var': 'res_var', 'size_val': 'res_val'
+        'size_var': 'res1_var', 'size_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -358,26 +348,33 @@ class TAC_Extcodehash(TAC_Statement):
     __internal_name__ = "EXTCODEHASH"
     __aliases__ = {
         'address_var': 'arg1_var', 'address_val': 'arg1_val',
-        'hash_var': 'res_var', 'hash_val': 'res_val'
+        'hash_var': 'res1_var', 'hash_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise VMExternalData('EXTCODEHASH')
+        if not is_concrete(self.address_val):
+            state.registers[self.res1_var] = BVS('EXTCODEHASH[%d]' % self.address_val.id, 256)
+        else:
+            state.registers[self.res1_var] = ctx_or_symbolic('EXTCODEHASH[%s]' % hex(bv_unsigned_value(self.address_val)), state.ctx, state.xid)
+
+        state.set_next_pc()
+        return [state]
 
 
 class TAC_Blockhash(TAC_Statement):
     __internal_name__ = "BLOCKHASH"
     __aliases__ = {
         'blockNumber_var': 'arg1_var', 'blockNumber_val': 'arg1_val',
-        'hash_var': 'res_var', 'hash_val': 'res_val'
+        'hash_var': 'res1_var', 'hash_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
         if not is_concrete(self.blockNumber_val):
-            raise VMSymbolicError('symbolic blockhash index')
-        state.registers[self.res1_var] = ctx_or_symbolic('BLOCKHASH[%d]' % bv_unsigned_value(self.blockNumber_val), state.ctx, state.xid)
+            state.registers[self.res1_var] = BVS('BLOCKHASH[%d]' % self.blockNumber_val.id, 256)
+        else:
+            state.registers[self.res1_var] = ctx_or_symbolic('BLOCKHASH[%d]' % bv_unsigned_value(self.blockNumber_val), state.ctx, state.xid)
 
         state.set_next_pc()
         return [state]
@@ -386,7 +383,7 @@ class TAC_Blockhash(TAC_Statement):
 class TAC_Coinbase(TAC_Statement):
     __internal_name__ = "COINBASE"
     __aliases__ = {
-        'address_var': 'res_var', 'address_val': 'res_val',
+        'address_var': 'res1_var', 'address_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -400,7 +397,7 @@ class TAC_Coinbase(TAC_Statement):
 class TAC_Timestamp(TAC_Statement):
     __internal_name__ = "TIMESTAMP"
     __aliases__ = {
-        'timestamp_var': 'res_var', 'timestamp_val': 'res_val',
+        'timestamp_var': 'res1_var', 'timestamp_val': 'res1_val',
     }
 
     @TAC_Statement.handler_with_side_effects
@@ -420,7 +417,7 @@ class TAC_Timestamp(TAC_Statement):
 class TAC_Number(TAC_Statement):
     __internal_name__ = "NUMBER"
     __aliases__ = {
-        'blockNumber_var': 'res_var', 'blockNumber_val': 'res_val',
+        'blockNumber_var': 'res1_var', 'blockNumber_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -434,7 +431,7 @@ class TAC_Number(TAC_Statement):
 class TAC_Difficulty(TAC_Statement):
     __internal_name__ = "DIFFICULTY"
     __aliases__ = {
-        'difficulty_var': 'res_var', 'difficulty_val': 'res_val',
+        'difficulty_var': 'res1_var', 'difficulty_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -448,7 +445,7 @@ class TAC_Difficulty(TAC_Statement):
 class TAC_Gaslimit(TAC_Statement):
     __internal_name__ = "GASLIMIT"
     __aliases__ = {
-        'gasLimit_var': 'res_var', 'gasLimit_val': 'res_val',
+        'gasLimit_var': 'res1_var', 'gasLimit_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -462,7 +459,7 @@ class TAC_Gaslimit(TAC_Statement):
 class TAC_Chainid(TAC_Statement):
     __internal_name__ = "CHAINID"
     __aliases__ = {
-        'chainID_var': 'res_var', 'chainID_val': 'res_val',
+        'chainID_var': 'res1_var', 'chainID_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -478,7 +475,7 @@ class TAC_Chainid(TAC_Statement):
 class TAC_Selfbalance(TAC_Statement):
     __internal_name__ = "SELFBALANCE"
     __aliases__ = {
-        'balance_var': 'res_var', 'balance_val': 'res_val',
+        'balance_var': 'res1_var', 'balance_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -492,7 +489,7 @@ class TAC_Selfbalance(TAC_Statement):
 class TAC_Basefee(TAC_Statement):
     __internal_name__ = "BASEFEE"
     __aliases__ = {
-        'baseFee_var': 'res_var', 'baseFee_val': 'res_val',
+        'baseFee_var': 'res1_var', 'baseFee_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -540,16 +537,18 @@ class TAC_Create(TAC_Statement):
         'value_var': 'arg1_var', 'value_val': 'arg1_val',
         'offset_var': 'arg2_var', 'offset_val': 'arg2_val',
         'size_var': 'arg3_var', 'size_val': 'arg3_val',
-        'address_var': 'res_var', 'address_val': 'res_val'
+        'address_var': 'res1_var', 'address_val': 'res1_val'
     }
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
-        #succ.balance -= self.value_val
-        #succ.registers[self.res1_var] = utils.addr(
-        #    z3.BitVec('EXT_CREATE_%d_%d' % (succ.instruction_count, succ.xid), 256))
-        log.fatal("CREATE NOT implemented")
+        state.add_constraint(BV_UGE(state.balance, self.value_val))
+        state.balance = BV_Sub(state.balance, self.value_val)
+
+        if options.DEFAULT_CREATE_RESULT_ADDRESS:
+            state.registers[self.res1_var] = BVV(0xc0ffee254729296a45a3885639AC7E10F9d54979,256)
+        else:
+            state.registers[self.res1_var] = BVS('EXT_CREATE_%d_%d', state.xid, state.instruction_count, 256)
 
         state.set_next_pc()
         return [state]
@@ -562,17 +561,18 @@ class TAC_Create2(TAC_Statement):
         'offset_var': 'arg2_var', 'offset_val': 'arg2_val',
         'size_var': 'arg3_var', 'size_val': 'arg3_val',
         'salt_var': 'arg4_var', 'salt_val': 'arg4_val',
-        'address_var': 'res_var', 'address_val': 'res_val'
+        'address_var': 'res1_var', 'address_val': 'res1_val'
     }
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        #succ.add_constraint(z3.UGE(succ.balance, self.value_val))
-        #succ.balance -= self.value_val
-        # todo: this is deployed at a deterministic address
-        #succ.registers[self.res1_var] = utils.addr(
-        #    z3.BitVec('EXT_CREATE2_%d_%d' % (succ.instruction_count, succ.xid), 256))
-        log.fatal("{} NOT implemented".format(self.__internal_name__))
+        state.add_constraint(BV_UGE(state.balance, self.value_val))
+        state.balance = BV_Sub(state.balance, self.value_val)
+
+        if options.DEFAULT_CREATE2_RESULT_ADDRESS:
+            state.registers[self.res1_var] = BVV(0xbeefed254729296a45a3885639AC7E10F9d54979,256)
+        else:
+            state.registers[self.res1_var] = BVS('EXT_CREATE2_%d_%d', state.xid, state.instruction_count, 256)
 
         state.set_next_pc()
         return [state]
@@ -581,7 +581,7 @@ class TAC_Create2(TAC_Statement):
 class TAC_Pc(TAC_Statement):
     __internal_name__ = "PC"
     __aliases__ = {
-        'counter_var': 'res_var', 'counter_val': 'res_val',
+        'counter_var': 'res1_var', 'counter_val': 'res1_val',
     }
 
     @TAC_Statement.handler_without_side_effects
@@ -589,7 +589,7 @@ class TAC_Pc(TAC_Statement):
         # todo: this pc will most probably be different from what the evm expects
         raise VMException("PC not available if executing TAC")
 
-        # state.registers[self.res_var] = state.pc
+        # state.registers[self.res1_var] = state.pc
         # state.set_next_pc()
         # return [state]
 
@@ -623,7 +623,7 @@ class TAC_Selfdestruct(TAC_Statement):
 class TAC_Gas(TAC_Statement):
     __internal_name__ = "GAS"
     __aliases__ = {
-        'gas_var': 'res_var', 'gas_val': 'res_val'
+        'gas_var': 'res1_var', 'gas_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects

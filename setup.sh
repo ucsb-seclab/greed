@@ -30,7 +30,7 @@ cd $SETAAC_DIR
 
 # init the submodules (gigahorse-toolkit has submodules)
 # echo "Initializing gigahorse submodule.."
-git submodule update --init --recursive
+# git submodule update --init --recursive
 
 # link our scripts into virtualenv's bin dir
 echo "Linking scripts into virtualenv's bin directory.."
@@ -52,6 +52,10 @@ if [ -z $NO_GIGAHORSE ]; then
   PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_guards_client.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
   PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_loops_semantics_client.patch
+  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
+  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_data_structures.patch
+  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
+  PATCH_FILE=$SETAAC_DIR/scripts/gigahorse_memlimit.patch
   git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
   cd $SETAAC_DIR
 

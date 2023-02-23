@@ -41,7 +41,7 @@ class TAC_Mload(TAC_Statement):
     __internal_name__ = "MLOAD"
     __aliases__ = {
         'offset_var': 'arg1_var', 'offset_val': 'arg1_val',
-        'value_var': 'res_var', 'value_val': 'res_val'
+        'value_var': 'res1_var', 'value_val': 'res1_val'
     }
 
     @TAC_Statement.handler_with_side_effects
@@ -56,7 +56,7 @@ class TAC_Sload(TAC_Statement):
     __internal_name__ = "SLOAD"
     __aliases__ = {
         'key_var': 'arg1_var', 'key_val': 'arg1_val',
-        'value_var': 'res_var', 'value_val': 'res_val'
+        'value_var': 'res1_var', 'value_val': 'res1_val'
     }
 
     @TAC_Statement.handler_with_side_effects
@@ -86,7 +86,7 @@ class TAC_Sstore(TAC_Statement):
 class TAC_Msize(TAC_Statement):
     __internal_name__ = "MSIZE"
     __aliases__ = {
-        'size_var': 'res_var', 'size_val': 'res_val'
+        'size_var': 'res1_var', 'size_val': 'res1_val'
     }
 
     @TAC_Statement.handler_without_side_effects

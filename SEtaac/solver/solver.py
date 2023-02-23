@@ -12,6 +12,9 @@ class Solver:
     def bv_unsigned_value(self, bv):
         raise Exception("Not implemented")
 
+    def get_bv_by_name(self, bv):
+        raise Exception("Not implemented")
+
     def is_concrete(self, bv):
         raise Exception("Not implemented")
 

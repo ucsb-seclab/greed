@@ -35,7 +35,7 @@ class Sha3(LambdaMemory):
 
         # Let's start to copy at offset 0 of this lambda memory (it's _base) the amount 
         # of bytes 'size' starting from 'start'
-        self.memcopy(BVV(0, 256), self.memory, start, size)
+        self.memcopy(BVV(0, 256), self.memory.copy(state), start, size)
 
         # TODO: we somehow want to make sure that there is never a constraint of the type SHA3_<x> == 0xhardcoded
 

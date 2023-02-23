@@ -6,6 +6,11 @@
 # generated during the exploration.
 # ===============
 
+# web3 provider URI.
+# As of now, this is used when the partial concrete
+# storage is initialized.
+WEB3_PROVIDER = 'http://0.0.0.0:8545'
+
 # Wether we want to check for satisfiability 
 # every time the execution can fork.
 # Checking for SAT at every branch may considerably
@@ -57,6 +62,15 @@ OPTIMISTIC_CALL_RESULTS = False
 # (Unless the address is concrete, then we'll pick it from the context IF provided)
 # Otherwise, the value is going to be symbolic.
 DEFAULT_EXTCODESIZE = False
+
+# Wether we should use a default constant address when 
+# using the CREATE opcode.
+DEFAULT_CREATE_RESULT_ADDRESS = False
+
+# Wether we should use a default constant address when 
+# using the CREATE2 opcode.
+DEFAULT_CREATE2_RESULT_ADDRESS = False
+
 
 # STATE OPTIONS
 # =============================================

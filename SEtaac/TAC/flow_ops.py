@@ -82,8 +82,12 @@ class TAC_Jumpi(TAC_Statement):
 class TAC_BaseCall(TAC_Statement):
     __internal_name__ = "_CALL"
 
+    # Metadata for _CALL statements.
+    likely_known_target = None
+
     def _handle(self, state: SymbolicEVMState, gas_val=None, address_val=None, value_val=None,
-                argsOffset_val=None, argsSize_val=None, retOffset_val=None, retSize_val=None):
+                argsOffset_val=None, argsSize_val=None, retOffset_val=None, retSize_val=None,
+                ):
         gas_val = gas_val if gas_val is not None else self.gas_val
         address_val = address_val if address_val is not None else self.address_val
         value_val = value_val if value_val is not None else self.value_val
@@ -97,34 +101,53 @@ class TAC_BaseCall(TAC_Statement):
 
         state.returndata['size'] = olen
         state.returndata['instruction_count'] = state.instruction_count
-
-        if is_concrete(address_val) and bv_unsigned_value(address_val) <= 8:
-            if bv_unsigned_value(address_val) == 4:
+        
+        if is_concrete(address_val) and bv_unsigned_value(address_val) == 0:
+            logging.info("Calling into burn contract")
+        elif is_concrete(address_val) and bv_unsigned_value(address_val) >= 1 and bv_unsigned_value(address_val) <= 8:
+            # This is a pre-compiled contract
+            #  --> https://www.evm.codes/precompiled?fork=arrowGlacier
+            if bv_unsigned_value(address_val) == 1:
+                # ECRecover precompiled contract
+                # FIXME
+                logging.info("Calling precompiled ecRecover contract")
+                raise VMSymbolicError(f"Precompiled contract [ecRecover] not implemented")
+            elif bv_unsigned_value(address_val) == 2:
+                # SHA256 precompiled contract
+                # FIXME
+                logging.info("Calling precompiled SHA2-256 contract")
+                raise VMSymbolicError(f"Precompiled contract [SHA2-256] not implemented")
+            elif bv_unsigned_value(address_val) == 4:
                 logging.info("Calling precompiled identity contract")
                 istart = argsOffset_val
                 ilen = argsSize_val
-                state.memory.copy_return_data(istart, ilen, ostart, olen)
+                state.memory.memcopy(ostart, state.memory.copy(state), istart, ilen)
+                # Assuming this always succeeds
                 state.registers[self.res1_var] = BVV(1, 256)
             else:
                 raise VMSymbolicError(f"Precompiled contract {bv_unsigned_value(address_val)} not implemented")
         elif is_concrete(olen):
+            # If we have a concrete len for the return value we set the output memory to symbolic data
             for i in range(bv_unsigned_value(olen)):
                 state.memory[BV_Add(ostart, BVV(i, 256))] = BVS(f'EXT_{state.instruction_count}_{i}_{state.xid}', 8)
             log_address_val = bv_unsigned_value(address_val) if is_concrete(address_val) else "<SYMBOLIC>"
             
             if log_address_val != "<SYMBOLIC>":
                 logging.info(f"Calling contract {hex(log_address_val)} ({state.instruction_count}_{state.xid})")
-            
-            if options.OPTIMISTIC_CALL_RESULTS:
-                state.registers[self.res1_var] = BVV(1, 256)
-            else:
-                state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
         else:
+            # FIXME: maybe consider a MAX_RETURN_SIZE option and use similar strategy used in SHA3
             raise VMSymbolicError("Unsupported symbolic retSize_val in CALL")
+
+        if options.OPTIMISTIC_CALL_RESULTS:
+            state.registers[self.res1_var] = BVV(1, 256)
+        else:
+            state.registers[self.res1_var] = BVS(f'CALLRESULT_{state.instruction_count}_{state.xid}', 256)
 
         state.set_next_pc()
         return [state]
-
+    
+    def set_likeyl_known_target_func(self, target_function):
+        self.likely_known_target = target_function
 
 class TAC_Call(TAC_BaseCall):
     __internal_name__ = "CALL"
@@ -143,7 +166,6 @@ class TAC_Call(TAC_BaseCall):
     def handle(self, state: SymbolicEVMState):
         state.add_constraint(BV_UGE(state.balance, self.value_val))
         state.balance = BV_Sub(state.balance, self.value_val)
-
         return self._handle(state, value_val=self.value_val)
 
 

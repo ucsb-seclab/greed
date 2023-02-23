@@ -9,30 +9,21 @@ log = logging.getLogger(__name__)
 
 
 class Project(object):
-    def __init__(self, target_dir: str, contract_addr: str=None, chain_at:str=None, partial_concrete_storage=False):
+    def __init__(self, target_dir: str):
         # Load the contract code
         with open(f"{target_dir}/contract.hex", "rb") as contract_file:
             self.code = contract_file.read()
 
         self.factory = Factory(project=self)
 
-        tac_parser = TAC_parser(self.factory, target_dir)
-        self.statement_at = tac_parser.parse_statements()
-        self.block_at = tac_parser.parse_blocks()
-        self.function_at = tac_parser.parse_functions()
+        self.tac_parser = TAC_parser(self.factory, target_dir)
+        self.statement_at = self.tac_parser.parse_statements()
+        self.block_at = self.tac_parser.parse_blocks()
+        self.function_at = self.tac_parser.parse_functions()
         
         # Do we have an official abi?
-        self.abi = tac_parser.parse_abi()
-        
-        '''
-        if not self.abi:
-            # Do we have a reconstructed abi?
-            self.abi = tac_parser.parse_recovered_abi()
-        '''
-
+        self.abi = self.tac_parser.parse_abi()
         self.has_abi = (self.abi is not None)
-        if not self.has_abi:
-            log.debug("No abi was found for this contract, working with none, this may impact symbolic execution")
 
         # build callgraph
         self.callgraph = nx.DiGraph()
@@ -40,9 +31,6 @@ class Project(object):
             for target_function_id in source_function.callprivate_target_sources.keys():
                 target_function = self.factory.function(target_function_id)
                 self.callgraph.add_edge(source_function, target_function)
-        
-        self.contract_addr = contract_addr            
-        self.partial_concrete_storage = partial_concrete_storage
         
     def dump_callgraph(self, filename):
         dot = "digraph g {\n"

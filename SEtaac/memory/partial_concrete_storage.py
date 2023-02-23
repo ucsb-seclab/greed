@@ -3,13 +3,15 @@ import logging
 import web3
 import sys 
 
+from SEtaac import options as opt
 from SEtaac.memory.lambda_constraint import LambdaConstraint
 from SEtaac.memory import LambdaMemory
+from SEtaac.utils.exceptions import GreedException
 from SEtaac.solver.shortcuts import *
 from SEtaac.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
+
 
 def get_storage(contract_address, index):
     """
@@ -30,24 +32,29 @@ class PartialConcreteStorage:
         self.value_sort = value_sort
 
         self.state = state
-        
-        if self.state.project.contract_addr is None:
-            log.fatal("Cannot initialize the PartialConcreteStorage with no contract address")
-            sys.exit(0)
-        else:
-            # Let's store it here for convenience
-            self.contract_address = self.state.project.contract_addr
-            
+
         # Configure web3py
         # The connection string can be put in a config file.
-        self.w3 = web3.Web3(web3.Web3.HTTPProvider('http://0.0.0.0:8545'))
+        self.w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
         assert(self.w3.isConnected())
-        
+
+        if "ADDRESS" not in self.state.ctx:
+            raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
+        else:
+            ca = hex(bv_unsigned_value(self.state.ctx["ADDRESS"]))
+            # Normalizing the string over 20 bytes if we need to.
+            if len(ca[2:]) < 40:
+                ca = "0x" + ca[2:].zfill(40)
+            self.contract_address = self.w3.toChecksumAddress(ca)
+
+        if "NUMBER" not in self.state.ctx:
+            raise GreedException("Cannot initialize the PartialConcreteStorage with no reference block")
+        else:
+            self.chain_at = bv_unsigned_value(self.state.ctx["NUMBER"])
+
         self.root_lambda_constraint = LambdaConstraint()
         self._constraints = list()
         
-        self.chain_at = self.state.chain_at
-
         self._base = Array(f"{self.tag}_{PartialConcreteStorage.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
         if default is not None:
             # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
@@ -83,9 +90,9 @@ class PartialConcreteStorage:
             index_val = index.value
             
             if index_val not in self.concrete_cache.keys():
-                log.info(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
+                log.debug(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
                 storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val,  block_identifier=self.chain_at)
-                log.info(f"   Value read is: {storage_value.hex()}")
+                log.debug(f"   Value read is: {storage_value.hex()}")
                 storage_value = int(storage_value.hex(),16)
                 storage_value_bvv = BVV(storage_value, 256)
                 return storage_value_bvv
@@ -154,7 +161,7 @@ class PartialConcreteStorage:
                                                                       parent=self.root_lambda_constraint)
 
     def copy_return_data(self, istart, ilen, ostart, olen):
-        raise Exception("NOT IMPLEMENTED. Please have a look")
+        self.memcopy(ostart, self, istart, ilen)
         # if concrete(ilen) and concrete(olen):
         #     self.write(ostart, olen, self.read(istart, min(ilen, olen)) + [0] * max(olen - ilen, 0))
         # elif concrete(olen):

@@ -71,6 +71,18 @@ class SimStateSolver(SimStatePlugin):
         self._memory_constraints[self._curr_frame_level].add(constraint)
         self._add_assertion(constraint)
 
+    def simplify(self):
+        for reg_var, reg_val in self.state.registers.items():
+            if reg_val.is_simplified is False:
+                if is_concrete(reg_val):
+                    # simplify to basic BVV
+                    self.state.registers[reg_var] = self.state.solver.eval(reg_val, raw=True)
+                else:
+                    reg_val_sol = self.state.solver.eval(reg_val, raw=True)
+                    if not self.state.solver.is_formula_sat(NotEqual(reg_val, reg_val_sol)):
+                        self.state.registers[reg_var] = reg_val_sol
+                self.state.registers[reg_var].is_simplified = True
+
     @property
     def frame(self):
         return self._curr_frame_level

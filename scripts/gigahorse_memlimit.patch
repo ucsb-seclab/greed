@@ -1,0 +1,23 @@
+diff --git a/gigahorse.py b/gigahorse.py
+index 65d267f..4b4cc6d 100755
+--- a/gigahorse.py
++++ b/gigahorse.py
+@@ -70,8 +70,8 @@ DEFAULT_NUM_JOBS = max(int(cpu_count() * 0.9), 1)
+ 
+ """The number of subprocesses to run at once."""
+ 
+-DEFAULT_MEMORY_LIMIT = 45 * 1_000_000_000
+-"""Hard capped memory limit for analyses processes (30 GB)"""
++DEFAULT_MEMORY_LIMIT = 50 * 1_000_000_000
++"""Hard capped memory limit for analyses processes (50 GB)"""
+ 
+ # Command Line Arguments
+ 
+@@ -548,6 +548,7 @@ def get_gigahorse_analytics(out_dir, analytics):
+             analytics[key] = analytics.get(key, 0) + 1
+ 
+ def set_memory_limit(memory_limit):
++    return
+     resource.setrlimit(resource.RLIMIT_AS, (memory_limit, memory_limit))
+ 
+ class TimeoutException(Exception):

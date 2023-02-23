@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 class SymbolicEVMState:
     uuid_generator = UUIDGenerator()
 
-    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None):
+    def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None, partial_concrete_storage=False):
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -34,20 +34,7 @@ class SymbolicEVMState:
 
         # We want every state to have an individual set
         # of options.
-        self.options = options or dict()
-
-        if self.options.get("chain_at", None):
-            self.chain_at = self.options.get("chain_at")
-        else:
-            self.chain_at = "latest"
-
-        if not project.partial_concrete_storage:
-            # Fully symbolic storage
-            self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
-        else:
-            log.info("Using PartialConcreteStorage")
-            self.storage = PartialConcreteStorage(tag=f"PCONCR_STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
-            
+        self.options = options or dict()            
         self.registers = dict()
         self.ctx = dict()
         self.callstack = list()
@@ -70,7 +57,15 @@ class SymbolicEVMState:
         self.calldata = None
         self.calldatasize = None
 
+        # Apply init context to the state
         self.set_init_ctx(init_ctx)
+
+        if not partial_concrete_storage:
+            # Fully symbolic storage
+            self.storage = LambdaMemory(tag=f"STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
+        else:
+            log.debug("Using PartialConcreteStorage")
+            self.storage = PartialConcreteStorage(tag=f"PCONCR_STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
 
     def set_init_ctx(self, init_ctx=None):
         init_ctx = init_ctx or dict()
@@ -87,7 +82,8 @@ class SymbolicEVMState:
 
             if "CALLDATASIZE" in init_ctx:
                 # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
-                self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
+                self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
+                # self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
 
@@ -100,7 +96,7 @@ class SymbolicEVMState:
                 # If the CALLDATASIZE is fixed, we change the MAX_CALLDATASIZE to that value.                
                 self.MAX_CALLDATA_SIZE = self.solver.eval(self.calldatasize)
             else:
-                log.info(f"CALLDATASIZE MIN{len(calldata_bytes)}-MAX{self.MAX_CALLDATA_SIZE + 1}")
+                log.debug(f"CALLDATASIZE MIN{len(calldata_bytes)}-MAX{self.MAX_CALLDATA_SIZE + 1}")
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
                 # CALLDATASIZE < MAX_CALLDATA_SIZE
                 self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
@@ -127,12 +123,32 @@ class SymbolicEVMState:
             self.ctx["CALLER"] = BVV(int(init_ctx["CALLER"],16), 256)
 
         if "ORIGIN" in init_ctx:
-            assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
+            assert isinstance(init_ctx['ORIGIN'], str), "Wrong type for ORIGIN initial context"
             self.ctx["ORIGIN"] = BVV(int(init_ctx["ORIGIN"],16), 256)
         
         if "BALANCE" in init_ctx:
-            assert isinstance(init_ctx['BALANCE'], str), "Wrong type for BALANCE initial context"
-            self.add_constraint(Equal(self.start_balance, BVV(int(init_ctx['BALANCE'],16), 256)))
+            assert isinstance(init_ctx['BALANCE'], int), "Wrong type for BALANCE initial context"
+            self.add_constraint(Equal(self.start_balance, BVV(init_ctx['BALANCE'], 256)))
+        
+        if "ADDRESS" in init_ctx:
+            assert isinstance(init_ctx['ADDRESS'], str), "Wrong type for ADDRESS initial context"
+            self.ctx["ADDRESS"] = BVV(int(init_ctx["ADDRESS"],16), 256)
+
+        if "NUMBER" in init_ctx:
+            assert isinstance(init_ctx['NUMBER'], int), "Wrong type for NUMBER initial context"
+            self.ctx["NUMBER"] = BVV(init_ctx["NUMBER"], 256)
+
+        if "DIFFICULTY" in init_ctx:
+            assert isinstance(init_ctx['DIFFICULTY'], int), "Wrong type for DIFFICULTY initial context"
+            self.ctx["DIFFICULTY"] = BVV(init_ctx["DIFFICULTY"], 256)
+
+        if "TIMESTAMP" in init_ctx:
+            assert isinstance(init_ctx['TIMESTAMP'], int), "Wrong type for TIMESTAMP initial context"
+            self.ctx["TIMESTAMP"] = BVV(init_ctx["TIMESTAMP"], 256)
+        
+        if "CALLVALUE" in init_ctx:
+            assert isinstance(init_ctx['CALLVALUE'], int), "Wrong type for CALLVALUE initial context"
+            self.ctx["CALLVALUE"] = BVV(init_ctx["CALLVALUE"], 256)
 
     @property
     def pc(self):
@@ -166,8 +182,6 @@ class SymbolicEVMState:
 
     def get_fallthrough_pc(self):
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
-        stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
-        remaining_stmts = curr_bb.statements[stmt_list_idx + 1:]
 
         if len(curr_bb.succ) == 0:
             #  case 1: end of the block and no targets
@@ -177,10 +191,11 @@ class SymbolicEVMState:
             #  case 2: end of the block and one target
             log.debug("Next stmt is {}".format(curr_bb.succ[0].first_ins.id))
             return curr_bb.succ[0].first_ins.id
+        elif curr_bb.fallthrough_edge is None:
+            raise VMNoSuccessors(f"Block {curr_bb} does not have a fallthrough edge.")
         else:
             #  case 3: end of the block and more than one target
             fallthrough_bb = curr_bb.fallthrough_edge
-
             log.debug("Next stmt is {}".format(fallthrough_bb.first_ins.id))
             return fallthrough_bb.first_ins.id
 
@@ -188,16 +203,18 @@ class SymbolicEVMState:
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
 
         if not is_concrete(destination_val):
-            raise VMSymbolicError('Symbolic jump destination currently not supported.')
+            raise VMSymbolicError(f'Symbolic jump destination currently not supported. ({destination_val=})')
         else:
             destination_val = hex(bv_unsigned_value(destination_val))
 
-        candidate_bbs = [bb for bb in curr_bb.succ if bb.id == destination_val or bb.id.startswith(destination_val+"0x")]
+        # translation using TAC_OriginalStatement_Block
+        candidate_destination_vals = self.project.tac_parser.statement_to_blocks_map[destination_val] + [destination_val]
+        candidate_bbs = [bb for bb in curr_bb.succ if bb.id in candidate_destination_vals]
 
         if len(candidate_bbs) == 0:
-            raise VMSymbolicError('Unable to find jump destination.')
+            raise VMSymbolicError(f'Unable to find jump destination. ({candidate_destination_vals=}, {curr_bb.succ=})')
         elif len(candidate_bbs) > 1:
-            raise VMSymbolicError('Multiple jump destinations.')
+            raise VMSymbolicError(f'Multiple jump destinations. ({candidate_destination_vals=}, {curr_bb.succ=})')
 
         non_fallthrough_bb = candidate_bbs[0]
 

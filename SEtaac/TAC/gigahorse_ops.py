@@ -32,6 +32,7 @@ class TAC_Callprivate(TAC_Statement):
         # read arg-alias map
         args = self.arg_vars[1:]
         args_alias = target_bb.function.arguments
+        assert len(args) == len(args_alias), "Invalid CALLPRIVATE arguments"
         alias_arg_map = dict(zip(args_alias, args))
 
         for alias, arg in alias_arg_map.items():
@@ -40,14 +41,13 @@ class TAC_Callprivate(TAC_Statement):
         # read destination
         dest = target_bb.first_ins.id
 
-        # push stack frame
         try:
             saved_return_pc = state.get_fallthrough_pc()
         except VMNoSuccessors:
             fake_exit_bb = state.project.factory.block('fake_exit')
             saved_return_pc = fake_exit_bb.statements[0].id
 
-        state.callstack.append((saved_return_pc, self.res_vars))
+        state.callstack.append((state.pc, saved_return_pc, self.res_vars))
 
         # jump to target
         state.pc = dest
@@ -60,8 +60,8 @@ class TAC_Returnprivate(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        # pop stack frame (read saved return pc from stack)
-        saved_return_pc, callprivate_return_vars = state.callstack.pop()
+        # pop stack frame (read callprivate pc from stack)
+        callprivate_pc, saved_return_pc, callprivate_return_vars = state.callstack.pop()
 
         # set the return variables to their correct values
         returnprivate_args = self.arg_vars[1:]
@@ -69,6 +69,7 @@ class TAC_Returnprivate(TAC_Statement):
             state.registers[callprivate_return_var] = state.registers[returnprivate_arg]
 
         state.pc = saved_return_pc
+
         return [state]
 
 

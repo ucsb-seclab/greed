@@ -103,11 +103,25 @@ class LambdaMemory:
         if bv_unsigned_value(n) == 1:
             return self[index]
         else:
+            if is_concrete(index):
+                tag = f"READN_{self.tag}_BASE{self._base.id}_{bv_unsigned_value(index)}_{bv_unsigned_value(n)}"
+            else:
+                tag = f"READN_{self.tag}_BASE{self._base.id}_sym{index.id}_{bv_unsigned_value(n)}"
+
+            res = get_bv_by_name(tag)
+            if res is None:
+                res = BVS(tag, bv_unsigned_value(n)*8)
+            else:
+                # cache hit
+                return res
+
             vv = list()
             for i in range(bv_unsigned_value(n)):
                 read_index = BV_Add(index, BVV(i, 256))
                 vv.append(self[read_index])
-            return BV_Concat(vv)
+
+            self.state.add_constraint(Equal(res, BV_Concat(vv)))
+            return res
 
     def memset(self, start, value, size):
         old_base = self._base
@@ -124,6 +138,7 @@ class LambdaMemory:
                                                                      parent=self.root_lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
+        assert source != self, "ERROR: memcopy source was not copied"
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
@@ -131,22 +146,12 @@ class LambdaMemory:
                                                               parent=self.root_lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
+        assert source != self, "ERROR: memcopy source was not copied"
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
         self.root_lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
                                                                       parent=self.root_lambda_constraint)
-
-    def copy_return_data(self, istart, ilen, ostart, olen):
-        raise Exception("NOT IMPLEMENTED. Please have a look")
-        # if concrete(ilen) and concrete(olen):
-        #     self.write(ostart, olen, self.read(istart, min(ilen, olen)) + [0] * max(olen - ilen, 0))
-        # elif concrete(olen):
-        #     self.write(ostart, olen, [z3.If(i < ilen, self[istart + i], 0) for i in range(olen)])
-        # else:
-        #     self.write(ostart, SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE,
-        #                [z3.If(i < olen, z3.If(i < ilen, self[istart + i], 0), self[ostart + i]) for i in
-        #                 range(SymbolicMemory.MAX_SYMBOLIC_WRITE_SIZE)])
 
     def copy(self, new_state):
         new_memory = LambdaMemory(partial_init=True)

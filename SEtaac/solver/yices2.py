@@ -13,6 +13,7 @@ class YicesTerm:
         self.children = children if children else []
         self.num_children = len(self.children)
         self.operator = operator
+        self.is_simplified = False
 
     @property
     def value(self):
@@ -66,7 +67,9 @@ class YicesTermBool(YicesTerm):
 
 
 class YicesTermBV(YicesTerm):
-    pass
+    @property
+    def bitsize(self):
+        return yices.Terms.bitsize(self.id)
 
 
 class YicesTermArray(YicesTerm):
@@ -131,11 +134,14 @@ class Yices2(Solver):
         # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
         # yices_id = yices.Terms.bvconst_integer(width, value)
         yices_id = yices.Terms.parse_bvbin(format(value % (2**width), f'#0{width+2}b')[2:])
-        return YicesTermBV(operator="bvv", yices_id=yices_id, value=value)
+        res = YicesTermBV(operator="bvv", yices_id=yices_id, value=value)
+        res.is_simplified = True
+        return res
 
     def BVS(self, symbol: str, width: int) -> YicesTermBV:
         assert isinstance(symbol, str)
         assert isinstance(width, int)
+        # assert yices.Terms.get_by_name(symbol) is None
         yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width).id, name=symbol)
         return YicesTermBV(operator="bvs", yices_id=yices_id, name=symbol)
 
@@ -146,6 +152,13 @@ class Yices2(Solver):
         # works, but yices.Terms.bv_const_value(bv) could be a cleaner (though slower) option
         res_str = yices.Terms.to_string(bv.id, width=-1)
         return int(res_str[2:], 2)
+
+    def get_bv_by_name(self, symbol):
+        id = yices.Terms.get_by_name(symbol)
+        if id is None:
+            return None
+        else:
+            return YicesTermBV(operator="bvs", yices_id=id, name=symbol)
 
     def is_concrete(self, bv: YicesTermBV) -> bool:
         assert isinstance(bv, YicesTermBV)
