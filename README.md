@@ -1,8 +1,10 @@
-# greed
+# `greed`
 
 <img align="left" width="250"  src="logo.png">
 
 A symbolic execution engine for the TAC IR used by Gigahorse.
+
+[![Tests](https://github.com/ucsb-seclab/symbexcel/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/symbexcel/actions/workflows/python-app.yml)
 
 ### Installation
 ```bash
@@ -24,33 +26,31 @@ First, the contract needs to be pre-processed with `gigahorse`. This can be done
 mkdir /tmp/test_contract
 cd /tmp/test_contract/
 
-# From the solidity source
+# OPTION 1: From the solidity source
 cp <contract_source> contract.sol
 analyze_source.sh contract.sol
 
-# From the contract bytecode
+# OPTION 2: From the contract bytecode
 cp <contract_bytecode> contract.hex
 analyze_contract_hex.sh contract.hex
-
-# To get the decompiled source
-decompile.sh contract.hex
-
 ```
 
 The bytecode analyses should work on any system where `gigahorse` can be properly compiled. 
 
 Finally, to run `greed`:
 ```bash
-greed /tmp/test_contract --debug
+greed /tmp/test_contract [--debug] [--find <address>]
 ```
 
 ### Testing
 ```bash
-# Manually run a single test using run_testcase.py
 cd greed/tests
-./run_testcase.py test_math --debug
-# Or run the full suite with pytest
+
+# Run the full test suite with pytest
 pytest
+
+# Or manually run a single test using run_testcase.py
+./run_testcase.py test_math --debug
 ```
 
 ### Architecture
