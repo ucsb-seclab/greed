@@ -103,9 +103,3 @@ if [ -z $NO_GIGAHORSE ]; then
 else
   true
 fi
-
-# link our clients into gigahorse-toolkit
-echo "Linking clients into gigahorse-toolchain.."
-for client in $GREED_DIR/gigahorse_clients/{*.dl_compiled,*.py,lib} $GREED_DIR/gigahorse_clients/lib; do
-  ln -sf $client $GREED_DIR/gigahorse-toolchain/clients/
-done
