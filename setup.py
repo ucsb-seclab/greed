@@ -14,7 +14,7 @@ setup(
         'pysha3>=1.0.2',
         'pytest==7.2.1',
         'solc-select>=0.2.1',
-        'sympy>=1.9'
+        'sympy>=1.9',
         'web3>=5.31.1',
     ],
     python_requires='>=3.8',
