@@ -33,13 +33,13 @@ git submodule update --init --recursive
 
 # link our scripts into virtualenv's bin dir
 echo "Linking scripts into virtualenv's bin directory.."
-for script in $GREED_DIR/scripts/{*.sh,*.py}; do
+for script in $GREED_DIR/resources/{*.sh,*.py}; do
   ln -sf $script $VIRTUAL_ENV/bin/
 done
 
 # create alias for run.py
 echo "Creating alias run.py -> greed.."
-ln -sf $GREED_DIR/scripts/run.py $VIRTUAL_ENV/bin/greed
+ln -sf $GREED_DIR/resources/run.py $VIRTUAL_ENV/bin/greed
 
 # pip install greed
 pip install -e .
@@ -56,7 +56,7 @@ if [ -z $NO_GIGAHORSE ]; then
 
   # apply patches
   cd $GIGAHORSE_DIR
-  for PATCH_FILE in $GREED_DIR/scripts/patches/*.patch; do
+  for PATCH_FILE in $GREED_DIR/resources/patches/*.patch; do
     git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
   done
   cd $GREED_DIR

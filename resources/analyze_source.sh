@@ -21,4 +21,4 @@ arch=$(uname -i)
 SOLC_VERSION=0.8.7 solc --bin-runtime $SOURCE_FILE | sed -rn '/Binary of the runtime part:/{n;p;}' | tail -n 1 | tr -d '\n' > contract.hex || { echo "${bold}${red}Failed to run solc${normal}"; exit 1; }
 
 # analyze deployment hex
-$GREED_DIR/scripts/analyze_hex.sh --file contract.hex
+$GREED_DIR/resources/analyze_hex.sh --file contract.hex
