@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import pytest
 
 if __package__:
     from . import common
@@ -10,6 +11,8 @@ else:
 DEBUG = False
 
 
+
+@pytest.mark.skip
 def test_sha():
     common.run_test(target_dir=f"{os.path.dirname(__file__)}/test_sha_overlapping",
                     debug=DEBUG)

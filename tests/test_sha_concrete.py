@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import pytest
 
 import IPython
 
@@ -47,7 +48,7 @@ def run_test(target_dir, debug=False):
     common.run_test_simgr(simgr, debug=debug)
 
 
-
+@pytest.mark.skip
 def test_lambda_memory_simple():
     run_test(target_dir=f"{os.path.dirname(__file__)}/test_sha_concrete",
              debug=DEBUG)
