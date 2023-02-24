@@ -4,7 +4,7 @@
 
 A symbolic execution engine for the TAC IR used by Gigahorse.
 
-[![Tests](https://github.com/ucsb-seclab/symbexcel/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/symbexcel/actions/workflows/python-app.yml)
+[![Tests](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml)
 
 ### Installation
 ```bash
