@@ -1,23 +1,15 @@
-
 import logging
+import sys
 import web3
-import sys 
-
 from greed import options as opt
-from greed.memory.lambda_constraint import LambdaConstraint
 from greed.memory import LambdaMemory
-from greed.utils.exceptions import GreedException
+from greed.memory.lambda_constraint import LambdaConstraint
 from greed.solver.shortcuts import *
+from greed.utils.exceptions import GreedException
 from greed.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
 
-
-def get_storage(contract_address, index):
-    """
-    (cached for performance)
-    Retrieve storage value from the blockchain
-    """
     
 class PartialConcreteStorage:
 
