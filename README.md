@@ -1,5 +1,7 @@
 # greed
 
+<img align="left" width="250"  src="greed.png">
+
 A symbolic executor for the TAC IR used by Gigahorse
 
 ### Installation
