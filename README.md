@@ -2,7 +2,7 @@
 
 <img align="left" width="250"  src="greed.png">
 
-A symbolic executor for the TAC IR used by Gigahorse
+A symbolic execution engine for the TAC IR used by Gigahorse.
 
 ### Installation
 ```bash
@@ -12,12 +12,8 @@ git clone git@github.com:ucsb-seclab/greed.git
 mkvirtualenv greed
 # Activate the virtual environment
 workon greed
-# Install greed
-pip install -e greed
-# Setup greed and gigahorse
+# Install greed (will setup gigahorse, yices, and `pip install -e greed`)
 ./setup.sh
-# Setup the preferred solver (bitwuzla or boolector)
-./setup_yices2.sh
 ```
 
 ### Usage
@@ -41,7 +37,7 @@ decompile.sh contract.hex
 
 ```
 
-The source analysis only works on `x86_64` systems. The bytecode analyses should work on any system where `gigahorse` can be properly compiled. 
+The bytecode analyses should work on any system where `gigahorse` can be properly compiled. 
 
 Finally, to run `greed`:
 ```bash

@@ -13,24 +13,23 @@ j=1
 while (( $# >= 1 )); do
     case $1 in
     -j) j=$2; shift; shift;;
-    --path) GREED_DIR=$2; shift; shift;;
     --no-gigahorse) NO_GIGAHORSE=TRUE; shift; shift;;
     *) break;
     esac;
 done
 
 # navigate to this script's directory
-if [ -z $GREED_DIR ]; then
-  GREED_DIR=`dirname "${BASH_SOURCE[0]}"`
-  GREED_DIR=`readlink -f $GREED_DIR` || { echo "${bold}${red}Can't find greed absolute path (please specify it with --path PATH)${normal}"; exit 1; }
-fi
+GREED_DIR=`dirname "${BASH_SOURCE[0]}"`
+GREED_DIR=`readlink -f $GREED_DIR` || { echo "${bold}${red}Can't find greed absolute path ${normal}"; exit 1; }
 GIGAHORSE_DIR=$GREED_DIR/gigahorse-toolchain
-
 cd $GREED_DIR
 
+########################################################################################################################
+########################################################################################################################
+
 # init the submodules (gigahorse-toolkit has submodules)
-# echo "Initializing gigahorse submodule.."
-# git submodule update --init --recursive
+echo "Initializing submodules.."
+git submodule update --init --recursive
 
 # link our scripts into virtualenv's bin dir
 echo "Linking scripts into virtualenv's bin directory.."
@@ -42,6 +41,14 @@ done
 echo "Creating alias run.py -> greed.."
 ln -sf $GREED_DIR/scripts/run.py $VIRTUAL_ENV/bin/greed
 
+# pip install greed
+pip install -e .
+
+########################################################################################################################
+########################################################################################################################
+# GIGAHORSE
+########################################################################################################################
+
 if [ -z $NO_GIGAHORSE ]; then
   echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
   read -rsn1 -p "Setting up gigahorse.. Press any key to continue (ctrl-c to abort)"
@@ -49,14 +56,9 @@ if [ -z $NO_GIGAHORSE ]; then
 
   # apply patches
   cd $GIGAHORSE_DIR
-  PATCH_FILE=$GREED_DIR/scripts/gigahorse_guards_client.patch
-  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
-  PATCH_FILE=$GREED_DIR/scripts/gigahorse_loops_semantics_client.patch
-  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
-  PATCH_FILE=$GREED_DIR/scripts/gigahorse_data_structures.patch
-  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
-  PATCH_FILE=$GREED_DIR/scripts/gigahorse_memlimit.patch
-  git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
+  for PATCH_FILE in $GREED_DIR/scripts/patches/*.patch; do
+    git apply --reverse --check $PATCH_FILE &>/dev/null || git apply $PATCH_FILE
+  done
   cd $GREED_DIR
 
   # compile gigahorse clients
@@ -65,41 +67,62 @@ if [ -z $NO_GIGAHORSE ]; then
 
   echo "Compiling gigahorse clients. This will take some time.."
 
+  # compile souffle
   cd $GIGAHORSE_DIR/souffle-addon
-  make &> /dev/null || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
+  make || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
   cd $GREED_DIR
 
-  # main
-  echo "Compiling main.dl.."
-  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/logic/main.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build main.dl_compiled${normal}"; exit 1; } &&
-  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp $GIGAHORSE_DIR/clients/main.dl_compiled &&
-  mv $GIGAHORSE_DIR/clients/main.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/main.dl_compiled.cpp &&
-  echo "Successfully compiled main.dl.."
-
-
-  # function inliner
-  echo "Compiling function_inliner.dl.."
-  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/function_inliner.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build function_inliner.dl_compiled${normal}"; exit 1; } &&
-  mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled &&
-  mv $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/function_inliner.dl_compiled.cpp &&
-  echo "Successfully compiled function_inliner.dl.."
-
-  # loop semantics
-  echo "Compiling loops_semantics.dl.."
-  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/loops_semantics.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build loops_semantics.dl_compiled${normal}"; exit 1; } &&
-  mv $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled &&
-  mv $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/loops_semantics.dl_compiled.cpp &&
-  echo "Successfully compiled loops_semantics.dl.."
-
-  # guards analysis
-  echo "Compiling guards.dl.."
-  souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp $GIGAHORSE_DIR/clientlib/guards.dl -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build guards.dl_compiled${normal}"; exit 1; } &&
-  mv $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp $GIGAHORSE_DIR/clients/guards.dl_compiled &&
-  mv $GIGAHORSE_DIR/clients/guards.dl_compiled.tmp.cpp $GIGAHORSE_DIR/clients/guards.dl_compiled.cpp &&
-  echo "Successfully compiled guards.dl.."
+  function compile () {
+    echo "Compiling $1.."
+    souffle --jobs $j -M "GIGAHORSE_DIR=$GIGAHORSE_DIR BULK_ANALYSIS=" -o $GIGAHORSE_DIR/clients/$1_compiled.tmp $GIGAHORSE_DIR/$2 -L $GIGAHORSE_DIR/souffle-addon || { echo "${bold}${red}Failed to build $1_compiled${normal}"; exit 1; } &&
+    mv $GIGAHORSE_DIR/clients/$1_compiled.tmp $GIGAHORSE_DIR/clients/$1_compiled &&
+    mv $GIGAHORSE_DIR/clients/$1_compiled.tmp.cpp $GIGAHORSE_DIR/clients/$1_compiled.cpp &&
+    echo "Successfully compiled $1.."
+  }
+  compile "main.dl" "logic/main.dl"
+  compile "function_inliner.dl" "clientlib/function_inliner.dl"
+  compile "loops_semantics.dl" "clientlib/loops_semantics.dl"
+  compile "guards.dl" "clientlib/guards.dl"
 
   command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
   solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; }
 else
   true
 fi
+
+########################################################################################################################
+########################################################################################################################
+# YICES
+########################################################################################################################
+
+# clone the yices2 repo
+if [ ! -d $GREED_DIR/yices2 ]; then
+  git clone git@github.com:SRI-CSL/yices2.git $GREED_DIR/yices2
+fi
+
+cd $GREED_DIR/yices2
+
+# check if all required packages are installed (cmake, cython, libgmp-dev)
+dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
+dpkg -l | grep -q cmake || { echo "${bold}${red}cmake is not installed. Please install it before proceeding (e.g., sudo apt install cmake)${normal}"; exit 1; }
+dpkg -l | grep -q gperf || { echo "${bold}${red}gperf is not installed. Please install it before proceeding (e.g., sudo apt install gperf)${normal}"; exit 1; }
+dpkg -l | grep -q libgmp-dev || { echo "${bold}${red}libgmp-dev is not installed. Please install it before proceeding (e.g., sudo apt install libgmp-dev)${normal}"; exit 1; }
+
+# install
+autoconf || { echo "${bold}${red}Failed to run autoconf${normal}"; exit 1; }
+./configure || { echo "${bold}${red}Failed to run ./configure${normal}"; exit 1; }
+make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
+
+# finally, link yices2/build/lib/ to the virtualenv's site-packages dir
+VIRTUAL_ENV_BIN=$VIRTUAL_ENV/bin
+VIRTUAL_ENV_LIB=`echo $VIRTUAL_ENV/lib/python3.*/site-packages`
+ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
+ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
+cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
+
+# clone the yices2_python_bindings repo
+if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
+  git clone git@github.com:ruaronicola/yices2_python_bindings.git yices2_python_bindings
+fi
+
+pip install -e yices2_python_bindings
