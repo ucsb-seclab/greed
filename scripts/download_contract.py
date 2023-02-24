@@ -14,6 +14,7 @@ if __name__ == "__main__":
     parser.add_argument("--address", type=str, action="store", help="Target address")
     parser.add_argument("--out", type=str, action="store", help="Target file", default="contract.hex")
     parser.add_argument("--w3", type=str, default="http://127.0.0.1:8545")
+    parser.add_argument("--peek", action="store_true", help="Just print code to stdout")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
 
     args = parser.parse_args()
@@ -29,5 +30,9 @@ if __name__ == "__main__":
     assert w3.isConnected()
 
     code = w3.eth.getCode(args.address).hex()[2:]
-    with open(args.out, "w") as contract_file:
-        contract_file.write(code)
+
+    if args.peek:
+        print(code, end='')
+    else:
+        with open(args.out, "w") as contract_file:
+            contract_file.write(code)

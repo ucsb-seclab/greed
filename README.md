@@ -1,6 +1,6 @@
 # greed
 
-<img align="left" width="250"  src="greed.png">
+<img align="left" width="250"  src="logo.png">
 
 A symbolic execution engine for the TAC IR used by Gigahorse.
 
