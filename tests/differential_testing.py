@@ -213,7 +213,7 @@ if __name__ == "__main__":
                 analyzer.next_transaction()
                 continue
             # IF args.transactions, SKIP WHEN TRACING THE TX WAS NOT REQUESTED
-            elif txn_hash.hex() not in args.transactions:
+            elif args.transactions and txn_hash.hex() not in args.transactions:
                 print(f"Replaying tx: {txn_hash.hex()}")
                 analyzer.next_transaction()
                 continue
