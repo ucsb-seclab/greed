@@ -88,9 +88,20 @@ class Tracer(BaseAnalysisAddOn):
             self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
 
 
-def retrace(tracer, tx_data):
+def retrace(tracer, tx_data, block_info):
     xid = gen_exec_id()
-    state = tracer.p.factory.entry_state(xid=xid, max_calldatasize=len(tx_data['input']))
+
+    init_ctx = {
+        "CALLDATA": tx_data["input"],
+        "CALLER": tx_data["from"],
+        "ORIGIN": tx_data["from"],
+        "ADDRESS": tx_data["to"],
+        "NUMBER": tx_data["blockNumber"],
+        "DIFFICULTY": block_info["totalDifficulty"],
+        "TIMESTAMP": block_info["timestamp"]
+    }
+
+    state = tracer.p.factory.entry_state(xid=xid, init_ctx=init_ctx)
 
     # execute and actually follow the control flow, when we desync (different block) wait for greed to get back in sync
     print("\n\n")
@@ -167,8 +178,9 @@ if __name__ == "__main__":
 
     for block_number in args.blocks:
         # LOOP THROUGH ALL TRANSACTIONS
+        block_info = w3.eth.get_block(block_number)
         analyzer = Analyzer.from_block_number(w3, block_number)
-        for txn_hash in w3.eth.get_block(block_number)['transactions']:
+        for txn_hash in block_info['transactions']:
             tx_data = w3.eth.getTransaction(txn_hash)
 
             # SKIP IF WE DON'T HAVE THE ANALYSIS
@@ -192,4 +204,4 @@ if __name__ == "__main__":
             except ExternalCallError:
                 pass
 
-            retrace(tracer, tx_data)
+            retrace(tracer, tx_data, block_info)
