@@ -104,6 +104,10 @@ def retrace(tracer, tx_data, block_info):
 
     state = tracer.p.factory.entry_state(xid=xid, init_ctx=init_ctx)
 
+    # init empty simgr
+    simgr = tracer.p.factory.simgr(entry_state=state)
+    simgr.active.pop()
+
     # execute and actually follow the control flow, when we desync (different block) wait for greed to get back in sync
     print("\n\n")
     print('-' * 20)
