@@ -170,6 +170,7 @@ def retrace(tracer, tx_data, block_info):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--blocks", nargs='+', type=int, action="store", required=True)
+    parser.add_argument("--transactions", nargs='+', type=int, action="store", required=True)
     parser.add_argument("--analysis-path", type=str, action="store", default="/data/blockchain/contracts")
 
     args = parser.parse_args()
@@ -181,18 +182,35 @@ if __name__ == "__main__":
     assert w3.isConnected()
     print('connected')
 
-    for block_number in args.blocks:
+    if (args.blocks and args.transactions) or (not args.blocks and not args.transactions):
+        print("Illegal arguments. Please specify either --blocks or --transactions")
+        exit(1)
+
+    blocks = list()
+    if args.transactions:
+        for txn_hash in args.transactions:
+            blocks.append(w3.eth.getTransaction(txn_hash)["blockNumber"])
+    elif args.blocks:
+        blocks = args.blocks
+
+    for block_number in blocks:
         # LOOP THROUGH ALL TRANSACTIONS
         block_info = w3.eth.get_block(block_number)
         analyzer = Analyzer.from_block_number(w3, block_number)
         for txn_hash in block_info['transactions']:
             tx_data = w3.eth.getTransaction(txn_hash)
 
-            # SKIP IF WE DON'T HAVE THE ANALYSIS
             addr = tx_data['to']
             target_dir = f"{args.analysis_path}/{addr[0:5]}/{addr}"
-            if not os.path.isdir(target_dir):
+
+            # IF args.blocks, SKIP WHEN WE DON'T HAVE THE ANALYSIS
+            if args.blocks and not os.path.isdir(target_dir):
                 print(f"Replaying tx with missing target ({addr}): {txn_hash.hex()}")
+                analyzer.next_transaction()
+                continue
+            # IF args.transactions, SKIP WHEN TRACING THE TX WAS NOT REQUESTED
+            elif txn_hash not in args.transactions:
+                print(f"Replaying tx: {txn_hash.hex()}")
                 analyzer.next_transaction()
                 continue
 
