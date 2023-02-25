@@ -93,6 +93,7 @@ def retrace(tracer, tx_data, block_info):
 
     init_ctx = {
         "CALLDATA": tx_data["input"],
+        "CALLDATASIZE": len(tx_data["input"][2:]) // 2,
         "CALLER": tx_data["from"],
         "ORIGIN": tx_data["from"],
         "ADDRESS": tx_data["to"],
