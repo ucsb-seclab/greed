@@ -10,9 +10,8 @@ from greed import Project
 from greed.utils import load_csv, gen_exec_id
 
 
-class ExternalCallError:
+class ExternalCallError(BaseException):
     pass
-
 
 class Tracer(BaseAnalysisAddOn):
     PRE_OPERATION_PRIORITY: int = 110
@@ -46,26 +45,13 @@ class Tracer(BaseAnalysisAddOn):
         self.depth = len(self.call_tracer.call_stack) - 1
         pc = hex(computation.code.program_counter - 0x1)
 
-        if opcode.mnemonic in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']:
-            target = hex(Tracer.peek_stack(computation, 1))
-            target = w3.toChecksumAddress(target)
-            print(f"Call to {target}")
-
-            raise ExternalCallError
-
-            # this = self.call_tracer.call_stack[0].callee
-            # this = w3.toChecksumAddress(this)
-            # if target == this:
-            #     print("DETECTED RE-ENTRANT CALL")
-            #     # exit(1)
-
-        if self.depth == 0:
+        if self.depth == 0 or opcode.mnemonic in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']:
             op = None
             tac_pcs = None
             if pc in self.p.block_at:
-                print('-'*20)
-                print(f"Block {pc}")
-                print('-'*20)
+                # print('-'*20)
+                # print(f"Block {pc}")
+                # print('-'*20)
                 self.block_trace.append(pc)
 
             if pc in self.evm_to_tac:
@@ -77,12 +63,12 @@ class Tracer(BaseAnalysisAddOn):
                 else:
                     op.arg_vals = {v: None for v in op.arg_vars}
                     op.res_vals = {v: None for v in op.res_vars}
-            print(f"[{pc}] {opcode.mnemonic} --> {op or '???'}")
+            # print(f"[{pc}] {opcode.mnemonic} --> {op or '???'}")
 
             arg_vals = dict()
             res_vals = dict()
-            if op is not None and op.arg_vars:
-                arg_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.arg_vars)}
+            # if op is not None and op.arg_vars:
+            #     arg_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.arg_vars)}
 
             self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
 
@@ -96,8 +82,8 @@ class Tracer(BaseAnalysisAddOn):
             self.trace.pop()
 
             res_vals = dict()
-            if op is not None and op.arg_vars:
-                res_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.res_vars)}
+            # if op is not None and op.arg_vars:
+            #     res_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.res_vars)}
 
             self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
 
@@ -120,16 +106,20 @@ def retrace(tracer, tx_data):
         if pyevm_op is None:
             continue
 
+        if pyevm_op.__internal_name__ in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']:
+            print(f"Stopping re-tracing on external call")
+            return
+
         old_state = state.copy()
         successors = state.curr_stmt.handle(state)
 
         if len(successors) == 0:
             # there are no successors
-            print(f"Unrecoverable de-sync ({successors}), expected {tac_pcs}")
+            print(f"Unrecoverable de-sync ({successors}), expected {tac_pcs}. there are no successors")
             exit(1)
         elif sum([s.pc in tac_pcs for s in successors]) > 1:
             # there are successors, and more than one is valid
-            print(f"Unrecoverable de-sync ({successors}), expected {tac_pcs}")
+            print(f"Unrecoverable de-sync ({successors}), expected {tac_pcs}. there are successors, and more than one is valid")
             exit(1)
         elif sum([s.pc in tac_pcs for s in successors]) == 1:
             # there are successors, and one of them is valid
@@ -146,7 +136,7 @@ def retrace(tracer, tx_data):
                     break
                 simgr.step(find=lambda s: s.pc in tac_pcs)
             if not simgr.found:
-                print(f"Unrecoverable de-sync({simgr}), expected {tac_pcs}")
+                print(f"Unrecoverable de-sync({simgr}), expected {tac_pcs}. there are successors, but none of them is valid. failed to get greed back in sync")
                 exit(1)
             state = simgr.one_found
 
@@ -159,7 +149,7 @@ def retrace(tracer, tx_data):
         pyevm_str = f"[{pc}] {pyevm_op}"
         greed_str = f"[{state.pc}] {state.curr_stmt}"
         print(f"{pyevm_str:<60} | {greed_str:<60}")
-
+        
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -176,27 +166,30 @@ if __name__ == "__main__":
     print('connected')
 
     for block_number in args.blocks:
-        # GET ANALYZER
-        analyzer = Analyzer.from_block_number(w3, block_number)
-
         # LOOP THROUGH ALL TRANSACTIONS
-        for txn_hash in analyzer.block['transactions']:
+        analyzer = Analyzer.from_block_number(w3, block_number)
+        for txn_hash in w3.eth.get_block(block_number)['transactions']:
             tx_data = w3.eth.getTransaction(txn_hash)
 
             # SKIP IF WE DON'T HAVE THE ANALYSIS
             addr = tx_data['to']
-            if not os.path.isdir(f"{args.analysis_path}/{addr[0:5]}/{addr}"):
+            target_dir = f"{args.analysis_path}/{addr[0:5]}/{addr}"
+            if not os.path.isdir(target_dir):
                 print(f"Replaying tx with missing target ({addr}): {txn_hash.hex()}")
                 analyzer.next_transaction()
                 continue
 
             # OTHERWISE RETRACE
+            print(f"\n\n\nRetracing tx with target ({addr}): {txn_hash.hex()}")
             call_tracer = CallTracer()
             call_tracer.install_on(analyzer)
 
-            tracer = Tracer(call_tracer, args.target_dir)
+            tracer = Tracer(call_tracer, target_dir)
             tracer.install_on(analyzer)
 
-            analyzer.next_transaction()
+            try:
+                analyzer.next_transaction()
+            except ExternalCallError:
+                pass
 
             retrace(tracer, tx_data)
