@@ -194,6 +194,7 @@ if __name__ == "__main__":
         blocks = args.blocks
 
     for block_number in blocks:
+        print(f"Retracing block: {block_number}")
         # LOOP THROUGH ALL TRANSACTIONS
         block_info = w3.eth.get_block(block_number)
         analyzer = Analyzer.from_block_number(w3, block_number)
@@ -209,8 +210,12 @@ if __name__ == "__main__":
                 analyzer.next_transaction()
                 continue
             # IF args.transactions, SKIP WHEN TRACING THE TX WAS NOT REQUESTED
-            elif txn_hash not in args.transactions:
+            elif txn_hash.hex() not in args.transactions:
                 print(f"Replaying tx: {txn_hash.hex()}")
+                analyzer.next_transaction()
+                continue
+            elif not os.path.isdir(target_dir):
+                print(f"Replaying REQUESTED tx because target is missing ({addr}): {txn_hash.hex()}")
                 analyzer.next_transaction()
                 continue
 
