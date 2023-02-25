@@ -119,12 +119,8 @@ def retrace(tracer, tx_data, block_info):
     greed_str = f"[{state.pc}] {state.curr_stmt}"
     print(f"{pyevm_str:<60} | {greed_str:<60}")
     for (pyevm_op, pc, tac_pcs, arg_vals, res_vals) in tracer.trace[1:]:
-        if pyevm_op is None:
+        if pyevm_op is None or state.pc in tac_pcs:
             continue
-
-        if pyevm_op.__internal_name__ in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']:
-            print(f"Stopping re-tracing on external call")
-            return
 
         old_state = state.copy()
         successors = simgr.single_step_state(state)
@@ -165,6 +161,10 @@ def retrace(tracer, tx_data, block_info):
         pyevm_str = f"[{pc}] {pyevm_op}"
         greed_str = f"[{state.pc}] {state.curr_stmt}"
         print(f"{pyevm_str:<60} | {greed_str:<60}")
+
+        if pyevm_op.__internal_name__ in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']:
+            print(f"Stopping re-tracing on external call")
+            return
         
 
 if __name__ == "__main__":
@@ -204,7 +204,7 @@ if __name__ == "__main__":
             addr = tx_data['to']
             if addr is None:
                 continue
-            
+
             target_dir = f"{args.analysis_path}/{addr[0:5]}/{addr}"
 
             # IF args.blocks, SKIP WHEN WE DON'T HAVE THE ANALYSIS
