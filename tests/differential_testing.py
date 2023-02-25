@@ -170,7 +170,7 @@ def retrace(tracer, tx_data, block_info):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--blocks", nargs='+', type=int, action="store", required=True)
-    parser.add_argument("--transactions", nargs='+', type=int, action="store", required=True)
+    parser.add_argument("--transactions", nargs='+', type=str, action="store", required=True)
     parser.add_argument("--analysis-path", type=str, action="store", default="/data/blockchain/contracts")
 
     args = parser.parse_args()
