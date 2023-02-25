@@ -123,7 +123,7 @@ def retrace(tracer, tx_data, block_info):
             return
 
         old_state = state.copy()
-        successors = state.curr_stmt.handle(state)
+        successors = simgr.single_step_state(state)
 
         if len(successors) == 0:
             # there are no successors
