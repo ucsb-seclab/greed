@@ -202,6 +202,9 @@ if __name__ == "__main__":
             tx_data = w3.eth.getTransaction(txn_hash)
 
             addr = tx_data['to']
+            if addr is None:
+                continue
+            
             target_dir = f"{args.analysis_path}/{addr[0:5]}/{addr}"
 
             # IF args.blocks, SKIP WHEN WE DON'T HAVE THE ANALYSIS
