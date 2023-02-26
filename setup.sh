@@ -52,7 +52,9 @@ if [ -z $NO_GIGAHORSE ]; then
 
   # clone the gigahorse-toolchain repo
   if [ ! -d $GREED_DIR/gigahorse-toolchain ]; then
-    git clone https://github.com/nevillegrech/gigahorse-toolchain.git $GREED_DIR/gigahorse-toolchain
+    git clone https://github.com/nevillegrech/gigahorse-toolchain.git $GIGAHORSE_DIR
+    cd $GIGAHORSE_DIR
+    git checkout 59599ecb2397c42e342140189593cabdcce1a2d6
   fi
 
   # apply patches
