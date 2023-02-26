@@ -89,7 +89,7 @@ STATE_STOP_AT_ADDCONSTRAINT = "STATE_STOP_AT_ADDCONSTRAINT"
 # ==============
 
 # MAX size of the SHA3 input buffer that is considered.
-MAX_SHA_SIZE = 256
+MAX_SHA_SIZE = 512
 
 SOLVER_YICES2 = "YICES2"
 # Default is Yices2
