@@ -45,7 +45,7 @@ class Tracer(BaseAnalysisAddOn):
         self.depth = len(self.call_tracer.call_stack) - 1
         pc = hex(computation.code.program_counter - 0x1)
 
-        if self.depth == 0 or opcode.mnemonic in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']:
+        if self.depth == 0 or (self.depth == 1 and opcode.mnemonic in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']):
             op = None
             tac_pcs = None
             if pc in self.p.block_at:
@@ -67,26 +67,36 @@ class Tracer(BaseAnalysisAddOn):
 
             arg_vals = dict()
             res_vals = dict()
-            # if op is not None and op.arg_vars:
-            #     arg_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.arg_vars)}
+            if op is not None and opcode.mnemonic == op.__internal_name__:
+                arg_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.arg_vars)}
 
             self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
+        
+        elif (self.depth == 1 and opcode.mnemonic in ['RETURN', 'REVERT']):
+            arg_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(['offset', 'size'])}
+            res_vals = {'returndata': computation.memory_read_bytes(arg_vals['offset'], arg_vals['size'])}
+            self.trace.append((opcode.mnemonic, pc, None, arg_vals, res_vals))
+
 
     def post_opcode_hook(self, opcode, computation):
-        if self.depth == 0:
+        if self.depth == 0 or (self.depth == 1 and opcode.mnemonic in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE']):
+            backup = list()
             op, pc, tac_pcs, arg_vals, res_vals = self.trace[-1]
+            if opcode.mnemonic in ['CALL', 'STATICCALL', 'DELEGATECALL', 'CALLCODE'] and op in ['RETURN', 'REVERT']:
+                backup = [self.trace.pop()]
+
+                op, pc, tac_pcs, arg_vals, res_vals = self.trace[-1]
 
             if pc != hex(computation.code.program_counter - 0x1):
                 return
 
-            self.trace.pop()
+            if op is not None and opcode.mnemonic == op.__internal_name__:
+                self.trace.pop()
+                res_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.res_vars)}
+                self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
 
-            res_vals = dict()
-            # if op is not None and op.arg_vars:
-            #     res_vals = {v: Tracer.peek_stack(computation, i) for i, v in enumerate(op.res_vars)}
-
-            self.trace.append((op, pc, tac_pcs, arg_vals, res_vals))
-
+            self.trace += backup
+        
 
 def retrace(tracer, tx_data, block_info):
     xid = gen_exec_id()
@@ -118,7 +128,13 @@ def retrace(tracer, tx_data, block_info):
     pyevm_str = f"[{tracer.trace[0][1]}] {tracer.trace[0][0]}"
     greed_str = f"[{state.pc}] {state.curr_stmt}"
     print(f"{pyevm_str:<60} | {greed_str:<60}")
+
+    trace = list(tracer.trace[1:])
     for (pyevm_op, pc, tac_pcs, arg_vals, res_vals) in tracer.trace[1:]:
+        while trace[0] != (pyevm_op, pc, tac_pcs, arg_vals, res_vals):
+            trace.pop(0)
+        trace.pop(0)
+
         if pyevm_op is None or state.pc in tac_pcs:
             continue
 
