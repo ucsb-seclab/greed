@@ -405,15 +405,13 @@ tests/*/**
 !tests/test_*/CallToSignature.csv
 !tests/test_*/CallToSignatureFromSHA3.csv
 
-
-!gigahorse_clients/lib/**.so
-
-bitwuzla/**
-boolector/**
 yices2
 yices2/**
+
+yices2_python_bindings
 yices2_python_bindings/**
 
-./bitwuzla
+gigahorse-toolchain
+gigahorse-toolchain/**
 
 *.dot

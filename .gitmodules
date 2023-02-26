@@ -1,4 +1,0 @@
-[submodule "gigahorse-toolchain"]
-	path = gigahorse-toolchain
-	url = git@github.com:nevillegrech/gigahorse-toolchain.git
-    ignore = dirty

@@ -16,16 +16,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        submodules: true
-    - uses: actions/checkout@v3
-      with:
-        repository: SRI-CSL/yices2
-        path: './yices2'
-    - uses: actions/checkout@v3
-      with:
-        repository: ruaronicola/yices2_python_bindings
-        path: './yices2/yices2_python_bindings'
 
     - name: Set up Python 3.8
       uses: actions/setup-python@v4

@@ -27,10 +27,6 @@ cd $GREED_DIR
 ########################################################################################################################
 ########################################################################################################################
 
-# init the submodules (gigahorse-toolkit has submodules)
-echo "Initializing submodules.."
-git submodule update --init --recursive
-
 # link our scripts into virtualenv's bin dir
 echo "Linking scripts into virtualenv's bin directory.."
 for script in $GREED_DIR/resources/{*.sh,*.py}; do
@@ -53,6 +49,11 @@ if [ -z $NO_GIGAHORSE ]; then
   echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
   read -rsn1 -p "Setting up gigahorse.. Press any key to continue (ctrl-c to abort)"
   echo
+
+  # clone the gigahorse-toolchain repo
+  if [ ! -d $GREED_DIR/gigahorse-toolchain ]; then
+    git clone https://github.com/nevillegrech/gigahorse-toolchain.git $GREED_DIR/gigahorse-toolchain
+  fi
 
   # apply patches
   cd $GIGAHORSE_DIR
@@ -97,7 +98,7 @@ fi
 
 # clone the yices2 repo
 if [ ! -d $GREED_DIR/yices2 ]; then
-  git clone git@github.com:SRI-CSL/yices2.git $GREED_DIR/yices2
+  git clone https://github.com/SRI-CSL/yices2.git $GREED_DIR/yices2
 fi
 
 cd $GREED_DIR/yices2
@@ -120,9 +121,11 @@ ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
 ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
 cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
 
+cd $GREED_DIR
+
 # clone the yices2_python_bindings repo
 if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
-  git clone git@github.com:ruaronicola/yices2_python_bindings.git yices2_python_bindings
+  git clone https://github.com/ruaronicola/yices2_python_bindings.git $GREED_DIR/yices2_python_bindings
 fi
 
 pip install -e yices2_python_bindings
