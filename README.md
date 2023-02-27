@@ -2,8 +2,6 @@
 
 <img align="left" width="250"  src="logo.png">
 
-A symbolic execution engine for the TAC IR used by Gigahorse.
-
 [![Tests](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml)
 
 ### Installation
