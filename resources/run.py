@@ -5,6 +5,7 @@ import logging
 import IPython
 
 from greed import Project
+from greed.exploration_techniques import DirectedSearch, Prioritizer
 from greed.utils import gen_exec_id
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
