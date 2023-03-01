@@ -124,13 +124,13 @@ class Yices2(Solver):
         self.solver = yices.Context(cfg)
 
     def BVSort(self, width: int) -> YicesTypeBV:
-        assert isinstance(width, int)
+        assert isinstance(width, int), f"Expected type int, got {type(width)}"
         yices_id = yices.Types.bv_type(width)
         return YicesTypeBV(yices_id=yices_id, name=f"BV{width}")
 
     def BVV(self, value: int, width: int) -> YicesTermBV:
-        assert isinstance(value, int)
-        assert isinstance(width, int)
+        assert isinstance(value, int), f"Expected type int, got {type(value)}"
+        assert isinstance(width, int), f"Expected type int, got {type(width)}"
         # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
         # yices_id = yices.Terms.bvconst_integer(width, value)
         yices_id = yices.Terms.parse_bvbin(format(value % (2**width), f'#0{width+2}b')[2:])
@@ -139,14 +139,14 @@ class Yices2(Solver):
         return res
 
     def BVS(self, symbol: str, width: int) -> YicesTermBV:
-        assert isinstance(symbol, str)
-        assert isinstance(width, int)
+        assert isinstance(symbol, str), f"Expected type str, got {type(symbol)}"
+        assert isinstance(width, int), f"Expected type int, got {type(width)}"
         # assert yices.Terms.get_by_name(symbol) is None
         yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width).id, name=symbol)
         return YicesTermBV(operator="bvs", yices_id=yices_id, name=symbol)
 
     def bv_unsigned_value(self, bv: YicesTermBV) -> int:
-        assert isinstance(bv, YicesTermBV)
+        assert isinstance(bv, YicesTermBV), f"Expected type YicesTermBV, got {type(bv)}"
         assert self.is_concrete(bv), "Invalid bv_unsigned_value of non constant bitvector"
 
         # works, but yices.Terms.bv_const_value(bv) could be a cleaner (though slower) option
@@ -161,7 +161,7 @@ class Yices2(Solver):
             return YicesTermBV(operator="bvs", yices_id=id, name=symbol)
 
     def is_concrete(self, bv: YicesTermBV) -> bool:
-        assert isinstance(bv, YicesTermBV)
+        assert isinstance(bv, YicesTermBV), f"Expected type YicesTermBV, got {type(bv)}"
         return yices.Terms.constructor(bv.id) == yices.Constructor.BV_CONSTANT
 
     def is_sat(self) -> bool:
@@ -177,24 +177,24 @@ class Yices2(Solver):
         return status == yices.Status.UNSAT
 
     def is_formula_sat(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool)
+        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
         return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.SAT
 
     def are_formulas_sat(self, terms: List[YicesTermBool]) -> bool:
         for term in terms:
-            assert isinstance(term, YicesTermBool)
+            assert isinstance(term, YicesTermBool), f"Expected type YicesTermBool, got {type(term)}"
         return self.solver.check_context_with_assumptions(None, [term.id for term in terms]) == yices.Status.SAT
 
     def is_formula_unsat(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool)
+        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
         return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.UNSAT
 
     def is_formula_true(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool)
+        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
         return self.is_formula_unsat(self.Not(formula))
 
     def is_formula_false(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool)
+        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
         return self.is_formula_unsat(formula)
 
     def push(self):
@@ -211,8 +211,8 @@ class Yices2(Solver):
             self.add_assertion(f)
 
     def Array(self, symbol, index_sort: YicesTypeBV, value_sort: YicesTypeBV) -> YicesTermArray:
-        assert isinstance(index_sort, YicesTypeBV)
-        assert isinstance(value_sort, YicesTypeBV)
+        assert isinstance(index_sort, YicesTypeBV), f"Expected type YicesTypeBV, got {type(index_sort)}"
+        assert isinstance(value_sort, YicesTypeBV), f"Expected type YicesTypeBV, got {type(value_sort)}"
         # WARNING: in yices apparently arrays are functions
         array_type = yices.Types.new_function_type([index_sort.id], value_sort.id)
         yices_id = yices.Terms.new_uninterpreted_term(array_type, name=symbol)
@@ -221,9 +221,9 @@ class Yices2(Solver):
     # CONDITIONAL OPERATIONS
 
     def If(self, cond: YicesTermBool, value_if_true: YicesTerm, value_if_false: YicesTerm) -> YicesTerm:
-        assert isinstance(cond, YicesTermBool)
-        assert isinstance(value_if_true, YicesTerm)
-        assert isinstance(value_if_false, YicesTerm)
+        assert isinstance(cond, YicesTermBool), f"Expected type YicesTermBool, got {type(cond)}"
+        assert isinstance(value_if_true, YicesTerm), f"Expected type YicesTerm, got {type(value_if_true)}"
+        assert isinstance(value_if_false, YicesTerm), f"Expected type YicesTerm, got {type(value_if_false)}"
         assert type(value_if_true) == type(value_if_false)
         _returntype = value_if_true.__class__
         yices_id = yices.Terms.ite(cond.id, value_if_true.id, value_if_false.id)
@@ -232,211 +232,211 @@ class Yices2(Solver):
     # BOOLEAN OPERATIONS
 
     def Equal(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bveq_atom(a.id, b.id)
         return YicesTermBool(operator="equal", children=[a, b], yices_id=yices_id)
 
     def NotEqual(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvneq_atom(a.id, b.id)
         return YicesTermBool(operator="not-equal", children=[a, b], yices_id=yices_id)
 
     def And(self, *terms: YicesTermBool) -> YicesTermBool:
         for term in terms:
-            assert isinstance(term, YicesTermBool)
+            assert isinstance(term, YicesTermBool), f"Expected type YicesTermBool, got {type(term)}"
         yices_id = yices.Terms.yand([term.id for term in terms])
         return YicesTermBool(operator="and", children=[term for term in terms], yices_id=yices_id)
 
     def Or(self, *terms: YicesTermBool) -> YicesTermBool:
         for term in terms:
-            assert isinstance(term, YicesTermBool)
+            assert isinstance(term, YicesTermBool), f"Expected type YicesTermBool, got {type(term)}"
         yices_id = yices.Terms.yor([term.id for term in terms])
         return YicesTermBool(operator="or", children=[term for term in terms], yices_id=yices_id)
 
     def Not(self, a: YicesTermBool) -> YicesTermBool:
-        assert isinstance(a, YicesTermBool)
+        assert isinstance(a, YicesTermBool), f"Expected type YicesTermBool, got {type(a)}"
         yices_id = yices.Terms.ynot(a.id)
         return YicesTermBool(operator="not", children=[a], yices_id=yices_id)
 
     # BV OPERATIONS
 
     def BV_Extract(self, start: int, end: int, bv: YicesTermBV) -> YicesTermBV:
-        assert isinstance(start, int)
-        assert isinstance(end, int)
-        assert isinstance(bv, YicesTermBV)
+        assert isinstance(start, int), f"Expected type int, got {type(start)}"
+        assert isinstance(end, int), f"Expected type int, got {type(end)}"
+        assert isinstance(bv, YicesTermBV), f"Expected type YicesTermBV, got {type(bv)}"
         yices_id = yices.Terms.bvextract(bv.id, start, end)
         return YicesTermBV(operator="bv-extract", children=[start, end, bv], yices_id=yices_id)
 
     def BV_Concat(self, terms: List[YicesTermBV]) -> YicesTermBV:
         for term in terms:
-            assert isinstance(term, YicesTermBV)
+            assert isinstance(term, YicesTermBV), f"Expected type YicesTermBV, got {type(term)}"
         yices_id = yices.Terms.bvconcat([term.id for term in terms])
         return YicesTermBV(operator="bv-concat", children=[term for term in terms], yices_id=yices_id)
 
     def BV_Add(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvadd(a.id, b.id)
         return YicesTermBV(operator="bvadd", children=[a, b], yices_id=yices_id)
 
     def BV_Sub(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvsub(a.id, b.id)
         return YicesTermBV(operator="bvsub", children=[a, b], yices_id=yices_id)
 
     def BV_Mul(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvmul(a.id, b.id)
         return YicesTermBV(operator="bvmul", children=[a, b], yices_id=yices_id)
 
     def BV_UDiv(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvdiv(a.id, b.id)
         return YicesTermBV(operator="bvudiv", children=[a, b], yices_id=yices_id)
 
     def BV_SDiv(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvsdiv(a.id, b.id)
         return YicesTermBV(operator="bvsdiv", children=[a, b], yices_id=yices_id)
 
     def BV_SMod(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvsmod(a.id, b.id)
         return YicesTermBV(operator="bvsmod", children=[a, b], yices_id=yices_id)
 
     def BV_SRem(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvsrem(a.id, b.id)
         return YicesTermBV(operator="bvsrem", children=[a, b], yices_id=yices_id)
 
     def BV_URem(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvrem(a.id, b.id)
         return YicesTermBV(operator="bvurem", children=[a, b], yices_id=yices_id)
 
     def BV_Sign_Extend(self, a: YicesTermBV, b: int) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, int)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, int), f"Expected type int, got {type(b)}"
         yices_id = yices.Terms.sign_extend(a.id, b)
         return YicesTermBV(operator="bvsign-extend", children=[a, b], yices_id=yices_id)
 
     def BV_Zero_Extend(self, a: YicesTermBV, b: int) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, int)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, int), f"Expected type int, got {type(b)}"
         yices_id = yices.Terms.zero_extend(a.id, b)
         return YicesTermBV(operator="bvzero-extend", children=[a, b], yices_id=yices_id)
 
     def BV_UGE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvge_atom(a.id, b.id)
         return YicesTermBool(operator="bvuge", children=[a, b], yices_id=yices_id)
 
     def BV_ULE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvle_atom(a.id, b.id)
         return YicesTermBool(operator="bvule", children=[a, b], yices_id=yices_id)
 
     def BV_UGT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvgt_atom(a.id, b.id)
         return YicesTermBool(operator="bvugt", children=[a, b], yices_id=yices_id)
 
     def BV_ULT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvlt_atom(a.id, b.id)
         return YicesTermBool(operator="bvult", children=[a, b], yices_id=yices_id)
 
     def BV_SGE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvsge_atom(a.id, b.id)
         return YicesTermBool(operator="bvsge", children=[a, b], yices_id=yices_id)
 
     def BV_SLE(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvsle_atom(a.id, b.id)
         return YicesTermBool(operator="bvsle", children=[a, b], yices_id=yices_id)
 
     def BV_SGT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvsgt_atom(a.id, b.id)
         return YicesTermBool(operator="bvsgt", children=[a, b], yices_id=yices_id)
 
     def BV_SLT(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBool:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvslt_atom(a.id, b.id)
         return YicesTermBool(operator="bvslt", children=[a, b], yices_id=yices_id)
 
     def BV_And(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvand([a.id, b.id])
         return YicesTermBV(operator="bvand", children=[a, b], yices_id=yices_id)
 
     def BV_Or(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvor([a.id, b.id])
         return YicesTermBV(operator="bvor", children=[a, b], yices_id=yices_id)
 
     def BV_Xor(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvxor([a.id, b.id])
         return YicesTermBV(operator="bvxor", children=[a, b], yices_id=yices_id)
 
     def BV_Not(self, a: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
         yices_id = yices.Terms.bvnot(a.id)
         return YicesTermBV(operator="bvnot", children=[a], yices_id=yices_id)
 
     def BV_Shl(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvshl(a.id, b.id)
         return YicesTermBV(operator="bvshl", children=[a, b], yices_id=yices_id)
 
     def BV_Shr(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvlshr(a.id, b.id)
         return YicesTermBV(operator="bvshr", children=[a, b], yices_id=yices_id)
 
     def BV_Sar(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
-        assert isinstance(a, YicesTermBV)
-        assert isinstance(b, YicesTermBV)
+        assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
+        assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
         yices_id = yices.Terms.bvashr(a.id, b.id)
         return YicesTermBV(operator="bvsar", children=[a, b], yices_id=yices_id)
 
     # ARRAY OPERATIONS
 
     def Array_Store(self, arr: YicesTermArray, index: YicesTermBV, elem: YicesTermBV) -> YicesTermArray:
-        assert isinstance(arr, YicesTermArray)
-        assert isinstance(index, YicesTermBV)
-        assert isinstance(elem, YicesTermBV)
+        assert isinstance(arr, YicesTermArray), f"Expected type YicesTermArray, got {type(arr)}"
+        assert isinstance(index, YicesTermBV), f"Expected type YicesTermBV, got {type(index)}"
+        assert isinstance(elem, YicesTermBV), f"Expected type YicesTermBV, got {type(elem)}"
         # WARNING: in yices apparently arrays are functions
         yices_id = yices.Terms.update(arr.id, [index.id], elem.id)
         return YicesTermArray(operator="store", children=[arr, index, elem], yices_id=yices_id)
 
     def Array_Select(self, arr: YicesTermArray, index: YicesTermBV) -> YicesTermBV:
-        assert isinstance(arr, YicesTermArray)
-        assert isinstance(index, YicesTermBV)
+        assert isinstance(arr, YicesTermArray), f"Expected type YicesTermArray, got {type(arr)}"
+        assert isinstance(index, YicesTermBV), f"Expected type YicesTermBV, got {type(index)}"
         yices_id = yices.Terms.application(arr.id, [index.id])
         return YicesTermBV(operator="select", children=[arr, index], yices_id=yices_id)
 
