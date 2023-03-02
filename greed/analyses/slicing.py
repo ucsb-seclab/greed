@@ -1,33 +1,20 @@
-import networkx as nx
 
 
-def _get_stmt_level_cfg(target_function):
-    stmt_level_cfg = nx.DiGraph()
-
-    # inter-block edges
-    for block_a, block_b in target_function.cfg.graph.edges():
-        stmt_level_cfg.add_edge(block_a.statements[-1], block_b.statements[0])
-
-    # intra-block edges
-    for block in target_function.blocks:
-        for stmt_a, stmt_b in zip(block.statements[:-1], block.statements[1:]):
-            stmt_level_cfg.add_edge(stmt_a, stmt_b)
-
-    return stmt_level_cfg
-
-
-def _backward_slice_instructions(stmt_level_cfg, target_stmt, target_function, thin_slice=True):
+def _backward_slice_instructions(target_stmt, target_function, target_vars=None, thin_slice=True):
     """
     Backward slice algorithm from https://www.math.arizona.edu/~glickenstein/math443f08/coogan.pdf
     """
+    target_vars = target_vars or target_stmt.arg_vars
+    assert all([v in target_stmt.arg_vars for v in target_vars])
+
     queue = {target_stmt, }
     relevant_map = {stmt.id: set() for block in target_function.blocks for stmt in block.statements}
-    relevant_map[target_stmt.id] = set(target_stmt.arg_vars)
+    relevant_map[target_stmt.id] = set(target_vars)
     # fixpoint for each edge i-j in the cfg
     while queue:
         curr = queue.pop()
 
-        for pred in stmt_level_cfg.predecessors(curr):
+        for pred in target_function.cfg.stmt_cfg.predecessors(curr):
             for var in relevant_map[curr.id]:
                 # if i does not define a relevant variable var of j, add var to i’s relevant variables
                 if var not in pred.res_vars and var not in relevant_map[pred.id]:
@@ -44,7 +31,7 @@ def _backward_slice_instructions(stmt_level_cfg, target_stmt, target_function, t
 
     slice = {target_stmt, }
     # for each edge i-j in the cfg
-    for stmt_a, stmt_b in stmt_level_cfg.edges():
+    for stmt_a, stmt_b in target_function.cfg.stmt_cfg.edges():
         # if i defines a relevant variable of j, add i to slice
         for var in relevant_map[stmt_b.id]:
             if var in stmt_a.res_vars:
@@ -56,18 +43,21 @@ def _backward_slice_instructions(stmt_level_cfg, target_stmt, target_function, t
     return slice
 
 
-def _forward_slice_instructions(stmt_level_cfg, target_stmt, target_function, thin_slice=True):
+def _forward_slice_instructions(target_stmt, target_function, target_vars=None, thin_slice=True):
     """
     Forward slice algorithm (pretty much like the backward slice)
     """
+    target_vars = target_vars or target_stmt.res_vars
+    assert all([v in target_stmt.res_vars for v in target_vars])
+
     queue = {target_stmt, }
     relevant_map = {stmt.id: set() for block in target_function.blocks for stmt in block.statements}
-    relevant_map[target_stmt.id] = set(target_stmt.res_vars)
+    relevant_map[target_stmt.id] = set(target_vars)
     # fixpoint for each edge i-j in the cfg
     while queue:
         curr = queue.pop()
 
-        for succ in stmt_level_cfg.successors(curr):
+        for succ in target_function.cfg.stmt_cfg.successors(curr):
             for var in relevant_map[curr.id]:
                 # add any relevant var of i to j's relevant vars
                 if var not in relevant_map[succ.id]:
@@ -85,7 +75,7 @@ def _forward_slice_instructions(stmt_level_cfg, target_stmt, target_function, th
 
     slice = {target_stmt, }
     # for each edge i-j in the cfg
-    for stmt_a, stmt_b in stmt_level_cfg.edges():
+    for stmt_a, stmt_b in target_function.cfg.stmt_cfg.edges():
         # if j uses a relevant variable of i, add j to slice
         for var in relevant_map[stmt_a.id]:
             if var in stmt_b.arg_vars:
@@ -97,47 +87,44 @@ def _forward_slice_instructions(stmt_level_cfg, target_stmt, target_function, th
     return slice
 
 
-def _bidirectional_slice_instructions(stmt_level_cfg, target_stmt, target_function, thin_slice=True):
+def _bidirectional_slice_instructions(target_stmt, target_function, target_vars, thin_slice=True):
     """
     Forward+Backward slice algorithm
     """
-    _forward_slice = _forward_slice_instructions(stmt_level_cfg, target_stmt, target_function, thin_slice)
-    _backward_slice = _backward_slice_instructions(stmt_level_cfg, target_stmt, target_function, thin_slice)
+    _forward_slice = _forward_slice_instructions(target_stmt, target_function, target_vars, thin_slice)
+    _backward_slice = _backward_slice_instructions(target_stmt, target_function, target_vars, thin_slice)
 
     return _forward_slice | _backward_slice
 
 
-def _slice(slicing_alg, p, target_addr, target_vars=None, thin_slice=True):
+def _slice(slicing_alg, p, target_addr, target_vars, thin_slice=True):
     target_stmt = p.factory.statement(target_addr)
     target_block = p.factory.block(target_stmt.block_id)
     target_function = target_block.function
 
-    target_vars = target_vars or target_stmt.arg_vars
-    assert all([v in target_stmt.arg_vars for v in target_vars])
+    slice = slicing_alg(target_stmt, target_function, target_vars, thin_slice)
 
-    stmt_level_cfg = _get_stmt_level_cfg(target_function)
-
-    slice = slicing_alg(stmt_level_cfg, target_stmt, target_function, thin_slice)
+    slice_graph = target_function.cfg.stmt_cfg.copy()
 
     # only keep nodes in slice
-    for node in list(stmt_level_cfg.nodes()):
+    for node in list(slice_graph.nodes()):
         if node not in slice:
-            preds = list(stmt_level_cfg.predecessors(node))
-            succs = list(stmt_level_cfg.successors(node))
+            preds = list(slice_graph.predecessors(node))
+            succs = list(slice_graph.successors(node))
 
             for pred in preds:
-                stmt_level_cfg.remove_edge(pred, node)
+                slice_graph.remove_edge(pred, node)
 
             for succ in succs:
-                stmt_level_cfg.remove_edge(node, succ)
+                slice_graph.remove_edge(node, succ)
 
-            stmt_level_cfg.remove_node(node)
+            slice_graph.remove_node(node)
 
             for pred in preds:
                 for succ in succs:
-                    stmt_level_cfg.add_edge(pred, succ)
+                    slice_graph.add_edge(pred, succ)
 
-    return stmt_level_cfg
+    return slice_graph
 
 
 def backward_slice(p, target_addr, target_vars=None, thin_slice=True):

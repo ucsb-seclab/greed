@@ -16,12 +16,32 @@ class CFG(object):
         self._bb_at = dict()
         self._dominators = None
 
+        self._stmt_cfg = None
+
         self.root = None
 
     def filter_stmt(self, names: List[str]):
         if isinstance(names, str):
             names = [names]
         return [stmt for bb in self.bbs for stmt in bb.statements if stmt.__internal_name__ in names]
+
+    @property
+    def stmt_cfg(self):
+        if self._stmt_cfg is not None:
+            return self._stmt_cfg
+
+        self._stmt_cfg = nx.DiGraph()
+
+        # inter-block edges
+        for block_a, block_b in self.graph.edges():
+            self._stmt_cfg.add_edge(block_a.statements[-1], block_b.statements[0])
+
+        # intra-block edges
+        for block in self.bbs:
+            for stmt_a, stmt_b in zip(block.statements[:-1], block.statements[1:]):
+                self._stmt_cfg.add_edge(stmt_a, stmt_b)
+
+        return self._stmt_cfg
 
     @property
     def dominators(self):
