@@ -122,7 +122,8 @@ def _slice(slicing_alg, p, target_addr, target_vars, thin_slice=True):
 
             for pred in preds:
                 for succ in succs:
-                    slice_graph.add_edge(pred, succ)
+                    if pred != succ:
+                        slice_graph.add_edge(pred, succ)
 
     return slice_graph
 
