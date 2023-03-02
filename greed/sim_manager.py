@@ -144,7 +144,7 @@ class SimulationManager:
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
-        state.solver.simplify()
+        # state.solver.simplify()
 
         # Some inspect capabilities, uses the plugin.
         if hasattr(state, "inspect"):
