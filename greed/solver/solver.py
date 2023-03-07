@@ -1,4 +1,24 @@
+import threading
+
+from greed import options
+from greed.utils.exceptions import SolverTimeout
+
+
 class Solver:
+    @staticmethod
+    def solver_timeout(func):
+        def raise_solver_timeout(self):
+            self.solver.stop_search()
+            raise SolverTimeout
+
+        def wrap(self, *args, **kwargs):
+            timer = threading.Timer(options.SOLVER_TIMEOUT, raise_solver_timeout, [self])
+            timer.start()
+            result = func(self, *args, **kwargs)
+            timer.cancel()
+            return result
+
+        return wrap
 
     def BVSort(self, width):
         raise Exception("Not implemented")
