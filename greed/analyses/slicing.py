@@ -1,3 +1,4 @@
+import itertools
 
 
 def _backward_slice_instructions(target_stmt, target_function, target_vars=None, thin_slice=True):
@@ -106,24 +107,15 @@ def _slice(slicing_alg, p, target_addr, target_vars, thin_slice=True):
 
     slice_graph = target_function.cfg.stmt_cfg.copy()
 
-    # only keep nodes in slice
-    for node in list(slice_graph.nodes()):
-        if node not in slice:
-            preds = list(slice_graph.predecessors(node))
-            succs = list(slice_graph.successors(node))
-
-            for pred in preds:
-                slice_graph.remove_edge(pred, node)
-
-            for succ in succs:
-                slice_graph.remove_edge(node, succ)
-
-            slice_graph.remove_node(node)
-
-            for pred in preds:
-                for succ in succs:
-                    if pred != succ:
-                        slice_graph.add_edge(pred, succ)
+    nodes_to_delete = set(slice_graph.nodes()) - slice
+    for node in nodes_to_delete:
+        slice_graph.add_edges_from(
+            itertools.product(
+                slice_graph.predecessors(node),
+                slice_graph.successors(node)
+            )
+        )
+        slice_graph.remove_node(node)
 
     return slice_graph
 
