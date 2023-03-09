@@ -1,8 +1,9 @@
 import re
+from typing import List
+
 import yices
 
 from greed.solver import Solver
-from typing import List
 
 
 class YicesTerm:
@@ -164,30 +165,38 @@ class Yices2(Solver):
         assert isinstance(bv, YicesTermBV), f"Expected type YicesTermBV, got {type(bv)}"
         return yices.Terms.constructor(bv.id) == yices.Constructor.BV_CONSTANT
 
+    @Solver.solver_timeout
     def is_sat(self) -> bool:
         # cache the last check_sat result so that we can check it when querying the solver's model, and we don't need
         # to call check_sat (and thus generate a new and possibly inconsistent model) every time we need to eval a term
         status = self.solver.check_context()
         return status == yices.Status.SAT
 
+    @Solver.solver_timeout
     def is_unsat(self) -> bool:
         # cache the last check_sat result so that we can check it when querying the solver's model, and we don't need
         # to call check_sat (and thus generate a new and possibly inconsistent model) every time we need to eval a term
         status = self.solver.check_context()
         return status == yices.Status.UNSAT
 
+    @Solver.solver_timeout
     def is_formula_sat(self, formula: YicesTermBool) -> bool:
         assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
-        return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.SAT
+        status = self.solver.check_context_with_assumptions(None, [formula.id])
+        return status == yices.Status.SAT
 
+    @Solver.solver_timeout
     def are_formulas_sat(self, terms: List[YicesTermBool]) -> bool:
         for term in terms:
             assert isinstance(term, YicesTermBool), f"Expected type YicesTermBool, got {type(term)}"
-        return self.solver.check_context_with_assumptions(None, [term.id for term in terms]) == yices.Status.SAT
+        status = self.solver.check_context_with_assumptions(None, [term.id for term in terms])
+        return status == yices.Status.SAT
 
+    @Solver.solver_timeout
     def is_formula_unsat(self, formula: YicesTermBool) -> bool:
         assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
-        return self.solver.check_context_with_assumptions(None, [formula.id]) == yices.Status.UNSAT
+        status = self.solver.check_context_with_assumptions(None, [formula.id])
+        return status == yices.Status.UNSAT
 
     def is_formula_true(self, formula: YicesTermBool) -> bool:
         assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
