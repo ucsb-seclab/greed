@@ -9,9 +9,9 @@ class Solver:
     def solver_timeout(func):
         def raise_solver_timeout(self):
             self.solver.stop_search()
-            raise SolverTimeout
 
         def wrap(self, *args, **kwargs):
+            # start a timer to raise a SolverTimeout exception if the solver takes too long
             timer = threading.Timer(options.SOLVER_TIMEOUT, raise_solver_timeout, [self])
             timer.start()
             result = func(self, *args, **kwargs)
