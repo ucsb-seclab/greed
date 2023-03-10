@@ -11,7 +11,7 @@ class Solver:
             self.solver.stop_search()
 
         def wrap(self, *args, **kwargs):
-            # start a timer to raise a SolverTimeout exception if the solver takes too long
+            # start a timer to stop solving if the solver takes too long
             timer = threading.Timer(options.SOLVER_TIMEOUT, raise_solver_timeout, [self])
             timer.start()
             result = func(self, *args, **kwargs)
