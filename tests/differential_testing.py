@@ -7,7 +7,8 @@ from collections import defaultdict
 from eth_dynamic.analysis import Analyzer, BaseAnalysisAddOn, CallTracer
 from eth_dynamic.utils import LoadBalancedWebsocketProvider
 from greed import Project
-from greed.utils import load_csv, gen_exec_id
+from greed.utils.files import load_csv
+from greed.utils.extra import gen_exec_id
 
 
 class ExternalCallError(BaseException):

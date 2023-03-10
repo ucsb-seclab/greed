@@ -7,7 +7,7 @@ import IPython
 from greed import Project
 from greed.exploration_techniques import DirectedSearch, Prioritizer
 from greed.solver.shortcuts import *
-from greed.utils import gen_exec_id
+from greed.utils.extra import gen_exec_id
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)

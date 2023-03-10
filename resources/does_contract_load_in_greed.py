@@ -5,7 +5,7 @@ import logging
 import traceback
 
 from greed import Project
-from greed.utils import gen_exec_id
+from greed.utils.extra import gen_exec_id
 
 LOGGING_FORMAT = "%(levelname)s | %(name)s | %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOGGING_FORMAT)

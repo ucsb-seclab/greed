@@ -13,7 +13,7 @@ from greed.TAC.special_ops import TAC_Stop
 from greed.block import Block
 from greed.factory import Factory
 from greed.function import TAC_Function
-from greed.utils import load_csv, load_csv_map, load_csv_multimap
+from greed.utils.files import load_csv, load_csv_map, load_csv_multimap
 
 log = logging.getLogger(__name__)
 

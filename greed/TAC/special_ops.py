@@ -2,7 +2,8 @@ import logging
 
 import sha3
 
-from greed import options, utils
+from greed import options
+from greed.utils import encoding
 from greed.TAC.base import TAC_Statement
 from greed.sha3 import Sha3
 from greed.solver.shortcuts import *
@@ -121,11 +122,11 @@ class TAC_Balance(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         if is_concrete(self.address_val):
             state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
-        elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
+        elif state.solver.is_formula_true(Equal(encoding.addr(self.address_val), encoding.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
             state.registers[self.res1_var] = state.balance
-        elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('ORIGIN', state.ctx, state.xid)))):
+        elif state.solver.is_formula_true(Equal(encoding.addr(self.address_val), encoding.addr(ctx_or_symbolic('ORIGIN', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-ORIGIN', state.ctx, state.xid)
-        elif state.solver.is_formula_true(Equal(utils.addr(self.address_val), utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
+        elif state.solver.is_formula_true(Equal(encoding.addr(self.address_val), encoding.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('BALANCE-CALLER', state.ctx, state.xid)
         else:
             state.registers[self.res1_var] = BVS('SYM-BALANCE-%x' % self.address_val.id, 256)
@@ -290,9 +291,9 @@ class TAC_Extcodesize(TAC_Statement):
         
         if is_concrete(self.address_val):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
-        elif state.solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
+        elif state.solver.is_formula_true(Equal(self.address_val, encoding.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', state.ctx, state.xid)
-        elif state.solver.is_formula_true(Equal(self.address_val, utils.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
+        elif state.solver.is_formula_true(Equal(self.address_val, encoding.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', state.ctx, state.xid)
         else:
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-SYMBOLIC', state.ctx, state.xid)

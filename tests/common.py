@@ -5,7 +5,7 @@ import IPython
 
 from greed import Project
 from greed.solver.shortcuts import *
-from greed.utils import gen_exec_id
+from greed.utils.extra import gen_exec_id
 from greed.exploration_techniques import HeartBeat
 
 def setup_logging():

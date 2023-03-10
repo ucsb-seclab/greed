@@ -5,7 +5,7 @@ import os
 import IPython
 
 from greed import Project
-from greed.utils import gen_exec_id
+from greed.utils.extra import gen_exec_id
 
 if __package__:
     from . import common
