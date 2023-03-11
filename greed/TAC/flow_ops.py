@@ -201,7 +201,7 @@ class TAC_Delegatecall(TAC_BaseCall):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        value_val = utils.ctx_or_symbolic('CALLVALUE', state.ctx, state.xid)
+        value_val = ctx_or_symbolic('CALLVALUE', state.ctx, state.xid)
 
         return self._handle(state, value_val=value_val)
 
