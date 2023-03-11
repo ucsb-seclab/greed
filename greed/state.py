@@ -69,6 +69,13 @@ class SymbolicEVMState:
 
     def set_init_ctx(self, init_ctx=None):
         init_ctx = init_ctx or dict()
+
+        if "CALLDATASIZE" in init_ctx:
+                # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
+                self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
+        else:
+            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+
         if "CALLDATA" in init_ctx:
             # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
             # for instance: "CALLDATA" = ["0x1546138954SSSS81923899"]. There are 2 symbolic bytes represented by SSSS.
@@ -82,7 +89,7 @@ class SymbolicEVMState:
 
             if "CALLDATASIZE" in init_ctx:
                 # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
-                self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
+                # self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
                 # self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
 
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
@@ -114,7 +121,7 @@ class SymbolicEVMState:
         else:
             self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
             # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
-            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+            # self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
             # CALLDATASIZE < MAX_CALLDATA_SIZE
             self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
 
