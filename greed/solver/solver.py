@@ -1,7 +1,8 @@
 import threading
 
 from greed import options
-from greed.utils.exceptions import SolverTimeout
+
+from yices.YicesException import YicesException
 
 
 class Solver:
@@ -14,9 +15,13 @@ class Solver:
             # start a timer to stop solving if the solver takes too long
             timer = threading.Timer(options.SOLVER_TIMEOUT, raise_solver_timeout, [self])
             timer.start()
-            result = func(self, *args, **kwargs)
-            timer.cancel()
-            return result
+            try:
+                result = func(self, *args, **kwargs)
+                return result
+            except YicesException:
+                return False
+            finally:
+                timer.cancel()
 
         return wrap
 
