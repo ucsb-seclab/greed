@@ -222,33 +222,29 @@ class TAC_parser:
 
         return functions
 
-    def parse_privileged_slots(self):
+    def parse_privileged_slots(self, sstores_for_slot):
         privileged_slots = set()
-        tac_guarded_blocks = load_csv_map(f"{self.target_dir}/StaticallyGuardedBlock.csv")
+        tac_guarded_blocks = load_csv_multimap(f"{self.target_dir}/StaticallyGuardedBlock.csv")
         # tac_dominators = load_csv_map(f"{self.target_dir}/Dominates.csv")
 
         # find guarding slots
-        guarding_slots = set([g.split('_')[0] for g in tac_guarded_blocks.values() if g.startswith('0x')])
+        guarding_slots = set([g.split('_')[0] for g_list in tac_guarded_blocks.values() for g in g_list if g.startswith('0x')])
 
         for slot in guarding_slots:
             privileged_slots.add(slot)
             log.debug(f"{slot} is a guard")
 
-        all_fixed_sstores = [s for s in self.factory.project.statement_at.values()
-                             if s.__internal_name__ == "SSTORE"
-                             and s.arg1_val is not None]
-
         all_guarded_blocks = [id for id in tac_guarded_blocks]
 
         # find guarded slots
-        all_slots = {s.arg1_val.value for s in all_fixed_sstores}
+        all_slots = {slot for slot in sstores_for_slot.keys()}
 
         for slot in all_slots:
-            access_guarded = [(s.block_id in all_guarded_blocks) for s in all_fixed_sstores if s.arg1_val.value == slot]
+            access_guarded = [(s.block_id in all_guarded_blocks) for s in sstores_for_slot[slot]]
 
             if all(access_guarded):
-                privileged_slots.add(hex(slot))
-                log.debug(f"{hex(slot)} is guarded")
+                privileged_slots.add(slot)
+                log.debug(f"{slot} is guarded")
 
         return privileged_slots
 
