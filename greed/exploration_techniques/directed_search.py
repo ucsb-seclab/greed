@@ -84,7 +84,8 @@ class DirectedSearch(ExplorationTechnique):
             return False, None
 
     # Check if 'block_a' can reach 'block_b'
-    def _is_reachable_without_returns(self, block_a, block_b, factory, callgraph):
+    @staticmethod
+    def _is_reachable_without_returns(block_a, block_b, factory, callgraph):
         function_a = block_a.function
         function_b = block_b.function
         if block_a == block_b:
@@ -109,8 +110,8 @@ class DirectedSearch(ExplorationTechnique):
                 # NOTE: the first step is different because we are not stepping from the root, but from block_a
                 for callprivate_block_id in function_a.callprivate_target_sources[first_call_target.id]:
                     callprivate_block = factory.block(callprivate_block_id)
-                    reachable, dist = self._is_reachable_without_returns(block_a, callprivate_block, factory,
-                                                                         callgraph)
+                    reachable, dist = DirectedSearch._is_reachable_without_returns(block_a, callprivate_block, factory,
+                                                                                   callgraph)
                     if reachable is True:
                         dist_candidates_for_step.append(dist)
 
