@@ -227,7 +227,7 @@ def dump_slice(full_slice, func, filename):
         dump_file.write(dot)
 
 # Entry point for the analysis
-def get_access_control_slots(project)
+def get_access_control_slots(project):
         
     # Grab all the JUMPIs in the project 
     jumpis = [ins for ins in project.statement_at.values() if ins.__internal_name__ == "JUMPI" ]
