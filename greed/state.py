@@ -112,11 +112,11 @@ class SymbolicEVMState:
 
             for index, cb in enumerate(calldata_bytes):
                 if cb == 'SS':
-                    log.debug(f"Storing symbolic byte at index {index} in CALLDATA")
+                    # log.debug(f"Storing symbolic byte at index {index} in CALLDATA")
                     # special sequence for symbolic bytes
                     self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
                 else:
-                    log.debug("Initializing CALLDATA at {}".format(index))
+                    # log.debug("Initializing CALLDATA at {}".format(index))
                     self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
         else:
             self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
