@@ -49,9 +49,10 @@ class DirectedSearch(ExplorationTechnique):
         return new_successors
 
     # Check if the current state can reach 'block_b'
-    def _is_reachable(self, state_a, block_b, factory, callgraph):
+    @staticmethod
+    def _is_reachable(state_a, block_b, factory, callgraph):
         block_a = factory.block(state_a.curr_stmt.block_id)
-        reachable, dist = self._is_reachable_without_returns(block_a, block_b, factory, callgraph)
+        reachable, dist = DirectedSearch._is_reachable_without_returns(block_a, block_b, factory, callgraph)
         if reachable:
             # this is the simple case, no need to look at the callstack
             log.debug(f"{state_a} -> {block_b} reachable without returns")
@@ -69,14 +70,14 @@ class DirectedSearch(ExplorationTechnique):
                 # check if any RETURNPRIVATE is reachable
                 for returnprivate_block_id in block_a.function.returnprivate_block_ids:
                     returnprivate_block = factory.block(returnprivate_block_id)
-                    reachable, dist1 = self._is_reachable_without_returns(block_a, returnprivate_block, factory, callgraph)
+                    reachable, dist1 = DirectedSearch._is_reachable_without_returns(block_a, returnprivate_block, factory, callgraph)
                     if reachable:
                         break
                 else:
                     # executed if there is no break
                     return False, None
 
-                reachable, dist2 = self._is_reachable_without_returns(saved_return_block, block_b, factory, callgraph)
+                reachable, dist2 = DirectedSearch._is_reachable_without_returns(saved_return_block, block_b, factory, callgraph)
                 if reachable:
                     log.debug(f"{state_a} -> {block_b} reachable with returns")
                     return True, dist1 + dist2
