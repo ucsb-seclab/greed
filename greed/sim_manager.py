@@ -222,6 +222,27 @@ class SimulationManager:
             self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
             sys.exit(1)
 
+    def findall(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
+            prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
+        try:
+            while len(self.active) > 0 or (self._techniques != [] and not(all([t.is_complete(self) for t in self._techniques]))):
+                if self._halt:
+                    break
+                
+                self.step(find, prune)
+
+                for found in self.found:
+                    yield found
+                self.stashes["found"] = list()
+
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+            log.exception(f'Exception while stepping the Simulation Manager')
+            self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
+            sys.exit(1)
+
 
     def __str__(self):
         stashes_str = [f'{len(stash)} {stash_name}'  # {[s for s in stash]}'
