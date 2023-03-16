@@ -165,15 +165,21 @@ class SimStateSolver(SimStatePlugin):
     def eval_memory(self, memory, length, raw=False):
         assert(self.is_concrete(length))
         memory_to_eval = memory.readn(BVV(0, 256), length)
-        int_value = self.eval(memory_to_eval, raw=raw)
-        return f"{int_value:0{length*2}x}"
+        int_value = self.eval(memory_to_eval, raw=False)
+        if raw is True:
+            return BVV(int_value, bv_unsigned_value(length)*8)
+        else:
+            return f"{int_value:0{bv_unsigned_value(length)*2}x}"
 
     def eval_memory_at(self, array, offset, length, raw=False):
         assert(self.is_concrete(offset))
         assert(self.is_concrete(length))
         memory_to_eval = array.readn(offset, length)
-        int_value = self.eval(memory_to_eval, raw=raw)
-        return f"{int_value:0{length*2}x}" 
+        int_value = self.eval(memory_to_eval, raw=False)
+        if raw is True:
+            return BVV(int_value, bv_unsigned_value(length)*8)
+        else:
+            return f"{int_value:0{bv_unsigned_value(length)*2}x}"
 
     def copy(self):
         new_solver = SimStateSolver(partial_init=True)
