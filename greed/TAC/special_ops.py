@@ -289,12 +289,12 @@ class TAC_Extcodesize(TAC_Statement):
             state.set_next_pc()
             return [state]
         
-        if is_concrete(self.address_val):
-            state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
-        elif state.solver.is_formula_true(Equal(self.address_val, encoding.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
+        if state.solver.is_formula_true(Equal(self.address_val, encoding.addr(ctx_or_symbolic('ADDRESS', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-ADDRESS', state.ctx, state.xid)
         elif state.solver.is_formula_true(Equal(self.address_val, encoding.addr(ctx_or_symbolic('CALLER', state.ctx, state.xid)))):
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-CALLER', state.ctx, state.xid)
+        elif is_concrete(self.address_val):
+            state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-%x' % bv_unsigned_value(self.address_val), state.ctx, state.xid)
         else:
             state.registers[self.res1_var] = ctx_or_symbolic('CODESIZE-SYMBOLIC', state.ctx, state.xid)
             log.warning('CODESIZE of symbolic address')
