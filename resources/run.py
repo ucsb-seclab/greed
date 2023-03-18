@@ -3,8 +3,10 @@ import argparse
 import logging
 
 import IPython
+import web3
 
 from greed import Project
+from greed import options
 from greed.exploration_techniques import DirectedSearch, Prioritizer
 from greed.solver.shortcuts import *
 from greed.utils.extra import gen_exec_id
@@ -18,7 +20,28 @@ def main(args):
     p = Project(target_dir=args.target)
     xid = gen_exec_id()
 
-    entry_state = p.factory.entry_state(xid=xid)
+    options.SOLVER_TIMEOUT = 60
+    options.MAX_CALLDATA_SIZE = 1024
+    options.GREEDY_SHA = True
+    options.MAX_SHA_SIZE = 512
+    options.OPTIMISTIC_CALL_RESULTS = True
+    options.DEFAULT_EXTCODESIZE = True
+
+    w3 = web3.Web3(web3.Web3.HTTPProvider(options.WEB3_PROVIDER))
+    block_number = w3.eth.blockNumber
+    block_info = w3.eth.get_block(block_number)
+
+    init_ctx = {
+        "CALLDATASIZE": options.MAX_CALLDATA_SIZE,
+        "CALLER": "0xaaA4a5495988E18c036436953AC87aadEa074550",
+        "ORIGIN": "0xaaA4a5495988E18c036436953AC87aadEa074550",
+        "ADDRESS": args.target.split("/")[-1],
+        "NUMBER": block_number,
+        "DIFFICULTY": block_info["totalDifficulty"],
+        "TIMESTAMP": block_info["timestamp"]
+    }
+
+    entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, partial_concrete_storage=True)
     simgr = p.factory.simgr(entry_state=entry_state)
 
     ####################################################################################################################
