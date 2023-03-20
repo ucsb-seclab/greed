@@ -121,7 +121,13 @@ class SimulationManager:
         
         # Let's step the active!
         for state in self.active:
-            successors = self.single_step_state(state)
+            try:
+                successors = self.single_step_state(state)
+            except Exception as e:
+                log.exception(f"Something went wrong while generating successor for {state}")
+                state.error = e
+                state.halt = True
+                successors = [state]
             new_active += successors
         
         self.stashes['active'] = new_active

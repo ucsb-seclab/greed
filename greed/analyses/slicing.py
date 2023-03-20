@@ -120,6 +120,8 @@ def _slice(slicing_alg, p, target_addr, target_vars, thin_slice=True):
     return slice_graph
 
 
+# TODO: inline callprivate in type analysis, e.g., 0x36ff0C3C161dE6F664B4fcA9149942e733F50eC7 is all wrong
+
 def backward_slice(p, target_addr, target_vars=None, thin_slice=True):
     return _slice(_backward_slice_instructions, p, target_addr, target_vars, thin_slice)
 

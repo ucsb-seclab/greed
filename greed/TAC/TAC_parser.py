@@ -221,32 +221,23 @@ class TAC_parser:
             function.arguments = [self.phimap.get(translate_alias(a), translate_alias(a)) for a in function.arguments]
 
         return functions
-
-    def parse_privileged_slots(self, sstores_for_slot):
-        privileged_slots = set()
+    
+    def parse_guarding_slots(self):
         tac_guarded_blocks = load_csv_multimap(f"{self.target_dir}/StaticallyGuardedBlock.csv")
-        # tac_dominators = load_csv_map(f"{self.target_dir}/Dominates.csv")
-
-        # find guarding slots
         guarding_slots = set([g.split('_')[0] for g_list in tac_guarded_blocks.values() for g in g_list if g.startswith('0x')])
-
-        for slot in guarding_slots:
-            privileged_slots.add(slot)
-            log.debug(f"{slot} is a guard")
-
-        all_guarded_blocks = [id for id in tac_guarded_blocks]
-
-        # find guarded slots
+        return guarding_slots
+    
+    def parse_guarded_slots(self, guarding_slots, sstores_for_slot):
+        tac_guarded_blocks = load_csv_multimap(f"{self.target_dir}/StaticallyGuardedBlock.csv")
+        all_guarded_blocks = [id for id, guards in tac_guarded_blocks.items() if any(g in guarding_slots for g in guards)]
         all_slots = {slot for slot in sstores_for_slot.keys()}
-
+        guarded_slots = set()
         for slot in all_slots:
             access_guarded = [(s.block_id in all_guarded_blocks) for s in sstores_for_slot[slot]]
-
             if all(access_guarded):
-                privileged_slots.add(slot)
-                log.debug(f"{slot} is guarded")
+                guarded_slots.add(slot)
+        return guarded_slots
 
-        return privileged_slots
 
     def parse_abi(self):
         if not os.path.exists(f"{self.target_dir}/abi.json"):
