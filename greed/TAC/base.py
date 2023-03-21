@@ -33,7 +33,7 @@ class TAC_Statement(Aliased):
                  values: Mapping[str, str] = None):
         uses = uses or list()
         defs = defs or list()
-        values = values or list()
+        values = values or dict()
 
         self.block_id = block_id
         self.id = stmt_id
@@ -161,6 +161,27 @@ class TAC_Statement(Aliased):
             return successors
 
         return wrap
+    
+    def copy(self, alias_arg_map):
+        alias_arg_map = alias_arg_map or dict()
+
+        _copy = self.__class__(self.block_id, self.id)
+        _copy.arg_vars = [alias_arg_map.get(var, var) for var in self.arg_vars]
+        _copy.res_vars = [alias_arg_map.get(var, var) for var in self.res_vars]
+        _copy.arg_vals = {alias_arg_map.get(var, var): val for var, val in self.arg_vals.items()}
+        _copy.res_vals = {alias_arg_map.get(var, var): val for var, val in self.res_vals.items()}
+
+        for i, _ in enumerate(_copy.arg_vars):
+            var = _copy.arg_vars[i]
+            val = _copy.arg_vals[var]
+            object.__setattr__(_copy, f"arg{i+1}_val", val)
+
+        for i, _ in enumerate(_copy.res_vars):
+            var = _copy.res_vars[i]
+            val = _copy.res_vals[var]
+            object.__setattr__(_copy, f"res{i+1}_val", val)
+
+        return _copy
 
     def __str__(self):
         args_str = ''
