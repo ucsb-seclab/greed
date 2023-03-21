@@ -108,12 +108,7 @@ class LambdaMemory:
             else:
                 tag = f"READN_{self.tag}_BASE{self._base.id}_sym{index.id}_{bv_unsigned_value(n)}"
 
-            res = get_bv_by_name(tag)
-            if res is None:
-                res = BVS(tag, bv_unsigned_value(n)*8)
-            else:
-                # cache hit
-                return res
+            res = BVS(tag, bv_unsigned_value(n)*8)
 
             vv = list()
             for i in range(bv_unsigned_value(n)):
