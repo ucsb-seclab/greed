@@ -195,7 +195,8 @@ class TAC_Statement(Aliased):
             res_str = ""
             for res in self.res_vars:
                 res_str += "{}".format(res)
-            res_str += " ="
+                res_str += " "
+            res_str += "="
 
         return "{} {} {}".format(res_str, self.__internal_name__, args_str).strip()
 
