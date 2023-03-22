@@ -3,6 +3,7 @@ import logging
 import networkx as nx
 
 from greed.TAC.TAC_parser import TAC_parser
+from greed.TAC.gigahorse_ops import TAC_Callprivateargs
 from greed.factory import Factory
 
 log = logging.getLogger(__name__)
@@ -20,6 +21,14 @@ class Project(object):
         self.statement_at = self.tac_parser.parse_statements()
         self.block_at = self.tac_parser.parse_blocks()
         self.function_at = self.tac_parser.parse_functions()
+
+        # inject CALLPRIVATEARGS fake statements
+        for function in self.function_at.values():
+            for arg in function.arguments[::-1]:
+                root_block = self.factory.block(function.id)
+                fake_statement = TAC_Callprivateargs(block_id=root_block.id, stmt_id=f"fake_{arg}", defs=[arg])
+                root_block.statements.insert(0, fake_statement)
+                self.statement_at[fake_statement.id] = fake_statement
         
         # Do we have an official abi?
         self.abi = self.tac_parser.parse_abi()

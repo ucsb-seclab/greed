@@ -101,3 +101,11 @@ class TAC_Nop(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
         state.set_next_pc()
         return [state]
+
+
+class TAC_Callprivateargs(TAC_Statement):
+    __internal_name__ = "CALLPRIVATEARG"
+
+    def handle(self, state: SymbolicEVMState):
+        state.set_next_pc()
+        return [state]
