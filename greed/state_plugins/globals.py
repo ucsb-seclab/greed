@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from greed.state_plugins import SimStatePlugin
 
 
@@ -5,7 +7,7 @@ class SimStateGlobals(SimStatePlugin):
 
     def __init__(self, backer=None):
         super(SimStateGlobals, self).__init__()
-        self._backer = backer if backer is not None else {}
+        self._backer = backer if backer is not None else dict()
         return
 
     def __getitem__(self, k):
@@ -36,7 +38,7 @@ class SimStateGlobals(SimStatePlugin):
         return self._backer.pop(k, alt)
  
     def copy(self):
-        new_backer = dict(self._backer)
+        new_backer = deepcopy(self._backer)
         return SimStateGlobals(new_backer)
 
     def __str__(self):
