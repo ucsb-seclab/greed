@@ -106,7 +106,7 @@ class TAC_Address(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        state.registers[self.res1_var] = ctx_or_symbolic('ADDRESS', state.ctx, state.xid)
+        state.registers[self.res1_var] = ctx_or_symbolic('ADDRESS', state.ctx, state.xid, nbits=160)
         state.set_next_pc()
         return [state]
 
@@ -141,7 +141,7 @@ class TAC_Origin(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        state.registers[self.res1_var] = ctx_or_symbolic('ORIGIN', state.ctx, state.xid)
+        state.registers[self.res1_var] = ctx_or_symbolic('ORIGIN', state.ctx, state.xid, nbits=160)
 
         state.set_next_pc()
         return [state]
@@ -153,7 +153,7 @@ class TAC_Caller(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        state.registers[self.res1_var] = ctx_or_symbolic('CALLER', state.ctx, state.xid)
+        state.registers[self.res1_var] = ctx_or_symbolic('CALLER', state.ctx, state.xid, nbits=160)
 
         state.set_next_pc()
         return [state]
@@ -549,7 +549,8 @@ class TAC_Create(TAC_Statement):
         if options.DEFAULT_CREATE_RESULT_ADDRESS:
             state.registers[self.res1_var] = BVV(0xc0ffee254729296a45a3885639AC7E10F9d54979,256)
         else:
-            state.registers[self.res1_var] = BVS('EXT_CREATE_%d_%d', state.xid, state.instruction_count, 256)
+            state.registers[self.res1_var] = BVS('EXT_CREATE_%d_%d', state.xid, state.instruction_count, 160)
+            state.registers[self.res1_var] = BV_Zero_Extend(state.registers[self.res1_var], 256-160)
 
         state.set_next_pc()
         return [state]
@@ -573,7 +574,8 @@ class TAC_Create2(TAC_Statement):
         if options.DEFAULT_CREATE2_RESULT_ADDRESS:
             state.registers[self.res1_var] = BVV(0xbeefed254729296a45a3885639AC7E10F9d54979,256)
         else:
-            state.registers[self.res1_var] = BVS('EXT_CREATE2_%d_%d', state.xid, state.instruction_count, 256)
+            state.registers[self.res1_var] = BVS('EXT_CREATE2_%d_%d', state.xid, state.instruction_count, 160)
+            state.registers[self.res1_var] = BV_Zero_Extend(state.registers[self.res1_var], 256-160)
 
         state.set_next_pc()
         return [state]

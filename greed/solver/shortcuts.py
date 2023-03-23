@@ -16,9 +16,12 @@ else:
     raise Exception(f"Unsupported solver {options.SOLVER}. Aborting.")
 
 
-def ctx_or_symbolic(v, ctx, xid):
+def ctx_or_symbolic(v, ctx, xid, nbits=256):
     if v not in ctx:
-        ctx[v] = BVS(f'{v}_{xid}', 256)
+        assert nbits <= 256
+        ctx[v] = BVS(f'{v}_{xid}', nbits)
+        if nbits < 256:
+            ctx[v] = BV_Zero_Extend(ctx[v], 256-nbits)
     return ctx[v]
 
 
