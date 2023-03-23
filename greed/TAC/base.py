@@ -170,15 +170,19 @@ class TAC_Statement(Aliased):
         _copy.res_vars = [alias_arg_map.get(var, var) for var in self.res_vars]
         _copy.arg_vals = {alias_arg_map.get(var, var): val for var, val in self.arg_vals.items()}
         _copy.res_vals = {alias_arg_map.get(var, var): val for var, val in self.res_vals.items()}
+        _copy.num_args = len(_copy.arg_vars)
+        _copy.raw_arg_vals = dict(_copy.arg_vals)
 
         for i, _ in enumerate(_copy.arg_vars):
             var = _copy.arg_vars[i]
             val = _copy.arg_vals[var]
+            object.__setattr__(_copy, f"arg{i+1}_var", var)
             object.__setattr__(_copy, f"arg{i+1}_val", val)
 
         for i, _ in enumerate(_copy.res_vars):
             var = _copy.res_vars[i]
             val = _copy.res_vals[var]
+            object.__setattr__(_copy, f"res{i+1}_var", var)
             object.__setattr__(_copy, f"res{i+1}_val", val)
 
         return _copy
