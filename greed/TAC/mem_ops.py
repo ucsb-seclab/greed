@@ -91,6 +91,8 @@ class TAC_Msize(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        raise Exception("MSIZE not implemented. Please have a look")
-        # state.set_next_pc()
-        # return [state]
+        # TODO: properly implement MSIZE
+        state.registers[self.res1_var] = BVS("MSIZE", 256)
+        
+        state.set_next_pc()
+        return [state]
