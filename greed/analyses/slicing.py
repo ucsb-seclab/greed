@@ -5,7 +5,7 @@ import networkx as nx
 # NOTE: all this stuff is approximate, we should either 1. move it somewhere else outside of greed or 2. make it precise/guaranteed
 
 
-def inline_cfg(p, cfg, max_rounds=1):
+def inline_cfg(p, cfg, max_rounds=3):
     """
     Inline max_depth levels of callprivates in the cfg, only when there is a single path in the callprivate
     """
