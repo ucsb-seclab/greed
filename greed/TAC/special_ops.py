@@ -465,9 +465,9 @@ class TAC_Chainid(TAC_Statement):
 
     @TAC_Statement.handler_without_side_effects
     def handle(self, state: SymbolicEVMState):
-        chainid = {'mainnet': 1, 'ropsten': 3, 'rinkeby': 4, 'goerli': 5, 'kotti': 6, 'classic': 61, 'mordor': 63,
-                   'astor': 212, 'dev': 2018}
-        state.registers[self.res1_var] = chainid['mainnet']
+        # chainid = {'mainnet': 1, 'ropsten': 3, 'rinkeby': 4, 'goerli': 5, 'kotti': 6, 'classic': 61, 'mordor': 63,
+        #            'astor': 212, 'dev': 2018}
+        state.registers[self.res1_var] = BVV(1, 256)
 
         state.set_next_pc()
         return [state]
