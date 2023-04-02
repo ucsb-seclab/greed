@@ -50,9 +50,25 @@ class TAC_Sha3(TAC_Statement):
             log.debug(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
             
             if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
-                                not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
+               not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
 
-                # Get a solution for the input buffer
+                # If size_sol is zero, return e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                if size_sol.value == 0:
+                    res = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                    log.debug(f"    Calculated concrete SHA3 {res}")
+
+                    # Constraining parameters to their calculated solutions
+                    state.add_constraint(Equal(self.offset_val, offset_sol))
+                    state.add_constraint(Equal(self.size_val, size_sol))
+
+                    # Constraining the fresh SHA symbol to its solution
+                    state.add_constraint(Equal(state.registers[self.res1_var], BVV(int(res,16), 256)))
+                    
+                    # Just set the solution here
+                    state.registers[self.res1_var] = BVV(int(res, 16), 256)
+                    return [state]
+
+                # Else, get a solution for the input buffer
                 buffer_sol = state.solver.eval_memory_at(state.memory, offset_sol, 
                                                                         size_sol, 
                                                                         raw=True)
@@ -70,11 +86,11 @@ class TAC_Sha3(TAC_Statement):
                     state.add_constraint(Equal(self.size_val, size_sol))
 
                     # Constraining the fresh SHA symbol to its solution given this buffer 
-                    state.add_constraint(Equal(state.registers[self.res1_var], BVV(int(res,16),256)))
+                    state.add_constraint(Equal(state.registers[self.res1_var], BVV(int(res,16), 256)))
 
                     # Constraining the SHA3 input buffer to the solution just calculated
                     for x,b in zip(range(0, bv_unsigned_value(size_sol)), buffer_sol):
-                        state.add_constraint(Equal(state.memory[BVV(bv_unsigned_value(offset_sol)+x,256)], BVV(b,8)))
+                        state.add_constraint(Equal(state.memory[BVV(bv_unsigned_value(offset_sol)+x, 256)], BVV(b, 8)))
                     
                     # Just set the solution here
                     state.registers[self.res1_var] = BVV(int(res,16),256)
