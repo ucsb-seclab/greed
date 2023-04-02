@@ -68,6 +68,11 @@ class DirectedSearch(ExplorationTechnique):
                 saved_return_block = factory.block(saved_return_stmt.block_id)
 
                 # check if any RETURNPRIVATE is reachable
+                
+                if block_a.function is None:
+                    # fake_exit block
+                    return False, None
+                
                 for returnprivate_block_id in block_a.function.returnprivate_block_ids:
                     returnprivate_block = factory.block(returnprivate_block_id)
                     reachable, dist1 = DirectedSearch._is_reachable_without_returns(block_a, returnprivate_block, factory, callgraph)
