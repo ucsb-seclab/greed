@@ -38,7 +38,7 @@ class SymbolicEVMState:
         self.registers = dict()
         self.ctx = dict()
         self.callstack = list()
-        self.returndata = {'size': None, 'instruction_count': None}
+        self.returndata = {'size': BVV(0, 256), 'instruction_count': BVV(0, 256)}
         self.instruction_count = 0
         self.halt = False
         self.revert = False
@@ -299,7 +299,7 @@ class SymbolicEVMState:
         self.ctx = dict()  # todo: is it okay to reset this between transactions??
 
         self.callstack = list()
-        self.returndata = {'size': None, 'instruction_count': None}
+        self.returndata = {'size': BVV(0, 256), 'instruction_count': BVV(0, 256)}
         self.instruction_count = 0
         self.halt = False
         self.revert = False
