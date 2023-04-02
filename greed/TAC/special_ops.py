@@ -574,7 +574,7 @@ class TAC_Create2(TAC_Statement):
         if options.DEFAULT_CREATE2_RESULT_ADDRESS:
             state.registers[self.res1_var] = BVV(0xbeefed254729296a45a3885639AC7E10F9d54979,256)
         else:
-            state.registers[self.res1_var] = BVS('EXT_CREATE2_%d_%d', state.xid, state.instruction_count, 160)
+            state.registers[self.res1_var] = BVS("EXT_CREATE2_{state.xid}_{state.instruction_count}", 160)
             state.registers[self.res1_var] = BV_Zero_Extend(state.registers[self.res1_var], 256-160)
 
         state.set_next_pc()
