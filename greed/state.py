@@ -216,7 +216,7 @@ class SymbolicEVMState:
 
         # translation using TAC_OriginalStatement_Block
         candidate_destination_vals = self.project.tac_parser.statement_to_blocks_map[destination_val] + [destination_val]
-        candidate_bbs = [bb for bb in curr_bb.succ if bb.id in candidate_destination_vals]
+        candidate_bbs = [bb for bb in curr_bb.succ if (bb.id in candidate_destination_vals) or ("0x"+bb.id.split("0x")[1] in candidate_destination_vals)]
 
         if len(candidate_bbs) == 0:
             raise VMSymbolicError(f'Unable to find jump destination. ({candidate_destination_vals=}, {curr_bb.succ=})')
