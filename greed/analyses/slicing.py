@@ -42,6 +42,10 @@ def inline_cfg(p, cfg, max_rounds=3):
             continue
         alias_arg_map = dict(zip(args_alias, callprivate_args))
 
+        # skip if returnprivate returns one or more of the args without any processing
+        if any([a in returnprivate_args for a in args_alias]):
+            continue
+
         # alias the return variable
         alias_arg_map.update(dict(zip(returnprivate_args, callprivate_ress)))
             

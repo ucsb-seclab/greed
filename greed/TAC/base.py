@@ -162,7 +162,7 @@ class TAC_Statement(Aliased):
 
         return wrap
     
-    def copy(self, alias_arg_map):
+    def copy(self, alias_arg_map=None):
         alias_arg_map = alias_arg_map or dict()
 
         _copy = self.__class__(self.block_id, self.id)
