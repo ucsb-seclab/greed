@@ -46,7 +46,7 @@ class ReverseExplorerState:
 
         self.caller = None if caller is None else caller
         self.slices_stmts = set() if slices_stmts is None else slices_stmts
-        self.slices_vars = set() if slices_vars is None else slices_vars
+        self.slices_vars = {target,} if slices_vars is None else slices_vars|{target,}
 
     def step(self):
         return [ReverseExplorerState(self.project, self.func, n, self.caller, self.slices_stmts, self.slices_vars) 
