@@ -117,8 +117,9 @@ class ReverseExplorer:
                         res_vars_deps_idx = [next_state.stmt.res_vars.index(res_var_dep) for res_var_dep in res_vars_deps]
 
                         for rp in return_privates:
-                            if len(rp.arg_vars) != len(next_state.stmt.arg_vars):
-                                log.debug(f"Wrong mapping between CALLPRIVATE and RETURNPRIVATE (expected at least {max(res_vars_deps_idx)} args, got {len(rp.arg_vars)})")
+                            # skip the first arg, it's the return PC
+                            if len(rp.arg_vars[1:]) != len(next_state.stmt.res_vars):
+                                log.warning(f"Wrong mapping between CALLPRIVATE and RETURNPRIVATE ({len(next_state.stmt.res_vars)} expected in CALLPRIVATE, {len(rp.arg_vars[1:])} returned by RETURNPRIVATE)")
                                 continue
                             log.debug(f"Investigating return from {func_target.id}")
                             for res_var_dep_idx in res_vars_deps_idx:
