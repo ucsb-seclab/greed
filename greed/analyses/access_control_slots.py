@@ -1,30 +1,30 @@
-# This analysis extracts the storage slots that are possibly containing 
+# This analysis extracts the storage slots that are possibly containing
 # variables related to the administration of the contracts (_owner, _guardian, etc...)
 #
-# As for now, it is a simpler implementation of the Achecker paper 
-# https://www.asemghaleb.com/assets/pdf/AChecker_paper-preprint.pdf that map-based 
+# As for now, it is a simpler implementation of the Achecker paper
+# https://www.asemghaleb.com/assets/pdf/AChecker_paper-prelog.debug.pdf that map-based
 # permissions.
-# 
+#
 # In terms of true positives, the results are comparable to the guard analysis performed by
-# Gigahorse, however, as Gigahorse tries to recover map-based permissions, our analysis here 
+# Gigahorse, however, as Gigahorse tries to recover map-based permissions, our analysis here
 # is afflicted by less false positives.
 #
 # E.g., Gigahorse would mark as guard the variable _debt when the contract contains code like
 # this:
-# 
+#
 # require(varg0 <= _debt[v2], Error('SafeMath: subtraction overflow'));
 #
 
 
 import web3
 import os
-import sys 
+import sys
 import datetime
 import json
 import logging
 import time
 import shutil
-import networkx as nx 
+import networkx as nx
 
 from greed import Project
 from greed import options
@@ -49,12 +49,12 @@ class ReverseExplorerState:
         self.slices_vars = {target,} if slices_vars is None else slices_vars|{target,}
 
     def step(self):
-        return [ReverseExplorerState(self.project, self.func, n, self.caller, self.slices_stmts, self.slices_vars) 
+        return [ReverseExplorerState(self.project, self.func, n, self.caller, self.slices_stmts, self.slices_vars)
                                 for n in self.reversed_subgraph.neighbors(self.target)]
-    
+
     def is_stmt(self):
         return "0x" in self.target
-    
+
     def __repr__(self):
         return str(self.slices_stmts)
 
@@ -67,23 +67,37 @@ class ReverseExplorer:
         self.slices = set()
 
         self.seen_targets = set()
-        
+
     def run(self):
         while len(self.stashes) > 0:
             log.debug(f'len of stash: {len(self.stashes)}')
             curr_state = self.stashes.pop()
             log.debug(f"curr_state is at {curr_state.target}")
             next_states = curr_state.step()
-            
+
             if len(next_states) == 0:
-                log.debug(f'Deadended: {curr_state.slices_stmts}')
-                self.slices.add(curr_state)
-                
+                # Corner case: we are returning immediately one of the argument of the caller
+                if curr_state.caller != None and "arg" in curr_state.target:
+                    # Let's map the argument to this CALLPRIVATE to the corresponding argument of the caller
+
+                    index_of_arg = int(curr_state.target.split("arg")[1],10)
+                    callprivate_arg_target = curr_state.caller.arg_vars[index_of_arg+1]
+                    func_target = self.project.block_at[curr_state.caller.block_id].function
+                    self.stashes.append(ReverseExplorerState(self.project,
+                                                            func_target,
+                                                            callprivate_arg_target,
+                                                            None,
+                                                            slices_stmts=curr_state.slices_stmts.copy(),
+                                                            slices_vars=curr_state.slices_vars.copy()))
+                else:
+                    log.debug(f'Deadended: {curr_state.slices_stmts}')
+                    self.slices.add(curr_state)
+
             log.debug(f'next_states are {[x.target for x in next_states]}')
 
             for next_state in next_states:
                 if next_state.target in self.seen_targets:
-                    # Stop this branch. Don't discard, we might have reached this target 
+                    # Stop this branch. Don't discard, we might have reached this target
                     # from another branch of the usedef graph and we must keep the trace.
                     log.debug(f'Deadended: {curr_state.slices_stmts}')
                     self.slices.add(curr_state)
@@ -94,7 +108,7 @@ class ReverseExplorer:
                 if next_state.is_stmt():
                     if next_state.stmt.__internal_name__ == "CALL" or next_state.stmt.__internal_name__ == "CALLCODE" or next_state.stmt.__internal_name__ == "DELEGATECALL" or next_state.stmt.__internal_name__ == "STATICCALL":
                         log.debug(f'Found {next_state.stmt}')
-                        # We'll see later if we want to consider external checks. As of now we kinda want 
+                        # We'll see later if we want to consider external checks. As of now we kinda want
                         # only the storage slots with "critical" ownership data.
                         pass
                     elif next_state.stmt.__internal_name__ == "CALLPRIVATE":
@@ -109,7 +123,7 @@ class ReverseExplorer:
 
                         # Grab all the returnprivates of the target function
                         return_privates = [s for b in func_target.blocks for s in b.statements if s.__internal_name__ == "RETURNPRIVATE"]
-                            
+
                         # How many res_var of the CALLPRIVATE are in the use-def chain of the target var?
                         res_vars_deps = [res_var for res_var in next_state.stmt.res_vars if res_var in next_state.slices_vars]
 
@@ -129,10 +143,10 @@ class ReverseExplorer:
                                 new_slices_vars = next_state.slices_vars.copy()
                                 new_slices_vars.add(rp.arg_vars[res_var_dep_idx+1])
                                 self.stashes.append(ReverseExplorerState(self.project,
-                                                                         func_target, 
+                                                                         func_target,
                                                                          rp.arg_vars[res_var_dep_idx+1],
                                                                          caller=next_state.stmt,
-                                                                         slices_stmts=next_state.slices_stmts.copy(), 
+                                                                         slices_stmts=next_state.slices_stmts.copy(),
                                                                          slices_vars=new_slices_vars.copy()))
                     else:
                         log.debug(f"Adding stmt {next_state.target}")
@@ -140,9 +154,9 @@ class ReverseExplorer:
                         new_slices_stmts.add(next_state.target)
                         self.stashes.append(ReverseExplorerState(self.project,
                                                                  next_state.func,
-                                                                 next_state.target, 
-                                                                 next_state.caller, 
-                                                                 slices_stmts=new_slices_stmts.copy(), 
+                                                                 next_state.target,
+                                                                 next_state.caller,
+                                                                 slices_stmts=new_slices_stmts.copy(),
                                                                  slices_vars=next_state.slices_vars.copy()))
                 else:
                     # We are in a var
@@ -165,10 +179,10 @@ class ReverseExplorer:
                             new_slices_vars.add(callprivate_arg_target)
                             self.stashes.append(ReverseExplorerState(self.project,
                                                                     next_state.func,
-                                                                    next_state.target, 
-                                                                    next_state.caller, 
-                                                                    slices_stmts=next_state.slices_stmts.copy(), 
-                                                                    slices_vars=new_slices_vars.copy()))                            
+                                                                    next_state.target,
+                                                                    next_state.caller,
+                                                                    slices_stmts=next_state.slices_stmts.copy(),
+                                                                    slices_vars=new_slices_vars.copy()))
                     else:
                         log.debug("Adding a var")
                         # Simply add the var
@@ -176,9 +190,9 @@ class ReverseExplorer:
                         new_slices_vars.add(next_state.target)
                         self.stashes.append(ReverseExplorerState(self.project,
                                                                  next_state.func,
-                                                                 next_state.target, 
-                                                                 next_state.caller, 
-                                                                 slices_stmts=next_state.slices_stmts.copy(), 
+                                                                 next_state.target,
+                                                                 next_state.caller,
+                                                                 slices_stmts=next_state.slices_stmts.copy(),
                                                                  slices_vars=new_slices_vars.copy()))
 
 # Just an utility to dump the use-def graph and change color
@@ -232,17 +246,17 @@ def dump_slice(full_slice, func, filename):
 
 # Entry point for the analysis
 def get_access_control_slots(project):
-        
-    # Grab all the JUMPIs in the project 
+
+    # Grab all the JUMPIs in the project
     jumpis = [ins for ins in project.statement_at.values() if ins.__internal_name__ == "JUMPI" ]
     log.debug(f'Found {len(jumpis)} JUMPIs in the project')
-    
+
     '''
     jumpi_that_reverts = []
     for jumpi in jumpis:
         stmts = []
         jumpi_block = project.block_at[jumpi.block_id]
-        
+
         successors_blocks = jumpi_block.succ
         for succ_block in successors_blocks:
             stmts.extend([x.__internal_name__ for x in succ_block.statements])
@@ -253,14 +267,14 @@ def get_access_control_slots(project):
     jumpis = jumpi_that_reverts
     log.debug(f'Found {len(jumpis)} JUMPIs that reverts')
     '''
-    
+
     critical_slots = set()
 
-    # Let's analyze the JUMPIs that revert    
+    # Let's analyze the JUMPIs that revert
     for jumpi in jumpis:
         block = project.block_at[jumpi.block_id]
         func =  block.function
-        
+
         # Get the variable that holds the condition of the JUMPI
         condition = jumpi.arg2_var
         trace = []
@@ -273,15 +287,15 @@ def get_access_control_slots(project):
             # Union of all the stmts here.
             for stmt in myslice.slices_stmts:
                 full_slice.add(stmt)
-        
+
         stmts_mnemonic_in_slice = [project.statement_at[x].__internal_name__ for x in full_slice]
         stmts_in_slice = [project.statement_at[x] for x in full_slice]
         log.debug(stmts_in_slice)
-        
+
         if "CALLER" in stmts_mnemonic_in_slice and "EQ" in stmts_mnemonic_in_slice and "SLOAD" not in stmts_mnemonic_in_slice:
             log.debug(stmts_mnemonic_in_slice)
             log.debug(f'JUMPI at {jumpi.id} in function {func.name}:{func.signature} is a access control check! (CALLER+EQ)')
-        
+
         elif "CALLER" in stmts_mnemonic_in_slice and "SLOAD" in stmts_mnemonic_in_slice and "SHA3" in stmts_mnemonic_in_slice:
             log.debug(stmts_mnemonic_in_slice)
             log.debug(f'JUMPI at {jumpi.id} in function {func.name}:{func.signature} is a access control check! (CALLER+SLOAD+SHA3)')
@@ -295,8 +309,8 @@ def get_access_control_slots(project):
                         critical_slots.add(slot)
                         log.debug(f'  Possible slot of owner: {hex(slot)}')
                     except Exception as e:
-                        pass         
+                        pass
         else:
             pass
-    
+
     return critical_slots
