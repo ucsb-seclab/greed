@@ -76,22 +76,8 @@ class ReverseExplorer:
             next_states = curr_state.step()
 
             if len(next_states) == 0:
-                # Corner case: we are returning immediately one of the argument of the caller
-                if curr_state.caller != None and "arg" in curr_state.target:
-                    # Let's map the argument to this CALLPRIVATE to the corresponding argument of the caller
-
-                    index_of_arg = int(curr_state.target.split("arg")[1],10)
-                    callprivate_arg_target = curr_state.caller.arg_vars[index_of_arg+1]
-                    func_target = self.project.block_at[curr_state.caller.block_id].function
-                    self.stashes.append(ReverseExplorerState(self.project,
-                                                            func_target,
-                                                            callprivate_arg_target,
-                                                            None,
-                                                            slices_stmts=curr_state.slices_stmts.copy(),
-                                                            slices_vars=curr_state.slices_vars.copy()))
-                else:
-                    log.debug(f'Deadended: {curr_state.slices_stmts}')
-                    self.slices.add(curr_state)
+                log.debug(f'Deadended: {curr_state.slices_stmts}')
+                self.slices.add(curr_state)
 
             log.debug(f'next_states are {[x.target for x in next_states]}')
 
@@ -135,19 +121,43 @@ class ReverseExplorer:
                             if len(rp.arg_vars[1:]) != len(next_state.stmt.res_vars):
                                 log.warning(f"Wrong mapping between CALLPRIVATE and RETURNPRIVATE ({len(next_state.stmt.res_vars)} expected in CALLPRIVATE, {len(rp.arg_vars[1:])} returned by RETURNPRIVATE)")
                                 continue
+                            
                             log.debug(f"Investigating return from {func_target.id}")
                             for res_var_dep_idx in res_vars_deps_idx:
                                 # The argument in position 1 is the one mapped to the res_var if the CALLPRIVATE had only 1 arg
                                 # We are doing res_var_dep_idx+1 because the var at 0 is the return PC
-                                log.debug(f"Resuming slice from {rp.arg_vars[res_var_dep_idx+1]}")
-                                new_slices_vars = next_state.slices_vars.copy()
-                                new_slices_vars.add(rp.arg_vars[res_var_dep_idx+1])
-                                self.stashes.append(ReverseExplorerState(self.project,
-                                                                         func_target,
-                                                                         rp.arg_vars[res_var_dep_idx+1],
-                                                                         caller=next_state.stmt,
-                                                                         slices_stmts=next_state.slices_stmts.copy(),
-                                                                         slices_vars=new_slices_vars.copy()))
+                                var_target = rp.arg_vars[res_var_dep_idx+1]
+                                log.debug(f"Resuming slice from {var_target}")
+
+                                # Is the returnprivate just returning its arguments?
+                                if "arg" in var_target:
+                                    log.debug(f'RETURNPRIVATE is just returning its arguments, skip.')
+                                    # Let's map the argument of the RETURNPRIVATE to the corresponding argument of the CALLPRIVATE
+                                    # and continue
+                                    index_of_arg = int(var_target.split("arg")[1],10)
+                                    callprivate_arg_target = next_state.stmt.arg_vars[index_of_arg+1]
+                                    func_target = next_state.func
+                                    # let's add the var to the slice nonetheless
+                                    new_slices_vars = next_state.slices_vars.copy()
+                                    new_slices_vars.add(var_target)
+                                    self.stashes.append(ReverseExplorerState(self.project,
+                                                                            func_target,
+                                                                            callprivate_arg_target,
+                                                                            # we keep the current caller
+                                                                            caller=next_state.caller,
+                                                                            slices_stmts=next_state.slices_stmts.copy(),
+                                                                            slices_vars=new_slices_vars))
+                                else:
+                                    # Ok, let's generate a state at the var in the return private
+                                    new_slices_vars = next_state.slices_vars.copy()
+                                    new_slices_vars.add(var_target)
+                                    self.stashes.append(ReverseExplorerState(self.project,
+                                                                            func_target,
+                                                                            var_target,
+                                                                            # the caller is the CALLPRIVATE
+                                                                            caller=next_state.stmt,
+                                                                            slices_stmts=next_state.slices_stmts.copy(),
+                                                                            slices_vars=new_slices_vars.copy()))
                     else:
                         log.debug(f"Adding stmt {next_state.target}")
                         new_slices_stmts = next_state.slices_stmts.copy()
