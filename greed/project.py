@@ -2,6 +2,8 @@ import logging
 
 import networkx as nx
 
+from collections import defaultdict
+
 from greed.TAC.TAC_parser import TAC_parser
 from greed.TAC.gigahorse_ops import TAC_Callprivateargs
 from greed.factory import Factory
@@ -23,10 +25,13 @@ class Project(object):
         self.function_at = self.tac_parser.parse_functions()
 
         # inject CALLPRIVATEARGS fake statements
+        _fake_counters = defaultdict(int)
         for function in self.function_at.values():
             for arg in function.arguments[::-1]:
                 root_block = self.factory.block(function.id)
-                fake_statement = TAC_Callprivateargs(block_id=root_block.id, stmt_id=f"fake_{arg}", defs=[arg])
+                _counter = _fake_counters[arg]
+                _fake_counters[arg] += 1
+                fake_statement = TAC_Callprivateargs(block_id=root_block.id, stmt_id=f"fake_{arg}_{_counter}", defs=[arg])
                 root_block.statements.insert(0, fake_statement)
                 self.statement_at[fake_statement.id] = fake_statement
         
