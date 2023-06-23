@@ -27,12 +27,12 @@ class PartialConcreteStorage:
 
         # Initialize the web3 connection
         self.w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
-        assert(self.w3.isConnected())
+        assert(self.w3.is_connected())
 
         if "ADDRESS" not in self.state.ctx:
             raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
         else:
-            self.contract_address = self.w3.toChecksumAddress(f"{state.ctx['ADDRESS'].value:040x}")
+            self.contract_address = self.w3.to_checksum_address(f"{state.ctx['ADDRESS'].value:040x}")
 
         if "NUMBER" not in self.state.ctx:
             raise GreedException("Cannot initialize the PartialConcreteStorage with no reference block")
@@ -74,7 +74,7 @@ class PartialConcreteStorage:
             
             if index_val not in self.concrete_cache.keys():
                 log.debug(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
-                storage_value = self.w3.eth.getStorageAt(self.contract_address, index_val, block_identifier=self.chain_at)
+                storage_value = self.w3.eth.get_storage_at(self.contract_address, index_val, block_identifier=self.chain_at)
                 log.debug(f"   Value read is: {storage_value.hex()}")
                 storage_value = int(storage_value.hex(), 16)
                 storage_value_bvv = BVV(storage_value, 256)
