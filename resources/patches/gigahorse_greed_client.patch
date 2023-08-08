@@ -1,0 +1,37 @@
+diff --git a/clientlib/greed_client.dl b/clientlib/greed_client.dl
+new file mode 100644
+index 0000000..d88493b
+--- /dev/null
++++ b/clientlib/greed_client.dl
+@@ -0,0 +1,30 @@
++#include "decompiler_imports.dl"
++#include "guards.dl"
++#include "loops_semantics.dl"
++
++// storage layout output
++.output StorageVariableType
++
++// guards analysis output
++.output StaticallyGuardedBlock
++.output Dominates
++
++
++// more required outputs (see greed's TAC_parser.py)
++// .output IRInFunctionFiltered(IO="file", filename="InFunction.csv", delimiter="\t")
++// .output PublicFunction(IO="file", filename="PublicFunction.csv", delimiter="\t")
++// .output TAC_Block
++// .output TAC_Op
++// .output TAC_OriginalStatement_Block
++// .output TAC_Variable_Value
++// .output TAC_Def
++// .output TAC_Use
++// .output ConstantPossibleSigHash
++// .output CallToSignature
++// .output CallToSignatureFromSHA3
++// .output IRFallthroughEdge
++// .output HighLevelFunctionName
++// .output LocalBlockEdge
++// .output IRFunctionEntry
++// .output FormalArgs
++// .output StaticallyGuardedBlock
+\ No newline at end of file

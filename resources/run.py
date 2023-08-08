@@ -3,7 +3,8 @@ import argparse
 import logging
 
 import IPython
-import web3
+
+from web3 import Web3
 
 from greed import Project
 from greed import options
@@ -27,8 +28,10 @@ def main(args):
     options.OPTIMISTIC_CALL_RESULTS = True
     options.DEFAULT_EXTCODESIZE = True
 
-    w3 = web3.Web3(web3.Web3.HTTPProvider(options.WEB3_PROVIDER))
-    block_number = w3.eth.blockNumber
+    w3 = Web3(Web3.HTTPProvider(options.WEB3_PROVIDER))
+    assert w3.is_connected()
+    
+    block_number = w3.eth.block_number
     block_info = w3.eth.get_block(block_number)
 
     init_ctx = {

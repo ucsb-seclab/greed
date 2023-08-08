@@ -54,7 +54,7 @@ if [ -z $NO_GIGAHORSE ]; then
   if [ ! -d $GREED_DIR/gigahorse-toolchain ]; then
     git clone --recursive https://github.com/nevillegrech/gigahorse-toolchain.git $GIGAHORSE_DIR
     cd $GIGAHORSE_DIR
-    git checkout 59599ecb2397c42e342140189593cabdcce1a2d6
+    git checkout c5bce4d3495fc10f503b49368504efee3c676d03
   fi
 
   # apply patches
@@ -83,9 +83,10 @@ if [ -z $NO_GIGAHORSE ]; then
     echo "Successfully compiled $1.."
   }
   compile "main.dl" "logic/main.dl"
-  compile "function_inliner.dl" "clientlib/function_inliner.dl"
-  compile "loops_semantics.dl" "clientlib/loops_semantics.dl"
-  compile "guards.dl" "clientlib/guards.dl"
+  compile "greed_client.dl" "clientlib/greed_client.dl"
+  # compile "function_inliner.dl" "clientlib/function_inliner.dl"
+  # compile "loops_semantics.dl" "clientlib/loops_semantics.dl"
+  # compile "guards.dl" "clientlib/guards.dl"
 
   command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
   solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; }

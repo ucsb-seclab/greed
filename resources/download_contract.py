@@ -27,9 +27,9 @@ if __name__ == "__main__":
 
     # connect to web3
     w3 = Web3(Web3.HTTPProvider(args.w3))
-    assert w3.isConnected()
+    assert w3.is_connected()
 
-    code = w3.eth.getCode(args.address).hex()[2:]
+    code = w3.eth.get_code(args.address).hex()[2:]
 
     if args.peek:
         print(code, end='')
