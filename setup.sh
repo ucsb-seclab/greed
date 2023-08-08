@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 if [ ! $VIRTUAL_ENV ]; then
  echo "${bold}${red}Can't install outside of a Python virtualenv${normal}"; exit 1
 fi
@@ -132,3 +134,5 @@ if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
 fi
 
 pip install -e yices2_python_bindings
+
+set +x
