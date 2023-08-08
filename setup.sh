@@ -116,7 +116,7 @@ dpkg -l | grep -q libgmp-dev || { echo "${bold}${red}libgmp-dev is not installed
 
 # install
 autoconf || { echo "${bold}${red}Failed to run autoconf${normal}"; exit 1; }
-./configure || { echo "${bold}${red}Failed to run ./configure${normal}"; exit 1; }
+./configure --enable-thread-safety || { echo "${bold}${red}Failed to run ./configure${normal}"; exit 1; }
 make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
 
 # finally, link yices2/build/lib/ to the virtualenv's site-packages dir
@@ -133,6 +133,9 @@ if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
   git clone https://github.com/ruaronicola/yices2_python_bindings.git $GREED_DIR/yices2_python_bindings
 fi
 
+# for some reason github builds fail to find libyices.so. This should fix it
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VIRTUAL_ENV_LIB
 pip install -e yices2_python_bindings
+yices_python_info
 
 set +x
