@@ -134,7 +134,7 @@ if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
 fi
 
 # for some reason github builds fail to find libyices.so. This should fix it
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$VIRTUAL_ENV_LIB
+export PYTHONPATH=$PYTHONPATH:$VIRTUAL_ENV_LIB
 pip install -e yices2_python_bindings
 yices_python_info
 
