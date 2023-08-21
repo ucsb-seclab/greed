@@ -2,10 +2,12 @@ import itertools
 import json
 import logging
 import os
+import sha3
+
+from ast import literal_eval
 from collections import defaultdict
 from typing import Mapping, List, Tuple
 
-import sha3
 
 from greed.TAC import tac_opcode_to_class_map
 from greed.TAC.gigahorse_ops import TAC_Nop
@@ -222,6 +224,46 @@ class TAC_parser:
 
         return functions
     
+    def parse_blocks_in_loop(self):
+        blocks_in_loop = load_csv_multimap(f"{self.target_dir}/BlockInStructuredLoop.csv", reverse=True)
+        return blocks_in_loop
+    
+    def parse_induction_variables(self):
+        induction_variables = load_csv_multimap(f"{self.target_dir}/InductionVariable.csv", reverse=True)
+        induction_variables = {x: {self.phimap.get('v' + _y.replace('0x', ''), 'v' + _y.replace('0x', '')) for _y in y}
+                               for x, y in induction_variables.items()}
+        return induction_variables
+    
+    def parse_induction_variable_starts_at_const(self):
+        values = load_csv(f"{self.target_dir}/InductionVariableStartsAtConst.csv")
+        starts_at_const = defaultdict(dict)
+        for _x, _y, _z in values:
+            y = _y[1:-1].split(", ")[1]
+            y = 'v' + y.replace('0x', '')
+            y = self.phimap.get(y, y)
+            starts_at_const[_x][y] = literal_eval(_z) # seems to not have a consistent base (either 10 or 16)
+        return starts_at_const
+    
+    def parse_induction_variable_increases_by_const(self):
+        values = load_csv(f"{self.target_dir}/InductionVariableIncreasesByConst.csv")
+        increases_by_const = defaultdict(dict)
+        for _x, _y, _z in values:
+            y = _y[1:-1].split(", ")[1]
+            y = 'v' + y.replace('0x', '')
+            y = self.phimap.get(y, y)
+            increases_by_const[_x][y] = literal_eval(_z) # seems to not have a consistent base (either 10 or 16)
+        return increases_by_const
+    
+    def parse_induction_variable_upper_bounds(self):
+        values = load_csv(f"{self.target_dir}/InductionVariableUpperBoundVar.csv")
+        upper_bounds = defaultdict(dict)
+        for _x, _y, _z in values:
+            y = _y[1:-1].split(", ")[1]
+            y = 'v' + y.replace('0x', '')
+            y = self.phimap.get(y, y)
+            upper_bounds[_x][y] = self.phimap.get('v' + _z.replace('0x', ''), 'v' + _z.replace('0x', ''))
+        return upper_bounds
+
     def parse_guarding_slots(self):
         tac_guarded_blocks = load_csv_multimap(f"{self.target_dir}/StaticallyGuardedBlock.csv")
         guarding_slots = set([g.split('_')[0] for g_list in tac_guarded_blocks.values() for g in g_list if g.startswith('0x')])
