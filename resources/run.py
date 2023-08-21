@@ -27,6 +27,7 @@ def main(args):
     options.MAX_SHA_SIZE = 512
     options.OPTIMISTIC_CALL_RESULTS = True
     options.DEFAULT_EXTCODESIZE = True
+    # options.STATE_INSPECT = True
 
     w3 = Web3(Web3.HTTPProvider(options.WEB3_PROVIDER))
     assert w3.is_connected()
@@ -38,7 +39,7 @@ def main(args):
         "CALLDATASIZE": options.MAX_CALLDATA_SIZE,
         "CALLER": "0xaaA4a5495988E18c036436953AC87aadEa074550",
         "ORIGIN": "0xaaA4a5495988E18c036436953AC87aadEa074550",
-        "ADDRESS": args.target.split("/")[-1],
+        "ADDRESS": args.address or "0x42",
         "NUMBER": block_number,
         "DIFFICULTY": block_info["totalDifficulty"],
         "TIMESTAMP": block_info["timestamp"]
@@ -46,6 +47,19 @@ def main(args):
 
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, partial_concrete_storage=True)
     simgr = p.factory.simgr(entry_state=entry_state)
+
+    ####################################################################################################################
+    # from greed.exploration_techniques.other import MstoreConcretizer
+    # concretizer = MstoreConcretizer()
+    # concretizer.setup(simgr)
+    # simgr.use_technique(concretizer)
+
+    # def print_calldata(simgr, state):
+    #     calldata_size = state.MAX_CALLDATA_SIZE
+    #     calldata = state.solver.eval_memory(state.calldata, BVV(calldata_size, 256))
+    #     log.info(f'CALLDATA: {calldata}')
+
+    # simgr.one_active.inspect.stop_at_stmt("STATICCALL", func=print_calldata)
 
     ####################################################################################################################
     # SETUP PRIORITIZATION
@@ -92,7 +106,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("target", type=str, action="store", help="Path to Gigahorse output folder")
-    parser.add_argument("--find", type=str, action="store", help="Target address")
+    parser.add_argument("--address", type=str, action="store", help="Address of the contract")
+    parser.add_argument("--find", type=str, action="store", help="Target code address")
     parser.add_argument("-d", "--debug", action="store_true", help="Enable debug output")
 
     args = parser.parse_args()
