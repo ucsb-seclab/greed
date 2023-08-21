@@ -90,7 +90,7 @@ def _backward_slice_instructions(p, target_stmt, target_function, target_functio
     Backward slice algorithm from https://www.math.arizona.edu/~glickenstein/math443f08/coogan.pdf
     """
     target_vars = target_vars or target_stmt.arg_vars
-    assert all([v in target_stmt.arg_vars for v in target_vars])
+    # assert all([v in target_stmt.arg_vars for v in target_vars])
 
     queue = {target_stmt, }
     relevant_map = {stmt_id: set() for stmt_id in p.statement_at}
@@ -133,7 +133,7 @@ def _forward_slice_instructions(p, target_stmt, target_function, target_function
     Forward slice algorithm (pretty much like the backward slice)
     """
     target_vars = target_vars or target_stmt.res_vars
-    assert all([v in target_stmt.res_vars for v in target_vars])
+    # assert all([v in target_stmt.res_vars for v in target_vars])
 
     queue = {target_stmt, }
     relevant_map = {stmt_id: set() for stmt_id in p.statement_at}
