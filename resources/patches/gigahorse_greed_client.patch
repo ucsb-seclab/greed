@@ -1,19 +1,35 @@
 diff --git a/clientlib/greed_client.dl b/clientlib/greed_client.dl
 new file mode 100644
-index 0000000..d88493b
+index 0000000..d71017d
 --- /dev/null
 +++ b/clientlib/greed_client.dl
-@@ -0,0 +1,30 @@
+@@ -0,0 +1,46 @@
 +#include "decompiler_imports.dl"
++
 +#include "guards.dl"
 +#include "loops_semantics.dl"
 +
++#include "memory_modeling/memory_modeling.dl"
++#include "storage_modeling/storage_modeling.dl"
++
 +// storage layout output
-+.output StorageVariableType
++.output StorageOffset_Type
++.output StorageVariableInfo
 +
 +// guards analysis output
 +.output StaticallyGuardedBlock
 +.output Dominates
++
++// calldata arrays (and loops) output
++.output BlockInStructuredLoop
++.output InductionVariable
++.output InductionVariableStartsAtConst
++.output InductionVariableIncreasesByConst
++.output InductionVariableUpperBoundVar
++.output InductionVariableDecreasesByConst
++.output InductionVariableLowerBoundVar
++.output CallDataCopyLoop
++.output MemoryCopyLoop
 +
 +
 +// more required outputs (see greed's TAC_parser.py)
@@ -34,4 +50,3 @@ index 0000000..d88493b
 +// .output IRFunctionEntry
 +// .output FormalArgs
 +// .output StaticallyGuardedBlock
-\ No newline at end of file
