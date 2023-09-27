@@ -115,7 +115,7 @@ dpkg -l | grep -q gperf || { echo "${bold}${red}gperf is not installed. Please i
 dpkg -l | grep -q libgmp-dev || { echo "${bold}${red}libgmp-dev is not installed. Please install it before proceeding (e.g., sudo apt install libgmp-dev)${normal}"; exit 1; }
 
 # install
-make clean || { echo "${bold}${red}Failed to run make clean ${normal}"; exit 1; }
+# make clean || { echo "${bold}${red}Failed to run make clean ${normal}"; exit 1; }
 autoconf || { echo "${bold}${red}Failed to run autoconf${normal}"; exit 1; }
 ./configure --enable-thread-safety || { echo "${bold}${red}Failed to run ./configure${normal}"; exit 1; }
 make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
