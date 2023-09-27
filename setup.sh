@@ -68,9 +68,7 @@ fi
 ls -lah $VIRTUAL_ENV_LIB | grep yices
 export PYTHONPATH=$PYTHONPATH:$VIRTUAL_ENV_LIB
 cp $GREED_DIR/resources/yices_api.py yices2_python_bindings/yices_api.py
-which pip
-which python
-python -m pip install -e yices2_python_bindings
+pip install -e yices2_python_bindings
 yices_python_info
 
 ########################################################################################################################
@@ -138,7 +136,7 @@ echo "Creating alias run.py -> greed.."
 ln -sf $GREED_DIR/resources/run.py $VIRTUAL_ENV_BIN/greed
 
 # install greed
-python -m pip install -e $GREED_DIR
+pip install -e $GREED_DIR
 
 ########################################################################################################################
 

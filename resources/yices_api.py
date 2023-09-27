@@ -225,6 +225,7 @@ def loadYices():
     print(f'{os.environ.get("PATH")=}')
     print(f'{os.environ.get("PYTHONPATH")=}')
     print(f'{os.environ.get("VIRTUAL_ENV")=}')
+    print(f'{sys.path=}')
     for path in sys.path + ['/usr/local/lib']:
         if _loadYicesFromPath(path, libyicespath):
             return
