@@ -113,12 +113,15 @@ class MstoreConcretizer(ExplorationTechnique):
 
         loop_head_addr = state.curr_stmt.block_id  # "candidate" loop head
         if (loop_head_addr in self.tac_loops and 
+            len(state.trace) > 0 and
             state.trace[-1].block_id != loop_head_addr and
             self.project.block_at[state.trace[-1].block_id] not in self.tac_loop_blocks[loop_head_addr]):
             for upper_bound_var, upper_bound in self.loop_upper_bounds[loop_head_addr].items():
+                if upper_bound_var not in state.registers:
+                    continue
                 state.add_constraint(BV_ULT(state.registers[upper_bound_var], BVV(upper_bound, 256)))
                 state.globals["bounds"][upper_bound_var] = upper_bound
-                print(f"---> ADDED DEFAULT UPPER BOUND ({upper_bound_var}:{upper_bound})")
+                log.info(f"---> ADDED DEFAULT UPPER BOUND ({upper_bound_var}:{upper_bound})")
 
         # SELECTIVELY CONCRETIZE MSTORES
         if (state.curr_stmt.__internal_name__ == "MSTORE" and
@@ -128,15 +131,15 @@ class MstoreConcretizer(ExplorationTechnique):
             state.solver.push()
             SINGLE_SOL = True
             sol = state.solver.eval(state.registers[state.curr_stmt.offset_var], raw=True)
-            print("candidate min mstore offset is:", sol)
+            log.info(f"candidate min mstore offset is: {sol}")
             state.add_constraint(BV_ULT(state.registers[state.curr_stmt.offset_var], sol))
             while state.solver.is_sat() is True:
                 SINGLE_SOL = False
                 sol = state.solver.eval(state.registers[state.curr_stmt.offset_var], raw=True)
-                print("candidate min mstore offset is:", sol)
+                log.info(f"candidate min mstore offset is: {sol}")
                 state.add_constraint(BV_ULT(state.registers[state.curr_stmt.offset_var], sol))
             state.solver.pop()
-            print(f"actual min mstore offset ({SINGLE_SOL=}) is:", sol)
+            log.info(f"actual min mstore offset ({SINGLE_SOL=}) is: {sol}")
 
             # branch and concretize on loop MSTORE
             if state.curr_stmt in self.relevant_mstores:
