@@ -83,6 +83,7 @@ fi
 # for some reason github builds fail to find libyices.so. This should fix it
 ls -lah $VIRTUAL_ENV_LIB | grep yices
 export PYTHONPATH=$PYTHONPATH:$VIRTUAL_ENV_LIB
+cp $GREED_DIR/resources/yices_api.py yices2_python_bindings/yices_api.py
 pip install -e yices2_python_bindings
 yices_python_info
 
