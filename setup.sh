@@ -24,23 +24,9 @@ done
 GREED_DIR=`dirname "${BASH_SOURCE[0]}"`
 GREED_DIR=`readlink -f $GREED_DIR` || { echo "${bold}${red}Can't find greed absolute path ${normal}"; exit 1; }
 GIGAHORSE_DIR=$GREED_DIR/gigahorse-toolchain
-cd $GREED_DIR
 
-########################################################################################################################
-########################################################################################################################
-
-# link our scripts into virtualenv's bin dir
-echo "Linking scripts into virtualenv's bin directory.."
-for script in $GREED_DIR/resources/{*.sh,*.py}; do
-  ln -sf $script $VIRTUAL_ENV/bin/
-done
-
-# create alias for run.py
-echo "Creating alias run.py -> greed.."
-ln -sf $GREED_DIR/resources/run.py $VIRTUAL_ENV/bin/greed
-
-# pip install greed
-pip install -e .
+VIRTUAL_ENV_BIN=$VIRTUAL_ENV/bin
+VIRTUAL_ENV_LIB=`echo $VIRTUAL_ENV/lib/python3.*/site-packages`
 
 ########################################################################################################################
 ########################################################################################################################
@@ -67,8 +53,6 @@ autoconf || { echo "${bold}${red}Failed to run autoconf${normal}"; exit 1; }
 make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
 
 # finally, link yices2/build/lib/ to the virtualenv's site-packages dir
-VIRTUAL_ENV_BIN=$VIRTUAL_ENV/bin
-VIRTUAL_ENV_LIB=`echo $VIRTUAL_ENV/lib/python3.*/site-packages`
 ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
 ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
 cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
@@ -84,7 +68,9 @@ fi
 ls -lah $VIRTUAL_ENV_LIB | grep yices
 export PYTHONPATH=$PYTHONPATH:$VIRTUAL_ENV_LIB
 cp $GREED_DIR/resources/yices_api.py yices2_python_bindings/yices_api.py
-pip install -e yices2_python_bindings
+which pip
+which python
+python -m pip install -e yices2_python_bindings
 yices_python_info
 
 ########################################################################################################################
@@ -135,5 +121,25 @@ if [ -z $NO_GIGAHORSE ]; then
 else
   true
 fi
+
+########################################################################################################################
+########################################################################################################################
+# GREED
+########################################################################################################################
+
+# link our scripts into virtualenv's bin dir
+echo "Linking scripts into virtualenv's bin directory.."
+for script in $GREED_DIR/resources/{*.sh,*.py}; do
+  ln -sf $script $VIRTUAL_ENV_BIN/
+done
+
+# create alias for run.py
+echo "Creating alias run.py -> greed.."
+ln -sf $GREED_DIR/resources/run.py $VIRTUAL_ENV_BIN/greed
+
+# install greed
+python -m pip install -e $GREED_DIR
+
+########################################################################################################################
 
 set +x

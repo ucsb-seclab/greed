@@ -222,6 +222,9 @@ def loadYices():
     global libyicespath
     error_msg = "Yices dynamic library not found."
     # attempt loading yices from both $PATH and default install location
+    print(f'{os.environ("PATH")=}')
+    print(f'{os.environ("PYTHONPATH")=}')
+    print(f'{os.environ("VIRTUAL_ENV")=}')
     for path in sys.path + ['/usr/local/lib']:
         if _loadYicesFromPath(path, libyicespath):
             return
