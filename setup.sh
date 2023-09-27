@@ -65,9 +65,12 @@ if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
 fi
 
 # for some reason github builds fail to find libyices.so. This should fix it
-ls -lah $VIRTUAL_ENV_LIB | grep yices
+python -c "import sys; print(sys.path)"
 export PYTHONPATH=$PYTHONPATH:$VIRTUAL_ENV_LIB
+python -c "import sys; print(sys.path)"
 cp $GREED_DIR/resources/yices_api.py yices2_python_bindings/yices_api.py
+which python
+which pip
 pip install -e yices2_python_bindings
 yices_python_info
 
