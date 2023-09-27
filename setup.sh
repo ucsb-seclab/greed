@@ -71,8 +71,11 @@ python -c "import sys; print(sys.path)"
 cp $GREED_DIR/resources/yices_api.py yices2_python_bindings/yices_api.py
 which python
 which pip
+python -m site
+pip --version
 pip install -e yices2_python_bindings
 yices_python_info
+cat /tmp/syspath
 
 ########################################################################################################################
 ########################################################################################################################
