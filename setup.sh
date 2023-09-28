@@ -66,7 +66,7 @@ fi
 
 # We need libyices.so at build time, but pip will happily use an isolated build env unless we specify otherwise
 # (and take care of installing build dependencies)
-pip install setuptools  # build dependencies
+pip install setuptools wheel  # build dependencies
 pip install -e yices2_python_bindings --no-build-isolation
 yices_python_info
 
