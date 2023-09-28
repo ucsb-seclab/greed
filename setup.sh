@@ -73,7 +73,7 @@ which python
 which pip
 python -m site
 pip --version
-pip install -e yices2_python_bindings
+pip install -v -e yices2_python_bindings
 yices_python_info
 cat /tmp/syspath
 
