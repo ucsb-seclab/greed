@@ -8,7 +8,6 @@ from os import path
 import sys
 with open("/tmp/syspath1", "w") as f:
     f.write(f"{sys.path=}\n")
-exit()
 
 here = path.abspath(path.dirname(__file__))
 

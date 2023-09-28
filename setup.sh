@@ -72,10 +72,13 @@ cp $GREED_DIR/resources/yices_api.py yices2_python_bindings/yices_api.py
 cp $GREED_DIR/resources/setup.py yices2_python_bindings/setup.py
 which python
 which pip
+python --version
 python -m site
 pip --version
+pip freeze --all
 pip install -v -e yices2_python_bindings
 yices_python_info
+cat /tmp/syspath0
 cat /tmp/syspath
 
 ########################################################################################################################
