@@ -36,9 +36,9 @@ jobs:
         pip install pytest
         /bin/bash setup.sh --no-gigahorse
 
-    # - name: Test with pytest
-    #   run: |
-    #     source venv/bin/activate
-    #     cd tests
-    #     pytest
+    - name: Test with pytest
+      run: |
+        source venv/bin/activate
+        cd tests
+        pytest
         

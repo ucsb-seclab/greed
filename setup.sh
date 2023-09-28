@@ -33,29 +33,29 @@ VIRTUAL_ENV_LIB=`echo $VIRTUAL_ENV/lib/python3.*/site-packages`
 # YICES
 ########################################################################################################################
 
-# # clone the yices2 repo
-# if [ ! -d $GREED_DIR/yices2 ]; then
-#   git clone https://github.com/SRI-CSL/yices2.git $GREED_DIR/yices2
-# fi
+# clone the yices2 repo
+if [ ! -d $GREED_DIR/yices2 ]; then
+  git clone https://github.com/SRI-CSL/yices2.git $GREED_DIR/yices2
+fi
 
-# cd $GREED_DIR/yices2
+cd $GREED_DIR/yices2
 
-# # check if all required packages are installed (cmake, cython, libgmp-dev)
-# dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
-# dpkg -l | grep -q cmake || { echo "${bold}${red}cmake is not installed. Please install it before proceeding (e.g., sudo apt install cmake)${normal}"; exit 1; }
-# dpkg -l | grep -q gperf || { echo "${bold}${red}gperf is not installed. Please install it before proceeding (e.g., sudo apt install gperf)${normal}"; exit 1; }
-# dpkg -l | grep -q libgmp-dev || { echo "${bold}${red}libgmp-dev is not installed. Please install it before proceeding (e.g., sudo apt install libgmp-dev)${normal}"; exit 1; }
+# check if all required packages are installed (cmake, cython, libgmp-dev)
+dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
+dpkg -l | grep -q cmake || { echo "${bold}${red}cmake is not installed. Please install it before proceeding (e.g., sudo apt install cmake)${normal}"; exit 1; }
+dpkg -l | grep -q gperf || { echo "${bold}${red}gperf is not installed. Please install it before proceeding (e.g., sudo apt install gperf)${normal}"; exit 1; }
+dpkg -l | grep -q libgmp-dev || { echo "${bold}${red}libgmp-dev is not installed. Please install it before proceeding (e.g., sudo apt install libgmp-dev)${normal}"; exit 1; }
 
-# # install
-# make clean || { echo "${bold}${red}Failed to run make clean ${normal}. Continuing..."; }
-# autoconf || { echo "${bold}${red}Failed to run autoconf${normal}"; exit 1; }
-# ./configure || { echo "${bold}${red}Failed to run ./configure${normal}"; exit 1; }
-# make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
+# install
+make clean || { echo "${bold}${red}Failed to run make clean ${normal}. Continuing..."; }
+autoconf || { echo "${bold}${red}Failed to run autoconf${normal}"; exit 1; }
+./configure || { echo "${bold}${red}Failed to run ./configure${normal}"; exit 1; }
+make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
 
-# # finally, link yices2/build/lib/ to the virtualenv's site-packages dir
-# ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
-# ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
-# cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
+# finally, link yices2/build/lib/ to the virtualenv's site-packages dir
+ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
+ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
+cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
 
 cd $GREED_DIR
 
@@ -64,22 +64,11 @@ if [ ! -d $GREED_DIR/yices2_python_bindings ]; then
   git clone https://github.com/ruaronicola/yices2_python_bindings.git $GREED_DIR/yices2_python_bindings
 fi
 
-# for some reason github builds fail to find libyices.so. This should fix it
-python -c "import sys; print(sys.path)"
-export PYTHONPATH=$PYTHONPATH:$VIRTUAL_ENV_LIB
-python -c "import sys; print(sys.path)"
-cp $GREED_DIR/resources/yices_api.py yices2_python_bindings/yices_api.py
-cp $GREED_DIR/resources/setup.py yices2_python_bindings/setup.py
-which python
-which pip
-python --version
-python -m site
-pip --version
-pip freeze --all
-pip install -v -e yices2_python_bindings
+# We need libyices.so at build time, but pip will happily use an isolated build env unless we specify otherwise
+# (and take care of installing build dependencies)
+pip install setuptools  # build dependencies
+pip install -e yices2_python_bindings --no-build-isolation
 yices_python_info
-cat /tmp/syspath0
-cat /tmp/syspath
 
 ########################################################################################################################
 ########################################################################################################################
