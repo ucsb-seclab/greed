@@ -1,3 +1,4 @@
+import functools
 import logging
 from typing import List, Mapping, Callable
 
@@ -118,6 +119,7 @@ class TAC_Statement(Aliased):
         (can just read and return statically computed results).
         """
 
+        @functools.wraps(func)
         def wrap(self, state: SymbolicEVMState):
             self.set_arg_val(state)
             state.trace.append(state.curr_stmt)
@@ -150,6 +152,7 @@ class TAC_Statement(Aliased):
         (can't just read and return statically computed results).
         """
 
+        @functools.wraps(func)
         def wrap(self, state: SymbolicEVMState):
             self.set_arg_val(state)
             state.trace.append(state.curr_stmt)
