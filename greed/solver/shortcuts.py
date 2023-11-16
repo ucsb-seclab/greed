@@ -1,6 +1,6 @@
 __all__ = [
-    "ctx_or_symbolic", "BVSort", "BVV", "BVS", "Array", "If", "Equal", "NotEqual", "Or", "And", "Not",
-    "bv_unsigned_value", "get_bv_by_name", "is_concrete", "BV_Extract", "BV_Concat", "BV_Add", "BV_Sub",
+    "ctx_or_symbolic", "concretize", "BVSort", "BVV", "BVS", "Array", "If", "Equal", "NotEqual", "Or", "And",
+    "Not", "bv_unsigned_value", "get_bv_by_name", "is_concrete", "BV_Extract", "BV_Concat", "BV_Add", "BV_Sub",
     "BV_Mul", "BV_UDiv", "BV_SDiv", "BV_SMod", "BV_SRem", "BV_URem", "BV_Sign_Extend", "BV_Zero_Extend",
     "BV_UGE", "BV_ULE", "BV_UGT", "BV_ULT", "BV_SGE", "BV_SLE", "BV_SGT", "BV_SLT", "BV_And", "BV_Or",
     "BV_Xor", "BV_Not", "BV_Shl", "BV_Shr", "BV_Sar", "Array_Store", "Array_Select"
@@ -23,6 +23,23 @@ def ctx_or_symbolic(v, ctx, xid, nbits=256):
         if nbits < 256:
             ctx[v] = BV_Zero_Extend(ctx[v], 256-nbits)
     return ctx[v]
+
+
+def concretize(state, val, force=False):
+    if is_concrete(val):
+        return val
+    else:
+        try:
+            val_sol = state.solver.eval(val, raw=True)
+            if state.solver.is_formula_true(Equal(val, val_sol)):
+                # one possible solution
+                return val_sol
+            elif force is True:
+                # multiple possible solutions
+                state.add_constraint(Equal(val, val_sol))
+                return val_sol
+        except:
+            return None
 
 
 # TYPES

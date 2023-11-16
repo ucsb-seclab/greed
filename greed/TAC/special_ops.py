@@ -44,16 +44,16 @@ class TAC_Sha3(TAC_Statement):
         # calculate the possible solutions and apply the constraints.
         if options.GREEDY_SHA:
             log.debug(f"Using GREEDY_SHA strategy to try to resolve {new_sha.symbol.name}")
-            size_sol = state.solver.eval(self.size_val, raw=True)
+
+            size_sol = concretize(state, self.size_val)
+            offset_sol = concretize(state, self.offset_val)
             log.debug(f"    Size solution: {bv_unsigned_value(size_sol)}")
-            offset_sol = state.solver.eval(self.offset_val, raw=True)
             log.debug(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
             
-            if not state.solver.is_formula_sat(NotEqual(self.size_val, size_sol)) and \
-               not state.solver.is_formula_sat(NotEqual(self.offset_val, offset_sol)):
-
-                # If size_sol is zero, return e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                if size_sol.value == 0:
+            if size_sol is None or offset_sol is None:
+                log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
+            elif size_sol.value == 0:
+                    # If size_sol is zero, return e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
                     res = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
                     log.debug(f"    Calculated concrete SHA3 {res}")
 
@@ -66,14 +66,14 @@ class TAC_Sha3(TAC_Statement):
                     
                     # Just set the solution here
                     state.registers[self.res1_var] = BVV(int(res, 16), 256)
-                    return [state]
-
+            else:
                 # Else, get a solution for the input buffer
-                buffer_sol = state.solver.eval_memory_at(state.memory, offset_sol, 
-                                                                        size_sol, 
-                                                                        raw=True)
+                buffer = state.memory.readn(offset_sol, size_sol)
+                buffer_sol = concretize(state, buffer)
 
-                if not state.solver.is_formula_sat(NotEqual(state.memory.readn(offset_sol, size_sol), buffer_sol)):
+                if buffer_sol is None:
+                    log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
+                else:
                     # Everything has only one solution, we can calculate the SHA
                     keccak256 = sha3.keccak_256()
                     buffer_sol = bv_unsigned_value(buffer_sol).to_bytes(bv_unsigned_value(size_sol), 'big')
@@ -94,13 +94,8 @@ class TAC_Sha3(TAC_Statement):
                     
                     # Just set the solution here
                     state.registers[self.res1_var] = BVV(int(res,16),256)
-                else:
-                    log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
-            else:
-                log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
 
         state.set_next_pc()
-
         return [state]
 
 
