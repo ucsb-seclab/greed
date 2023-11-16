@@ -1,8 +1,11 @@
+import logging
 import threading
 
 from greed import options
 
 from yices.YicesException import YicesException
+
+log = logging.getLogger(__name__)
 
 
 class Solver:
@@ -10,6 +13,7 @@ class Solver:
     def solver_timeout(func):
         def raise_solver_timeout(self):
             self.solver.stop_search()
+            log.warning("Solver timeout, stopping search")
 
         def wrap(self, *args, **kwargs):
             # start a timer to stop solving if the solver takes too long
@@ -19,6 +23,7 @@ class Solver:
                 result = func(self, *args, **kwargs)
                 return result
             except YicesException:
+                log.warning("Something went wrong with the solver, returning False")
                 return False
             finally:
                 timer.cancel()
