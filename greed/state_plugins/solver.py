@@ -82,6 +82,9 @@ class SimStateSolver(SimStatePlugin):
                     if not self.state.solver.is_formula_sat(NotEqual(reg_val, reg_val_sol)):
                         self.state.registers[reg_var] = reg_val_sol
                 self.state.registers[reg_var].is_simplified = True
+    @property
+    def timed_out(self):
+        return self._solver.timed_out
 
     @property
     def frame(self):

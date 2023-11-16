@@ -32,11 +32,7 @@ class TAC_Sha3(TAC_Statement):
     def handle(self, state: SymbolicEVMState):
 
         new_sha = Sha3(state, state.memory, self.offset_val, self.size_val)
-        for sha in state.sha_observed:
-            new_sha.instantiate_ackermann_constraints(sha)
-            
         state.sha_observed.append(new_sha)
-
         state.registers[self.res1_var] = new_sha.symbol
         
         # Checks to see if we have only one solution, if not, as of now we give up and 
@@ -55,17 +51,6 @@ class TAC_Sha3(TAC_Statement):
             elif size_sol.value == 0:
                     # If size_sol is zero, return e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
                     res = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-                    log.debug(f"    Calculated concrete SHA3 {res}")
-
-                    # Constraining parameters to their calculated solutions
-                    state.add_constraint(Equal(self.offset_val, offset_sol))
-                    state.add_constraint(Equal(self.size_val, size_sol))
-
-                    # Constraining the fresh SHA symbol to its solution
-                    state.add_constraint(Equal(state.registers[self.res1_var], BVV(int(res,16), 256)))
-                    
-                    # Just set the solution here
-                    state.registers[self.res1_var] = BVV(int(res, 16), 256)
             else:
                 # Else, get a solution for the input buffer
                 buffer = state.memory.readn(offset_sol, size_sol)
@@ -77,23 +62,33 @@ class TAC_Sha3(TAC_Statement):
                     # Everything has only one solution, we can calculate the SHA
                     keccak256 = sha3.keccak_256()
                     buffer_sol = bv_unsigned_value(buffer_sol).to_bytes(bv_unsigned_value(size_sol), 'big')
-                    keccak256.update(buffer_sol)
-                    res = keccak256.hexdigest()
-                    log.debug(f"    Calculated concrete SHA3 {res}")
-                    
-                    # Constraining parameters to their calculated solutions
-                    state.add_constraint(Equal(self.offset_val, offset_sol))
-                    state.add_constraint(Equal(self.size_val, size_sol))
-
-                    # Constraining the fresh SHA symbol to its solution given this buffer 
-                    state.add_constraint(Equal(state.registers[self.res1_var], BVV(int(res,16), 256)))
 
                     # Constraining the SHA3 input buffer to the solution just calculated
                     for x,b in zip(range(0, bv_unsigned_value(size_sol)), buffer_sol):
                         state.add_constraint(Equal(state.memory[BVV(bv_unsigned_value(offset_sol)+x, 256)], BVV(b, 8)))
-                    
-                    # Just set the solution here
-                    state.registers[self.res1_var] = BVV(int(res,16),256)
+
+                    keccak256.update(buffer_sol)
+                    res = keccak256.hexdigest()
+
+            if res is not None:
+                log.debug(f"    Calculated concrete SHA3 {res}")
+                new_sha.is_concrete = True
+                
+                # Constraining parameters to their calculated solutions
+                state.add_constraint(Equal(self.offset_val, offset_sol))
+                state.add_constraint(Equal(self.size_val, size_sol))
+
+                # Constraining the fresh SHA symbol to its solution given this buffer 
+                state.add_constraint(Equal(state.registers[self.res1_var], BVV(int(res,16), 256)))
+                
+                # Just set the solution here
+                state.registers[self.res1_var] = BVV(int(res,16),256)
+
+        # instantiate ackermann constraints (skip if both are concrete)
+        for sha in state.sha_observed:
+            if new_sha.is_concrete and sha.is_concrete:
+                continue
+            new_sha.instantiate_ackermann_constraints(sha)
 
         state.set_next_pc()
         return [state]

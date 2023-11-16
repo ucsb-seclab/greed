@@ -123,6 +123,7 @@ class Yices2(Solver):
         cfg = yices.Config()
         cfg.default_config_for_logic('QF_ABV')
         self.solver = yices.Context(cfg)
+        self.timed_out = False
 
     def BVSort(self, width: int) -> YicesTypeBV:
         assert isinstance(width, int), f"Expected type int, got {type(width)}"

@@ -37,6 +37,8 @@ class Sha3(LambdaMemory):
         # of bytes 'size' starting from 'start'
         self.memcopy(BVV(0, 256), self.memory.copy(state), start, size)
 
+        self.is_concrete = False
+
         # TODO: we somehow want to make sure that there is never a constraint of the type SHA3_<x> == 0xhardcoded
 
     def instantiate_ackermann_constraints(self, other):
@@ -81,5 +83,7 @@ class Sha3(LambdaMemory):
         new_sha_memory.start = self.start
         new_sha_memory.size = self.size
         new_sha_memory.max_size = self.max_size
+
+        new_sha_memory.is_concrete = self.is_concrete
         
         return new_sha_memory

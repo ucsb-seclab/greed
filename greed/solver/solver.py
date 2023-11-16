@@ -2,6 +2,7 @@ import logging
 import threading
 
 from greed import options
+from greed.utils.exceptions import SolverTimeout
 
 from yices.YicesException import YicesException
 
@@ -12,6 +13,7 @@ class Solver:
     @staticmethod
     def solver_timeout(func):
         def raise_solver_timeout(self):
+            self.timed_out = True
             self.solver.stop_search()
             log.warning("Solver timeout, stopping search")
 
@@ -21,12 +23,16 @@ class Solver:
             timer.start()
             try:
                 result = func(self, *args, **kwargs)
+                if self.timed_out:
+                    raise SolverTimeout
                 return result
             except YicesException:
-                log.warning("Something went wrong with the solver, returning False")
-                return False
+                if self.timed_out:
+                    raise SolverTimeout
+                raise
             finally:
                 timer.cancel()
+                self.timed_out = False
 
         return wrap
 
