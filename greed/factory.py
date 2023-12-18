@@ -1,14 +1,22 @@
+import typing
 import logging
 
 from greed.block import Block
 from greed.sim_manager import SimulationManager
 from greed.state import SymbolicEVMState
 
+if typing.TYPE_CHECKING:
+    from greed.project import Project
+    from greed.TAC import TAC_Statement
+    from greed.function import TAC_Function
+
 
 log = logging.getLogger(__name__)
 
 
 class Factory:
+    project: 'Project'
+
     def __init__(self, project: "Project"):
         self.project = project
 

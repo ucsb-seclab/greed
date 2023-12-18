@@ -1,5 +1,6 @@
 import datetime
 import logging
+import typing
 
 from greed import options as opt
 from greed.memory import LambdaMemory, PartialConcreteStorage
@@ -11,9 +12,28 @@ from greed.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
 
+if typing.TYPE_CHECKING:
+    from greed.project import Project
+
 
 class SymbolicEVMState:
     uuid_generator = UUIDGenerator()
+    xid: int
+    project: "Project"
+    code: bytes
+    uuid: int
+    active_plugins: typing.Dict[str, SimStatePlugin]
+    _pc: str
+    trace: typing.List[str]
+    memory: LambdaMemory
+    options: typing.Dict[str, typing.Any]
+    registers: typing.Dict[str, typing.Any]
+
+    # default plugins
+    solver: SimStateSolver
+    globals: SimStateGlobals
+    inspect: SimStateInspect
+
 
     def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None, partial_concrete_storage=False):
         self.xid = xid
@@ -158,7 +178,7 @@ class SymbolicEVMState:
             self.ctx["CALLVALUE"] = BVV(init_ctx["CALLVALUE"], 256)
 
     @property
-    def pc(self):
+    def pc(self) -> str:
         return self._pc
 
     @property
@@ -170,7 +190,7 @@ class SymbolicEVMState:
         return self.solver.constraints
 
     @pc.setter
-    def pc(self, value):
+    def pc(self, value: str):
         self._pc = value
 
     def set_next_pc(self):
