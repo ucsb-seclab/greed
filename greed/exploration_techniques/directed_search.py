@@ -18,6 +18,10 @@ class DirectedSearch(ExplorationTechnique):
     simgr.use_technique(dfs)
 
     simgr.run(find=lambda s: s.curr_stmt.id == target_stmt_id)
+
+    Args:
+        target_stmt: the target Statement that we want to reach
+        pruned_stash: the name of the stash where pruned states are put
     """
     def __init__(self, target_stmt, pruned_stash='pruned'):
         super(DirectedSearch, self).__init__()
@@ -26,12 +30,23 @@ class DirectedSearch(ExplorationTechnique):
         self.pruned_stash = pruned_stash
 
     def setup(self, simgr):
+        """
+        Setup the technique.
+        Args:
+            simgr: the simulation manager
+        """
         self._target_block = simgr.project.factory.block(self._target_stmt.block_id)
 
         for s in simgr.states:
             s.globals['directed_search_distance'] = None
 
     def check_successors(self, simgr, successors):
+        """
+        Calculate the successors that can reach the target block, otherwise prune them.
+        Args:
+            simgr: the simulation manager
+            successors: the successors to check
+        """
         new_successors = []
         pruned_cnt = 0
         for succ in successors:
@@ -48,9 +63,18 @@ class DirectedSearch(ExplorationTechnique):
             log.debug(f"Pruned {pruned_cnt}/{len(successors)} successors")
         return new_successors
 
-    # Check if the current state can reach 'block_b'
     @staticmethod
     def _is_reachable(state_a, block_b, factory, callgraph):
+        """
+        Check if 'state_a' can reach 'block_b'
+        Args:
+            state_a: the state
+            block_b: the target block
+            factory: the factory
+            callgraph: the callgraph
+        Returns:
+            True and the distance if reachable, False and None otherwise
+        """
         block_a = factory.block(state_a.curr_stmt.block_id)
         reachable, dist = DirectedSearch._is_reachable_without_returns(block_a, block_b, factory, callgraph)
         if reachable:
@@ -89,9 +113,18 @@ class DirectedSearch(ExplorationTechnique):
             log.debug(f"[PRUNED] {state_a} -> {block_b} not reachable with returns")
             return False, None
 
-    # Check if 'block_a' can reach 'block_b'
     @staticmethod
     def _is_reachable_without_returns(block_a, block_b, factory, callgraph):
+        """
+        Check if 'block_a' can reach 'block_b' without using returns
+        Args:
+            block_a: the block
+            block_b: the target block
+            factory: the factory
+            callgraph: the callgraph
+        Returns:
+            True and the distance if reachable, False and None otherwise
+        """
         function_a = block_a.function
         function_b = block_b.function
         if block_a == block_b:

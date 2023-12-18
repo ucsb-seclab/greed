@@ -40,6 +40,9 @@ class SimgrViz(ExplorationTechnique):
 
     @staticmethod
     def _get_state_hash(state):
+        """
+        Calculate a unique hash for the state.
+        """
         h = hashlib.sha256()
         h.update(str(state.pc).encode("utf-8"))
         h.update(str(state.callstack).encode("utf-8"))
@@ -51,6 +54,9 @@ class SimgrViz(ExplorationTechnique):
         return str(h_hexdigest)
 
     def _add_node(self, state):
+        """
+        Add a node to the graph.
+        """
         state_id = self._get_state_hash(state)
         if state_id in self._simgGraph:
             return state_id
@@ -64,9 +70,16 @@ class SimgrViz(ExplorationTechnique):
         return state_id
 
     def _add_edge(self, new_state_id, parent_state_id):
+        """
+        Add an edge to the graph.
+        """
         self._simgGraph.add_edge(new_state_id, parent_state_id)
 
     def _dump_graph(self):
+        """
+        Dump the graph to a .dot file.
+        The dumped graph is located in the /tmp/ directory and its name is printed in the log.
+        """
         output_filename = tempfile.NamedTemporaryFile(prefix="greed_simgrviz_", suffix=".dot", delete=False).name
         log.info(f"Dumping simgrviz .dot output to file {output_filename}")
 

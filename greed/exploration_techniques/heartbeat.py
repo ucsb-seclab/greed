@@ -12,6 +12,9 @@ class HeartBeat(ExplorationTechnique):
     This Exploration technique implements a Classic heartbeat.
     The heartbeat file will be logged during __init__.
     Delete such file to stop the heartbeat and get an ipdb shell.
+    Args:
+        beat_interval: the number of steps between heartbeats
+        show_op: show the current operation during the heartbeat
     """
     def __init__(self, beat_interval=100, show_op=False):
         super(HeartBeat, self).__init__()
@@ -23,6 +26,12 @@ class HeartBeat(ExplorationTechnique):
         self.show_op = show_op
  
     def check_successors(self, simgr, successors):
+        """
+        Check if the heartbeat should be printed.
+        Args:
+            simgr: the simulation manager
+            successors: the successors to check
+        """
         self.beat_cnt += 1
         self.steps_cnt += 1
         if self.beat_cnt == self.beat_interval:
@@ -39,5 +48,10 @@ class HeartBeat(ExplorationTechnique):
         return successors
     
     def change_beat(self, new_beat_interval):
+        """
+        Change the beat interval.
+        Args:
+            new_beat_interval: the new beat interval.
+        """
         self.beat_interval = new_beat_interval
         self.beat_cnt = 0

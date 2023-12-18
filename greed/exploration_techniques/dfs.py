@@ -4,16 +4,30 @@ from . import ExplorationTechnique
 class DFS(ExplorationTechnique):
     """
     This Exploration technique implements a Classic Depth-First Search exploration
+    Args:
+        deferred_stash: the name of the stash where deferred states are put
     """
     def __init__(self, deferred_stash='deferred'):
         super(DFS, self).__init__()
         self.deferred_stash = deferred_stash
 
     def setup(self, simgr):
+        """
+        Setup the technique.
+        Args:
+            simgr: the simulation manager
+        """
         if self.deferred_stash not in simgr.stashes:
             simgr.stashes[self.deferred_stash] = []
 
     def check_stashes(self, simgr, stashes, stash='active'):
+        """
+        If multiple states are in the active stash, move all but the oldest to the deferred stash.
+        Args:
+            simgr: the simulation manager
+            stashes: the stashes
+            stash: the name of the stash to check
+        """
         if len(stashes[stash]) > 1:
             # Pick the oldest state
             keep = sorted(stashes[stash], key=lambda s: s.uuid)[0]
@@ -28,6 +42,12 @@ class DFS(ExplorationTechnique):
         return stashes
 
     def is_complete(self, simgr, stash='active'):
+        """
+        Check if the exploration is complete: there are no active states, and no deferred states.
+        Args:
+            simgr: the simulation manager
+            stash: the name of the stash to check
+        """
         # We are done if there are no active, or, no deferred.
         if len(simgr.stashes[stash]) == 0 and len(simgr.stashes[self.deferred_stash]) == 0:
             return True

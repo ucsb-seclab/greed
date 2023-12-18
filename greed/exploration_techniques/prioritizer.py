@@ -7,7 +7,12 @@ log = logging.getLogger(__name__)
 
 class Prioritizer(ExplorationTechnique):
     """
-    This Exploration technique implements a Classic Depth-First Search exploration
+    This Exploration technique implements a DFS with prioritization of states.
+    The prioritization is done by a scoring function that is applied to each state.
+    For instance, the scoring function can be the distance (in basic blocks) from a target statement.
+    Args:
+        scoring_function: the scoring function
+        deferred_stash: the name of the stash where deferred states are put
     """
     def __init__(self, scoring_function, deferred_stash='deferred'):
         super(Prioritizer, self).__init__()

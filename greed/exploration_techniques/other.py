@@ -10,11 +10,21 @@ log = logging.getLogger(__name__)
 
 
 class Whitelist(ExplorationTechnique):
+    """
+    This technique skips all statements that are not in the whitelist until one of them is reached.
+    The result variables of the skipped statements are set to a fresh symbolic variable.
+    Args:
+        whitelist: the list of statements' names in the whitelist (e.g., ["MSTORE", "MLOAD"])
+    """
     def __init__(self, whitelist):
         super().__init__()
         self.whitelist = whitelist
 
     def check_state(self, simgr, state):
+        """
+        Check if the current statement is in the whitelist.
+        If not, skip to the next statement.
+        """
         while state.curr_stmt.__internal_name__ not in self.whitelist:
             # stub res vars
             for res_var in state.curr_stmt.res_vars:
@@ -25,15 +35,33 @@ class Whitelist(ExplorationTechnique):
 
 
 class LoopLimiter(ExplorationTechnique):
+    """
+    This technique limits the number of times a loop can be executed.
+    When the limit is reached, the state is halted.
+    Args:
+        n: the maximum number of times a loop can be executed
+    """
     def __init__(self, n):
         super().__init__()
         self.n = n
 
     def setup(self, simgr):
+        """
+        Setup the technique.
+        Args:
+            simgr: the simulation manager
+        """
         for state in simgr.states:
             state.globals["loop_counter"] = defaultdict(int)
 
     def check_state(self, simgr, state):
+        """
+        Check if the loop has been executed more than n times.
+        If so, halt the state.
+        Args:
+            simgr: the simulation manager
+            state: the state to check
+        """
         state.globals["loop_counter"][state.pc] += 1
         if state.globals["loop_counter"][state.pc] > self.n:
             state.halt = True
@@ -42,6 +70,9 @@ class LoopLimiter(ExplorationTechnique):
     
 
 class MstoreConcretizer(ExplorationTechnique):
+    """
+    This technique concretizes the offset of MSTOREs.
+    """
     def __init__(self):
         super().__init__()
 
@@ -60,6 +91,12 @@ class MstoreConcretizer(ExplorationTechnique):
         self.relevant_mstores = None
 
     def setup(self, simgr, _debug=False):
+        """
+        Setup the technique.
+        Args:
+            simgr: the simulation manager
+            _debug: whether to print debug info
+        """
         self.debug = _debug
 
         for s in simgr.states:
