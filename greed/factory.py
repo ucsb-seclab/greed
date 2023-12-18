@@ -15,6 +15,14 @@ log = logging.getLogger(__name__)
 
 
 class Factory:
+    """
+    This class is used as a constructor of different objects: 
+    - SimulationManager
+    - SimState
+    - Block
+    - TAC_Statement
+    - TAC_Function
+    """
     project: 'Project'
 
     def __init__(self, project: "Project"):

@@ -13,7 +13,18 @@ log = logging.getLogger(__name__)
 
 
 class SimulationManager:
+    """
+    This class is the main class for running the symbolic execution.
+    The simulation manager is responsible for keeping track of the states,
+    and for moving them between the different stashes according to the employed
+    exploration techniques.
+    """
     def __init__(self, entry_state: SymbolicEVMState, project):
+        """
+        Args:
+            entry_state: The entry state of the simulation manager
+            project: The greed project
+        """
         self.project = project
         self._halt = False
         self._techniques = []
@@ -34,41 +45,49 @@ class SimulationManager:
         self.active.append(entry_state)
 
     def set_error(self, s: str):
+        """
+        Set an error to the simulation manager
+        """
         log.error(f'[ERROR] {s}')
         self.error += [s]
 
     @property
     def states(self) -> List[SymbolicEVMState]:
         """
-        :return: All the states
+        Returns:
+            All the states in the simulation manager
         """
         return sum(self.stashes.values(), [])
 
     @property
     def active(self) -> List[SymbolicEVMState]:
         """
-        :return: Active stash
+        Returns:
+            All the active states
         """
         return self.stashes['active']
 
     @property
     def deadended(self) -> List[SymbolicEVMState]:
         """
-        :return: Deadended stash
+        Returns:
+            All the deadended states (halted states)
         """
         return self.stashes['deadended']
 
     @property
     def found(self) -> List[SymbolicEVMState]:
         """
-        :return: Found stash
+        Returns:
+            All the found states (states that met the `find` condition)
         """
         return self.stashes['found']
 
     @property
     def one_active(self) -> Optional[SymbolicEVMState]:
         """
-        :return: First element of the active stash, or None if the stash is empty
+        Returns:
+            First element of the active stash, or None if the stash is empty
         """
         if len(self.stashes['active']) > 0:
             return self.stashes['active'][0]
@@ -78,7 +97,8 @@ class SimulationManager:
     @property
     def one_deadended(self) -> Optional[SymbolicEVMState]:
         """
-        :return: First element of the deadended stash, or None if the stash is empty
+        Returns:
+            First element of the deadended stash, or None if the stash is empty
         """
         if len(self.stashes['deadended']) > 0:
             return self.stashes['deadended'][0]
@@ -88,7 +108,8 @@ class SimulationManager:
     @property
     def one_found(self) -> Optional[SymbolicEVMState]:
         """
-        :return: First element of the found stash, or None if the stash is empty
+        Returns:
+            First element of the found stash, or None if the stash is empty
         """
         if len(self.stashes['found']) > 0:
             return self.stashes['found'][0]
@@ -96,6 +117,9 @@ class SimulationManager:
             return None
 
     def use_technique(self, technique: "ExplorationTechnique"):
+        """
+        Install an exploration technique in the simulation manager.
+        """
         technique.project = self.project
         technique.setup(self)
         self._techniques.append(technique)
@@ -104,10 +128,10 @@ class SimulationManager:
     def move(self, from_stash: str, to_stash: str, filter_func: Callable[[SymbolicEVMState], bool] = lambda s: True):
         """
         Move all the states that meet the filter_func condition from from_stash to to_stash
-        :param from_stash: Source stash
-        :param to_stash: Destination Stash
-        :param filter_func: A function that discriminates what states should be moved
-        :return: None
+        Args:
+            from_stash: Source stash
+            to_stash: Destination Stash
+            filter_func: A function that discriminates what states should be moved
         """
         for s in list(self.stashes[from_stash]):
             if filter_func(s):
@@ -116,6 +140,12 @@ class SimulationManager:
 
     def step(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
                    prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
+        """
+        Step the simulation manager, i.e., step all the active states.
+        Args:
+            find: A function that discriminates what states should be moved to the found stash
+            prune: A function that discriminates what states should be moved to the pruned stash
+        """
         log.debug('-' * 30)
         new_active = list()
         # Let the techniques manipulate the stashes
@@ -150,6 +180,15 @@ class SimulationManager:
             s.solver.dispose_context()
 
     def single_step_state(self, state: SymbolicEVMState) -> List[SymbolicEVMState]:
+        """
+        Step a single state (calculate its successors)
+        Args:
+            state: The state to step
+        Returns:
+            The successors of the state
+        Raises:
+            Exception: If something goes wrong while generating the successors
+        """
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
@@ -206,9 +245,12 @@ class SimulationManager:
                 T1(check_stashes) -> T2(check_stashes) -> T1(check_state) -> T2(check_state) 
                     -> T1(check_successors) -> T2(check_successors)
 
-        :param find: Function that will be called after each step. The matching states will be moved to the found stash
-        :param prune: Function that will be called after each step. The matching states will be moved to the pruned stash
-        :return: None
+        Args:
+            find: Function that will be called after each step. The matching states will be moved to the found stash
+            prune: Function that will be called after each step. The matching states will be moved to the pruned stash
+            find_all: If True, the analysis will continue until all the ET meet the `find` condition
+        Raises:
+            Exception: If something goes wrong while stepping the simulation manager
         """
         try:
             # We iterate until we have active states, 
@@ -233,6 +275,16 @@ class SimulationManager:
 
     def findall(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
             prune: Callable[[SymbolicEVMState], bool] = lambda s: False):
+        """
+        Run the simulation manager, until the `find` condition of all the ET is met.
+        Args:
+            find: Function that will be called after each step. The matching states will be moved to the found stash
+            prune: Function that will be called after each step. The matching states will be moved to the pruned stash
+        Yield:
+            The found states
+        Raises:
+            Exception: If something goes wrong while stepping the simulation manager
+        """
         try:
             while len(self.active) > 0 or (self._techniques != [] and not(all([t.is_complete(self) for t in self._techniques]))):
                 if self._halt:

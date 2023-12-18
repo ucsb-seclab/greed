@@ -17,6 +17,9 @@ if typing.TYPE_CHECKING:
 
 
 class SymbolicEVMState:
+    """
+    This class represents a symbolic EVM state (SimState).
+    """
     uuid_generator = UUIDGenerator()
     xid: int
     project: "Project"
@@ -36,6 +39,16 @@ class SymbolicEVMState:
 
 
     def __init__(self, xid, project, partial_init=False, init_ctx=None, options=None, max_calldatasize=None, partial_concrete_storage=False):
+        """
+        Args:
+            xid: The execution id 
+            project: the greed project
+            partial_init: Whether to partially initialize the object or not
+            init_ctx: The initial context of the state (e.g., CALLER, ADDRESS, BALANCE, etc.)
+            options: The options for this state
+            max_calldatasize: The maximum size of the calldata
+            partial_concrete_storage: Whether to use the partial concrete storage or not
+        """
         self.xid = xid
         self.project = project
         self.code = project.code
@@ -88,6 +101,11 @@ class SymbolicEVMState:
             self.storage = PartialConcreteStorage(tag=f"PCONCR_STORAGE_{self.xid}", value_sort=BVSort(256), state=self)
 
     def set_init_ctx(self, init_ctx=None):
+        """
+        This method applies the initial context to the state.
+        Args:
+            init_ctx: A dict storing the initial context of the state (e.g., CALLER, ADDRESS, BALANCE, etc.)
+        """
         init_ctx = init_ctx or dict()
 
         if "CALLDATASIZE" in init_ctx:
@@ -194,6 +212,12 @@ class SymbolicEVMState:
         self._pc = value
 
     def set_next_pc(self):
+        """
+        This method sets the next pc to the state.
+        Raises:
+            VMNoSuccessors: If there are no successors
+            VMUnexpectedSuccessors: If the successor does not match any of the expected successors
+        """
         try:
             curr_bb = self.project.factory.block(self.curr_stmt.block_id)
             stmt_list_idx = curr_bb.statements.index(self.curr_stmt)
@@ -208,6 +232,9 @@ class SymbolicEVMState:
             self.halt = True
 
     def get_fallthrough_pc(self):
+        """
+        This method returns the fallthrough pc of the current state
+        """
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
 
         if len(curr_bb.succ) == 0:
@@ -227,6 +254,9 @@ class SymbolicEVMState:
             return fallthrough_bb.first_ins.id
 
     def get_non_fallthrough_pc(self, destination_val):
+        """
+        This method returns the non fallthrough pc of the current state.
+        """
         curr_bb = self.project.factory.block(self.curr_stmt.block_id)
 
         if not is_concrete(destination_val):
@@ -249,6 +279,9 @@ class SymbolicEVMState:
         return non_fallthrough_bb.first_ins.id
     
     def add_constraint(self, constraint):
+        """
+        This method adds a constraint to the state.
+        """
         # Here you can inspect the constraints being added to the state.
         if opt.STATE_STOP_AT_ADDCONSTRAINT in self.options:
             import ipdb; ipdb.set_trace()
@@ -257,18 +290,27 @@ class SymbolicEVMState:
     # Add here any default plugin that we want to ship
     # with a fresh state.
     def _register_default_plugins(self):
+        """
+        This method registers the default plugins to the state.
+        """
         self.register_plugin("solver", SimStateSolver())
         self.register_plugin("globals", SimStateGlobals())
         if opt.STATE_INSPECT:
             self.register_plugin("inspect", SimStateInspect())
 
     def register_plugin(self, name: str, plugin: SimStatePlugin):
+        """
+        This method registers a plugin to the state.
+        """
         self.active_plugins[name] = plugin
         setattr(self, name, plugin)
         plugin.set_state(self)
         return plugin
 
     def copy(self):
+        """
+        Deep copy of the SimState.
+        """
         # assume unchanged xid
         new_state = SymbolicEVMState(self.xid, project=self.project, partial_init=True)
 
@@ -305,6 +347,9 @@ class SymbolicEVMState:
         return new_state
 
     def reset(self, xid):
+        """
+        This method resets the state.
+        """
         self.xid = xid
         self.uuid = SymbolicEVMState.uuid_generator.next()
 

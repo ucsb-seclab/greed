@@ -12,7 +12,15 @@ log = logging.getLogger(__name__)
 
 
 class Project(object):
+    """
+    This is the main class for creating a greed Project!
+    """
     def __init__(self, target_dir: str):
+        """
+        Args:
+            target_dir: The directory containing the contract.hex file and 
+            all the GigaHorse output files.
+        """
         # Load the contract code
         with open(f"{target_dir}/contract.hex", "rb") as contract_file:
             self.code = contract_file.read()
@@ -47,6 +55,11 @@ class Project(object):
                 self.callgraph.add_edge(source_function, target_function)
         
     def dump_callgraph(self, filename):
+        """
+        Dump the callgraph in a dot file.
+        Args:
+            filename: The name of the file where to dump the callgraph.
+        """
         dot = "digraph g {\n"
         dot += "splines=ortho;\n"
         dot += "node[fontname=\"courier\"];\n"

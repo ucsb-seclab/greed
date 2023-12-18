@@ -7,6 +7,9 @@ log = logging.getLogger(__name__)
 
 
 class CFG(object):
+    """
+    This class represents a CFG of a function.
+    """
     def __init__(self):
 
         self.graph = nx.DiGraph()
@@ -45,11 +48,19 @@ class CFG(object):
 
     @property
     def dominators(self):
+        """
+        Compute the dominators of the CFG.
+        """
         if not self._dominators:
             self._dominators = {k: v for k, v in nx.immediate_dominators(self.graph, 0).items()}
         return self._dominators
 
     def dump(self, filename):
+        """
+        Dump the CFG to a .dot file.
+        Args:
+            filename: The name of the output file.
+        """
         log.info(f"Dumping cfg .dot output to file {filename}")
 
         dot = "digraph g {\n"

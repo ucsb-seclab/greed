@@ -12,14 +12,20 @@ from greed.solver.shortcuts import *
 
 log = logging.getLogger(__name__)
 
-# id: block id at wich the function start
-# signature: four bytes signature of the function
-# name: full prototype of the function if retrieved by Gigahorse
-# public: wether the function is public or not
-# blocks: list of blocks belonging to this function
-# arguments: TAC names of the arguments of this function
 class TAC_Function:
+    """
+    This class represents a TAC function.
+    """
     def __init__(self, id: str, signature: str, name: str, public: bool, blocks: List[Block], arguments: List[str]):
+        """
+        Args:
+            id: The id of the function
+            signature: The signature of the function
+            name: The name of the function
+            public: Whether the function is public or not
+            blocks: The list of blocks that compose the function
+            arguments: The list of arguments of the function
+        """
         self.id = id
         self.signature = signature
         self.name = name
@@ -51,8 +57,14 @@ class TAC_Function:
                     call_targets[stmt.block_id] = target_bb_id
         return call_targets
 
-    # Building the intra-functional CFG of a target function.
+
     def build_cfg(self, factory: Factory, tac_block_succ: Mapping[str, List[str]]):
+        """
+        Building the intra-functional CFG of a target function.
+        Args:
+            factory: The factory object
+            tac_block_succ: The mapping between block ids and their successors
+        """
         cfg = CFG()
         for bb in self.blocks:
             bb.cfg = cfg
@@ -71,6 +83,9 @@ class TAC_Function:
         return cfg
     
     def build_use_def_graph(self):
+        """
+        Building the use-def graph of a target function.
+        """
         for bb in self.blocks:
             for stmt in bb.statements:
                 # Declare the statement node 
@@ -109,6 +124,11 @@ class TAC_Function:
 
     
     def dump_use_def_graph(self,filename):
+        """
+        Dump the use-def graph to a .dot file.
+        Args:
+            filename: The name of the output file.
+        """
         log.info(f"Dumping usedef .dot output to file {filename}")
 
         dot = "digraph g {\n"

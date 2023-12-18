@@ -6,11 +6,20 @@ from greed.utils.extra import UUIDGenerator
 
 class Sha3(LambdaMemory):
     """
-    SHA3 needs to be of type LambdaMemory to allow the (bounded) comparison between two SHA(s) (see ca. line 50).
+    This class represents the memory used as a input buffer for the SHA3 operation.
+    (SHA3 needs to be of type LambdaMemory to allow the (bounded) comparison between two SHA(s) (see ca. line 50))
     """
     uuid_generator = UUIDGenerator()
 
     def __init__(self, state=None, memory=None, start=None, size=None, partial_init=False):
+        """
+        Args:
+            state: The SimState that triggers the SHA3 operation
+            memory: The memory associated to the SimState
+            start: The start of the input buffer for the SHA3 operation
+            size: The size of the input buffer for the SHA3 operation
+            partial_init: Whether to partially initialize the object or not
+        """
 
         if partial_init:
             return 
@@ -42,6 +51,11 @@ class Sha3(LambdaMemory):
         # TODO: we somehow want to make sure that there is never a constraint of the type SHA3_<x> == 0xhardcoded
 
     def instantiate_ackermann_constraints(self, other):
+        """
+        This method instantiates the Ackermann constraints between the two SHA(s).
+        Args:
+            other: The other SHA3 object
+        """
         assert isinstance(other, Sha3)
 
         sha_data_len_is_equal = Equal(self.size, other.size)
@@ -67,6 +81,11 @@ class Sha3(LambdaMemory):
         self.add_constraint(bounded_ackermann_constraint)
     
     def copy(self, new_state):
+        """
+        Deep copy of the object.
+        Args:
+            new_state: The new state
+        """
         new_sha_memory = Sha3(partial_init=True)
         new_sha_memory.uuid = self.uuid
         new_sha_memory.tag = self.tag
