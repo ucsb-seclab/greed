@@ -1,4 +1,4 @@
-# 🚀 Advanced Topics
+# 🎓 Advanced Topics
 
 
 ## State Plugins
@@ -60,7 +60,7 @@ Currently we do not ship greed with a support for external calls, i.e., whenever
 
 While this can be enough for certain analyses, some other times it might be important to follow the execution flow and keep executing the opcode in the target contract (of the call). This is currently a feature that must be implemented on top of greed.
 
-???+ note
+???+ warning
        Implementing this feature requires particular care, especially in cases of re-entrant code.
 
 

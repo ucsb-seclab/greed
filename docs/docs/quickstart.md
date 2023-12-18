@@ -4,8 +4,8 @@
 
 ## Installing from Source
 
-???+ note
-       We strongly suggest using a python virtual environment rather than installing
+???+ tip
+       ⭐️ We strongly suggest using a python virtual environment rather than installing
        greed globally. Doing so reduces dependency conflicts and aids in
        reproducibility while debugging. Some popular tools that accomplish this
        include [virtualenv](https://virtualenv.pypa.io/en/latest/) and [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/).
@@ -39,10 +39,5 @@ analyze_contract_hex.sh contract.hex
 The bytecode analyses should work on any system where gigahorse can be properly compiled.
 
 
-## Troubleshooting
-Any Common problem?
-
-
-
-## Reporting Bugs
-How to report bugs 🐞
+## Reporting Bugs 🪳
+Please report any bugs through the [Issue](https://github.com/ucsb-seclab/greed/issues) section on our GitHub! If you can provide a POC for your issue it would greatly speed up the resolution of your problem :)
