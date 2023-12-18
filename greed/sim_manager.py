@@ -1,10 +1,13 @@
 import logging
 import os
 import sys
-from typing import Callable
+from typing import Callable, List, Optional, TYPE_CHECKING
 
 from greed import options
 from greed.state import SymbolicEVMState
+
+if TYPE_CHECKING:
+    from greed.exploration_techniques import ExplorationTechnique
 
 log = logging.getLogger(__name__)
 
@@ -35,35 +38,35 @@ class SimulationManager:
         self.error += [s]
 
     @property
-    def states(self):
+    def states(self) -> List[SymbolicEVMState]:
         """
         :return: All the states
         """
         return sum(self.stashes.values(), [])
 
     @property
-    def active(self):
+    def active(self) -> List[SymbolicEVMState]:
         """
         :return: Active stash
         """
         return self.stashes['active']
 
     @property
-    def deadended(self):
+    def deadended(self) -> List[SymbolicEVMState]:
         """
         :return: Deadended stash
         """
         return self.stashes['deadended']
 
     @property
-    def found(self):
+    def found(self) -> List[SymbolicEVMState]:
         """
         :return: Found stash
         """
         return self.stashes['found']
 
     @property
-    def one_active(self):
+    def one_active(self) -> Optional[SymbolicEVMState]:
         """
         :return: First element of the active stash, or None if the stash is empty
         """
@@ -73,7 +76,7 @@ class SimulationManager:
             return None
 
     @property
-    def one_deadended(self):
+    def one_deadended(self) -> Optional[SymbolicEVMState]:
         """
         :return: First element of the deadended stash, or None if the stash is empty
         """
@@ -83,7 +86,7 @@ class SimulationManager:
             return None
 
     @property
-    def one_found(self):
+    def one_found(self) -> Optional[SymbolicEVMState]:
         """
         :return: First element of the found stash, or None if the stash is empty
         """
@@ -146,7 +149,7 @@ class SimulationManager:
         for s in self.stashes['pruned'] + self.stashes['unsat'] + self.stashes['errored']:
             s.solver.dispose_context()
 
-    def single_step_state(self, state: SymbolicEVMState):
+    def single_step_state(self, state: SymbolicEVMState) -> List[SymbolicEVMState]:
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 

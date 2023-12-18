@@ -3,11 +3,14 @@ import logging
 from greed import options
 from greed.solver.shortcuts import *
 from greed.state_plugins import SimStatePlugin
+from greed.solver.solver import Solver
 
 log = logging.getLogger(__name__)
 
 
 class SimStateSolver(SimStatePlugin):
+    _solver: Solver
+
     def __init__(self, partial_init=False):
         super(SimStateSolver, self).__init__()
 
@@ -41,14 +44,14 @@ class SimStateSolver(SimStatePlugin):
         # Adding the constraints to the backend
         self._solver.add_assertions(assertions)
 
-    def push(self):
+    def push(self) -> int:
         self._curr_frame_level += 1
         self._path_constraints[self._curr_frame_level] = set()
         self._memory_constraints[self._curr_frame_level] = set()
         self._solver.push()
         return self._curr_frame_level
 
-    def pop(self):
+    def pop(self) -> int:
         if self._curr_frame_level == 0:
             log.fatal("Cannot pop() level 0 frame")
             return self._curr_frame_level
@@ -184,7 +187,7 @@ class SimStateSolver(SimStatePlugin):
         else:
             return f"{int_value:0{bv_unsigned_value(length)*2}x}"
 
-    def copy(self):
+    def copy(self) -> 'SimStateSolver':
         new_solver = SimStateSolver(partial_init=True)
         new_solver._solver = self._solver.copy()
 
