@@ -5,6 +5,9 @@ import yices
 
 from greed.solver import Solver
 
+"""
+Solver interface implementation for Yices2, refer to the Solver interface for documentation.
+"""
 
 class YicesTerm:
     def __init__(self, yices_id, operator=None, children=None, name=None, value=None):

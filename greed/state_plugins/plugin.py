@@ -1,4 +1,8 @@
+
 class SimStatePlugin:
+    """
+    Interface for SimState plugins.
+    """
     def __init__(self):
         self.state = None
         return
