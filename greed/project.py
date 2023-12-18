@@ -24,7 +24,7 @@ class Project(object):
             all the GigaHorse output files.
         """
         # Load the contract code
-        with open(f"{target_dir}/contract.hex", "rb") as contract_file:
+        with open(f"{target_dir}/bytecode.hex", "rb") as contract_file:
             self.code = contract_file.read()
 
         self.factory = Factory(project=self)
