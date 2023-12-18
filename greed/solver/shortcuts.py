@@ -1,3 +1,7 @@
+"""
+This module provides shortcuts to the solver API to be used in greed scripts.
+"""
+
 __all__ = [
     "ctx_or_symbolic", "concretize", "BVSort", "BVV", "BVS", "Array", "If", "Equal", "NotEqual", "Or", "And",
     "Not", "bv_unsigned_value", "get_bv_by_name", "is_concrete", "BV_Extract", "BV_Concat", "BV_Add", "BV_Sub",
@@ -17,6 +21,15 @@ else:
 
 
 def ctx_or_symbolic(v, ctx, xid, nbits=256):
+    """
+    Given a variable name, if the var is in the context, return it, 
+    otherwise create a new symbolic variable.
+    Args:
+        v: The variable name
+        ctx: The context
+        xid: The transaction id
+        nbits: The number of bits of the symbolic variable
+    """
     if v not in ctx:
         assert nbits <= 256
         ctx[v] = BVS(f'{v}_{xid}', nbits)
@@ -26,6 +39,18 @@ def ctx_or_symbolic(v, ctx, xid, nbits=256):
 
 
 def concretize(state, val, force=False):
+    """
+    Given a value, if it is concrete, return it, otherwise 
+    if the symbolic variable has only one possible solution, return it.
+    If the symbolic variable has multiple possible solutions and force is True,
+    add a constraint and return one of the possible solutions.
+    Args:
+        state: The state
+        val: The value
+        force: Whether to force the concretization
+    Returns:
+        The concrete value or None
+    """
     if is_concrete(val):
         return val
     else:
@@ -43,7 +68,6 @@ def concretize(state, val, force=False):
 
 
 # TYPES
-
 
 def BVSort(width):
     return _SOLVER.BVSort(width)
