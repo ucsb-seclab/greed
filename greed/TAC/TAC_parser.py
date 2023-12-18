@@ -2,7 +2,8 @@ import itertools
 import json
 import logging
 import os
-import sha3
+
+from eth_utils import keccak
 
 from ast import literal_eval
 from collections import defaultdict
@@ -291,9 +292,8 @@ class TAC_parser:
         funcs = [e for e in abi if e['type'] == 'function']
         for f in funcs:
             f_proto = f['name'] + '(' + ",".join([i['internalType'] for i in f['inputs']]) + ')'
-            k = sha3.keccak_256()
-            k.update(f_proto.encode('utf-8'))
-            sig_to_name[f"0x{k.hexdigest()[0:8]}"] = f_proto
+            hexdigest = bytes(keccak(f_proto.encode('utf-8'))).hex()
+            sig_to_name[f"0x{hexdigest[0:8]}"] = f_proto
 
         # Set the function names
         for f in self.factory.project.function_at.values():
