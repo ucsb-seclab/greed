@@ -31,9 +31,8 @@ class LambdaConstraint:
         Instantiate the constraint (on read)
         Args:
             index: The read index
-
-        Returns: All instantiated constraints (recursively from the LambdaConstraint hierarchy)
-
+        Returns: 
+            All instantiated constraints (recursively from the LambdaConstraint hierarchy)
         """
         return []
 
@@ -52,12 +51,26 @@ class LambdaMemsetConstraint(LambdaConstraint):
     Uninstantiated memset constraint
     """
     def __init__(self, array, start, value, size, new_array, parent):
+        """
+        Args:
+            array: the SMT array on which the memset is applied
+            start: the start index
+            value: the value to write
+            size: how many bytes to write
+            new_array: the new array (after the memset)
+            parent: the parent LambdaConstraint
+        """
         super().__init__(array, new_array, parent)
         self.start = start
         self.value = value
         self.size = size
 
     def instantiate(self, index):
+        """
+        Instantiate the constraint (on read)
+        Args:
+            index: The read index
+        """
         if index in self.following_writes:
             return []
 
@@ -70,6 +83,11 @@ class LambdaMemsetConstraint(LambdaConstraint):
         return [instance] + self.parent.instantiate(index)
 
     def copy(self, new_state):
+        """
+        Copy the constraint (on state copy)
+        Args:
+            new_state: the new state
+        """
         new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
         new_lambda_constraint = LambdaMemsetConstraint(array=self.array, start=self.start, value=self.value, size=self.size,
                                                        new_array=self.new_array, parent=new_parent)
@@ -86,11 +104,24 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
     Uninstantiated memset infinite constraint
     """
     def __init__(self, array, start, value, new_array, parent):
+        """
+        Args:
+            array: the SMT array on which the memset is applied
+            start: the start index
+            value: the value to write
+            new_array: the new array (after the memset)
+            parent: the parent LambdaConstraint
+        """
         super().__init__(array, new_array, parent)
         self.start = start
         self.value = value
 
     def instantiate(self, index):
+        """
+        Instantiate the constraint (on read)
+        Args:
+            index: The read index
+        """
         if index in self.following_writes:
             return []
 
@@ -103,6 +134,11 @@ class LambdaMemsetInfiniteConstraint(LambdaConstraint):
         return [instance] + self.parent.instantiate(index)
 
     def copy(self, new_state):
+        """
+        Copy the constraint (on state copy)
+        Args:
+            new_state: the new state
+        """
         new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
         new_lambda_constraint = LambdaMemsetInfiniteConstraint(array=self.array, start=self.start, value=self.value,
                                                                new_array=self.new_array, parent=new_parent)
@@ -119,6 +155,16 @@ class LambdaMemcopyConstraint(LambdaConstraint):
     Uninstantiated memcopy constraint
     """
     def __init__(self, array, start, source, source_start, size, new_array, parent):
+        """
+        Args:
+            array: the SMT array src
+            start: the start index
+            source: the source array
+            source_start: the start index of the source array
+            size: how many bytes to write
+            new_array: the SMT array target of the memcopy
+            parent: the parent LambdaConstraint
+        """
         super().__init__(array, new_array, parent)
         self.start = start
         # WARNING: memcopy source is of type "memory", CALLER SHOULD TAKE CARE OF .copy()ing IT
@@ -127,6 +173,11 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         self.size = size
 
     def instantiate(self, index):
+        """
+        Instantiate the constraint (on read)
+        Args:
+            index: The read index
+        """
         if index in self.following_writes:
             return []
 
@@ -143,6 +194,11 @@ class LambdaMemcopyConstraint(LambdaConstraint):
         return [instance] + self.parent.instantiate(index)
 
     def copy(self, new_state):
+        """
+        Copy the constraint (on state copy)
+        Args:
+            new_state: the new state
+        """
         new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
         new_source = self.source.copy(new_state=new_state)
         new_lambda_constraint = LambdaMemcopyConstraint(array=self.array, start=self.start, source=new_source,
@@ -161,6 +217,15 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
     Uninstantiated memcopy infinite constraint
     """
     def __init__(self, array, start, source, source_start, new_array, parent):
+        """
+        Args:
+            array: the SMT array src
+            start: the start index
+            source: the source array
+            source_start: the start index of the source array
+            new_array: the SMT array target of the memcopy
+            parent: the parent LambdaConstraint
+        """
         super().__init__(array, new_array, parent)
         self.start = start
         # WARNING: memcopy source is of type "memory", CALLER SHOULD TAKE CARE OF .copy()ing IT
@@ -168,6 +233,11 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         self.source_start = source_start
 
     def instantiate(self, index):
+        """
+        Instantiate the constraint (on read)
+        Args:
+            index: The read index
+        """
         if index in self.following_writes:
             return []
 
@@ -183,6 +253,11 @@ class LambdaMemcopyInfiniteConstraint(LambdaConstraint):
         return [instance] + self.parent.instantiate(index)
 
     def copy(self, new_state):
+        """
+        Copy the constraint (on state copy)
+        Args:
+            new_state: the new state
+        """
         new_parent = None if self.parent is None else self.parent.copy(new_state=new_state)
         new_source = self.source.copy(new_state=new_state)
         new_lambda_constraint = LambdaMemcopyInfiniteConstraint(array=self.array, start=self.start, source=new_source,

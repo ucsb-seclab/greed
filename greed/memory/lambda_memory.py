@@ -47,6 +47,15 @@ class LambdaMemory:
     uuid_generator = UUIDGenerator()
 
     def __init__(self, tag=None, value_sort=None, default=None, state=None, partial_init=False):
+        """
+        Initialize the LambdaMemory.
+        Args:
+            tag: the tag of the memory, this is a unique identifier.
+            value_sort: the sort type of the values in the memory (e.g., BVSort(8))
+            default: the default value of the memory when no writes have been performed
+            state: the SimState to which this memory belongs
+            partial_init: if True, do not initialize the memory
+        """
         if partial_init:
             return
         assert tag is not None and value_sort is not None, "Invalid LambdaMemory initialization"
@@ -68,21 +77,49 @@ class LambdaMemory:
         self.read_count = 0
 
     def add_constraint(self, formula):
+        """
+        Add a constraint to the memory.
+        Args:
+            formula: the constraint to add
+        """
         self.state.solver.add_memory_constraints(formula)
 
     def add_constraints(self, formulas):
+        """
+        Add constraints to the memory.
+        Args:
+            formulas: the constraints to add
+        """
         for formula in formulas:
             self.add_constraint(formula)
 
     @property
     def layer_level(self):
+        """
+        How many layers of lambda constraints are there?
+        Returns:
+            the number of layers
+        """
         return self.root_lambda_constraint.depth - 1
 
     @property
     def constraints(self):
+        """
+        Get the constraints of the memory.
+        Returns:
+            the constraints
+        """
         return self._constraints
 
     def __getitem__(self, index):
+        """
+        Read from the memory at a specific index.
+        This will instantiate the lambda constraints at the index for the current layer.
+        Args:
+            index: the index to read from
+        Returns:
+            an Array_Select formula representing the read to that index
+        """
         assert not isinstance(index, slice), "slice memory read not implemented"
         self.read_count += 1
 
@@ -93,11 +130,31 @@ class LambdaMemory:
         return Array_Select(self._base, index)
 
     def __setitem__(self, index, v):
+        """
+        Write to the memory at a specific index.
+        This will register a write in the "following_writes" (caching).
+        Args:
+            index: the index to write to
+            v: the value to write
+        Returns:
+            an Array_Store formula representing the write to that index
+        """
         self.write_count += 1
         self.root_lambda_constraint.following_writes[index] = v
         self._base = Array_Store(self._base, index, v)
 
     def readn(self, index, n):
+        """
+        Read n bytes from the memory at a specific index.
+        Args:
+            index: the index to read from
+            n: the number of bytes to read
+        Returns:
+            a BV_Concat formula representing the read
+        Raises:
+            AssertionError: if the length is symbolic
+            AssertionError: if the length is 0
+        """
         assert is_concrete(n), "readn with symbolic length not implemented"
         assert bv_unsigned_value(n) != 0, "invalid readn with length=0"
         if bv_unsigned_value(n) == 1:
@@ -119,6 +176,13 @@ class LambdaMemory:
             return res
 
     def memset(self, start, value, size):
+        """
+        Perform a memset operation
+        Args:
+            start: the start index
+            value: the value to write
+            size: the number of bytes to write
+        """
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
@@ -126,6 +190,12 @@ class LambdaMemory:
                                                              parent=self.root_lambda_constraint)
 
     def memsetinfinite(self, start, value):
+        """
+        Perform a memsetinfinite operation
+        Args:
+            start: the start index
+            value: the value to write
+        """
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
@@ -133,6 +203,16 @@ class LambdaMemory:
                                                                      parent=self.root_lambda_constraint)
 
     def memcopy(self, start, source, source_start, size):
+        """
+        Perform a memcopy operation
+        Args:
+            start: the start index
+            source: the source memory
+            source_start: the start index of the source memory
+            size: the number of bytes to copy
+        Raises:
+            AssertionError: if the source memory is different from the current memory
+        """
         assert source != self, "ERROR: memcopy source was not copied"
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
@@ -141,6 +221,15 @@ class LambdaMemory:
                                                               parent=self.root_lambda_constraint)
 
     def memcopyinfinite(self, start, source, source_start):
+        """
+        Perform a memcopyinfinite operation
+        Args:
+            start: the start index
+            source: the source memory
+            source_start: the start index of the source memory
+        Raises:
+            AssertionError: if the source memory is different from the current memory
+        """
         assert source != self, "ERROR: memcopy source was not copied"
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
@@ -149,6 +238,13 @@ class LambdaMemory:
                                                                       parent=self.root_lambda_constraint)
 
     def copy(self, new_state):
+        """
+        Perform a deep copy of the memory.
+        Args:
+            new_state: the state to which the new memory belongs
+        Returns:
+            A deep copy of the LambdaMemory
+        """
         new_memory = LambdaMemory(partial_init=True)
         new_memory.tag = self.tag
         new_memory._base = self._base

@@ -12,10 +12,30 @@ log = logging.getLogger(__name__)
 
     
 class PartialConcreteStorage:
+    """
+    This class represents a partial concrete storage.
+    When using the partial concrete storage, reads from the contract storage (SLOADs) are
+    initialized with the concrete value on-chain (at the given block number).
+
+    To use this, we need a web3 connection to the blockchain, the address of the contract and the block number.
+    """
 
     uuid_generator = UUIDGenerator()
 
     def __init__(self, tag=None, value_sort=None, state=None, partial_init=False):
+        """
+        Initialize the partial concrete storage.
+        Args:
+            tag: The unique identifier of the storage
+            value_sort: The sort of the values stored in the storage
+            state: The SimState associated with this storage
+            partial_init: If true, the storage is partially initialized (used for copy)
+        Raises:
+            GreedException: If the partial concrete storage is not initialized with the contract address and block number
+            AssertionError: If the partial concrete storage is not initialized with the tag and value sort
+            AssertionError: If w3 is not connected
+        """
+
         if partial_init:
             return
         assert tag is not None and value_sort is not None, "Invalid PartialConcreteStorage initialization"
@@ -50,9 +70,19 @@ class PartialConcreteStorage:
         self.concrete_cache = dict()
     
     def add_constraint(self, formula):
+        """
+        Add a constraint to the storage.
+        Args:
+            formula: The constraint to add
+        """
         self.state.solver.add_memory_constraints(formula)
 
     def add_constraints(self, formulas):
+        """
+        Add a list of constraints to the storage.
+        Args:
+            formulas: The list of constraints to add
+        """
         for formula in formulas:
             self.add_constraint(formula)
 
@@ -65,6 +95,20 @@ class PartialConcreteStorage:
         return self._constraints
 
     def __getitem__(self, index):
+        """
+        Read from the storage at the given index (SLOAD).
+        IF the index is not concrete, this instantiate the lambda constraints and return an Array_Select.
+        Otherwise, it reads the concrete value from the concrete cache
+        (the concrete value is initialized with the value on-chain at the given block number).
+
+        Args:
+            index: The index to read from
+        Returns:
+            The concreate value read from the storage (if the index is concrete)
+            an Array_Select (if the index is symbolic)
+        Raises:
+            AssertionError: If the index is a slice
+        """
         assert not isinstance(index, slice), "slice memory read not implemented"
         self.read_count += 1
         
@@ -92,6 +136,11 @@ class PartialConcreteStorage:
         return Array_Select(self._base, index)
 
     def __setitem__(self, index, v):
+        """
+        Perform a write to the storage at the given index (SSTORE).
+        IF the index is not concrete, then return an Array_Store.
+        Otherwise just overwrite the concrete value in the concrete cache.
+        """
         self.write_count += 1
 
         if is_concrete(index):
@@ -103,6 +152,11 @@ class PartialConcreteStorage:
             self._base = Array_Store(self._base, index, v)
 
     def copy(self, new_state):
+        """
+        Copy the partial concrete storage.
+        Args:
+            new_state: The new SimState associated with the new storage
+        """
         new_memory = PartialConcreteStorage(partial_init=True)
         new_memory.tag = self.tag
         new_memory._base = self._base
