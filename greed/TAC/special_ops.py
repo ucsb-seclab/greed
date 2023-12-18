@@ -1,6 +1,6 @@
 import logging
 
-import sha3
+from eth_utils import keccak
 
 from greed import options
 from greed.utils import encoding
@@ -60,7 +60,6 @@ class TAC_Sha3(TAC_Statement):
                     log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple SHA solutions")
                 else:
                     # Everything has only one solution, we can calculate the SHA
-                    keccak256 = sha3.keccak_256()
                     buffer_sol = bv_unsigned_value(buffer_sol).to_bytes(bv_unsigned_value(size_sol), 'big')
 
                     # Constraining the SHA3 input buffer to the solution just calculated

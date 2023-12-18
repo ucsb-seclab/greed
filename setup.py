@@ -11,7 +11,6 @@ setup(
     install_requires=[
         'ipython>=7.16.3',
         'networkx>=2.5.1',
-        'pysha3>=1.0.2',
         'pytest==7.2.1',
         'solc-select>=0.2.1',
         'sympy>=1.9',
