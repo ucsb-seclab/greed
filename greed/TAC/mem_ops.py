@@ -5,6 +5,10 @@ from greed.state import SymbolicEVMState
 __all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize']
 
 
+"""
+This module contains the TAC statements that are related to the memory and storage operations.
+"""
+
 class TAC_Mstore(TAC_Statement):
     __internal_name__ = "MSTORE"
     __aliases__ = {

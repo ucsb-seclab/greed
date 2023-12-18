@@ -21,6 +21,9 @@ __all__ = ['TAC_Sha3', 'TAC_Address', 'TAC_Balance', 'TAC_Origin', 'TAC_Caller',
            'TAC_Basefee', 'TAC_Create', 'TAC_Create2', 'TAC_Return', 'TAC_Revert', 'TAC_Pc', 'TAC_Invalid',
            'TAC_Selfdestruct', 'TAC_Stop', 'TAC_Gas']
 
+"""
+This module contains the TAC statements that are related to the special operations of the EVM.
+"""
 
 class TAC_Sha3(TAC_Statement):
     __internal_name__ = "SHA3"

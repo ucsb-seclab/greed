@@ -9,6 +9,9 @@ __all__ = ['TAC_Throw', 'TAC_Callprivate', 'TAC_Returnprivate', 'TAC_Phi', 'TAC_
 
 log = logging.getLogger(__name__)
 
+"""
+This module contains the TAC statements that are reserved by Gigahorse.
+"""
 
 class TAC_Throw(TAC_Statement):
     __internal_name__ = "THROW"

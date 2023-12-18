@@ -7,7 +7,8 @@ __all__ = [
 ]
 
 """
-aka. "EVENTS"
+This module contains the TAC statements that are related to the emission of Events.
+
 0xa0 ... 0xa4, 32/64/96/128/160 + len(data) gas
 a. Opcodes LOG0...LOG4 are added, takes 2-6 stack arguments
         MEMSTART MEMSZ (TOPIC1) (TOPIC2) (TOPIC3) (TOPIC4)

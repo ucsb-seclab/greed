@@ -12,6 +12,10 @@ __all__ = [
 ]
 
 
+"""
+This module contains the TAC statements that are related to the mathematical operations of the EVM.
+"""
+
 class TAC_Add(TAC_Statement):
     __internal_name__ = "ADD"
     __aliases__ = {}

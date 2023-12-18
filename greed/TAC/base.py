@@ -10,6 +10,11 @@ log = logging.getLogger(__name__)
 
 
 class Aliased(object):
+    """
+    This class allows us to use aliases for the attributes of a class. For example, if we have a class with the
+    following attributes: ['a', 'b', 'c'], we can define a dictionary __aliases__ = {'x': 'a', 'y': 'b'} and then
+    access the attributes of the class using the aliases. 
+    """
     __aliases__ = {}
 
     def __getattr__(self, key: str):
@@ -28,10 +33,21 @@ class Aliased(object):
 
 
 class TAC_Statement(Aliased):
+    """
+    This class represents a TAC Statement.
+    """
     __internal_name__ = None
 
     def __init__(self, block_id: str, stmt_id: str, uses: List[str] = None, defs: List[str] = None,
                  values: Mapping[str, str] = None):
+        """
+        Args:
+            block_id: The id of the block that contains this statement.
+            stmt_id: The id of this statement.
+            uses: The list of variables used by this statement.
+            defs: The list of variables defined by this statement.
+            values: The static values of the variables used by this statement.
+        """
         uses = uses or list()
         defs = defs or list()
         values = values or dict()

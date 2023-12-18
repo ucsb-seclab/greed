@@ -11,8 +11,14 @@ __all__ = ['TAC_Jump', 'TAC_Jumpi', 'TAC_Call', 'TAC_Callcode', 'TAC_Delegatecal
 
 log = logging.getLogger(__name__)
 
+"""
+This module contains the TAC statements that are related to the control flow of the program.
+"""
 
 class TAC_Jump(TAC_Statement):
+    """
+    This class represents a JUMP TAC statement.
+    """
     __internal_name__ = "JUMP"
     __aliases__ = {'destination_var': 'arg1_var', 'destination_val': 'arg1_val'}
 
@@ -80,6 +86,9 @@ class TAC_Jumpi(TAC_Statement):
 
 
 class TAC_BaseCall(TAC_Statement):
+    """
+    This class represents super class for all CALL TAC statements.
+    """
     __internal_name__ = "_CALL"
 
     # Metadata for _CALL statements.
