@@ -46,8 +46,9 @@ class PartialConcreteStorage:
         self.state = state
 
         # Initialize the web3 connection
-        self.w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
-        assert(self.w3.is_connected())
+        self.w3 = state.project.w3
+        assert(self.w3 is not None), "Web3 provider not initialized. Cannot use the partial concrete storage"
+        assert(self.w3.is_connected()), "Web3 connection not connected. Cannot use the partial concrete storage"
 
         if "ADDRESS" not in self.state.ctx:
             raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")

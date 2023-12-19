@@ -1,12 +1,14 @@
 import logging
 
 import networkx as nx
+import web3
 
 from collections import defaultdict
 
 from greed.TAC.TAC_parser import TAC_parser
 from greed.TAC.gigahorse_ops import TAC_Callprivateargs
 from greed.factory import Factory
+from greed import options as opt
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +55,14 @@ class Project(object):
             for target_function_id in source_function.callprivate_target_sources.keys():
                 target_function = self.factory.function(target_function_id)
                 self.callgraph.add_edge(source_function, target_function)
+        
+        # trying to connect to the w3 
+        try:
+            self.w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
+            if not self.w3.is_connected():
+                self.w3 = None
+        except Exception as e:
+            self.w3 = None
         
     def dump_callgraph(self, filename):
         """

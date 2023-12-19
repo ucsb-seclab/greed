@@ -15,6 +15,11 @@ setup(
         'solc-select>=0.2.1',
         'sympy>=1.9',
         'web3>=5.31.1',
+        'alive-progress',
+        'mkdocs',
+        'mkdocs-click',
+        'pymdown-extensions',
+        'lazydocs'
     ],
     python_requires='>=3.8',
 )
