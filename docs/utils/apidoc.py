@@ -35,7 +35,7 @@ for submodule in submodules:
         modules_entry += f"- {submodule}: modules/{submodule}.md\n    "
 
 
-with open("./mkdocs_base.yml", "r") as f:
+with open("./_mkdocs.yml", "r") as f:
     lines = f.readlines()
 
 new_lines = [] 
