@@ -85,7 +85,7 @@ This method adds a constraint to the state.
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state.py#L310"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state.py#L315"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `copy`
 
@@ -121,7 +121,7 @@ This method returns the non fallthrough pc of the current state.
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state.py#L301"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state.py#L306"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `register_plugin`
 
@@ -133,7 +133,7 @@ This method registers a plugin to the state.
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state.py#L349"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state.py#L354"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `reset`
 

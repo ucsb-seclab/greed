@@ -11,12 +11,12 @@
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/project.py#L14"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/project.py#L16"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `Project`
 This is the main class for creating a greed Project! 
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/project.py#L18"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/project.py#L20"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `__init__`
 
@@ -35,7 +35,7 @@ __init__(target_dir: str)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/project.py#L57"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/project.py#L67"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `dump_callgraph`
 

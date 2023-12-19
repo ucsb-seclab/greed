@@ -37,7 +37,7 @@ __init__(breakpoints_stmt_ids=None, breakpoints_stmt=None)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state_plugins/inspect.py#L52"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state_plugins/inspect.py#L59"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `copy`
 
@@ -49,7 +49,7 @@ Deep copy this state plugin.
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state_plugins/inspect.py#L37"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state_plugins/inspect.py#L44"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `stop_at_stmt`
 
@@ -80,8 +80,10 @@ Stop at a statement with a given ID (i.e., PC)
 **Args:**
  
  - <b>`stmt_id`</b>:  The ID of the statement to stop at. 
- - <b>`func`</b>:  The function to call when the breakpoint is hit (default: ipdb.set_trace()) 
+ - <b>`func`</b>:  The function to call when the breakpoint is hit. 
  - <b>`when`</b>:  Whether to stop before or after the statement. 
+
+The default function if none is provided is: ''' def justStop(simgr, state): log.warning("💥 Triggered breakpoint at {}".format(state.pc)) import ipdb; ipdb.set_trace() ''' 
 
 
 

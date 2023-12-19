@@ -38,7 +38,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L99"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L100"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Stop`
 
@@ -50,7 +50,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L102"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L103"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -65,7 +65,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L111"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L112"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Address`
 
@@ -77,7 +77,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L115"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L116"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -92,7 +92,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L122"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L123"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Balance`
 
@@ -104,7 +104,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L129"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L130"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -119,7 +119,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L146"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L147"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Origin`
 
@@ -131,7 +131,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L150"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L151"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -146,7 +146,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L158"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L159"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Caller`
 
@@ -158,7 +158,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L162"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L163"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -173,7 +173,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L170"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L171"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Callvalue`
 
@@ -185,7 +185,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L174"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L175"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -200,7 +200,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L182"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L183"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Calldataload`
 
@@ -212,7 +212,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L189"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L190"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -227,7 +227,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L205"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L206"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Calldatasize`
 
@@ -239,7 +239,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L209"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L210"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -254,7 +254,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L217"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L218"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Calldatacopy`
 
@@ -266,7 +266,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L225"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L226"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -281,7 +281,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L233"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L234"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Codesize`
 
@@ -293,7 +293,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L239"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L240"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -308,7 +308,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L247"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L248"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Codecopy`
 
@@ -320,7 +320,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L255"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L256"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -335,7 +335,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L271"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L272"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Gasprice`
 
@@ -347,7 +347,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L277"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L278"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -362,7 +362,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L285"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L286"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Extcodesize`
 
@@ -374,7 +374,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L292"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L293"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -389,7 +389,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L315"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L316"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Extcodecopy`
 
@@ -401,7 +401,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L324"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L325"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -416,7 +416,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L329"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L330"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Returndatasize`
 
@@ -428,7 +428,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L335"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L336"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -443,7 +443,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L343"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L344"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Returndatacopy`
 
@@ -455,7 +455,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L351"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L352"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -470,7 +470,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L356"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L357"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Extcodehash`
 
@@ -482,7 +482,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L363"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L364"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -497,7 +497,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L374"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L375"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Blockhash`
 
@@ -509,7 +509,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L381"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L382"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -524,7 +524,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L392"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L393"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Coinbase`
 
@@ -536,7 +536,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L398"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L399"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -551,7 +551,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L406"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L407"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Timestamp`
 
@@ -563,7 +563,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L412"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L413"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -578,7 +578,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L426"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L427"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Number`
 
@@ -590,7 +590,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L432"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L433"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -605,7 +605,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L440"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L441"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Difficulty`
 
@@ -617,7 +617,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L446"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L447"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -632,7 +632,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L454"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L455"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Gaslimit`
 
@@ -644,7 +644,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L460"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L461"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -659,7 +659,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L468"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L469"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Chainid`
 
@@ -671,7 +671,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L474"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L475"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -686,7 +686,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L484"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L485"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Selfbalance`
 
@@ -698,7 +698,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L490"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L491"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -713,7 +713,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L498"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L499"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Basefee`
 
@@ -725,7 +725,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L504"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L505"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -740,7 +740,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L513"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L514"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Return`
 
@@ -752,7 +752,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L516"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L517"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -767,7 +767,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L524"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L525"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Revert`
 
@@ -779,7 +779,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L531"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L532"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -794,7 +794,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L543"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L544"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Create`
 
@@ -806,7 +806,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L552"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L553"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -821,7 +821,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L567"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L568"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Create2`
 
@@ -833,7 +833,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L577"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L578"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -848,7 +848,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L592"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L593"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Pc`
 
@@ -860,7 +860,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L598"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L599"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -875,7 +875,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L608"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L609"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Invalid`
 
@@ -887,7 +887,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L611"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L612"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -902,7 +902,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L618"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L619"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Selfdestruct`
 
@@ -914,7 +914,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L624"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L625"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 
@@ -929,7 +929,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L634"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L635"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ## <kbd>class</kbd> `TAC_Gas`
 
@@ -941,7 +941,7 @@ handle(state: SymbolicEVMState)
 
 ---
 
-<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L640"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
+<a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L641"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
 ### <kbd>method</kbd> `handle`
 

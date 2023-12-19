@@ -35,7 +35,7 @@ for submodule in submodules:
         modules_entry += f"- {submodule}: modules/{submodule}.md\n    "
 
 
-with open("../mkdocs.yml", "r") as f:
+with open("./mkdocs_base.yml", "r") as f:
     lines = f.readlines()
 
 new_lines = [] 
@@ -44,6 +44,6 @@ for line in lines:
         line = line.replace("<AUTOMATICALLY_GENERATED>", modules_entry)
     new_lines.append(line)
 
-with open("../mkdocs_new.yml", "w") as f:
+with open("./mkdocs_new.yml", "w") as f:
     f.writelines(new_lines)
 
