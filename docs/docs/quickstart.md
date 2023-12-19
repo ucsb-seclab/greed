@@ -33,11 +33,11 @@ analyze_source.sh contract.sol
 
 # OPTION 2: From the contract bytecode
 cp <contract_bytecode> contract.hex
-analyze_contract_hex.sh contract.hex
+analyze_hex.sh contract.hex
 ```
 
 The bytecode analyses should work on any system where gigahorse can be properly compiled.
-
+You can find the scripts `analyze_source.sh` and `analyze_hex.sh` in `/greed/resources`.
 
 ## Reporting Bugs 🪳
 Please report any bugs through the [Issue](https://github.com/ucsb-seclab/greed/issues) section on our GitHub! If you can provide a POC for your issue it would greatly speed up the resolution of your problem :)
