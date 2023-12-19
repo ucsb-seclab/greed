@@ -49,11 +49,13 @@ class TAC_Sha3(TAC_Statement):
             log.debug(f"    Size solution: {bv_unsigned_value(size_sol)}")
             log.debug(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
             
+            res = None
+            
             if size_sol is None or offset_sol is None:
                 log.debug(f"    Cannot calculate concrete SHA3 for {new_sha.symbol.name} due to multiple size and offset solutions")
             elif size_sol.value == 0:
-                    # If size_sol is zero, return e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                    res = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                # If size_sol is zero, return e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                res = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
             else:
                 # Else, get a solution for the input buffer
                 buffer = state.memory.readn(offset_sol, size_sol)
@@ -69,8 +71,7 @@ class TAC_Sha3(TAC_Statement):
                     for x,b in zip(range(0, bv_unsigned_value(size_sol)), buffer_sol):
                         state.add_constraint(Equal(state.memory[BVV(bv_unsigned_value(offset_sol)+x, 256)], BVV(b, 8)))
 
-                    keccak256.update(buffer_sol)
-                    res = keccak256.hexdigest()
+                    res = bytes(keccak(buffer_sol)).hex()
 
             if res is not None:
                 log.debug(f"    Calculated concrete SHA3 {res}")
