@@ -115,9 +115,11 @@ class LambdaMemory:
             return
         
         # else invalidate only the impacted cache slots
-        start = start or BVV(0, 256)
+        if start is None or not is_concrete(start):
+            start = BVV(0, 256)
+        if end is None or not is_concrete(end):
+            end = BVV(2**256 - 1, 256)
         start = bv_unsigned_value(start)
-        end = end or BVV(2**256 - 1, 256)
         end = bv_unsigned_value(end)
         for width in self.cache:
             for k in list(self.cache[width]):
