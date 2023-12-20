@@ -124,7 +124,7 @@ class LambdaMemory:
         for width in self.cache:
             for k in list(self.cache[width]):
                 # if there is any overlap between [k, k+width) and [start, end), invalidate
-                if set(range(k, k+width)) & set(range(start, end)):
+                if any([start <= k+i < end for i in range(width)]):
                     del self.cache[width][k]
 
     @property
