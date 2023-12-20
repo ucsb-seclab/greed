@@ -2,7 +2,7 @@
 
 greed is currently mainly maintained by [degrigis](https://github.com/degrigis) and [ruaronicola](https://github.com/ruaronicola) and the following contributors:
 
-![contributors-img](https://contrib.rocks/image?repo=ucsb-seclab/heapster)
+![contributors-img](https://contrib.rocks/image?repo=ucsb-seclab/greed)
 
 While we are available for discussions and bug fixes (via the Issues on GitHub), at the time of writing we have limited resources to provide any kind of full-time support or feature requests. Thus, we provide the tool as it is. 
 Everything outside of the scope of our personal research agenda needs to be implemented by the interested party.
