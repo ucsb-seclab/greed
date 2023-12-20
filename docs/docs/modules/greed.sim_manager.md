@@ -108,8 +108,8 @@ __init__(entry_state: SymbolicEVMState, project)
 
 ```python
 findall(
-    find: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7fac223da5c0>,
-    prune: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7fac223da660>
+    find: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7f79526d6980>,
+    prune: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7f79526d6a20>
 )
 ```
 
@@ -134,7 +134,7 @@ Run the simulation manager, until the `find` condition of all the ET is met.
 move(
     from_stash: str,
     to_stash: str,
-    filter_func: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7fac223da020>
+    filter_func: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7f79526d63e0>
 )
 ```
 
@@ -154,8 +154,8 @@ Move all the states that meet the filter_func condition from from_stash to to_st
 
 ```python
 run(
-    find: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7fac223da3e0>,
-    prune: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7fac223da480>,
+    find: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7f79526d67a0>,
+    prune: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7f79526d6840>,
     find_all=False
 )
 ```
@@ -220,8 +220,8 @@ Step a single state (calculate its successors)
 
 ```python
 step(
-    find: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7fac223da160>,
-    prune: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7fac223da200>
+    find: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7f79526d6520>,
+    prune: Callable[[SymbolicEVMState], bool] = <function SimulationManager.<lambda> at 0x7f79526d65c0>
 )
 ```
 

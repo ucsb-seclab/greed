@@ -24,8 +24,15 @@ class SimStateInspect(SimStatePlugin):
         Stop at a statement with a given ID (i.e., PC)
         Args:
             stmt_id: The ID of the statement to stop at.
-            func: The function to call when the breakpoint is hit (default: ipdb.set_trace())
+            func: The function to call when the breakpoint is hit.
             when: Whether to stop before or after the statement.
+
+        The default function if none is provided is:
+        '''
+        def justStop(simgr, state):
+            log.warning("💥 Triggered breakpoint at {}".format(state.pc))
+            import ipdb; ipdb.set_trace()
+        '''
         """
         if not func:
             def justStop(simgr, state):

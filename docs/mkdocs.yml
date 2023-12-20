@@ -24,6 +24,7 @@ nav:
   - Core Concepts: core.md
   - Advanced Topics: advanced.md
   - Options: options.md
+  - Advices: advices.md
   - Examples: examples.md
   - Credits: credits.md
   - FAQ: faq.md
@@ -63,10 +64,10 @@ nav:
     - greed.state_plugins.globals: modules/greed.state_plugins.globals.md
     - greed.state_plugins.inspect: modules/greed.state_plugins.inspect.md
     - greed.state_plugins.plugin: modules/greed.state_plugins.plugin.md
+    - greed.state_plugins.sha_resolver: modules/greed.state_plugins.sha_resolver.md
     - greed.state_plugins.solver: modules/greed.state_plugins.solver.md
     - greed.utils.encoding: modules/greed.utils.encoding.md
     - greed.utils.exceptions: modules/greed.utils.exceptions.md
     - greed.utils.extra: modules/greed.utils.extra.md
     - greed.utils.files: modules/greed.utils.files.md
-
-
+    

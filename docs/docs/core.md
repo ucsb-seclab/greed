@@ -164,4 +164,4 @@ The default solver employed by greed is [Yices2](https://github.com/SRI-CSL/yice
 We made this decision based on the impressive results obtained at the latest SMT solving competition and the results showed by Frank et al. in [ETHBMC](https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf).
 That being said, greed offers a modular architecure and implementing support for a new solver backend is quite straigthforward.
 
-<< TALK ABOUT THE TIMEOUT HERE >>
+By default, we give unlimited time to the solver to solve the constraints. However, it can be sometimes helpful to just timeout after a certain amount of time. You can do this by using the option `SOLVER_TIMEOUT`. Keep in mind that, when the timeout fires, the state will officially be reported as `unsat`.

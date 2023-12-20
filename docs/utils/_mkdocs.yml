@@ -1,0 +1,32 @@
+site_name: greed - A symbolic execution engine for EVM smart contract binaries
+theme:
+  name: readthedocs
+  features:
+    - navigation.instant
+    - navigation.tabs
+markdown_extensions:
+  - tables
+  - mkdocs-click
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - QuickStart: quickstart.md
+  - Core Concepts: core.md
+  - Advanced Topics: advanced.md
+  - Options: options.md
+  - Advices: advices.md
+  - Examples: examples.md
+  - Credits: credits.md
+  - FAQ: faq.md
+  - Modules:
+<AUTOMATICALLY_GENERATED>
