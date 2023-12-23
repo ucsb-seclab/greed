@@ -1,4 +1,5 @@
 import logging
+import os
 
 import networkx as nx
 import web3
@@ -24,8 +25,7 @@ class Project(object):
             all the GigaHorse output files.
         """
         # Load the contract code
-        with open(f"{target_dir}/bytecode.hex", "rb") as contract_file:
-            self.code = contract_file.read()
+        self.code = Project._load_bytecode(target_dir)
 
         self.factory = Factory(project=self)
 
@@ -95,4 +95,33 @@ class Project(object):
         with open(filename, "w") as dump_file:
             dump_file.write(dot)
 
+    @staticmethod
+    def _load_bytecode(target_dir: str) -> str:
+        """
+        Locate the contract bytecode. It may be labeled as either
+        bytecode.hex or contract.hex. In the event that both are present,
+        ensure that they are identical.
+        """
 
+        present_bytecode_files = []
+        for fname in ["bytecode.hex", "contract.hex"]:
+            full_path = os.path.join(target_dir, fname)
+            try:
+                with open(full_path) as bytecode_file:
+                    log.debug(f"Found {full_path} in target directory")
+                    present_bytecode_files.append(bytecode_file.read().strip())
+            except FileNotFoundError:
+                log.debug(f"File {full_path} not found in target directory")
+
+        if len(present_bytecode_files) == 0:
+            raise FileNotFoundError(
+                "No bytecode.hex or contract.hex found in target directory"
+            )
+
+        if len(present_bytecode_files) > 1:
+            if present_bytecode_files[0].strip() != present_bytecode_files[1]:
+                raise ValueError(
+                    "bytecode.hex and contract.hex are not identical in target directory"
+                )
+        
+        return present_bytecode_files[0]
