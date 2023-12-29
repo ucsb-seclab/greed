@@ -6,7 +6,7 @@
 
 Welcome to greed's documentation! This documentation is intended to be a quick guide to use greed: our symbolic execution engine for EVM smart contract binaries.
 
-If greed makes you think of [angr](https://github.com/angr), is because we are actually from the same research group ([UCSB SecLab](https://seclab.cs.ucsb.edu/)). 
+If greed makes you think of [angr](https://github.com/angr), that is because we are indeed from the same research group ([UCSB SecLab](https://seclab.cs.ucsb.edu/)). 
 Some of the folks developing greed are also angr's contributor, thus, many of the choices in this project are inspired by angr.
 
 
