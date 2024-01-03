@@ -22,7 +22,7 @@ Having a common intermediate representation is also valuable since, as the Dedau
 
 ## How do I know the correspondence between TAC statements and original opcodes?
 
-While this is not always 100% precise, Gigahorse outputs a file called `TAC_Statement_OriginalStatement.csv`. You can find the correspondence between the TAC Statement ID and the original PC (bytecode) there.
+Gigahorse outputs a file called `TAC_Statement_OriginalStatement.csv`. While this is not always 100% precise, you can find the correspondence between the TAC Statement ID and the original PC (bytecode) there.
 
 ## Does greed support non-EVM contracts?
 
