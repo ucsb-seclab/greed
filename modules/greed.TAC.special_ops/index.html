@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>greed.TAC.special_ops - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "greed.TAC.special_ops";
+        var mkdocs_page_input_path = "modules/greed.TAC.special_ops.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">greed.TAC.special_ops</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_sha3">class TAC_Sha3</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_stop">class TAC_Stop</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_1">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_address">class TAC_Address</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_2">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_balance">class TAC_Balance</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_3">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_origin">class TAC_Origin</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_4">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_caller">class TAC_Caller</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_5">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_callvalue">class TAC_Callvalue</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_6">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_calldataload">class TAC_Calldataload</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_7">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_calldatasize">class TAC_Calldatasize</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_8">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_calldatacopy">class TAC_Calldatacopy</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_9">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_codesize">class TAC_Codesize</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_10">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_codecopy">class TAC_Codecopy</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_11">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_gasprice">class TAC_Gasprice</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_12">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_extcodesize">class TAC_Extcodesize</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_13">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_extcodecopy">class TAC_Extcodecopy</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_14">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_returndatasize">class TAC_Returndatasize</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_15">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_returndatacopy">class TAC_Returndatacopy</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_16">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_extcodehash">class TAC_Extcodehash</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_17">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_blockhash">class TAC_Blockhash</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_18">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_coinbase">class TAC_Coinbase</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_19">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_timestamp">class TAC_Timestamp</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_20">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_number">class TAC_Number</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_21">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_difficulty">class TAC_Difficulty</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_22">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_gaslimit">class TAC_Gaslimit</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_23">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_chainid">class TAC_Chainid</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_24">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_selfbalance">class TAC_Selfbalance</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_25">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_basefee">class TAC_Basefee</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_26">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_return">class TAC_Return</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_27">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_revert">class TAC_Revert</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_28">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_create">class TAC_Create</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_29">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_create2">class TAC_Create2</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_30">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_pc">class TAC_Pc</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_31">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_invalid">class TAC_Invalid</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_32">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_selfdestruct">class TAC_Selfdestruct</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_33">method handle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_gas">class TAC_Gas</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-handle_34">method handle</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Modules</li>
+      <li class="breadcrumb-item active">greed.TAC.special_ops</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <!-- markdownlint-disable -->
+
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h1 id="module-greedtacspecial_ops"><kbd>module</kbd> <code>greed.TAC.special_ops</code></h1>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L28"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_sha3"><kbd>class</kbd> <code>TAC_Sha3</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L34"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L100"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_stop"><kbd>class</kbd> <code>TAC_Stop</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L103"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_1"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L112"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_address"><kbd>class</kbd> <code>TAC_Address</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L116"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_2"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L123"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_balance"><kbd>class</kbd> <code>TAC_Balance</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L130"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_3"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L147"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_origin"><kbd>class</kbd> <code>TAC_Origin</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L151"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_4"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L159"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_caller"><kbd>class</kbd> <code>TAC_Caller</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L163"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_5"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L171"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_callvalue"><kbd>class</kbd> <code>TAC_Callvalue</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L175"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_6"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L183"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_calldataload"><kbd>class</kbd> <code>TAC_Calldataload</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L190"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_7"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L206"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_calldatasize"><kbd>class</kbd> <code>TAC_Calldatasize</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L210"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_8"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L218"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_calldatacopy"><kbd>class</kbd> <code>TAC_Calldatacopy</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L226"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_9"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L234"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_codesize"><kbd>class</kbd> <code>TAC_Codesize</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L240"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_10"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L248"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_codecopy"><kbd>class</kbd> <code>TAC_Codecopy</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L256"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_11"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L272"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_gasprice"><kbd>class</kbd> <code>TAC_Gasprice</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L278"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_12"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L286"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_extcodesize"><kbd>class</kbd> <code>TAC_Extcodesize</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L293"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_13"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L316"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_extcodecopy"><kbd>class</kbd> <code>TAC_Extcodecopy</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L325"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_14"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L330"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_returndatasize"><kbd>class</kbd> <code>TAC_Returndatasize</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L336"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_15"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L344"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_returndatacopy"><kbd>class</kbd> <code>TAC_Returndatacopy</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L352"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_16"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L357"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_extcodehash"><kbd>class</kbd> <code>TAC_Extcodehash</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L364"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_17"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L375"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_blockhash"><kbd>class</kbd> <code>TAC_Blockhash</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L382"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_18"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L393"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_coinbase"><kbd>class</kbd> <code>TAC_Coinbase</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L399"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_19"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L407"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_timestamp"><kbd>class</kbd> <code>TAC_Timestamp</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L413"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_20"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L427"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_number"><kbd>class</kbd> <code>TAC_Number</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L433"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_21"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L441"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_difficulty"><kbd>class</kbd> <code>TAC_Difficulty</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L447"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_22"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L455"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_gaslimit"><kbd>class</kbd> <code>TAC_Gaslimit</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L461"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_23"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L469"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_chainid"><kbd>class</kbd> <code>TAC_Chainid</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L475"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_24"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L485"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_selfbalance"><kbd>class</kbd> <code>TAC_Selfbalance</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L491"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_25"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L499"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_basefee"><kbd>class</kbd> <code>TAC_Basefee</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L505"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_26"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L514"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_return"><kbd>class</kbd> <code>TAC_Return</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L517"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_27"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L525"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_revert"><kbd>class</kbd> <code>TAC_Revert</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L532"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_28"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L544"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_create"><kbd>class</kbd> <code>TAC_Create</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L553"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_29"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L568"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_create2"><kbd>class</kbd> <code>TAC_Create2</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L578"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_30"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L593"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_pc"><kbd>class</kbd> <code>TAC_Pc</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L599"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_31"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L609"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_invalid"><kbd>class</kbd> <code>TAC_Invalid</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L612"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_32"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L619"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_selfdestruct"><kbd>class</kbd> <code>TAC_Selfdestruct</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L625"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_33"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/special_ops.py#L635"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_gas"><kbd>class</kbd> <code>TAC_Gas</code></h2>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/base.py#L641"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-handle_34"><kbd>method</kbd> <code>handle</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">handle</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><em>This file was automatically generated via <a href="https://github.com/ml-tooling/lazydocs">lazydocs</a>.</em></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../greed.TAC.mem_ops/" class="btn btn-neutral float-left" title="greed.TAC.mem_ops"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../greed.analyses.access_control_slots/" class="btn btn-neutral float-right" title="greed.analyses.access_control_slots">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../greed.TAC.mem_ops/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../greed.analyses.access_control_slots/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

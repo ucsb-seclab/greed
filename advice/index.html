@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Advice - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Advice";
+        var mkdocs_page_input_path = "advice.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../options/">Options</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Advice</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#concretizing-symbolic-values">Concretizing symbolic values</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Advice</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="a-word-of-advice">🧐 A Word of Advice</h1>
+<h2 id="concretizing-symbolic-values">Concretizing symbolic values</h2>
+<p>When running greed, you will often find it helpful to concretize some symbolic values, for example, to inspect the actual value of a storage slot or to determine the concrete environment needed to reach a particular point in the execution (e.g., calldata).</p>
+<p>Remember that:</p>
+<p>(1) There are often inherent dependencies between symbolic values, and concretizing one might affect the satisfiability of the others. For example, to concretize the buffer of a <code>SHA3</code> operation, you will first need to concretize its offset and size, or to concretize the calldata buffer, you might need first to concretize the "calldatasize" as well – unless it is already concrete or known:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">calldatasize</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">calldatasize</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">calldata</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">eval_memory</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">calldata</span><span class="p">,</span> <span class="n">calldatasize</span><span class="p">)</span>
+</span></code></pre></div>
+<p>(2) When you set up a concrete transaction, you will need to provide values other than the calldata, for example, the value of msg.sender (<code>CALLER</code>) and the transferred amount (<code>VALUE</code>). You can derive all these values from your final state. For example:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">caller</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;CALLER&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;big&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">hex</span><span class="p">()</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">callvalue</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">ctx</span><span class="p">[</span><span class="s1">&#39;CALLVALUE&#39;</span><span class="p">])</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CALLER: 0x</span><span class="si">{</span><span class="n">caller</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;CALLVALUE: 0x</span><span class="si">{</span><span class="n">callvalue</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../options/" class="btn btn-neutral float-left" title="Options"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../examples/" class="btn btn-neutral float-right" title="Examples">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../options/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../examples/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

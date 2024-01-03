@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Options - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Options";
+        var mkdocs_page_input_path = "options.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Options</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#global-options">Global Options</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#state-options">State Options</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Options</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="options">🕹️ Options</h1>
+<p>greed supports many options to tweak the behavior of symbolic execution.</p>
+<h2 id="global-options">Global Options</h2>
+<p>These options are global and impact all the states generated during symbolic execution:</p>
+<table>
+<thead>
+<tr>
+<th>Option Name</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WEB3_PROVIDER</code></td>
+<td>http://0.0.0.0:8545</td>
+<td>Web3 provider URI. Used when initializing the partial concrete storage.</td>
+</tr>
+<tr>
+<td><code>LAZY_SOLVES</code></td>
+<td>False</td>
+<td>Indicates whether to check for satisfiability at every fork, affecting exploration speed and state pruning.</td>
+</tr>
+<tr>
+<td><code>GREEDY_SHA</code></td>
+<td>False</td>
+<td>Specifies whether to calculate SHA3 for concrete or single-solution buffers, potentially impacting exploration speed.</td>
+</tr>
+<tr>
+<td><code>SIMGRVIZ</code></td>
+<td>False</td>
+<td>Activates the creation of a graph visualizing the exploration (the SimgrViz Exploration Technique must also be installed)</td>
+</tr>
+<tr>
+<td><code>MAX_CALLDATA_SIZE</code></td>
+<td>256</td>
+<td>Default CALLDATASIZE considered, can be overwritten by the entry_state constructor.</td>
+</tr>
+<tr>
+<td><code>MATH_CONCRETIZE_SYMBOLIC_EXP_EXP</code></td>
+<td>False</td>
+<td>Specifies whether to concretize the exponent of an EXP instruction.</td>
+</tr>
+<tr>
+<td><code>MATH_CONCRETIZE_SYMBOLIC_EXP_BASE</code></td>
+<td>False</td>
+<td>Specifies whether to concretize the base of an EXP instruction.</td>
+</tr>
+<tr>
+<td><code>MATH_MULTIPLY_EXP_THRESHOLD</code></td>
+<td>10</td>
+<td>Maximum supported nested multiplications when encountering a symbolic base with a concrete exponent.</td>
+</tr>
+<tr>
+<td><code>OPTIMISTIC_CALL_RESULTS</code></td>
+<td>False</td>
+<td>Indicates whether always to consider CALLS succeeded.</td>
+</tr>
+<tr>
+<td><code>DEFAULT_EXTCODESIZE</code></td>
+<td>False</td>
+<td>Specifies whether to use a default constant value for EXTCODESIZE.</td>
+</tr>
+<tr>
+<td><code>DEFAULT_CREATE_RESULT_ADDRESS</code></td>
+<td>False</td>
+<td>Specifies whether to use a default constant address when using the CREATE opcode.</td>
+</tr>
+<tr>
+<td><code>DEFAULT_CREATE2_RESULT_ADDRESS</code></td>
+<td>False</td>
+<td>Specifies whether to use a default constant address when using the CREATE2 opcode.</td>
+</tr>
+<tr>
+<td><code>STATE_STOP_AT_ADDCONSTRAINT</code></td>
+<td>False</td>
+<td>Indicates whether to drop a debugging interface whenever a constraint is added to the state.</td>
+</tr>
+<tr>
+<td><code>MAX_SHA_SIZE</code></td>
+<td>512</td>
+<td>Maximum considered size for the SHA3 input buffer.</td>
+</tr>
+<tr>
+<td><code>SOLVER</code></td>
+<td>"YICES2"</td>
+<td>Default solver (Yices2).</td>
+</tr>
+<tr>
+<td><code>SOLVER_TIMEOUT</code></td>
+<td>Inf.</td>
+<td>Timeout setting for the solver.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="state-options">State Options</h2>
+<p>These options can be activated/deactivated per single state:</p>
+<table>
+<thead>
+<tr>
+<th>Option Name</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>STATE_INSPECT</code></td>
+<td>False</td>
+<td>Activates debugging capabilities through the SimStateInspect plugin (i.e., breakpoints).</td>
+</tr>
+</tbody>
+</table>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../advanced/" class="btn btn-neutral float-left" title="Advanced Topics"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../advice/" class="btn btn-neutral float-right" title="Advice">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../advanced/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../advice/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

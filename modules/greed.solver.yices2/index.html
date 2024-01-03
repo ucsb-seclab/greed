@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>greed.solver.yices2 - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "greed.solver.yices2";
+        var mkdocs_page_input_path = "modules/greed.solver.yices2.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">greed.solver.yices2</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#class-yicesterm">class YicesTerm</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init__">method __init__</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#property-value">property value</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-dump">method dump</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-pp">method pp</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-yicestermbool">class YicesTermBool</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init___1">method __init__</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#property-value_1">property value</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-dump_1">method dump</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-pp_1">method pp</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-yicestermbv">class YicesTermBV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init___2">method __init__</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#property-bitsize">property bitsize</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#property-value_2">property value</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-dump_2">method dump</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-pp_2">method pp</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-yicestermarray">class YicesTermArray</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init___3">method __init__</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#property-value_3">property value</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-dump_3">method dump</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-pp_3">method pp</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-yicestype">class YicesType</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init___4">method __init__</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-yicestypebv">class YicesTypeBV</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init___5">method __init__</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-yicestypearray">class YicesTypeArray</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init___6">method __init__</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-yices2">class Yices2</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init___7">method __init__</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-and">method And</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-array">method Array</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-array_select">method Array_Select</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-array_store">method Array_Store</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bvs">method BVS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bvsort">method BVSort</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bvv">method BVV</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_add">method BV_Add</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_and">method BV_And</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_concat">method BV_Concat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_extract">method BV_Extract</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_mul">method BV_Mul</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_not">method BV_Not</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_or">method BV_Or</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sdiv">method BV_SDiv</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sge">method BV_SGE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sgt">method BV_SGT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sle">method BV_SLE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_slt">method BV_SLT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_smod">method BV_SMod</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_srem">method BV_SRem</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sar">method BV_Sar</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_shl">method BV_Shl</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_shr">method BV_Shr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sign_extend">method BV_Sign_Extend</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sub">method BV_Sub</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_udiv">method BV_UDiv</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_uge">method BV_UGE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_ugt">method BV_UGT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_ule">method BV_ULE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_ult">method BV_ULT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_urem">method BV_URem</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_xor">method BV_Xor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_zero_extend">method BV_Zero_Extend</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-equal">method Equal</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-if">method If</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-not">method Not</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-notequal">method NotEqual</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-or">method Or</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-add_assertion">method add_assertion</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-add_assertions">method add_assertions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_unsigned_value">method bv_unsigned_value</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-copy">method copy</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-eval">method eval</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-get_bv_by_name">method get_bv_by_name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_concrete">method is_concrete</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_formula_false">method is_formula_false</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_formula_true">method is_formula_true</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-pop">method pop</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-push">method push</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Modules</li>
+      <li class="breadcrumb-item active">greed.solver.yices2</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <!-- markdownlint-disable -->
+
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h1 id="module-greedsolveryices2"><kbd>module</kbd> <code>greed.solver.yices2</code></h1>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L12"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yicesterm"><kbd>class</kbd> <code>YicesTerm</code></h2>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L13"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init__"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">yices_id</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h4 id="property-value"><kbd>property</kbd> value</h4>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L35"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-dump"><kbd>method</kbd> <code>dump</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">dump</span><span class="p">(</span><span class="n">pp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L42"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-pp"><kbd>method</kbd> <code>pp</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">pp</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L69"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yicestermbool"><kbd>class</kbd> <code>YicesTermBool</code></h2>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L13"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init___1"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">yices_id</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h4 id="property-value_1"><kbd>property</kbd> value</h4>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L35"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-dump_1"><kbd>method</kbd> <code>dump</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">dump</span><span class="p">(</span><span class="n">pp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L42"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-pp_1"><kbd>method</kbd> <code>pp</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">pp</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L73"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yicestermbv"><kbd>class</kbd> <code>YicesTermBV</code></h2>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L13"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init___2"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">yices_id</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h4 id="property-bitsize"><kbd>property</kbd> bitsize</h4>
+<hr />
+<h4 id="property-value_2"><kbd>property</kbd> value</h4>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L35"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-dump_2"><kbd>method</kbd> <code>dump</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">dump</span><span class="p">(</span><span class="n">pp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L42"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-pp_2"><kbd>method</kbd> <code>pp</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">pp</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L79"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yicestermarray"><kbd>class</kbd> <code>YicesTermArray</code></h2>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L13"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init___3"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">yices_id</span><span class="p">,</span> <span class="n">operator</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h4 id="property-value_3"><kbd>property</kbd> value</h4>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L35"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-dump_3"><kbd>method</kbd> <code>dump</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">dump</span><span class="p">(</span><span class="n">pp</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L42"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-pp_3"><kbd>method</kbd> <code>pp</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">pp</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L83"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yicestype"><kbd>class</kbd> <code>YicesType</code></h2>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L84"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init___4"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">yices_id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L98"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yicestypebv"><kbd>class</kbd> <code>YicesTypeBV</code></h2>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L84"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init___5"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">yices_id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L102"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yicestypearray"><kbd>class</kbd> <code>YicesTypeArray</code></h2>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L84"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init___6"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">yices_id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L106"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-yices2"><kbd>class</kbd> <code>Yices2</code></h2>
+<p>Backend for Yices2 </p>
+<p>For the list of options see here. https://github.com/SRI-CSL/yices2/blob/bc50bebdc3aabb161328bbfc234a10da6dd3d5c4/doc/sphinx/source/context-operations.rst </p>
+<p>self.solver.enable_option("var-elim") self.solver.enable_option("arith-elim") self.solver.enable_option("flatten") self.solver.enable_option("assert-ite-bounds") self.solver.enable_option("eager-arith-lemmas") self.solver.enable_option("keep-ite") self.solver.enable_option("bvarith-elim") self.solver.enable_option("break-symmetries") </p>
+<p>cfg.set_config("arith-solver", 'simplex') </p>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L125"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init___7"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="fm">__init__</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L259"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-and"><kbd>method</kbd> <code>And</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">And</span><span class="p">(</span><span class="o">*</span><span class="n">terms</span><span class="p">:</span> <span class="n">YicesTermBool</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L226"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-array"><kbd>method</kbd> <code>Array</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">Array</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">index_sort</span><span class="p">:</span> <span class="n">YicesTypeBV</span><span class="p">,</span> <span class="n">value_sort</span><span class="p">:</span> <span class="n">YicesTypeBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermArray</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L450"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-array_select"><kbd>method</kbd> <code>Array_Select</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">Array_Select</span><span class="p">(</span><span class="n">arr</span><span class="p">:</span> <span class="n">YicesTermArray</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L442"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-array_store"><kbd>method</kbd> <code>Array_Store</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">Array_Store</span><span class="p">(</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span class="n">arr</span><span class="p">:</span> <span class="n">YicesTermArray</span><span class="p">,</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    <span class="n">index</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>    <span class="n">elem</span><span class="p">:</span> <span class="n">YicesTermBV</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermArray</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L146"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bvs"><kbd>method</kbd> <code>BVS</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">BVS</span><span class="p">(</span><span class="n">symbol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L131"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bvsort"><kbd>method</kbd> <code>BVSort</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">BVSort</span><span class="p">(</span><span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTypeBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L136"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bvv"><kbd>method</kbd> <code>BVV</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">BVV</span><span class="p">(</span><span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L291"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_add"><kbd>method</kbd> <code>BV_Add</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">BV_Add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L399"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_and"><kbd>method</kbd> <code>BV_And</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">BV_And</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L285"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_concat"><kbd>method</kbd> <code>BV_Concat</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">BV_Concat</span><span class="p">(</span><span class="n">terms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">YicesTermBV</span><span class="p">])</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L278"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_extract"><kbd>method</kbd> <code>BV_Extract</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">BV_Extract</span><span class="p">(</span><span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bv</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L303"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_mul"><kbd>method</kbd> <code>BV_Mul</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">BV_Mul</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L417"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_not"><kbd>method</kbd> <code>BV_Not</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">BV_Not</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L405"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_or"><kbd>method</kbd> <code>BV_Or</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">BV_Or</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L315"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sdiv"><kbd>method</kbd> <code>BV_SDiv</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">BV_SDiv</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L375"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sge"><kbd>method</kbd> <code>BV_SGE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">BV_SGE</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L387"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sgt"><kbd>method</kbd> <code>BV_SGT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">BV_SGT</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L381"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sle"><kbd>method</kbd> <code>BV_SLE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">BV_SLE</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L393"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_slt"><kbd>method</kbd> <code>BV_SLT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">BV_SLT</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L321"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_smod"><kbd>method</kbd> <code>BV_SMod</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="n">BV_SMod</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L327"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_srem"><kbd>method</kbd> <code>BV_SRem</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="n">BV_SRem</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L434"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sar"><kbd>method</kbd> <code>BV_Sar</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="n">BV_Sar</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L422"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_shl"><kbd>method</kbd> <code>BV_Shl</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">BV_Shl</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L428"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_shr"><kbd>method</kbd> <code>BV_Shr</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="n">BV_Shr</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L339"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sign_extend"><kbd>method</kbd> <code>BV_Sign_Extend</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">BV_Sign_Extend</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L297"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sub"><kbd>method</kbd> <code>BV_Sub</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">BV_Sub</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L309"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_udiv"><kbd>method</kbd> <code>BV_UDiv</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="n">BV_UDiv</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L351"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_uge"><kbd>method</kbd> <code>BV_UGE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="n">BV_UGE</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L363"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_ugt"><kbd>method</kbd> <code>BV_UGT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="n">BV_UGT</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L357"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_ule"><kbd>method</kbd> <code>BV_ULE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="n">BV_ULE</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L369"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_ult"><kbd>method</kbd> <code>BV_ULT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">BV_ULT</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L333"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_urem"><kbd>method</kbd> <code>BV_URem</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="n">BV_URem</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L411"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_xor"><kbd>method</kbd> <code>BV_Xor</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="n">BV_Xor</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L345"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_zero_extend"><kbd>method</kbd> <code>BV_Zero_Extend</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">BV_Zero_Extend</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBV</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L247"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-equal"><kbd>method</kbd> <code>Equal</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="n">Equal</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L236"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-if"><kbd>method</kbd> <code>If</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">If</span><span class="p">(</span>
+</span><span id="__span-51-2"><a id="__codelineno-51-2" name="__codelineno-51-2" href="#__codelineno-51-2"></a>    <span class="n">cond</span><span class="p">:</span> <span class="n">YicesTermBool</span><span class="p">,</span>
+</span><span id="__span-51-3"><a id="__codelineno-51-3" name="__codelineno-51-3" href="#__codelineno-51-3"></a>    <span class="n">value_if_true</span><span class="p">:</span> <span class="n">YicesTerm</span><span class="p">,</span>
+</span><span id="__span-51-4"><a id="__codelineno-51-4" name="__codelineno-51-4" href="#__codelineno-51-4"></a>    <span class="n">value_if_false</span><span class="p">:</span> <span class="n">YicesTerm</span>
+</span><span id="__span-51-5"><a id="__codelineno-51-5" name="__codelineno-51-5" href="#__codelineno-51-5"></a><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTerm</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L271"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-not"><kbd>method</kbd> <code>Not</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-52-1"><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="n">Not</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBool</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L253"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-notequal"><kbd>method</kbd> <code>NotEqual</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-53-1"><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="n">NotEqual</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L265"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-or"><kbd>method</kbd> <code>Or</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-54-1"><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a><span class="n">Or</span><span class="p">(</span><span class="o">*</span><span class="n">terms</span><span class="p">:</span> <span class="n">YicesTermBool</span><span class="p">)</span> <span class="err">→</span> <span class="n">YicesTermBool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L219"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-add_assertion"><kbd>method</kbd> <code>add_assertion</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-55-1"><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a><span class="n">add_assertion</span><span class="p">(</span><span class="n">formula</span><span class="p">:</span> <span class="n">YicesTermBool</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L222"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-add_assertions"><kbd>method</kbd> <code>add_assertions</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-56-1"><a id="__codelineno-56-1" name="__codelineno-56-1" href="#__codelineno-56-1"></a><span class="n">add_assertions</span><span class="p">(</span><span class="n">formulas</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">YicesTermBool</span><span class="p">])</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L153"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_unsigned_value"><kbd>method</kbd> <code>bv_unsigned_value</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-57-1"><a id="__codelineno-57-1" name="__codelineno-57-1" href="#__codelineno-57-1"></a><span class="n">bv_unsigned_value</span><span class="p">(</span><span class="n">bv</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="nb">int</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L464"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-copy"><kbd>method</kbd> <code>copy</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-58-1"><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a><span class="n">copy</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L456"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-eval"><kbd>method</kbd> <code>eval</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-59-1"><a id="__codelineno-59-1" name="__codelineno-59-1" href="#__codelineno-59-1"></a><span class="nb">eval</span><span class="p">(</span><span class="n">term</span><span class="p">:</span> <span class="n">YicesTerm</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L161"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-get_bv_by_name"><kbd>method</kbd> <code>get_bv_by_name</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-60-1"><a id="__codelineno-60-1" name="__codelineno-60-1" href="#__codelineno-60-1"></a><span class="n">get_bv_by_name</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L168"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_concrete"><kbd>method</kbd> <code>is_concrete</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-61-1"><a id="__codelineno-61-1" name="__codelineno-61-1" href="#__codelineno-61-1"></a><span class="n">is_concrete</span><span class="p">(</span><span class="n">bv</span><span class="p">:</span> <span class="n">YicesTermBV</span><span class="p">)</span> <span class="err">→</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L209"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_formula_false"><kbd>method</kbd> <code>is_formula_false</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-62-1"><a id="__codelineno-62-1" name="__codelineno-62-1" href="#__codelineno-62-1"></a><span class="n">is_formula_false</span><span class="p">(</span><span class="n">formula</span><span class="p">:</span> <span class="n">YicesTermBool</span><span class="p">)</span> <span class="err">→</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L205"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_formula_true"><kbd>method</kbd> <code>is_formula_true</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-63-1"><a id="__codelineno-63-1" name="__codelineno-63-1" href="#__codelineno-63-1"></a><span class="n">is_formula_true</span><span class="p">(</span><span class="n">formula</span><span class="p">:</span> <span class="n">YicesTermBool</span><span class="p">)</span> <span class="err">→</span> <span class="nb">bool</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L216"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-pop"><kbd>method</kbd> <code>pop</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-64-1"><a id="__codelineno-64-1" name="__codelineno-64-1" href="#__codelineno-64-1"></a><span class="n">pop</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/yices2.py#L213"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-push"><kbd>method</kbd> <code>push</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-65-1"><a id="__codelineno-65-1" name="__codelineno-65-1" href="#__codelineno-65-1"></a><span class="n">push</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><em>This file was automatically generated via <a href="https://github.com/ml-tooling/lazydocs">lazydocs</a>.</em></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../greed.solver.solver/" class="btn btn-neutral float-left" title="greed.solver.solver"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../greed.state/" class="btn btn-neutral float-right" title="greed.state">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../greed.solver.solver/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../greed.state/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

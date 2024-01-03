@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>greed.solver.shortcuts - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "greed.solver.shortcuts";
+        var mkdocs_page_input_path = "modules/greed.solver.shortcuts.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">greed.solver.shortcuts</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#function-ctx_or_symbolic">function ctx_or_symbolic</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-concretize">function concretize</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bvsort">function BVSort</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bvv">function BVV</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bvs">function BVS</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-array">function Array</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-if">function If</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-equal">function Equal</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-notequal">function NotEqual</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-or">function Or</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-and">function And</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-not">function Not</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_unsigned_value">function bv_unsigned_value</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-get_bv_by_name">function get_bv_by_name</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-is_concrete">function is_concrete</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_extract">function BV_Extract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_concat">function BV_Concat</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_add">function BV_Add</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_sub">function BV_Sub</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_mul">function BV_Mul</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_udiv">function BV_UDiv</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_sdiv">function BV_SDiv</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_smod">function BV_SMod</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_srem">function BV_SRem</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_urem">function BV_URem</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_sign_extend">function BV_Sign_Extend</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_zero_extend">function BV_Zero_Extend</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_uge">function BV_UGE</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_ule">function BV_ULE</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_ugt">function BV_UGT</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_ult">function BV_ULT</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_sge">function BV_SGE</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_sle">function BV_SLE</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_sgt">function BV_SGT</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_slt">function BV_SLT</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_and">function BV_And</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_or">function BV_Or</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_xor">function BV_Xor</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_not">function BV_Not</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_shl">function BV_Shl</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_shr">function BV_Shr</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-bv_sar">function BV_Sar</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-array_store">function Array_Store</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#function-array_select">function Array_Select</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Modules</li>
+      <li class="breadcrumb-item active">greed.solver.shortcuts</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <!-- markdownlint-disable -->
+
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h1 id="module-greedsolvershortcuts"><kbd>module</kbd> <code>greed.solver.shortcuts</code></h1>
+<p>This module provides shortcuts to the solver API to be used in greed scripts. </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L23"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-ctx_or_symbolic"><kbd>function</kbd> <code>ctx_or_symbolic</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">ctx_or_symbolic</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">xid</span><span class="p">,</span> <span class="n">nbits</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Given a variable name, if the var is in the context, return it,  otherwise create a new symbolic variable. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>v</code></b>:  The variable name </li>
+<li><b><code>ctx</code></b>:  The context </li>
+<li><b><code>xid</code></b>:  The transaction id </li>
+<li><b><code>nbits</code></b>:  The number of bits of the symbolic variable </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L41"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-concretize"><kbd>function</kbd> <code>concretize</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">concretize</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Given a value, if it is concrete, return it, otherwise  if the symbolic variable has only one possible solution, return it. If the symbolic variable has multiple possible solutions and force is True, add a constraint and return one of the possible solutions. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>state</code></b>:  The state </li>
+<li><b><code>val</code></b>:  The value </li>
+<li><b><code>force</code></b>:  Whether to force the concretization </li>
+</ul>
+<p><strong>Returns:</strong>
+ The concrete value or None </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L72"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bvsort"><kbd>function</kbd> <code>BVSort</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">BVSort</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L76"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bvv"><kbd>function</kbd> <code>BVV</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">BVV</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L80"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bvs"><kbd>function</kbd> <code>BVS</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">BVS</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L84"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-array"><kbd>function</kbd> <code>Array</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">Array</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">index_sort</span><span class="p">,</span> <span class="n">value_sort</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L91"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-if"><kbd>function</kbd> <code>If</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">If</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">value_if_true</span><span class="p">,</span> <span class="n">value_if_false</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L98"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-equal"><kbd>function</kbd> <code>Equal</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">Equal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L102"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-notequal"><kbd>function</kbd> <code>NotEqual</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">NotEqual</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L106"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-or"><kbd>function</kbd> <code>Or</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">Or</span><span class="p">(</span><span class="o">*</span><span class="n">terms</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L110"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-and"><kbd>function</kbd> <code>And</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">And</span><span class="p">(</span><span class="o">*</span><span class="n">terms</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L114"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-not"><kbd>function</kbd> <code>Not</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">Not</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L121"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_unsigned_value"><kbd>function</kbd> <code>bv_unsigned_value</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">bv_unsigned_value</span><span class="p">(</span><span class="n">bv</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L125"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-get_bv_by_name"><kbd>function</kbd> <code>get_bv_by_name</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">get_bv_by_name</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L129"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-is_concrete"><kbd>function</kbd> <code>is_concrete</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">is_concrete</span><span class="p">(</span><span class="n">bv</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L133"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_extract"><kbd>function</kbd> <code>BV_Extract</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">BV_Extract</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">bv</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L137"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_concat"><kbd>function</kbd> <code>BV_Concat</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">BV_Concat</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L141"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_add"><kbd>function</kbd> <code>BV_Add</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">BV_Add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L145"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_sub"><kbd>function</kbd> <code>BV_Sub</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">BV_Sub</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L149"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_mul"><kbd>function</kbd> <code>BV_Mul</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">BV_Mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L153"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_udiv"><kbd>function</kbd> <code>BV_UDiv</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">BV_UDiv</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L157"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_sdiv"><kbd>function</kbd> <code>BV_SDiv</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">BV_SDiv</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L161"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_smod"><kbd>function</kbd> <code>BV_SMod</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">BV_SMod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L165"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_srem"><kbd>function</kbd> <code>BV_SRem</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">BV_SRem</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L169"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_urem"><kbd>function</kbd> <code>BV_URem</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">BV_URem</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L173"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_sign_extend"><kbd>function</kbd> <code>BV_Sign_Extend</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">BV_Sign_Extend</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L177"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_zero_extend"><kbd>function</kbd> <code>BV_Zero_Extend</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">BV_Zero_Extend</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L181"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_uge"><kbd>function</kbd> <code>BV_UGE</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">BV_UGE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L185"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_ule"><kbd>function</kbd> <code>BV_ULE</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">BV_ULE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L189"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_ugt"><kbd>function</kbd> <code>BV_UGT</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">BV_UGT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L193"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_ult"><kbd>function</kbd> <code>BV_ULT</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">BV_ULT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L197"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_sge"><kbd>function</kbd> <code>BV_SGE</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">BV_SGE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L201"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_sle"><kbd>function</kbd> <code>BV_SLE</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">BV_SLE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L205"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_sgt"><kbd>function</kbd> <code>BV_SGT</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">BV_SGT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L209"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_slt"><kbd>function</kbd> <code>BV_SLT</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">BV_SLT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L213"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_and"><kbd>function</kbd> <code>BV_And</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="n">BV_And</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L217"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_or"><kbd>function</kbd> <code>BV_Or</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="n">BV_Or</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L221"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_xor"><kbd>function</kbd> <code>BV_Xor</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="n">BV_Xor</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L225"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_not"><kbd>function</kbd> <code>BV_Not</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">BV_Not</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L229"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_shl"><kbd>function</kbd> <code>BV_Shl</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="n">BV_Shl</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L233"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_shr"><kbd>function</kbd> <code>BV_Shr</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">BV_Shr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L237"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-bv_sar"><kbd>function</kbd> <code>BV_Sar</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">BV_Sar</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L244"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-array_store"><kbd>function</kbd> <code>Array_Store</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="n">Array_Store</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">elem</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/shortcuts.py#L248"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="function-array_select"><kbd>function</kbd> <code>Array_Select</code></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="n">Array_Select</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><em>This file was automatically generated via <a href="https://github.com/ml-tooling/lazydocs">lazydocs</a>.</em></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../greed.sim_manager/" class="btn btn-neutral float-left" title="greed.sim_manager"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../greed.solver.solver/" class="btn btn-neutral float-right" title="greed.solver.solver">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../greed.sim_manager/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../greed.solver.solver/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

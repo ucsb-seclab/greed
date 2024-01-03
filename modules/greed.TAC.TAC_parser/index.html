@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>greed.TAC.TAC_parser - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "greed.TAC.TAC_parser";
+        var mkdocs_page_input_path = "modules/greed.TAC.TAC_parser.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">greed.TAC.TAC_parser</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#global-variables">Global Variables</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-tac_parser">class TAC_parser</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init__">method __init__</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_abi">method parse_abi</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_blocks">method parse_blocks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_blocks_in_loop">method parse_blocks_in_loop</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_functions">method parse_functions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_guarded_slots">method parse_guarded_slots</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_guarding_slots">method parse_guarding_slots</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_induction_variable_increases_by_const">method parse_induction_variable_increases_by_const</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_induction_variable_starts_at_const">method parse_induction_variable_starts_at_const</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_induction_variable_upper_bounds">method parse_induction_variable_upper_bounds</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_induction_variables">method parse_induction_variables</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_recovered_abi">method parse_recovered_abi</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-parse_statements">method parse_statements</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-stmt_sort_key">method stmt_sort_key</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Modules</li>
+      <li class="breadcrumb-item active">greed.TAC.TAC_parser</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <!-- markdownlint-disable -->
+
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h1 id="module-greedtactac_parser"><kbd>module</kbd> <code>greed.TAC.TAC_parser</code></h1>
+<h2 id="global-variables"><strong>Global Variables</strong></h2>
+<ul>
+<li><strong>tac_opcode_to_class_map</strong></li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L24"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-tac_parser"><kbd>class</kbd> <code>TAC_parser</code></h2>
+<p>This class parses the TAC facts generated by Gigahorse and builds the CFG. </p>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L28"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init__"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">factory</span><span class="p">:</span> <span class="n">Factory</span><span class="p">,</span> <span class="n">target_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L288"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_abi"><kbd>method</kbd> <code>parse_abi</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">parse_abi</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L152"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_blocks"><kbd>method</kbd> <code>parse_blocks</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">parse_blocks</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L231"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_blocks_in_loop"><kbd>method</kbd> <code>parse_blocks_in_loop</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">parse_blocks_in_loop</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L186"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_functions"><kbd>method</kbd> <code>parse_functions</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">parse_functions</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L276"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_guarded_slots"><kbd>method</kbd> <code>parse_guarded_slots</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">parse_guarded_slots</span><span class="p">(</span><span class="n">guarding_slots</span><span class="p">,</span> <span class="n">sstores_for_slot</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L271"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_guarding_slots"><kbd>method</kbd> <code>parse_guarding_slots</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">parse_guarding_slots</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L251"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_induction_variable_increases_by_const"><kbd>method</kbd> <code>parse_induction_variable_increases_by_const</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">parse_induction_variable_increases_by_const</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L241"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_induction_variable_starts_at_const"><kbd>method</kbd> <code>parse_induction_variable_starts_at_const</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">parse_induction_variable_starts_at_const</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L261"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_induction_variable_upper_bounds"><kbd>method</kbd> <code>parse_induction_variable_upper_bounds</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">parse_induction_variable_upper_bounds</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L235"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_induction_variables"><kbd>method</kbd> <code>parse_induction_variables</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">parse_induction_variables</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L314"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_recovered_abi"><kbd>method</kbd> <code>parse_recovered_abi</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">parse_recovered_abi</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L39"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-parse_statements"><kbd>method</kbd> <code>parse_statements</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">parse_statements</span><span class="p">()</span>
+</span></code></pre></div>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/TAC/TAC_parser.py#L35"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-stmt_sort_key"><kbd>method</kbd> <code>stmt_sort_key</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">stmt_sort_key</span><span class="p">(</span><span class="n">stmt_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="err">→</span> <span class="nb">int</span>
+</span></code></pre></div>
+<hr />
+<p><em>This file was automatically generated via <a href="https://github.com/ml-tooling/lazydocs">lazydocs</a>.</em></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../faq/" class="btn btn-neutral float-left" title="FAQ"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../greed.TAC.base/" class="btn btn-neutral float-right" title="greed.TAC.base">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../../faq/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../greed.TAC.base/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

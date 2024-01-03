@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>greed.sim_manager - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "greed.sim_manager";
+        var mkdocs_page_input_path = "modules/greed.sim_manager.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">greed.sim_manager</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#global-variables">Global Variables</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#class-simulationmanager">class SimulationManager</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-__init__">method __init__</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#property-active">property active</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#property-deadended">property deadended</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#property-found">property found</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#property-one_active">property one_active</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#property-one_deadended">property one_deadended</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#property-one_found">property one_found</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#property-states">property states</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-findall">method findall</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-move">method move</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-run">method run</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-set_error">method set_error</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-single_step_state">method single_step_state</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-step">method step</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-use_technique">method use_technique</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Modules</li>
+      <li class="breadcrumb-item active">greed.sim_manager</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <!-- markdownlint-disable -->
+
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h1 id="module-greedsim_manager"><kbd>module</kbd> <code>greed.sim_manager</code></h1>
+<h2 id="global-variables"><strong>Global Variables</strong></h2>
+<ul>
+<li><strong>TYPE_CHECKING</strong></li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L15"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-simulationmanager"><kbd>class</kbd> <code>SimulationManager</code></h2>
+<p>This class is the main class for running the symbolic execution. The simulation manager is responsible for keeping track of the states, and for moving them between the different stashes according to the employed exploration techniques. </p>
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L22"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-__init__"><kbd>method</kbd> <code>__init__</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="fm">__init__</span><span class="p">(</span><span class="n">entry_state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">,</span> <span class="n">project</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>entry_state</code></b>:  The entry state of the simulation manager </li>
+<li><b><code>project</code></b>:  The greed project </li>
+</ul>
+<hr />
+<h4 id="property-active"><kbd>property</kbd> active</h4>
+<p><strong>Returns:</strong>
+  All the active states </p>
+<hr />
+<h4 id="property-deadended"><kbd>property</kbd> deadended</h4>
+<p><strong>Returns:</strong>
+  All the deadended states (halted states) </p>
+<hr />
+<h4 id="property-found"><kbd>property</kbd> found</h4>
+<p><strong>Returns:</strong>
+  All the found states (states that met the <code>find</code> condition) </p>
+<hr />
+<h4 id="property-one_active"><kbd>property</kbd> one_active</h4>
+<p><strong>Returns:</strong>
+  First element of the active stash, or None if the stash is empty </p>
+<hr />
+<h4 id="property-one_deadended"><kbd>property</kbd> one_deadended</h4>
+<p><strong>Returns:</strong>
+  First element of the deadended stash, or None if the stash is empty </p>
+<hr />
+<h4 id="property-one_found"><kbd>property</kbd> one_found</h4>
+<p><strong>Returns:</strong>
+  First element of the found stash, or None if the stash is empty </p>
+<hr />
+<h4 id="property-states"><kbd>property</kbd> states</h4>
+<p><strong>Returns:</strong>
+  All the states in the simulation manager </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L276"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-findall"><kbd>method</kbd> <code>findall</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">findall</span><span class="p">(</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">find</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SymbolicEVMState</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">SimulationManager</span><span class="o">.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x7f79526d6980</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">prune</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SymbolicEVMState</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">SimulationManager</span><span class="o">.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x7f79526d6a20</span><span class="o">&gt;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Run the simulation manager, until the <code>find</code> condition of all the ET is met. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>find</code></b>:  Function that will be called after each step. The matching states will be moved to the found stash </li>
+<li><b><code>prune</code></b>:  Function that will be called after each step. The matching states will be moved to the pruned stash Yield: The found states </li>
+</ul>
+<p><strong>Raises:</strong></p>
+<ul>
+<li><b><code>Exception</code></b>:  If something goes wrong while stepping the simulation manager </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L128"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-move"><kbd>method</kbd> <code>move</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">move</span><span class="p">(</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">from_stash</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">to_stash</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">filter_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SymbolicEVMState</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">SimulationManager</span><span class="o">.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x7f79526d63e0</span><span class="o">&gt;</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Move all the states that meet the filter_func condition from from_stash to to_stash </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>from_stash</code></b>:  Source stash </li>
+<li><b><code>to_stash</code></b>:  Destination Stash </li>
+<li><b><code>filter_func</code></b>:  A function that discriminates what states should be moved </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L234"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-run"><kbd>method</kbd> <code>run</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">run</span><span class="p">(</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">find</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SymbolicEVMState</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">SimulationManager</span><span class="o">.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x7f79526d67a0</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">prune</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SymbolicEVMState</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">SimulationManager</span><span class="o">.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x7f79526d6840</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">find_all</span><span class="o">=</span><span class="kc">False</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Run the simulation manager, until the <code>find</code> condition is met.  The analysis will stop when there are no more active states, some states met the <code>find</code> condition  (these will be moved to the found stash), or the exploration techniques are done. If no ET are plugged, the default searching strategy is BFS. When techniques are plugged, their methods are executed following the same order they were plugged. </p>
+<p>e.g., assuming we have T1 and T2.  T1(check_stashes) -&gt; T2(check_stashes) -&gt; T1(check_state) -&gt; T2(check_state)<br />
+            -&gt; T1(check_successors) -&gt; T2(check_successors) </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>find</code></b>:  Function that will be called after each step. The matching states will be moved to the found stash </li>
+<li><b><code>prune</code></b>:  Function that will be called after each step. The matching states will be moved to the pruned stash </li>
+<li><b><code>find_all</code></b>:  If True, the analysis will continue until all the ET meet the <code>find</code> condition </li>
+</ul>
+<p><strong>Raises:</strong></p>
+<ul>
+<li><b><code>Exception</code></b>:  If something goes wrong while stepping the simulation manager </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L47"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-set_error"><kbd>method</kbd> <code>set_error</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">set_error</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Set an error to the simulation manager </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L182"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-single_step_state"><kbd>method</kbd> <code>single_step_state</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">single_step_state</span><span class="p">(</span><span class="n">state</span><span class="p">:</span> <span class="n">SymbolicEVMState</span><span class="p">)</span> <span class="err">→</span> <span class="n">List</span><span class="p">[</span><span class="n">SymbolicEVMState</span><span class="p">]</span>
+</span></code></pre></div>
+<p>Step a single state (calculate its successors) </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>state</code></b>:  The state to step </li>
+</ul>
+<p><strong>Returns:</strong>
+ The successors of the state </p>
+<p><strong>Raises:</strong></p>
+<ul>
+<li><b><code>Exception</code></b>:  If something goes wrong while generating the successors </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L141"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-step"><kbd>method</kbd> <code>step</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">step</span><span class="p">(</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="n">find</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SymbolicEVMState</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">SimulationManager</span><span class="o">.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x7f79526d6520</span><span class="o">&gt;</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span class="n">prune</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">SymbolicEVMState</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">function</span> <span class="n">SimulationManager</span><span class="o">.&lt;</span><span class="k">lambda</span><span class="o">&gt;</span> <span class="n">at</span> <span class="mh">0x7f79526d65c0</span><span class="o">&gt;</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">)</span>
+</span></code></pre></div>
+<p>Step the simulation manager, i.e., step all the active states. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>find</code></b>:  A function that discriminates what states should be moved to the found stash </li>
+<li><b><code>prune</code></b>:  A function that discriminates what states should be moved to the pruned stash </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/sim_manager.py#L119"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-use_technique"><kbd>method</kbd> <code>use_technique</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">use_technique</span><span class="p">(</span><span class="n">technique</span><span class="p">:</span> <span class="s1">&#39;ExplorationTechnique&#39;</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Install an exploration technique in the simulation manager. </p>
+<hr />
+<p><em>This file was automatically generated via <a href="https://github.com/ml-tooling/lazydocs">lazydocs</a>.</em></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../greed.sha3/" class="btn btn-neutral float-left" title="greed.sha3"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../greed.solver.shortcuts/" class="btn btn-neutral float-right" title="greed.solver.shortcuts">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../greed.sha3/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../greed.solver.shortcuts/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

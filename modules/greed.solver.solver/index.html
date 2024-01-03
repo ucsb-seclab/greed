@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>greed.solver.solver - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "greed.solver.solver";
+        var mkdocs_page_input_path = "modules/greed.solver.solver.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">greed.solver.solver</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#class-solver">class Solver</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#method-and">method And</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-array">method Array</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-array_select">method Array_Select</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-array_store">method Array_Store</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bvs">method BVS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bvsort">method BVSort</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bvv">method BVV</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_add">method BV_Add</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_and">method BV_And</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_concat">method BV_Concat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_extract">method BV_Extract</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_mul">method BV_Mul</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_not">method BV_Not</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_or">method BV_Or</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sdiv">method BV_SDiv</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sge">method BV_SGE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sgt">method BV_SGT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sle">method BV_SLE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_slt">method BV_SLT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_smod">method BV_SMod</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_srem">method BV_SRem</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sar">method BV_Sar</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_shl">method BV_Shl</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_shr">method BV_Shr</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sign_extend">method BV_Sign_Extend</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_sub">method BV_Sub</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_udiv">method BV_UDiv</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_uge">method BV_UGE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_ugt">method BV_UGT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_ule">method BV_ULE</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_ult">method BV_ULT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_urem">method BV_URem</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_xor">method BV_Xor</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_zero_extend">method BV_Zero_Extend</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-equal">method Equal</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-if">method If</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-not">method Not</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-notequal">method NotEqual</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-or">method Or</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-add_assertion">method add_assertion</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-add_assertions">method add_assertions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-are_formulas_sat">method are_formulas_sat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-bv_unsigned_value">method bv_unsigned_value</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-copy">method copy</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-eval">method eval</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-get_bv_by_name">method get_bv_by_name</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_concrete">method is_concrete</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_formula_false">method is_formula_false</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_formula_sat">method is_formula_sat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_formula_true">method is_formula_true</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_formula_unsat">method is_formula_unsat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_sat">method is_sat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-is_unsat">method is_unsat</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-pop">method pop</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-push">method push</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#method-solver_timeout">method solver_timeout</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Modules</li>
+      <li class="breadcrumb-item active">greed.solver.solver</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <!-- markdownlint-disable -->
+
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L0"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h1 id="module-greedsolversolver"><kbd>module</kbd> <code>greed.solver.solver</code></h1>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L12"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h2 id="class-solver"><kbd>class</kbd> <code>Solver</code></h2>
+<p>This class represents a solver. Every solver must implement this interface. </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L219"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-and"><kbd>method</kbd> <code>And</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">And</span><span class="p">(</span><span class="o">*</span><span class="n">terms</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT And with the given terms. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>terms</code></b>:  The terms to AND </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L173"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-array"><kbd>method</kbd> <code>Array</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">Array</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">index_sort</span><span class="p">,</span> <span class="n">value_sort</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT Array. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>symbol</code></b>:  The symbol of the array </li>
+<li><b><code>index_sort</code></b>:  The index sort of the array </li>
+<li><b><code>value_sort</code></b>:  The value sort of the array </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L487"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-array_select"><kbd>method</kbd> <code>Array_Select</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">Array_Select</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT Array_Select with the given terms. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>arr</code></b>:  The array to select from </li>
+<li><b><code>index</code></b>:  The index to select from </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L477"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-array_store"><kbd>method</kbd> <code>Array_Store</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">Array_Store</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">elem</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT Array_Store with the given terms. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>arr</code></b>:  The array to store to </li>
+<li><b><code>index</code></b>:  The index to store to </li>
+<li><b><code>elem</code></b>:  The element to store </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L60"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bvs"><kbd>method</kbd> <code>BVS</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">BVS</span><span class="p">(</span><span class="n">symbol</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector symbol of the given width. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>symbol</code></b>:  The name of the symbol </li>
+<li><b><code>width</code></b>:  The width of the symbol </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L43"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bvsort"><kbd>method</kbd> <code>BVSort</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">BVSort</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector sort of the given width. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>width</code></b>:  The width of the bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L51"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bvv"><kbd>method</kbd> <code>BVV</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">BVV</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector value of the given width. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>value</code></b>:  The value of the bitvector </li>
+<li><b><code>width</code></b>:  The width of the bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L253"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_add"><kbd>method</kbd> <code>BV_Add</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">BV_Add</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector addition of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L415"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_and"><kbd>method</kbd> <code>BV_And</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">BV_And</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector bitwise and of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L245"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_concat"><kbd>method</kbd> <code>BV_Concat</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">BV_Concat</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector concatenation of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>terms</code></b>:  The bitvectors to concatenate </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L235"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_extract"><kbd>method</kbd> <code>BV_Extract</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">BV_Extract</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">bv</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector extract of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>start</code></b>:  The start of the extract </li>
+<li><b><code>end</code></b>:  The end of the extract </li>
+<li><b><code>bv</code></b>:  The bitvector to extract from </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L271"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_mul"><kbd>method</kbd> <code>BV_Mul</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">BV_Mul</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector multiplication of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L442"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_not"><kbd>method</kbd> <code>BV_Not</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">BV_Not</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector not of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The bitvector to not </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L424"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_or"><kbd>method</kbd> <code>BV_Or</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="n">BV_Or</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector bitwise or of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L289"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sdiv"><kbd>method</kbd> <code>BV_SDiv</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="n">BV_SDiv</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector signed division of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L379"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sge"><kbd>method</kbd> <code>BV_SGE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="n">BV_SGE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector signed greater or equal than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L397"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sgt"><kbd>method</kbd> <code>BV_SGT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="n">BV_SGT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector signed greater than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L388"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sle"><kbd>method</kbd> <code>BV_SLE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="n">BV_SLE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector signed less or equal than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L406"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_slt"><kbd>method</kbd> <code>BV_SLT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="n">BV_SLT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector signed less than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L298"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_smod"><kbd>method</kbd> <code>BV_SMod</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="n">BV_SMod</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector signed modulo of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L307"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_srem"><kbd>method</kbd> <code>BV_SRem</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">BV_SRem</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector signed remainder of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L468"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sar"><kbd>method</kbd> <code>BV_Sar</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">BV_Sar</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector arithmetic shift right of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The bitvector to shift </li>
+<li><b><code>b</code></b>:  The shift amount </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L450"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_shl"><kbd>method</kbd> <code>BV_Shl</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">BV_Shl</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector shift left of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The bitvector to shift </li>
+<li><b><code>b</code></b>:  The shift amount </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L459"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_shr"><kbd>method</kbd> <code>BV_Shr</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="n">BV_Shr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector shift right of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The bitvector to shift </li>
+<li><b><code>b</code></b>:  The shift amount </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L325"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sign_extend"><kbd>method</kbd> <code>BV_Sign_Extend</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">BV_Sign_Extend</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector sign extension of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The bitvector to extend </li>
+<li><b><code>b</code></b>:  The width of the extension </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L262"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_sub"><kbd>method</kbd> <code>BV_Sub</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="n">BV_Sub</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector subtraction of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L280"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_udiv"><kbd>method</kbd> <code>BV_UDiv</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="n">BV_UDiv</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector unsigned division of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L343"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_uge"><kbd>method</kbd> <code>BV_UGE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="n">BV_UGE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector unsigned greater or equal than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L361"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_ugt"><kbd>method</kbd> <code>BV_UGT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="n">BV_UGT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector unsigned greater than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L352"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_ule"><kbd>method</kbd> <code>BV_ULE</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="n">BV_ULE</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector unsigned less or equal than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L370"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_ult"><kbd>method</kbd> <code>BV_ULT</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="n">BV_ULT</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector unsigned less than of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L316"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_urem"><kbd>method</kbd> <code>BV_URem</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="n">BV_URem</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector unsigned remainder of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L433"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_xor"><kbd>method</kbd> <code>BV_Xor</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="n">BV_Xor</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector bitwise xor of the given bitvectors. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first bitvector </li>
+<li><b><code>b</code></b>:  The second bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L334"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_zero_extend"><kbd>method</kbd> <code>BV_Zero_Extend</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="n">BV_Zero_Extend</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return a bitvector zero extension of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The bitvector to extend </li>
+<li><b><code>b</code></b>:  The width of the extension </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L193"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-equal"><kbd>method</kbd> <code>Equal</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="n">Equal</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT Equal with the given terms. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first term </li>
+<li><b><code>b</code></b>:  The second term </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L183"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-if"><kbd>method</kbd> <code>If</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="n">If</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">value_if_true</span><span class="p">,</span> <span class="n">value_if_false</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT If. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>cond</code></b>:  The condition formula </li>
+<li><b><code>value_if_true</code></b>:  The value if the condition is True </li>
+<li><b><code>value_if_false</code></b>:  The value if the condition is False </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L227"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-not"><kbd>method</kbd> <code>Not</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="n">Not</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT Not with the given term. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The term to NOT </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L202"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-notequal"><kbd>method</kbd> <code>NotEqual</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="n">NotEqual</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT NotEqual with the given terms. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>a</code></b>:  The first term </li>
+<li><b><code>b</code></b>:  The second term </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L211"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-or"><kbd>method</kbd> <code>Or</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a><span class="n">Or</span><span class="p">(</span><span class="o">*</span><span class="n">terms</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return an SMT Or with the given terms. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>terms</code></b>:  The terms to OR </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L157"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-add_assertion"><kbd>method</kbd> <code>add_assertion</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="n">add_assertion</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Add a formula to the solver. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>formula</code></b>:  The formula to add </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L165"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-add_assertions"><kbd>method</kbd> <code>add_assertions</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a><span class="n">add_assertions</span><span class="p">(</span><span class="n">formulas</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Add a list of formulas to the solver. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>formulas</code></b>:  The list of formulas to add </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L113"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-are_formulas_sat"><kbd>method</kbd> <code>are_formulas_sat</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="n">are_formulas_sat</span><span class="p">(</span><span class="n">terms</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return True if the given formulas are satisfiable. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>terms</code></b>:  The list of formulas to check </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L69"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-bv_unsigned_value"><kbd>method</kbd> <code>bv_unsigned_value</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a><span class="n">bv_unsigned_value</span><span class="p">(</span><span class="n">bv</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return the unsigned value of the given bitvector. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>bv</code></b>:  The bitvector to evaluate </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L504"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-copy"><kbd>method</kbd> <code>copy</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="n">copy</span><span class="p">()</span>
+</span></code></pre></div>
+<p>Implement the cloning of the solver when forking. </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L496"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-eval"><kbd>method</kbd> <code>eval</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a><span class="nb">eval</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Evaluate the given term. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>term</code></b>:  The term to evaluate </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L77"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-get_bv_by_name"><kbd>method</kbd> <code>get_bv_by_name</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a><span class="n">get_bv_by_name</span><span class="p">(</span><span class="n">bv</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return the bitvector with the given name. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>bv</code></b>:  The name of the bitvector </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L85"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_concrete"><kbd>method</kbd> <code>is_concrete</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-46-1"><a id="__codelineno-46-1" name="__codelineno-46-1" href="#__codelineno-46-1"></a><span class="n">is_concrete</span><span class="p">(</span><span class="n">bv</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return True if the given bitvector is concrete. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>bv</code></b>:  The bitvector to check </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L137"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_formula_false"><kbd>method</kbd> <code>is_formula_false</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a><span class="n">is_formula_false</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return True if the given formula is always False. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>formula</code></b>:  The formula to check </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L105"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_formula_sat"><kbd>method</kbd> <code>is_formula_sat</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a><span class="n">is_formula_sat</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return True if the given formula is satisfiable. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>formula</code></b>:  The formula to check </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L129"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_formula_true"><kbd>method</kbd> <code>is_formula_true</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a><span class="n">is_formula_true</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return True if the given formula is always True. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>formula</code></b>:  The formula to check </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L121"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_formula_unsat"><kbd>method</kbd> <code>is_formula_unsat</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-50-1"><a id="__codelineno-50-1" name="__codelineno-50-1" href="#__codelineno-50-1"></a><span class="n">is_formula_unsat</span><span class="p">(</span><span class="n">formula</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Return True if the given formula is unsatisfiable. </p>
+<p><strong>Args:</strong></p>
+<ul>
+<li><b><code>formula</code></b>:  The formula to check </li>
+</ul>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L93"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_sat"><kbd>method</kbd> <code>is_sat</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-51-1"><a id="__codelineno-51-1" name="__codelineno-51-1" href="#__codelineno-51-1"></a><span class="n">is_sat</span><span class="p">()</span>
+</span></code></pre></div>
+<p>Return True if the solver is in a satisfiable state. </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L99"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-is_unsat"><kbd>method</kbd> <code>is_unsat</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-52-1"><a id="__codelineno-52-1" name="__codelineno-52-1" href="#__codelineno-52-1"></a><span class="n">is_unsat</span><span class="p">()</span>
+</span></code></pre></div>
+<p>Return True if the solver is in an unsatisfiable state. </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L151"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-pop"><kbd>method</kbd> <code>pop</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-53-1"><a id="__codelineno-53-1" name="__codelineno-53-1" href="#__codelineno-53-1"></a><span class="n">pop</span><span class="p">()</span>
+</span></code></pre></div>
+<p>Pop the current context from the solver. </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L145"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-push"><kbd>method</kbd> <code>push</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-54-1"><a id="__codelineno-54-1" name="__codelineno-54-1" href="#__codelineno-54-1"></a><span class="n">push</span><span class="p">()</span>
+</span></code></pre></div>
+<p>Push a new context on the solver. </p>
+<hr />
+<p><a href="https://github.com/ucsb-seclab/greed/tree/main/greed/solver/solver.py#L17"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a></p>
+<h3 id="method-solver_timeout"><kbd>method</kbd> <code>solver_timeout</code></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-55-1"><a id="__codelineno-55-1" name="__codelineno-55-1" href="#__codelineno-55-1"></a><span class="n">solver_timeout</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<p><em>This file was automatically generated via <a href="https://github.com/ml-tooling/lazydocs">lazydocs</a>.</em></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../greed.solver.shortcuts/" class="btn btn-neutral float-left" title="greed.solver.shortcuts"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../greed.solver.yices2/" class="btn btn-neutral float-right" title="greed.solver.yices2">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../greed.solver.shortcuts/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../greed.solver.yices2/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>FAQ - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "FAQ";
+        var mkdocs_page_input_path = "faq.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">FAQ</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#why-is-it-named-greed">Why is it named greed?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-should-greed-be-stylized">How should "greed" be stylized?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-didnt-you-just-implement-everything-on-top-of-angr">Why didn't you just implement everything on top of angr?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-did-you-choose-to-build-a-symbolic-executor-on-tac">Why did you choose to build a symbolic executor on TAC?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-do-i-know-the-correspondence-between-tac-statements-and-original-opcodes">How do I know the correspondence between TAC statements and original opcodes?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#does-greed-support-non-evm-contracts">Does greed support non-EVM contracts?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#can-greed-work-with-contract-source-code">Can greed work with contract source code?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#does-greed-work-with-vyper-contracts">Does greed work with Vyper contracts?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-is-the-main-difference-between-greed-and-mythril">What is the main difference between greed and Mythril?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-is-the-main-difference-between-greed-and-teether">What is the main difference between greed and teEther?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-is-the-main-difference-between-greed-and-ethbmc">What is the main difference between greed and ETHBMC?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-is-my-symbolic-execution-stuck">Why is my symbolic execution stuck?!</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#i-have-a-problem-how-can-i-get-in-touch-with-the-greed-developers">I have a problem. How can I get in touch with the greed developers?</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">FAQ</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="faq">？FAQ</h1>
+<h2 id="why-is-it-named-greed">Why is it named greed?</h2>
+<p>We all know why people are so interested in finding vulnerabilities in smart contracts..., right? 😉</p>
+<h2 id="how-should-greed-be-stylized">How should "greed" be stylized?</h2>
+<p>Simple: <code>greed</code>, no upper case.</p>
+<h2 id="why-didnt-you-just-implement-everything-on-top-of-angr">Why didn't you just implement everything on top of angr?</h2>
+<p>While implementing everything on top of angr could have been an option, some of the fundamentals of EVM analysis are quite different compared to classic binaries (ARM, x86, AMD64).
+Moreover, we wanted to re-use the high-quality analyses (e.g., CFG) and IR offered by Gigahorse. Thus, starting from square one was simpler than fighting with the angr codebase.</p>
+<h2 id="why-did-you-choose-to-build-a-symbolic-executor-on-tac">Why did you choose to build a symbolic executor on TAC?</h2>
+<p>We believe that register-based analyses are more intuitive and straightforward to implement: Gigahorse gets rid of the unnecessary complexity related to the stack-based nature of the EVM, thus really improving the usability of greed.
+Having a common intermediate representation is also valuable since, as the Dedaub team adds support for new non-EVM-based architectures, greed will automatically support such architectures. 🙂</p>
+<h2 id="how-do-i-know-the-correspondence-between-tac-statements-and-original-opcodes">How do I know the correspondence between TAC statements and original opcodes?</h2>
+<p>While this is not always 100% precise, Gigahorse outputs a file called <code>TAC_Statement_OriginalStatement.csv</code>. You can find the correspondence between the TAC Statement ID and the original PC (bytecode) there.</p>
+<h2 id="does-greed-support-non-evm-contracts">Does greed support non-EVM contracts?</h2>
+<p>greed automatically supports anything that Gigahorse supports. Currently, Gigahorse does not support any non-EVM binary. Thus, currently, greed does not support any non-EVM binary.</p>
+<h2 id="can-greed-work-with-contract-source-code">Can greed work with contract source code?</h2>
+<p>Yes. Just compile the contract and decompile it with Gigahorse, et voila!</p>
+<h2 id="does-greed-work-with-vyper-contracts">Does greed work with Vyper contracts?</h2>
+<p>Yes. Just compile the contract and decompile it with Gigahorse, et voila! 😉</p>
+<h2 id="what-is-the-main-difference-between-greed-and-mythril">What is the main difference between greed and Mythril?</h2>
+<p>While Mythril is a symbolic analysis tool for detecting specific vulnerabilities in smart contracts, greed is a more flexible analysis framework that lets you build any analysis on top of the high-quality results offered by Gigahorse. Note that any of the analyses in Mythril can be re-implemented on top of greed, but the opposite is not always possible.</p>
+<h2 id="what-is-the-main-difference-between-greed-and-teether">What is the main difference between greed and teEther?</h2>
+<p>First, teEther is a symbolic executor built on the stack-based EVM opcodes, but greed builds on the register-based TAC IR. We have also found teEther's CFG reconstruction quite outdated when used against modern contracts. We believe greed offers a more flexible and robust design for building efficient research prototypes.</p>
+<h2 id="what-is-the-main-difference-between-greed-and-ethbmc">What is the main difference between greed and ETHBMC?</h2>
+<p>Similar to teEther, ETHBMC builds on the stack-based EVM opcodes. We found hacking into ETHBMC quite cumbersome compared to the Python-based greed APIs. One could argue that a Rust backend (ETHBMC) has to be faster than greed (Python), but in our experience, greed offers a more user-friendly Python API <strong>and</strong> better performance – also thanks to some careful optimizations such as our caching layers.</p>
+<h2 id="why-is-my-symbolic-execution-stuck">Why is my symbolic execution stuck?!</h2>
+<p>Symbolic execution is not easy, and many moving pieces are involved to make this work.
+If your script is stuck, it is likely because (1) there are too many states (i.e., state explosion) or (2) the constraints have become so complex that even state-of-the-art solvers cannot do much to solve them.
+Two excellent strategies to succeed with symbolic execution are (1) directing the execution by pruning some states and (2) concretizing as many values as possible.</p>
+<p>In other words, hoping to "just symbolically execute" a contract and enumerate all vulnerabilities is generally a lost cause.</p>
+<h2 id="i-have-a-problem-how-can-i-get-in-touch-with-the-greed-developers">I have a problem. How can I get in touch with the greed developers?</h2>
+<p>Just open an <a href="https://github.com/ucsb-seclab/greed/issues">issue</a> on our GitHub! 🙂</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../credits/" class="btn btn-neutral float-left" title="Credits"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../modules/greed.TAC.TAC_parser/" class="btn btn-neutral float-right" title="greed.TAC.TAC_parser">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../credits/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../modules/greed.TAC.TAC_parser/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

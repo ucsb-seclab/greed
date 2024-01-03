@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Core Concepts - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Core Concepts";
+        var mkdocs_page_input_path = "core.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Core Concepts</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#three-address-code">Three Address Code</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#project">Project</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#cfg">CFG</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#state">State</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#symbolic-execution">Symbolic Execution</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#simulation-manager">Simulation Manager</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#solver">Solver</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advanced/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Core Concepts</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="core-concepts">🔥 Core Concepts</h1>
+<h2 id="overview">Overview</h2>
+<p>greed relies on analyses provided by <a href="https://github.com/nevillegrech/gigahorse-toolchain">Gigahorse</a> – a fantastic analysis framework for EVM-based smart contracts developed by <a href="https://dedaub.com/">Dedaub</a>. While Gigahorse offers precise CFG reconstruction and various out-of-the-box data-flow analyses (such as storage layout partial reconstruction, tainted calls, etc.), it lacks the capability to perform classic symbolic execution of a contract's code. For example, it cannot automatically discover the value of CALLDATA needed to reach a specific instruction. Additionally, we found using Datalog rules (or via the produced artifacts) to be sometimes impractical for creating more complex analyses. This led to the creation of greed!</p>
+<p>When designing greed, we wanted to provide both a convenient Python wrapper for Gigahorse's analyses and symbolic execution capabilities similar to the popular tool <a href="https://github.com/Consensys/mythril">Mythril</a>. Unlike Mythril, we don't offer a one-click solution to discover smart contract vulnerabilities; instead, we provide a powerful and user-friendly smart contract binary analysis platform (those familiar with <a href="https://github.com/angr/angr">angr</a> will find many similarities). That being said, one can implement all the analyses offered by Mythril on top of greed.</p>
+<p>We believe that greed provides a more flexible way to prototype research tools and smart contract analyses. This is accomplished through (1) a modular (<a href="https://github.com/angr/angr">angr</a>-inspired) design of the symbolic executor, (2) the inherited precision of the CFG analysis offered by <a href="https://github.com/nevillegrech/gigahorse-toolchain">Gigahorse</a>, and (3) the conciseness of the TAC-IR (intermediate representation) that strips away the unnecessary complexities of the stack-based EVM design.</p>
+<p>To use greed, it is first necessary to analyze a target contract binary with Gigahorse, obtaining all the decompilation artifacts and CFG reconstruction. If you are just getting started with greed, please refer to our <a href="/quickstart">quick start guide</a>!</p>
+<h2 id="three-address-code">Three Address Code</h2>
+<p>Our symbolic executor, greed, is based on <a href="https://github.com/nevillegrech/gigahorse-toolchain">Gigahorse</a>'s T(hree) A(ddress) C(ode) intermediate representation – TAC-IR: a convenient IR that transforms the (EVM) stack-based opcodes into a register based representation.</p>
+<p>For instance, the classic function <code>transferFrom</code> in TAC would look like this:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">function</span> <span class="n">transferFrom</span><span class="p">(</span><span class="n">address</span><span class="p">,</span><span class="n">address</span><span class="p">,</span><span class="n">uint256</span><span class="p">)()</span> <span class="n">public</span> <span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>    <span class="n">Begin</span> <span class="n">block</span> <span class="mh">0x1ca</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">prev</span><span class="o">=</span><span class="p">[],</span> <span class="n">succ</span><span class="o">=</span><span class="p">[</span><span class="mh">0x1d1</span><span class="p">,</span> <span class="mh">0x1d5</span><span class="p">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="o">=================================</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="mh">0x1cb</span><span class="p">:</span> <span class="n">v1cb</span> <span class="o">=</span> <span class="n">CALLVALUE</span> 
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="mh">0x1cc</span><span class="p">:</span> <span class="n">v1cc</span> <span class="o">=</span> <span class="n">ISZERO</span> <span class="n">v1cb</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="mh">0x1cd</span><span class="p">:</span> <span class="n">v1cd</span><span class="p">(</span><span class="mh">0x1d5</span><span class="p">)</span> <span class="o">=</span> <span class="n">CONST</span> 
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="mh">0x1d0</span><span class="p">:</span> <span class="n">JUMPI</span> <span class="n">v1cd</span><span class="p">(</span><span class="mh">0x1d5</span><span class="p">),</span> <span class="n">v1cc</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">Begin</span> <span class="n">block</span> <span class="mh">0x1d1</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">prev</span><span class="o">=</span><span class="p">[</span><span class="mh">0x1ca</span><span class="p">],</span> <span class="n">succ</span><span class="o">=</span><span class="p">[]</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="o">=================================</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="mh">0x1d1</span><span class="p">:</span> <span class="n">v1d1</span><span class="p">(</span><span class="mh">0x0</span><span class="p">)</span> <span class="o">=</span> <span class="n">CONST</span> 
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="mh">0x1d4</span><span class="p">:</span> <span class="n">REVERT</span> <span class="n">v1d1</span><span class="p">(</span><span class="mh">0x0</span><span class="p">),</span> <span class="n">v1d1</span><span class="p">(</span><span class="mh">0x0</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="o">...</span>
+</span></code></pre></div>
+<p>One thing to keep in mind when using greed is: every variable defined by the TAC IR will become a virtual register. For instance, when you symbolically execute the <code>transferFrom</code> function, you can access to content of the variable <code>v1cb</code> like this:</p>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">state</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;v1cb&#39;</span><span class="p">]</span>
+</span></code></pre></div>
+To access the value returned by the opcode <code>CALLVALUE</code>.</p>
+<h2 id="project">Project</h2>
+<p>To create a greed Project you will just:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">greed</span> <span class="kn">import</span> <span class="n">Project</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span> <span class="o">=</span> <span class="n">Project</span><span class="p">(</span><span class="n">target_dir</span><span class="o">=</span><span class="n">target_dir</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Where <code>target_dir</code> is the path to the folder holding the Gigahorse analyses artifacts.
+The project will import in greed some of the analysis results generated by Gigahorse (e.g., functions, blocks, and statements), and will make them available through handy object attributes:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">code</span> <span class="c1"># raw bytecode </span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">function_at</span> <span class="c1"># dictionary of all the functions in the contract</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">block_at</span> <span class="c1"># dictionary of all the basic block in the contract</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">statement_at</span>  <span class="c1"># dictionary of all the (TAC) opcode in the contract</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">callgraph</span> <span class="c1"># callgraph of the entire contract code</span>
+</span></code></pre></div>
+<h3 id="cfg">CFG</h3>
+<p>Gigahorse provides state-of-the-art CFG reconstruction for smart contract binaries. This information is automatically imported and available via the greed's API.
+Every basic block in the CFG is terminated by an unconditional jump (i.e., <code>JUMP</code>), a conditional jump (<code>JUMPI</code>), or a terminating opcode (<code>STOP</code>/<code>REVERT</code>/<code>RETURN</code>).</p>
+<p>To access the CFG information of specific functions in the contract you can do the following:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">function_at</span><span class="p">[</span><span class="s1">&#39;0x0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cfg</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">function_at</span><span class="p">[</span><span class="s1">&#39;0x0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="s2">&quot;mycfg.dot&quot;</span><span class="p">)</span> <span class="c1"># this will dump the CFG in .dot format</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">proj</span><span class="o">.</span><span class="n">function_at</span><span class="p">[</span><span class="s1">&#39;0x0&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">bbs</span> <span class="c1"># this will return a list of block objects belonging to the CFG</span>
+</span></code></pre></div>
+<p>Similarly, to access a specific  <code>Block</code> or <code>Statement</code> information:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">block</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">block_at</span><span class="p">[</span><span class="s1">&#39;0x21&#39;</span><span class="p">]</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">stmt</span>  <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">statement_at</span><span class="p">[</span><span class="s1">&#39;0x1e&#39;</span><span class="p">]</span>
+</span></code></pre></div>
+<p>The <code>Block</code> and <code>Statement</code> objects, once fetched, offer <a href="/modules/greed.block">numerous other attributes</a> for advanced inspection. </p>
+<h3 id="state">State</h3>
+<p>Similary to angr, a SimState (i.e., <code>State</code>) represents the state of the smart contract at a specific opcode. You can imagine the State as a snapshot of the execution at a specific program location.</p>
+<p>You can create your first state from a project using the <code>Factory</code> object:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">entry_state</span><span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># the xid represent an unique identifier for the current symbolic execution.</span>
+</span></code></pre></div>
+<p>When no initial context is specified, <strong>every</strong> environment variable (e.g., balance, calldata, calldata size, block, etc...) will be an unconstrained symbolic variable.
+Conversely, you can pass an <em>initial context</em> by passing a dictionary and specifying some concrete values:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">ctx</span> <span class="o">=</span> <span class="p">{</span> 
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>            <span class="s2">&quot;CALLDATA&quot;</span>     <span class="p">:</span> <span class="s2">&quot;0x001122330099aabb77ff00&quot;</span><span class="p">,</span> 
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>            <span class="s2">&quot;CALLDATASIZE&quot;</span> <span class="p">:</span> <span class="mi">11</span><span class="p">,</span> 
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>            <span class="s2">&quot;CALLER&quot;</span>       <span class="p">:</span> <span class="s2">&quot;0x6b6Ae9eDA977833B379f4b49655124b4e5c64086&quot;</span><span class="p">,</span> 
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>            <span class="s2">&quot;ORIGIN&quot;</span>       <span class="p">:</span> <span class="s2">&quot;0x6b6Ae9eDA977833B379f4b49655124b4e5c64086&quot;</span><span class="p">,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>            <span class="s2">&quot;ADDRESS&quot;</span>      <span class="p">:</span> <span class="s2">&quot;0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984&quot;</span><span class="p">,</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>          <span class="p">}</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">entry_state</span><span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">init_ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+</span></code></pre></div>
+<p>This will set the the CALLDATA for the symbolic execution to the value <code>0x001122330099aabb77ff00</code>, a CALLDATASIZE of 11 bytes, <code>ADDRESS</code> of the currently executing contract to <code>0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984</code> and <code>CALLER</code>/<code>ORIGIN</code> to <code>0x6b6Ae9eDA977833B379f4b49655124b4e5c64086</code>.</p>
+<!-- The full list of possible concrete values that an user can pass is showed [here](). -->
+
+<p>A state offers many API for its inspection:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span><span class="o">.</span><span class="n">curr_stmt</span> <span class="c1"># print the current statement ready for execution</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span><span class="o">.</span><span class="n">revert</span> <span class="c1"># weather the state reverted or not</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span><span class="o">.</span><span class="n">instruction_count</span> <span class="c1"># how many instructions have been executed up to this point</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span><span class="o">.</span><span class="n">pc</span> <span class="c1"># current program counter </span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span><span class="o">.</span><span class="n">registers</span> <span class="c1"># overview of all the virtual registers defined during the execution up to this point</span>
+</span></code></pre></div>
+<h3 id="symbolic-execution">Symbolic Execution</h3>
+<p>Symbolic execution is the process of progressing SimState(s) and propagating the symbolic variables according to the program's execution.
+Imagine, for instance, that the condition of a <code>JUMPI</code> contains a symbolic variable X.
+If the condition checks for <code>X != 0</code>, and the constraints over the variable X make it possible for <code>X != 0</code> and <code>X == 0</code>, greed will create two different State(s), one at the location specified by the JUMPI (adding a constraint of <code>X != 0</code> to the state), and one at the fallthrough location (adding a constraint of <code>X == 0</code>).</p>
+<h3 id="simulation-manager">Simulation Manager</h3>
+<p>To begin symbolic execution you need to instantiate a <code>Simulation Manager</code>.
+The simulation manager is a concept borrowed from angr, used to orchestrate the progression of the SimState(s).
+Exploration Techniques can be used to provide a strategy to explore the states of the program. For instance, an exploration technique could be the classic breadth-first search (BFS) or depth-first search (DFS), but also more complicated strategies such as Directed Search.</p>
+<p>You can instantiate a simulation manager via the Factory in this way:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">simgr</span> <span class="o">=</span> <span class="n">proj</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">simgr</span><span class="p">(</span><span class="n">entry_state</span><span class="o">=</span><span class="n">entry_state</span><span class="p">)</span>
+</span></code></pre></div>
+<p>By default, the employed exploration technique will be BFS. You can change this behavior by installing new exploration techniques that implement the <code>Exploration Technique</code> object interface. For example:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">greed.exploration_techniques</span> <span class="kn">import</span> <span class="n">DirectedSearch</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">directed_search</span> <span class="o">=</span> <span class="n">DirectedSearch</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">statement_at</span><span class="p">[</span><span class="s1">&#39;0x1e&#39;</span><span class="p">])</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">simgr</span><span class="o">.</span><span class="n">use_technique</span><span class="p">(</span><span class="n">directed_search</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Finally, to start the exploration:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">simgr</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</span></code></pre></div>
+<p>The simulation manager operates using <code>stashes</code>. You can imagine a stash as a "bucket" of states generated by the simulation manager during symbolic execution. For example, the stash <code>active</code> contains all the states that are currently "active" in the simulation manager.
+The simulation manager will process (or "step") every state in the <code>active</code> stash individually to create a successor state. 
+If the state has no successors, the simulation manager will move the state to the <code>deadended</code> stash.
+If the execution instead terminates with a <code>REVERT</code> opcode, the state will be moved to the <code>errored</code> stash.</p>
+<p>Exploration techniques can defined new stashes to implement more complicated program exploration strategies.</p>
+<h3 id="solver">Solver</h3>
+<p>The default solver employed by greed is <a href="https://github.com/SRI-CSL/yices2">Yices2</a> with <code>QF_ABV</code> logic.
+We made this decision based on the impressive results obtained in the latest SMT solving competition, and based on the results showed by Frank et al. in <a href="https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf">ETHBMC</a>.
+That being said, greed offers a modular architecure and implementing support for a new solver backend is quite straigthforward.</p>
+<p>By default, we give unlimited time to the solver to solve the constraints. However, it can be sometimes helpful to timeout after a certain amount of time. You can do this by using the option <code>SOLVER_TIMEOUT</code>. Keep in mind that, when the timeout fires, the state will be reported as <code>errored</code>.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../quickstart/" class="btn btn-neutral float-left" title="QuickStart"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../advanced/" class="btn btn-neutral float-right" title="Advanced Topics">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../quickstart/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../advanced/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

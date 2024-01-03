@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Advanced Topics - greed - A symbolic execution engine for EVM smart contract binaries</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Advanced Topics";
+        var mkdocs_page_input_path = "advanced.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> greed - A symbolic execution engine for EVM smart contract binaries
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../quickstart/">QuickStart</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../core/">Core Concepts</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">Advanced Topics</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#state-plugins">State Plugins</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#memory-model">Memory Model</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#partial-concrete-storage">Partial Concrete Storage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#external-calls">External Calls</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#keccak256">Keccak256</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#multi-transactions-execution">Multi-Transactions Execution</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../options/">Options</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../advice/">Advice</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../credits/">Credits</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../faq/">FAQ</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Modules</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.TAC_parser/">greed.TAC.TAC_parser</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.base/">greed.TAC.base</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.flow_ops/">greed.TAC.flow_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.gigahorse_ops/">greed.TAC.gigahorse_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.log_ops/">greed.TAC.log_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.math_ops/">greed.TAC.math_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.mem_ops/">greed.TAC.mem_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.TAC.special_ops/">greed.TAC.special_ops</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.access_control_slots/">greed.analyses.access_control_slots</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.analyses.slicing/">greed.analyses.slicing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.block/">greed.block</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.cfg/">greed.cfg</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.dfs/">greed.exploration_techniques.dfs</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.directed_search/">greed.exploration_techniques.directed_search</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.exploration_technique/">greed.exploration_techniques.exploration_technique</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.heartbeat/">greed.exploration_techniques.heartbeat</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.other/">greed.exploration_techniques.other</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.prioritizer/">greed.exploration_techniques.prioritizer</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.exploration_techniques.simgrviz/">greed.exploration_techniques.simgrviz</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.factory/">greed.factory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.function/">greed.function</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_constraint/">greed.memory.lambda_constraint</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.lambda_memory/">greed.memory.lambda_memory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.memory.partial_concrete_storage/">greed.memory.partial_concrete_storage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.options/">greed.options</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.project/">greed.project</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sha3/">greed.sha3</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.sim_manager/">greed.sim_manager</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.shortcuts/">greed.solver.shortcuts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.solver/">greed.solver.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.solver.yices2/">greed.solver.yices2</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state/">greed.state</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.globals/">greed.state_plugins.globals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.inspect/">greed.state_plugins.inspect</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.plugin/">greed.state_plugins.plugin</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.sha_resolver/">greed.state_plugins.sha_resolver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.state_plugins.solver/">greed.state_plugins.solver</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.encoding/">greed.utils.encoding</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.exceptions/">greed.utils.exceptions</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.extra/">greed.utils.extra</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../modules/greed.utils.files/">greed.utils.files</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">greed - A symbolic execution engine for EVM smart contract binaries</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Advanced Topics</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="advanced-topics">🎓 Advanced Topics</h1>
+<h2 id="state-plugins">State Plugins</h2>
+<p>State plugins are (yet-another) concept that greed borrowed from angr.
+A state plugin is designed to carry any additional state context during its life-cycle.
+For instance, the default "globals" State Plugin can carry global variables useful for future decisions – such as the number of iterations of a specific loop.</p>
+<p>You can design your own State Plugin by implementing the <a href="https://github.com/ucsb-seclab/greed/blob/main/greed/state_plugins/plugin.py">SimStatePlugin</a> interface and installing it to a SimState.
+The two main functions that need to be implemented when designing a custom plugin are: <code>__init__</code> and <code>copy</code>.
+The former initializes the plugin with its default values, while the latter implements a deep copy of the plugin state (every plugin in a forking state must be copied to its successors). For example:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">greed.state_plugins</span> <span class="kn">import</span> <span class="n">SimStatePlugin</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">class</span> <span class="nc">mySimStateGlobals</span><span class="p">(</span><span class="n">SimStatePlugin</span><span class="p">):</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="sd">    A plugin that allows for global variables to be stored in the state.</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="nb">super</span><span class="p">(</span><span class="n">mySimStateGlobals</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">_backer</span> <span class="o">=</span> <span class="n">backer</span> <span class="k">if</span> <span class="n">backer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="k">return</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="o">...</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>        <span class="n">new_backer</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backer</span><span class="p">)</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="k">return</span> <span class="n">mySimStateGlobals</span><span class="p">(</span><span class="n">new_backer</span><span class="p">)</span>
+</span></code></pre></div></p>
+<p>After creating a new plugin (e.g., <code>mySimStateGlobals</code>) you can install it into a state with:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">state</span><span class="o">.</span><span class="n">register_plugin</span><span class="p">(</span><span class="s2">&quot;myPluginName&quot;</span><span class="p">,</span> <span class="n">mySimStateGlobals</span><span class="p">())</span>
+</span></code></pre></div>
+<p>Later, you can access the methods and attributes of your plugin using the installed name:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">state</span><span class="o">.</span><span class="n">myPluginName</span><span class="o">.</span><span class="n">myMethod</span><span class="p">()</span>
+</span></code></pre></div>
+<h2 id="memory-model">Memory Model</h2>
+<p>Symbolic memory reads and writes are arguably one of the most critical problems a symbolic executor must face to balance precision and scalability.
+Many different strategies have been proposed during the past years that range from nested ITE expressions to SMT Arrays to a more balanced segmented memory model (this <a href="https://www.diag.uniroma1.it/~delia/papers/svtr19.pdf">paper</a> does a pretty good job in providing an overview of all the currently available solutions).</p>
+<p>Our choice of memory model for greed landed on a design similar to that of Frank et al. in <a href="https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf">ETHBMC</a>. Specifically, we leverage an <a href="https://llbmc.org/files/papers/VSTTE13.pdf">extended version</a> of the Theory of Arrays to model both the memory and the storage of a smart contract. We dubbed this memory model the "LambdaMemory".
+Thanks to the LambdaMemory, every memory operation in greed can be fully symbolic. Additionally, this allows to symbolically model "memcopy" operations triggered by opcodes such as <code>CALLDATACOPY.</code></p>
+<p>While this memory model drastically improves the precision of symbolic execution, it also introduces additional complexity in the constraints and makes them hard to inspect.
+Specifically, differently from angr, inspecting a variable pulled from memory will merely show a <code>Select</code> operation rather than a more expressive ITE operation.</p>
+<h2 id="partial-concrete-storage">Partial Concrete Storage</h2>
+<details class="note" open="open">
+<summary>Note</summary>
+<p>To enable this mode, access to a web3 RPC endpoint is required. You can set the web3 provider via the option WEB3_PROVIDER in the greed <a href="https://github.com/ucsb-seclab/greed/blob/main/greed/options.py#L12">options</a>.
+   If you don't have a private node, you can use any other provider such as <a href="https://www.infura.io/">Infura</a> or <a href="https://www.alchemy.com/">Alchemy</a>.</p>
+</details>
+<p>A fully symbolic contract storage is not always a desirable option when performing symbolic execution.
+In fact, when analyzing the state of a contract at a specific block, you might want to use the concrete values in its storage to prune some unfeasible paths and simplify the symbolic execution.</p>
+<p>To do this, greed supports a "Partial Concrete Storage" mode that can be activated when creating a SimState:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">ctx</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ADDRESS&quot;</span><span class="p">:</span> <span class="s2">&quot;0x6b6Ae9eDA977833B379f4b49655124b4e5c64086&quot;</span><span class="p">,</span> <span class="s2">&quot;NUMBER&quot;</span><span class="p">:</span> <span class="mi">18808898</span><span class="p">}</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="o">&gt;&gt;&gt;</span> <span class="n">entry_state</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">entry_state</span><span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="n">xid</span><span class="p">,</span> <span class="n">init_ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">,</span> <span class="n">partial_concrete_storage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+<p>When this mode is activated and greed encounters an <code>SLOAD</code> (let's say at slot id <code>0x5</code>), greed will automatically fetch the concrete value of slot <code>0x5</code> in the contract's on-chain storage at block <code>NUMBER</code> (<code>18808898</code>) instead of using an unconstrained symbol. Similarly, any subsequent (and possibly symbolic) <code>SSTORE</code> at slot <code>0x5</code> will overwrite its value. </p>
+<p>In other words, you can imagine this mode of operation as a "lazy" initialization of the contract's storage in the symbolic executor that uses its on-chain storage at the specified block.</p>
+<h2 id="external-calls">External Calls</h2>
+<p>Currently greed does not support external calls out-of-the-box. When one of the call opcodes (<code>CALL</code>/<code>DELEGATECALL</code>/<code>STATICCALL</code>/<code>CODECALL</code>) is executed during symbolic execution, our handlers simply "skip" the call and fill up the returned virtual register according to the option <code>OPTIMISTIC_CALL_RESULTS</code>. If <code>OPTIMISTIC_CALL_RESULTS</code> is active, greed will write the value <code>1</code> to the virtual register, indicating that the call was successfull.</p>
+<p>While this is enough for certain analyses, at other times it might be important to follow the execution flow and execute the opcodes in the target (called) contract. This is currently a feature that must be implemented on top of greed.</p>
+<details class="warning" open="open">
+<summary>Warning</summary>
+<p>Implementing this feature requires particular care, especially in case of re-entrant code.</p>
+</details>
+<h2 id="keccak256">Keccak256</h2>
+<p>In the EVM, the <code>SHA3</code> opcode calculates the Keccak256 hash of a given input buffer.
+Tracking the constraints generated by cryptographic primitives such as <code>SHA3</code> is <a href="https://link.springer.com/chapter/10.1007/978-3-642-19125-1_5">notoriously impractical</a>. Simply put, the complexity of such procedures generates extremely complex constraints and immediately overwhelms and stalls any state-of-the-art constraint solver.</p>
+<p>To overcome this issue, it is common practice to stub the <code>SHA3</code> opcode, returning thus a fresh unconstrained symbolic variable and proceeding with the analysis. However, this requires extra care: the connection between the input and output of the <code>SHA3</code> operation must be somehow modeled.
+To do this, we use an approach similar to that of <a href="https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf">ETHBMC</a>, leveraging the <a href="https://pdfs.semanticscholar.org/e4ac/6d84bd12069af44310c4e2816d6d9fc18d9e.pdf">Ackerman encoding</a> for non-interpretable functions.</p>
+<p>In practice, we handle the <code>SHA3</code> operations with a twofold strategy:</p>
+<p><strong>(1)</strong> During symbolic execution, we record all the information regarding <code>SHA</code> operations in the <code>sha_observed</code> attribute of a SimState (i.e., the snapshot of the state's memory at the SHA operation, the offset at which the input buffer is located, and the size of the requested operation). <!-- Then, in case the option <code>GREEDY_SHA</code> is active, we calculated (on the fly) the Keccak256 of fully concrete input buffers (or, symbolic buffers with one possible solution) and we assign this value to the result virtual registers. If no <code>GREEDY_SHA</code> is used  (or the input buffer is not concrete), we return a fresh symbolic variable (e.g., <code>&lt;SHA1&gt;</code>).  -->
+For every observed <code>SHA</code> we return a fresh symbolic variable (e.g., <code>&lt;SHA1&gt;</code>) and <a href="https://github.com/ucsb-seclab/greed/blob/main/greed/sha3.py#L44">instantiate constraints</a> that basically encode that the result of <code>SHA3</code> opcodes that operate on equivalent input buffers MUST be the same. </p>
+<p><strong>(2)</strong> When concretizing a symbolic variable, e.g.: to synthethize the <code>CALLDATA</code> to reach a specific instruction, we must first "fix" the values of the observed SHAs (if any). We provide a "SHA resolution strategy" that fixes the observed SHAs in chronological order. Namely, the strategy iterates over all the observed SHAs starting from the earliest, calculates a solution for its input buffer, calculates the corresponding Keccak256 hash, and finally assigns the result to the symbolic variable associated to this SHA. The process repeats for each observed SHA. Eventually, if it is possible to assign a concrete value to all the observed SHAs, the state is ready to be concretized. If it is not possible to find a solution, the state will be marked as unsat.
+Note that this process is not executed automatically, and must be explicitly called in your scripts. For example:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">shas</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">sha_resolver</span><span class="o">.</span><span class="n">fix_shas</span><span class="p">()</span>  
+</span></code></pre></div>
+<h2 id="multi-transactions-execution">Multi-Transactions Execution</h2>
+<p>The state of a smart contract evolves across multiple transactions.
+With greed, you can symbolically execute a contract, save one of its states, and create a new transaction from such state. For example:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">for</span> <span class="n">xid</span><span class="p">,</span> <span class="n">calldata</span> <span class="ow">in</span> <span class="n">more_transactions</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">entry_state</span> <span class="o">=</span> <span class="n">entry_state</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">entry_state</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">xid</span><span class="o">=</span><span class="n">xid</span><span class="p">)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">entry_state</span><span class="o">.</span><span class="n">set_init_ctx</span><span class="p">({</span><span class="s2">&quot;CALLDATA&quot;</span><span class="p">:</span> <span class="n">calldata</span><span class="p">})</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="n">entry_state</span><span class="o">.</span><span class="n">pc</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s1">&#39;0x0&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">first_ins</span><span class="o">.</span><span class="n">id</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="n">simgr</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">simgr</span><span class="p">(</span><span class="n">entry_state</span><span class="o">=</span><span class="n">entry_state</span><span class="p">)</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span class="n">simgr</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">find</span><span class="o">=</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="p">(</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="n">s</span><span class="o">.</span><span class="n">halt</span> <span class="ow">and</span> 
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span class="ow">not</span> <span class="n">s</span><span class="o">.</span><span class="n">error</span> <span class="ow">and</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>        <span class="n">s</span><span class="o">.</span><span class="n">trace</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">__internal_name__</span> <span class="o">!=</span> <span class="s1">&#39;REVERT&#39;</span><span class="p">)</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span class="p">)</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">simgr</span><span class="o">.</span><span class="n">found</span><span class="p">:</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="k">break</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span class="n">entry_state</span> <span class="o">=</span> <span class="n">simgr</span><span class="o">.</span><span class="n">one_found</span>
+</span></code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../core/" class="btn btn-neutral float-left" title="Core Concepts"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../options/" class="btn btn-neutral float-right" title="Options">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../core/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../options/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
