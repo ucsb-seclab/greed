@@ -18,5 +18,7 @@ calldata = state.solver.eval_memory(state.calldata, calldatasize)
 
 ```python
 caller = state.solver.eval(state.ctx['CALLER']).to_bytes(20, 'big').hex()
+callvalue = state.solver.eval(state.ctx['CALLVALUE'])
 log.info(f'CALLER: 0x{caller}')
+log.info(f'CALLVALUE: 0x{callvalue}')
 ```
