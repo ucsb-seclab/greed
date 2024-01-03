@@ -223,7 +223,7 @@ Moreover, we wanted to re-use the high-quality analyses (e.g., CFG) and IR offer
 <p>We believe that register-based analyses are more intuitive and straightforward to implement: Gigahorse gets rid of the unnecessary complexity related to the stack-based nature of the EVM, thus really improving the usability of greed.
 Having a common intermediate representation is also valuable since, as the Dedaub team adds support for new non-EVM-based architectures, greed will automatically support such architectures. 🙂</p>
 <h2 id="how-do-i-know-the-correspondence-between-tac-statements-and-original-opcodes">How do I know the correspondence between TAC statements and original opcodes?</h2>
-<p>While this is not always 100% precise, Gigahorse outputs a file called <code>TAC_Statement_OriginalStatement.csv</code>. You can find the correspondence between the TAC Statement ID and the original PC (bytecode) there.</p>
+<p>Gigahorse outputs a file called <code>TAC_Statement_OriginalStatement.csv</code>. While this is not always 100% precise, you can find the correspondence between the TAC Statement ID and the original PC (bytecode) there.</p>
 <h2 id="does-greed-support-non-evm-contracts">Does greed support non-EVM contracts?</h2>
 <p>greed automatically supports anything that Gigahorse supports. Currently, Gigahorse does not support any non-EVM binary. Thus, currently, greed does not support any non-EVM binary.</p>
 <h2 id="can-greed-work-with-contract-source-code">Can greed work with contract source code?</h2>
