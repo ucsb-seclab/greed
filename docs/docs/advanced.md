@@ -3,45 +3,65 @@
 
 ## State Plugins
 
-State plugins are (yet-another) concepts that greed borrowed by angr.
-A state plugin is designed to add any additional per-state-context that a SimState should carry with itself during its life-cycle.
-For instance, the default "globals" State Plugin can carry global variables useful for future decision of an exploration technique such as the number of time a specific loop has been iterating.
+State plugins are (yet-another) concept that greed borrowed from angr.
+A state plugin is designed to carry any additional state context during its life-cycle.
+For instance, the default "globals" State Plugin can carry global variables useful for future decisions – such as the number of iterations of a specific loop.
 
-Users can design their own State Plugins by implementing the [SimStatePlugin](https://github.com/ucsb-seclab/greed/blob/main/greed/state_plugins/plugin.py) interface and installing it to a SimState.
+You can design your own State Plugin by implementing the [SimStatePlugin](https://github.com/ucsb-seclab/greed/blob/main/greed/state_plugins/plugin.py) interface and installing it to a SimState.
 The two main functions that need to be implemented when designing a custom plugin are: `__init__` and `copy`.
-The former initializes the plugin with its starting values, while the latter is responsible of implementing a full deep copy of the plugin state whenever the Simulation Manager decides to fork a SimState during symbolic execution (i.e., every plugins carried by a forking state must be cloned into its successors).
-
-After you created a new plugin (e.g., `myNewStatePlugin`) you can install it into a state with:
-
+The former initializes the plugin with its default values, while the latter implements a deep copy of the plugin state (every plugin in a forking state must be copied to its successors). For example:
 ```python
->>> state.register_plugin("myPluginName", myNewStatePlugin())
+from copy import deepcopy
+from greed.state_plugins import SimStatePlugin
+
+class mySimStateGlobals(SimStatePlugin):
+    """
+    A plugin that allows for global variables to be stored in the state.
+    """
+    def __init__(self, backer=None):
+        super(mySimStateGlobals, self).__init__()
+        self._backer = backer if backer is not None else dict()
+        return
+
+    ...
+
+    def copy(self):
+        new_backer = deepcopy(self._backer)
+        return mySimStateGlobals(new_backer)
+
 ```
 
-Later, you can access the methods and attributes of that plugin using the installed name:
+After creating a new plugin (e.g., `mySimStateGlobals`) you can install it into a state with:
 
 ```python
->>> state.myPluginName.hi
+>>> state.register_plugin("myPluginName", mySimStateGlobals())
+```
+
+Later, you can access the methods and attributes of your plugin using the installed name:
+
+```python
+>>> state.myPluginName.myMethod()
 ```
 
 ## Memory Model
 
-Symbolic memory writes (and reads) are arguably one of the most critical issue a symbolic executor needs to deal with to mantain a good balance between precision and scalability.
-Many different strategies have been proposed during the past years that ranges from nested ITE expressions to full SMT Array, to a more balanced segmented memory model (this [paper](https://www.diag.uniroma1.it/~delia/papers/svtr19.pdf) does a pretty good job in providing an overview of all the currently available solutions).
+Symbolic memory reads and writes are arguably one of the most critical problems a symbolic executor must face to balance precision and scalability.
+Many different strategies have been proposed during the past years that range from nested ITE expressions to SMT Arrays to a more balanced segmented memory model (this [paper](https://www.diag.uniroma1.it/~delia/papers/svtr19.pdf) does a pretty good job in providing an overview of all the currently available solutions).
 
-Our choice for greed landed on a similar design employed by Frank et al. in [ETHBMC](https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf). Specifically, we leverage an [extended version](https://llbmc.org/files/papers/VSTTE13.pdf) of the Theory of Array to model both the memory and the storage of a smart contract. We dubbed this memory model the "LambdaMemory".
-Thanks to the LambdaMemory, every memory operation can be always kept symbolic through the use of the `Select` and `Store` SMT Array operations, additionaly, we can symbolically model 'memcopy' operations triggered by opcode such as `CALLDATACOPY`.
+Our choice of memory model for greed landed on a design similar to that of Frank et al. in [ETHBMC](https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf). Specifically, we leverage an [extended version](https://llbmc.org/files/papers/VSTTE13.pdf) of the Theory of Arrays to model both the memory and the storage of a smart contract. We dubbed this memory model the "LambdaMemory".
+Thanks to the LambdaMemory, every memory operation in greed can be fully symbolic. Additionally, this allows to symbolically model "memcopy" operations triggered by opcodes such as `CALLDATACOPY.`
 
-While this memory model drastically improve the precision of symbolic execution (i.e., we do not have to early-concretize symbolic variables), the drawback is a bit more complexity in the constraints, and the loss of inspectability of those.
-Specifically, differently from angr, inspecting a variable pulled from memory will merely show a `Select` operation rather than a full explicit ITE operation.
+While this memory model drastically improves the precision of symbolic execution, it also introduces additional complexity in the constraints and makes them hard to inspect.
+Specifically, differently from angr, inspecting a variable pulled from memory will merely show a `Select` operation rather than a more expressive ITE operation.
 
 ## Partial Concrete Storage
 
 ???+ note
-       In order to enable this mode an access to a web3 RPC is required. You can set the web3 provider via the option WEB3_PROVIDER in the greed [options](https://github.com/ucsb-seclab/greed/blob/main/greed/options.py#L12) file.
-       If you do not have a private node, you can use one of the public provider such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
+       To enable this mode, access to a web3 RPC endpoint is required. You can set the web3 provider via the option WEB3_PROVIDER in the greed [options](https://github.com/ucsb-seclab/greed/blob/main/greed/options.py#L12).
+       If you don't have a private node, you can use any other provider such as [Infura](https://www.infura.io/) or [Alchemy](https://www.alchemy.com/).
 
 A fully symbolic contract storage is not always a desirable option when performing symbolic execution.
-In fact, when we want to analyze the state of a contract at a specific block, we might want to use the concrete values in its storage to prune some unfeasible paths and in general simplify the symbolic execution.
+In fact, when analyzing the state of a contract at a specific block, you might want to use the concrete values in its storage to prune some unfeasible paths and simplify the symbolic execution.
 
 To do this, greed supports a "Partial Concrete Storage" mode that can be activated when creating a SimState:
 
@@ -50,40 +70,62 @@ To do this, greed supports a "Partial Concrete Storage" mode that can be activat
 >>> entry_state = p.factory.entry_state(xid=xid, init_ctx=ctx, partial_concrete_storage=True)
 ```
 
-When this mode is activated, whenever there is an `SLOAD` (let's say at slot id `0x5`), we are going to use the storage of the contract `ADDRESS` (e.g., `0x6b6Ae9eDA977833B379f4b49655124b4e5c64086`) at block `NUMBER` (e.g., `18808898`) and automatically returns the value of slot `0x5` in the contract real storage (instead of a symbol).
+When this mode is activated and greed encounters an `SLOAD` (let's say at slot id `0x5`), greed will automatically fetch the concrete value of slot `0x5` in the contract's on-chain storage at block `NUMBER` (`18808898`) instead of using an unconstrained symbol. Similarly, any subsequent (and possibly symbolic) `SSTORE` at slot `0x5` will overwrite its value. 
 
-Further `SSTORE` (performed during symbolic execution) at slot `0x5` will overwrite this value. In other words, you can imagine this mode of operation as a "lazy" initialization of the storage of a contract (in the symbolic executor) with its real values on chain (at a specific block).
+In other words, you can imagine this mode of operation as a "lazy" initialization of the contract's storage in the symbolic executor that uses its on-chain storage at the specified block.
 
 ## External Calls
 
-Currently we do not ship greed with a support for external calls, i.e., whenever one of the call opcodes (`CALL`/`DELEGATECALL`/`STATICCALL`/`CODECALL`) is executed during symbolic execution, our handlers are simply "skipping" the call and fill up the returned virtual register according to the option `OPTIMISTIC_CALL_RESULTS` (if set, it will put the value `1` inside the result virtual register indicating the call was successfull).
+Currently greed does not support external calls out-of-the-box. When one of the call opcodes (`CALL`/`DELEGATECALL`/`STATICCALL`/`CODECALL`) is executed during symbolic execution, our handlers simply "skip" the call and fill up the returned virtual register according to the option `OPTIMISTIC_CALL_RESULTS`. If `OPTIMISTIC_CALL_RESULTS` is active, greed will write the value `1` to the virtual register, indicating that the call was successfull.
 
-While this can be enough for certain analyses, some other times it might be important to follow the execution flow and keep executing the opcode in the target contract (of the call). This is currently a feature that must be implemented on top of greed.
+While this is enough for certain analyses, at other times it might be important to follow the execution flow and execute the opcodes in the target (called) contract. This is currently a feature that must be implemented on top of greed.
 
 ???+ warning
-       Implementing this feature requires particular care, especially in cases of re-entrant code.
+       Implementing this feature requires particular care, especially in case of re-entrant code.
 
 
 ## Keccak256
 
-In the EVM, the SHA3 opcode calculates the Keccak256 of a given input buffer.
-Tracking the constraints generated by cryptographic primitives (such as SHA3) is [notoriously](https://link.springer.com/chapter/10.1007/978-3-642-19125-1_5) impractical. Simply put, the complexity of such procedures generate extremely complex constraints and immediately led to the state explosion of any state-of-the-art symbolic executor.
+In the EVM, the `SHA3` opcode calculates the Keccak256 hash of a given input buffer.
+Tracking the constraints generated by cryptographic primitives such as `SHA3` is [notoriously impractical](https://link.springer.com/chapter/10.1007/978-3-642-19125-1_5). Simply put, the complexity of such procedures generates extremely complex constraints and immediately overwhelms and stalls any state-of-the-art constraint solver.
 
-To overcome this issue, it is common practice to stub the `SHA3` opcode by returning a fresh unconstrained symbolic variable, and proceed with the analysis. However, this requires extra care: the connection between the result of the `SHA3` operation and the input buffer must be somehow modeled within the constraints.
-To do this, we use a similar approach implemented by [ETHBMC](https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf) that leverages the [Ackerman encoding](https://pdfs.semanticscholar.org/e4ac/6d84bd12069af44310c4e2816d6d9fc18d9e.pdf) for non-interpretable functions.
+To overcome this issue, it is common practice to stub the `SHA3` opcode, returning thus a fresh unconstrained symbolic variable and proceeding with the analysis. However, this requires extra care: the connection between the input and output of the `SHA3` operation must be somehow modeled.
+To do this, we use an approach similar to that of [ETHBMC](https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf), leveraging the [Ackerman encoding](https://pdfs.semanticscholar.org/e4ac/6d84bd12069af44310c4e2816d6d9fc18d9e.pdf) for non-interpretable functions.
 
-Practically, we handle the `SHA3` operation with a twofold strategy. First, during symbolic execution, and then, during the calculation of solutions for the symbolic variables.
+In practice, we handle the `SHA3` operations with a twofold strategy:
 
-**(1)** During symbolic execution, first we register all the information regarding the sha operation in the `sha_observed` attribute of a SimState (i.e., the snapshot of the state's memory at the SHA operation, the offset at which the input buffer is located, and the size of the requested operation). Then, in case the option `GREEDY_SHA` is active, we calculated (on the fly) the Keccak256 of fully concrete input buffers (or, symbolic buffers with one possible solution) and we assign this value to the result virtual registers. If no `GREEDY_SHA` is used  (or the input buffer is not concrete), we return a fresh symbolic variable (e.g., `<SHA1>`). Lastly, for every observed sha (i.e., `state.sha_observed`) we [instantiate constraints](https://github.com/ucsb-seclab/greed/blob/main/greed/sha3.py#L44) that encode the equality of the sha fresh symbolic variables whenever the input buffers are the same (i.e., basically encoding that the result of different `SHA3` opcodes that operate on equal input buffers MUST be the same). 
+**(1)** During symbolic execution, we record all the information regarding `SHA` operations in the `sha_observed` attribute of a SimState (i.e., the snapshot of the state's memory at the SHA operation, the offset at which the input buffer is located, and the size of the requested operation). <!-- Then, in case the option `GREEDY_SHA` is active, we calculated (on the fly) the Keccak256 of fully concrete input buffers (or, symbolic buffers with one possible solution) and we assign this value to the result virtual registers. If no `GREEDY_SHA` is used  (or the input buffer is not concrete), we return a fresh symbolic variable (e.g., `<SHA1>`).  -->
+For every observed `SHA` we return a fresh symbolic variable (e.g., `<SHA1>`) and [instantiate constraints](https://github.com/ucsb-seclab/greed/blob/main/greed/sha3.py#L44) that basically encode that the result of `SHA3` opcodes that operate on equivalent input buffers MUST be the same. 
 
-**(2)** Whenever an user requires to calculate solutions for some symbolic variables, e.g.: to synthethize the `CALLDATA` to reach a specific instruction, the first step is to "fix" the value for the input buffers of the observed SHAs (if any). To do that, we provide a "SHA resolution strategy" that fixes the observed SHAs chronologically. Namely, the strategy iterates over all the observed SHAs starting from the earliest, calculate a solution for its input buffer, calculate the correspondent Keccak256, and finally assign the result to the symbolic variable associated to this SHA. Then the process repeat until the latest SHA. Eventually, if it is possible to assign a concrete value to all the observed SHAs, the state is ready to be queried for the satisfiability of any other symbolic variables, e.g., the value the `CALLDATA` needs to assume to reach the current statement. Note that, if it is not possible to find a solution to resolve the SHAs, the state is to be considered unsat (we do not want to do this check ourselves during symbolic execution because this is an expensive check).
+**(2)** When concretizing a symbolic variable, e.g.: to synthethize the `CALLDATA` to reach a specific instruction, we must first "fix" the values of the observed SHAs (if any). We provide a "SHA resolution strategy" that fixes the observed SHAs in chronological order. Namely, the strategy iterates over all the observed SHAs starting from the earliest, calculates a solution for its input buffer, calculates the corresponding Keccak256 hash, and finally assigns the result to the symbolic variable associated to this SHA. The process repeats for each observed SHA. Eventually, if it is possible to assign a concrete value to all the observed SHAs, the state is ready to be concretized. If it is not possible to find a solution, the state must be marked as unsat.
+Note that this process is not executed automatically, and must be explicitly called in your scripts. For example:
+
+```python
+shas = state.sha_resolver.fix_shas()  
+```
 
 ## Multi-Transactions Execution
 
-The state of a smart contract evolve across multiple transactions.
-With greed, it is possible to execute one symbolic execution against a contract, save one of its state as the final state, and create a new transaction to run against this new state.
-We provide an example of this script [here]().
+The state of a smart contract evolves across multiple transactions.
+With greed, you can symbolically execute a contract, save one of its states, and create a new transaction from such state. For example:
 
+```python
+for xid, calldata in more_transactions:
+    entry_state = entry_state.copy()
+    entry_state.reset(xid=xid)
+    entry_state.set_init_ctx({"CALLDATA": calldata})
 
+    entry_state.pc = project.factory.block('0x0').first_ins.id
+    simgr = project.factory.simgr(entry_state=entry_state)
 
+    simgr.run(find=lambda s: (
+        s.halt and 
+        not s.error and
+        s.trace[-1].__internal_name__ != 'REVERT')
+    )
 
+    if not simgr.found:
+        break
+
+    entry_state = simgr.one_found
+```

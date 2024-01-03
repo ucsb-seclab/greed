@@ -2,7 +2,7 @@
 
 <img align="left" width="250"  src="logo.png">
 
-[![Tests](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml)
+<!-- [![Tests](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml) -->
 
 ### Installation
 ```bash

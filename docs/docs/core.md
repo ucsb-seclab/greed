@@ -2,17 +2,16 @@
 # 🔥 Core Concepts
 
 ## Overview 
-greed relies on analyses provided by [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain), a fantastic analysis framework for EVM-based smart contracts developed by [Dedaub](https://dedaub.com/). While Gigahorse offers precise CFG reconstruction and various out-of-the-box data-flow analyses (such as storage layout partial reconstruction, tainted calls, etc.), it lacks the capability to perform classic symbolic execution of a contract's code. For example, it cannot automatically discover the value of CALLDATA to reach a specific instruction. Additionally, we found accessing the contract's information through Datalog rules (or via the produced artifacts) to be somewhat impractical for creating more complex analyses. This led to the creation of greed!
+greed relies on analyses provided by [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain) – a fantastic analysis framework for EVM-based smart contracts developed by [Dedaub](https://dedaub.com/). While Gigahorse offers precise CFG reconstruction and various out-of-the-box data-flow analyses (such as storage layout partial reconstruction, tainted calls, etc.), it lacks the capability to perform classic symbolic execution of a contract's code. For example, it cannot automatically discover the value of CALLDATA needed to reach a specific instruction. Additionally, we found using Datalog rules (or via the produced artifacts) to be sometimes impractical for creating more complex analyses. This led to the creation of greed!
 
-When designing greed, we not only wanted to provide a convenient Python wrapper for Gigahorse's results but also offer symbolic execution capabilities similar to the popular [Mythril](https://github.com/Consensys/mythril). Unlike Mythril, we don't offer a one-click solution to discover smart contract vulnerabilities; instead, we provide a powerful and user-friendly smart contract binary analysis platform (those familiar with [angr](https://github.com/angr/angr) will find many similarities with the project). That being said, one can implement all the analyses offered by Mythril on top of greed.
+When designing greed, we wanted to provide both a convenient Python wrapper for Gigahorse's analyses and symbolic execution capabilities similar to the popular tool [Mythril](https://github.com/Consensys/mythril). Unlike Mythril, we don't offer a one-click solution to discover smart contract vulnerabilities; instead, we provide a powerful and user-friendly smart contract binary analysis platform (those familiar with [angr](https://github.com/angr/angr) will find many similarities). That being said, one can implement all the analyses offered by Mythril on top of greed.
 
-We believe that greed provides a more flexible way to prototype research tools and smart contract analyses compared to its competitors. This is accomplished through a ([angr](https://github.com/angr/angr)-inspired) modular design of the symbolic executor, the inherited precision of the CFG analysis offered by [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain), and the conciseness of the TAC-IR that strips away many unnecessary complexity of the stack-based design of the EVM.
+We believe that greed provides a more flexible way to prototype research tools and smart contract analyses. This is accomplished through (1) a modular ([angr](https://github.com/angr/angr)-inspired) design of the symbolic executor, (2) the inherited precision of the CFG analysis offered by [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain), and (3) the conciseness of the TAC-IR (intermediate representation) that strips away the unnecessary complexities of the stack-based EVM design.
 
-To use greed, it is first necessary to analyze a target contract binary with Gigahorse, obtaining all the decompilation artifacts and CFG reconstruction. Please refer to the [quick start](/quickstart) to do so.
+To use greed, it is first necessary to analyze a target contract binary with Gigahorse, obtaining all the decompilation artifacts and CFG reconstruction. If you are just getting started with greed, please refer to our [quick start guide](/quickstart)!
 
 ## Three Address Code
-Our symbolic executor, greed, is based on [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain)'s T(hree) A(ddress) C(ode) intermediate representation.
-This is a convenient IR that transforms the (EVM) stack-based opcodes into a register based representation.
+Our symbolic executor, greed, is based on [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain)'s T(hree) A(ddress) C(ode) intermediate representation – TAC-IR: a convenient IR that transforms the (EVM) stack-based opcodes into a register based representation.
 
 For instance, the classic function `transferFrom` in TAC would look like this:
 
@@ -34,7 +33,7 @@ function transferFrom(address,address,uint256)() public {
     ...
 ```
 
-One thing to keep in mind when using greed is: every variable defined by the TAC IR is becoming a virtual register. For instance, when symbolic executing the `transferFrom` function, you can access to content of the variable `v1cb` like this:
+One thing to keep in mind when using greed is: every variable defined by the TAC IR will become a virtual register. For instance, when you symbolically execute the `transferFrom` function, you can access to content of the variable `v1cb` like this:
 
 ```python
 >>> state.registers['v1cb']
@@ -43,7 +42,7 @@ To access the value returned by the opcode `CALLVALUE`.
 
 
 ## Project
-To create a greed Project you should just:
+To create a greed Project you will just:
 
 ```python
 >>> from greed import Project
@@ -51,24 +50,21 @@ To create a greed Project you should just:
 ```
 
 Where `target_dir` is the path to the folder holding the Gigahorse analyses artifacts.
-The project will import in greed most of the analyses' results generated by Gigahorse (e.g., CFG), and will make them available through handy fields.
-
-## Basics
-
-The `Project` object offers some attributes to inspect the contract under analysis.
+The project will import in greed some of the analysis results generated by Gigahorse (e.g., functions, blocks, and statements), and will make them available through handy object attributes:
 
 
 ```python
->>> proj.block_at # dictionary of all the basic block in the contract
->>> proj.callgraph # callgraph of the entire contract code
 >>> proj.code # raw bytecode 
+>>> proj.function_at # dictionary of all the functions in the contract
+>>> proj.block_at # dictionary of all the basic block in the contract
 >>> proj.statement_at  # dictionary of all the (TAC) opcode in the contract
+>>> proj.callgraph # callgraph of the entire contract code
 ```
 
 ### CFG
 
-Gigahorse provides state-of-the-art CFG reconstructon for smart contract binaries. This information is automatically imported and available via the greed's API.
-Every basic block in the CFG is terminated by an unconditional jump (i.e., `JUMP`), a conditional jump (i.e., `JUMPI`) or a terminating opcode (`STOP`/`REVERT`/`RETURN`).
+Gigahorse provides state-of-the-art CFG reconstruction for smart contract binaries. This information is automatically imported and available via the greed's API.
+Every basic block in the CFG is terminated by an unconditional jump (i.e., `JUMP`), a conditional jump (`JUMPI`), or a terminating opcode (`STOP`/`REVERT`/`RETURN`).
 
 To access the CFG information of specific functions in the contract you can do the following:
 
@@ -78,26 +74,26 @@ To access the CFG information of specific functions in the contract you can do t
 >>> proj.function_at['0x0'].cfg.bbs # this will return a list of block objects belonging to the CFG
 ```
 
-For instance, to access a specific `Statement` or `Block` information:
+Similarly, to access a specific  `Block` or `Statement` information:
 
 ```python
->>> stmt  = proj.statement_at['0x1e']
 >>> block = proj.block_at['0x21']
+>>> stmt  = proj.statement_at['0x1e']
 ```
 
-The `Statement` and `Block` objects, once fetched, offer [numerous other attributes]() for advanced inspection. 
+The `Block` and `Statement` objects, once fetched, offer [numerous other attributes](/modules/greed.block) for advanced inspection. 
 
 ### State
-Similary to angr, a SimState (i.e., `State`) represents the state of the smart contract at a specific opcode. You can imagine a State as a snapshot of the execution at a specific program location.
+Similary to angr, a SimState (i.e., `State`) represents the state of the smart contract at a specific opcode. You can imagine the State as a snapshot of the execution at a specific program location.
 
 You can create your first state from a project using the `Factory` object:
 
 ```python
->>> first_state = proj.factory.entry_state(xid=1) # the xid represent an unique identifier for the current symbolic execution.
+>>> entry_state = proj.factory.entry_state(xid=1) # the xid represent an unique identifier for the current symbolic execution.
 ```
 
-When no initial context is specified, **every** environment variables (e.g., balance, calldata, calldata size, block, etc...) are gonna be set to a symbolic variable.
-Conversely, you can pass an *initial context* by passing a dictionary and specify some concrete values:
+When no initial context is specified, **every** environment variable (e.g., balance, calldata, calldata size, block, etc...) will be an unconstrained symbolic variable.
+Conversely, you can pass an *initial context* by passing a dictionary and specifying some concrete values:
 
 ```python
 >>> ctx = { 
@@ -111,27 +107,27 @@ Conversely, you can pass an *initial context* by passing a dictionary and specif
 ```
 
 This will set the the CALLDATA for the symbolic execution to the value `0x001122330099aabb77ff00`, a CALLDATASIZE of 11 bytes, `ADDRESS` of the currently executing contract to `0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984` and `CALLER`/`ORIGIN` to `0x6b6Ae9eDA977833B379f4b49655124b4e5c64086`.
-The full list of possible concrete values that an user can pass is showed [here]().
+<!-- The full list of possible concrete values that an user can pass is showed [here](). -->
 
 A state offers many API for its inspection:
 
 ```python
->>> first_state.curr_stmt # print the current statement ready for execution
->>> first_state.revert # weather the state reverted or not
->>> first_state.instruction_count # how many instructions have been executed up to this point
->>> first_state.pc # current program counter 
->>> first_state.registers # overview of all the virtual registers defined during the execution up to this point
+>>> entry_state.curr_stmt # print the current statement ready for execution
+>>> entry_state.revert # weather the state reverted or not
+>>> entry_state.instruction_count # how many instructions have been executed up to this point
+>>> entry_state.pc # current program counter 
+>>> entry_state.registers # overview of all the virtual registers defined during the execution up to this point
 ```
 
 ### Symbolic Execution
 Symbolic execution is the process of progressing SimState(s) and propagating the symbolic variables according to the program's execution.
 Imagine, for instance, that the condition of a `JUMPI` contains a symbolic variable X.
-If the condition checks for `X != 0`, and the constraints over the variable X make it possible for `X != 0` and `X == 0`, greed will create two different State(s), one at the location specified by the JUMPI (adding a constraint of `X != 0` to the state), and one at the fallthrough (adding a constraint of `X == 0`).
-To begin symbolic execution you need to instantiate a `Simulation Manager`.
+If the condition checks for `X != 0`, and the constraints over the variable X make it possible for `X != 0` and `X == 0`, greed will create two different State(s), one at the location specified by the JUMPI (adding a constraint of `X != 0` to the state), and one at the fallthrough location (adding a constraint of `X == 0`).
 
 ### Simulation Manager
-The simulation manager is a concept borrowed from angr. It is the starting point for beginning symbolic execution and it is used to orchestrate the progression of the SimState(s) according to the employed `Exploration Techniques`.
-Exploration Techniques are used to specify a strategy to explore the states of the program. For instance, an exploration technique can be the classic BFS, or a DFS, or more complicated strategies such as Directed Search etc...
+To begin symbolic execution you need to instantiate a `Simulation Manager`.
+The simulation manager is a concept borrowed from angr, used to orchestrate the progression of the SimState(s).
+Exploration Techniques can be used to provide a strategy to explore the states of the program. For instance, an exploration technique could be the classic breadth-first search (BFS) or depth-first search (DFS), but also more complicated strategies such as Directed Search.
 
 You can instantiate a simulation manager via the Factory in this way:
 
@@ -139,10 +135,10 @@ You can instantiate a simulation manager via the Factory in this way:
 >>> simgr = proj.factory.simgr(entry_state=entry_state)
 ```
 
-By default, the employed exploration technique will be B(reath)F(irst)S(earch). You can change this behavior by installing a new exploration technique that implements the `Exploration Technique` object interface. e.g., :
+By default, the employed exploration technique will be BFS. You can change this behavior by installing new exploration techniques that implement the `Exploration Technique` object interface. For example:
 
 ```python
->>> from greed.exploration_techniques import ExplorationTechnique, DirectedSearch
+>>> from greed.exploration_techniques import DirectedSearch
 >>> directed_search = DirectedSearch(proj.statement_at['0x1e'])
 >>> simgr.use_technique(directed_search)
 ```
@@ -153,15 +149,17 @@ Finally, to start the exploration:
 >>> simgr.run()
 ```
 
-The simulation manager operates using `stashes`. You can imagine a stash as a "bucket" of SimStates generated by the simulation manager during symbolic execution. Every stash has a name. For instance, the stash 'active' contains all the SimStates that are currently progressed by the simulation manager. 
-Generally, the simulation manager takes every SimState(s) out of the 'active' stash, and 'step' each one of them individually to create a successor SimState. Another default stash is the 'revert' stash, we automatically place in this stash all the SimState that reach a `REVERT` opcode. 
+The simulation manager operates using `stashes`. You can imagine a stash as a "bucket" of states generated by the simulation manager during symbolic execution. For example, the stash `active` contains all the states that are currently "active" in the simulation manager.
+The simulation manager will process (or "step") every state in the `active` stash individually to create a successor state. 
+If the state has no successors, the simulation manager will move the state to the `deadended` stash.
+If the execution instead terminates with a `REVERT` opcode, the state will be moved to the `errored` stash.
 
-New exploration techniques can defined new stashes to implement more complicated program explorations.
+Exploration techniques can defined new stashes to implement more complicated program exploration strategies.
 
 ### Solver 
 
 The default solver employed by greed is [Yices2](https://github.com/SRI-CSL/yices2) with `QF_ABV` logic.
-We made this decision based on the impressive results obtained at the latest SMT solving competition and the results showed by Frank et al. in [ETHBMC](https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf).
+We made this decision based on the impressive results obtained in the latest SMT solving competition, and based on the results showed by Frank et al. in [ETHBMC](https://www.usenix.org/system/files/sec20fall_frank_prepub_0.pdf).
 That being said, greed offers a modular architecure and implementing support for a new solver backend is quite straigthforward.
 
-By default, we give unlimited time to the solver to solve the constraints. However, it can be sometimes helpful to just timeout after a certain amount of time. You can do this by using the option `SOLVER_TIMEOUT`. Keep in mind that, when the timeout fires, the state will officially be reported as `unsat`.
+By default, we give unlimited time to the solver to solve the constraints. However, it can be sometimes helpful to timeout after a certain amount of time. You can do this by using the option `SOLVER_TIMEOUT`. Keep in mind that, when the timeout fires, the state will be reported as `errored`.
