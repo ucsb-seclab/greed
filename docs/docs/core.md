@@ -8,7 +8,7 @@ When designing greed, we wanted to provide both a convenient Python wrapper for 
 
 We believe that greed provides a more flexible way to prototype research tools and smart contract analyses. This is accomplished through (1) a modular ([angr](https://github.com/angr/angr)-inspired) design of the symbolic executor, (2) the inherited precision of the CFG analysis offered by [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain), and (3) the conciseness of the TAC-IR (intermediate representation) that strips away the unnecessary complexities of the stack-based EVM design.
 
-To use greed, it is first necessary to analyze a target contract binary with Gigahorse, obtaining all the decompilation artifacts and CFG reconstruction. If you are just getting started with greed, please refer to our [quick start guide](quickstart)!
+To use greed, it is first necessary to analyze a target contract binary with Gigahorse, obtaining all the decompilation artifacts and CFG reconstruction. If you are just getting started with greed, please refer to our [quick start guide](quickstart.md)!
 
 ## Three Address Code
 Our symbolic executor, greed, is based on [Gigahorse](https://github.com/nevillegrech/gigahorse-toolchain)'s T(hree) A(ddress) C(ode) intermediate representation – TAC-IR: a convenient IR that transforms the (EVM) stack-based opcodes into a register based representation.
@@ -81,7 +81,7 @@ Similarly, to access a specific  `Block` or `Statement` information:
 >>> stmt  = proj.statement_at['0x1e']
 ```
 
-The `Block` and `Statement` objects, once fetched, offer [numerous other attributes](modules/greed.block) for advanced inspection. 
+The `Block` and `Statement` objects, once fetched, offer [numerous other attributes](modules/greed.block.md) for advanced inspection. 
 
 ### State
 Similary to angr, a SimState (i.e., `State`) represents the state of the smart contract at a specific opcode. You can imagine the State as a snapshot of the execution at a specific program location.
