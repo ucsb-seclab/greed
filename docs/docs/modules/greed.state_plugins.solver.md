@@ -75,10 +75,10 @@ __init__(partial_init=False)
 
 <a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state_plugins/solver.py#L99"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `add_memory_constraints`
+### <kbd>method</kbd> `add_memory_constraint`
 
 ```python
-add_memory_constraints(constraint)
+add_memory_constraint(constraint)
 ```
 
 Add a memory constraint to the state (at the current frame level). 
@@ -91,10 +91,10 @@ Add a memory constraint to the state (at the current frame level).
 
 <a href="https://github.com/ucsb-seclab/greed/tree/main/greed/state_plugins/solver.py#L90"><img align="right" style="float:right;" src="https://img.shields.io/badge/-source-cccccc?style=flat-square"></a>
 
-### <kbd>method</kbd> `add_path_constraints`
+### <kbd>method</kbd> `add_path_constraint`
 
 ```python
-add_path_constraints(constraint)
+add_path_constraint(constraint)
 ```
 
 Add a path constraint to the state (at the current frame level). 

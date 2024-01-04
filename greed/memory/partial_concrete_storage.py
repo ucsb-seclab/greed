@@ -76,7 +76,7 @@ class PartialConcreteStorage:
         Args:
             formula: The constraint to add
         """
-        self.state.solver.add_memory_constraints(formula)
+        self.state.solver.add_memory_constraint(formula)
 
     def add_constraints(self, formulas):
         """

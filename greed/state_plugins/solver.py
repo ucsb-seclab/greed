@@ -87,14 +87,14 @@ class SimStateSolver(SimStatePlugin):
         while self._curr_frame_level != 0:
             self.pop()
     
-    def add_path_constraints(self, constraint):
+    def add_path_constraint(self, constraint):
         """
         Add a path constraint to the state (at the current frame level).
         """
         self._path_constraints[self._curr_frame_level].add(constraint)
         self._add_assertion(constraint)
 
-    def add_memory_constraints(self, constraint):
+    def add_memory_constraint(self, constraint):
         """
         Add a memory constraint to the state (at the current frame level).
         """
