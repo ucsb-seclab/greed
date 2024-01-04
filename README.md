@@ -81,7 +81,7 @@ pytest
 
 ### 🎓 Academia 
 
-If you use greed as part of a scientific publication, we would appreciate a citation using these two Bibtex entries: 
+If you are using greed for an academic publication, we would really appreciate a citation to the following work:
 
 ```
 @inproceedings{gritti2023confusum,
@@ -91,9 +91,7 @@ booktitle={32nd USENIX Security Symposium (USENIX Security 23)},
 pages={1793--1810},
 year={2023}
 }
-```
 
-```
 @inproceedings{ruaro2024crush,
 title={Not your Type! Detecting Storage Collision Vulnerabilities in Ethereum Smart Contracts},
 author={Ruaro, Nicola and Gritti, Fabio and McLaughlin, Robert and Grishchenko, Ilya and Kruegel, Christopher and Vigna, Giovanni},
