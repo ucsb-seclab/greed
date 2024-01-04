@@ -1,4 +1,4 @@
-# `greed`
+# greed
 [![License](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=flat)]([https://pypi.org/project/ethpwn/](https://raw.githubusercontent.com/ethpwn/ethpwn/main/LICENSE))
 [![Docs](https://img.shields.io/badge/Documentation-gh_pages)](https://ucsb-seclab.github.io/greed/)
 
