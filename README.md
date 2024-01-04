@@ -78,3 +78,26 @@ pytest
     * `Storage`: symbolic modulo 2^256 store
     * `Memory`: symbolic modulo 2^256 store
     * `Registers`: symbolic modulo 2^256 store
+
+### Academia 
+
+If you use greed as part of a scientific publication 🎓, we would appreciate a citation using these two Bibtex entries: 
+
+```
+@inproceedings{gritti2023confusum,
+title={Confusum contractum: confused deputy vulnerabilities in ethereum smart contracts},
+author={Gritti, Fabio and Ruaro, Nicola and McLaughlin, Robert and Bose, Priyanka and Das, Dipanjan and Grishchenko, Ilya and Kruegel, Christopher and Vigna, Giovanni},
+booktitle={32nd USENIX Security Symposium (USENIX Security 23)},
+pages={1793--1810},
+year={2023}
+}
+```
+
+```
+@inproceedings{ruaro2024crush,
+title={Not your Type! Detecting Storage Collision Vulnerabilities in Ethereum Smart Contracts},
+author={Ruaro, Nicola and Gritti, Fabio and McLaughlin, Robert and Grishchenko, Ilya and Kruegel, Christopher and Vigna, Giovanni},
+booktitle={Network and Distributed Systems Security (NDSS) Symposium 2024},
+year={2024}
+}
+```
