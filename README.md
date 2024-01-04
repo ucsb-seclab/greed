@@ -7,7 +7,7 @@
 
 <!-- [![Tests](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml) -->
 
-### Installation
+### ⚡️ Installation
 ```bash
 # Clone this repo
 git clone git@github.com:ucsb-seclab/greed.git
@@ -19,7 +19,7 @@ workon greed
 ./setup.sh
 ```
 
-### Usage
+### 🚀 Usage
 First, the contract needs to be pre-processed with `gigahorse`. This can be done in two ways:
 ```bash
 # IMPORTANT: create a new folder. The analyses will pollute the current working directory
@@ -51,7 +51,7 @@ Or to run `greed` from the command line:
 greed /tmp/test_contract [--debug] [--find <address>]
 ```
 
-### Testing
+### 🧪 Testing
 ```bash
 cd greed/tests
 
@@ -62,7 +62,7 @@ pytest
 ./run_testcase.py test_math --debug
 ```
 
-### Architecture
+### 🧱 Architecture
 #### Offline representation
 
 * `Project`: calls the TAC_Parser to parse functions, blocks, and statements from Gigahorse
@@ -79,9 +79,9 @@ pytest
     * `Memory`: symbolic modulo 2^256 store
     * `Registers`: symbolic modulo 2^256 store
 
-### Academia 
+### 🎓 Academia 
 
-If you use greed as part of a scientific publication 🎓, we would appreciate a citation using these two Bibtex entries: 
+If you use greed as part of a scientific publication, we would appreciate a citation using these two Bibtex entries: 
 
 ```
 @inproceedings{gritti2023confusum,
