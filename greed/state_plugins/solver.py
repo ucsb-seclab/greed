@@ -90,6 +90,8 @@ class SimStateSolver(SimStatePlugin):
     def add_path_constraints(self, constraint):
         """
         Add a path constraint to the state (at the current frame level).
+        Args:
+            constraint: The constraint to add.
         """
         self._path_constraints[self._curr_frame_level].add(constraint)
         self._add_assertion(constraint)
@@ -97,6 +99,8 @@ class SimStateSolver(SimStatePlugin):
     def add_memory_constraints(self, constraint):
         """
         Add a memory constraint to the state (at the current frame level).
+        Args:
+            constraint: The constraint to add.
         """
         self._memory_constraints[self._curr_frame_level].add(constraint)
         self._add_assertion(constraint)
@@ -115,6 +119,7 @@ class SimStateSolver(SimStatePlugin):
                     if not self.state.solver.is_formula_sat(NotEqual(reg_val, reg_val_sol)):
                         self.state.registers[reg_var] = reg_val_sol
                 self.state.registers[reg_var].is_simplified = True
+
     @property
     def timed_out(self):
         return self._solver.timed_out

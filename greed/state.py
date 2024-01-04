@@ -5,7 +5,7 @@ import typing
 from greed import options as opt
 from greed.memory import LambdaMemory, PartialConcreteStorage
 from greed.solver.shortcuts import *
-from greed.state_plugins import SimStatePlugin, SimStateSolver, SimStateGlobals, SimStateInspect
+from greed.state_plugins import SimStatePlugin, SimStateSolver, SimStateGlobals, SimStateInspect, ShaResolver
 from greed.utils.exceptions import VMNoSuccessors, VMUnexpectedSuccessors
 from greed.utils.exceptions import VMSymbolicError
 from greed.utils.extra import UUIDGenerator
@@ -295,6 +295,11 @@ class SymbolicEVMState:
         """
         self.register_plugin("solver", SimStateSolver())
         self.register_plugin("globals", SimStateGlobals())
+        
+        sha_resolver = ShaResolver() 
+        self.register_plugin("sha_resolver",sha_resolver)
+        sha_resolver.set_state(self)
+
         if opt.STATE_INSPECT:
             self.register_plugin("inspect", SimStateInspect())
 
