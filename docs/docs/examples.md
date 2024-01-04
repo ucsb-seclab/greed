@@ -9,7 +9,7 @@ In this example, we show how to automatically synthetize the `CALLDATA` to reach
 First, you should download the [contract bytecode](https://library.dedaub.com/ethereum/address/0x204db9ca00912c0f9e6380342113f6a0147e6f8c/bytecode) and place it in a `contract.hex` file:
 
 ```bash
-degrigis@tati:~/contracts/0x204Db9Ca00912c0F9e6380342113f6A0147E6f8C$ cat contract.hex
+$ cat contract.hex
 0x6080604052600436106100595760003560e...
 ```
 
@@ -17,27 +17,25 @@ Then, use our script `analyze_hex.sh` (shipped with greed) to run Gigahorse agai
 ( the script is in the `/greed/resources/` folder)
 
 ```bash
-degrigis@tati:~/contracts/0x204Db9Ca00912c0F9e6380342113f6A0147E6f8C$ analyze_hex.sh --file ./contract.hex
+$ analyze_hex.sh --file ./contract.hex
 ```
 
 This will produce many artifacts in the current folder:
 
 ```bash
-degrigis@tati:~/contracts/0x204Db9Ca00912c0F9e6380342113f6A0147E6f8C$ ls -l
-degrigis@tati:~/projects/greed-examples/contracts/0x204Db9Ca00912c0F9e6380342113f6A0147E6f8C$ ls -l
-total 872
--rw-rw-r-- 1 degrigis degrigis    934 Dec 19 10:55 ActualReturnArgs.csv
--rw-rw-r-- 1 degrigis degrigis      2 Dec 19 10:55 AllCALLsClassified.csv
--rw-rw-r-- 1 degrigis degrigis     23 Dec 19 10:55 Analytics_ArrayCopy.csv
--rw-rw-r-- 1 degrigis degrigis     12 Dec 19 10:55 Analytics_ArrayHasTwoElementLengths.csv
--rw-rw-r-- 1 degrigis degrigis      0 Dec 19 10:55 Analytics_BlockHasNoTACBlock.csv
--rw-rw-r-- 1 degrigis degrigis      0 Dec 19 10:55 Analytics_BlockInMultipleFunctions.csv
--rw-rw-r-- 1 degrigis degrigis      0 Dec 19 10:55 Analytics_BlockInNoFunctions.csv
--rw-rw-r-- 1 degrigis degrigis      0 Dec 19 10:55 Analytics_BlockIsEmpty.csv
+$ ls
+ActualReturnArgs.csv
+AllCALLsClassified.csv
+Analytics_ArrayCopy.csv
+Analytics_ArrayHasTwoElementLengths.csv
+Analytics_BlockHasNoTACBlock.csv
+Analytics_BlockInMultipleFunctions.csv
+Analytics_BlockInNoFunctions.csv
+Analytics_BlockIsEmpty.csv
 [ ... ]
 ```
 
-Now, we have everything we need to start using greed! This is the analysis script to automatically generate the
+Now, we have everything we need to start using greed! This is our example analysis script to automatically generate the
 `CALLDATA` needed to reach the target `CALL` statement (follow the comments).
 
 ```python
@@ -159,7 +157,7 @@ if __name__ == "__main__":
 
 In this example we show how one can synthetize the `CALLDATA` and the `CALLVALUE` necessary to mint() a PudgyPenguin(🐧) in the contract at `0xBd3531dA5CF5857e7CfAA92426877b022e612cf8`.
 
-After you analyzed the [contract](https://library.dedaub.com/ethereum/address/0xbd3531da5cf5857e7cfaa92426877b022e612cf8/bytecode) as explained in the previous example, you can use the following script:
+After analyzing the [contract](https://library.dedaub.com/ethereum/address/0xbd3531da5cf5857e7cfaa92426877b022e612cf8/bytecode) as explained in the previous example, you can use the following script:
 
 ```python
 

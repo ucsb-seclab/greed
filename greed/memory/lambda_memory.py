@@ -1,5 +1,7 @@
 import logging
 
+from collections import defaultdict
+
 from greed.memory.lambda_constraint import LambdaConstraint, LambdaMemsetConstraint, LambdaMemsetInfiniteConstraint, \
     LambdaMemcopyConstraint, LambdaMemcopyInfiniteConstraint
 from greed.solver.shortcuts import *
@@ -68,6 +70,8 @@ class LambdaMemory:
         self.root_lambda_constraint = LambdaConstraint()
         self._constraints = list()
 
+        self.cache = defaultdict(dict)
+
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
         if default is not None:
             # use memsetinfinite to make this a ConstArray with default BVV(0, 8)
@@ -82,7 +86,7 @@ class LambdaMemory:
         Args:
             formula: the constraint to add
         """
-        self.state.solver.add_memory_constraints(formula)
+        self.state.solver.add_memory_constraint(formula)
 
     def add_constraints(self, formulas):
         """
@@ -92,6 +96,36 @@ class LambdaMemory:
         """
         for formula in formulas:
             self.add_constraint(formula)
+
+    def invalidate_cache(self, start=None, end=None):
+        """
+        Invalidate the cache range.
+        """
+
+        # if cache is empty, do nothing
+        if len(self.cache) == 0:
+            return
+
+        # invalidate cache if range fully unspecified or fully symbolic
+        if (
+            (start is None and end is None) or  # range fully unspecified
+            (start is not None and not is_concrete(start) and end is not None and not is_concrete(end))  # range fully symbolic
+        ):
+            self.cache = defaultdict(dict)
+            return
+        
+        # else invalidate only the impacted cache slots
+        if start is None or not is_concrete(start):
+            start = BVV(0, 256)
+        if end is None or not is_concrete(end):
+            end = BVV(2**256 - 1, 256)
+        start = bv_unsigned_value(start)
+        end = bv_unsigned_value(end)
+        for width in self.cache:
+            for k in list(self.cache[width]):
+                # if there is any overlap between [k, k+width) and [start, end), invalidate
+                if any([start <= k+i < end for i in range(width)]):
+                    del self.cache[width][k]
 
     @property
     def layer_level(self):
@@ -123,6 +157,10 @@ class LambdaMemory:
         assert not isinstance(index, slice), "slice memory read not implemented"
         self.read_count += 1
 
+        # check cache
+        if is_concrete(index) and bv_unsigned_value(index) in self.cache[1]:
+            return self.cache[1][bv_unsigned_value(index)]
+
         # instantiate and add lambda constraints
         new_constraints = self.root_lambda_constraint.instantiate(index)
         self.add_constraints(new_constraints)
@@ -140,6 +178,12 @@ class LambdaMemory:
             an Array_Store formula representing the write to that index
         """
         self.write_count += 1
+
+        # update cache
+        self.invalidate_cache(start=index, end=BV_Add(index, BVV(1, 256)))
+        if is_concrete(index):
+            self.cache[1][bv_unsigned_value(index)] = v
+
         self.root_lambda_constraint.following_writes[index] = v
         self._base = Array_Store(self._base, index, v)
 
@@ -157,6 +201,12 @@ class LambdaMemory:
         """
         assert is_concrete(n), "readn with symbolic length not implemented"
         assert bv_unsigned_value(n) != 0, "invalid readn with length=0"
+
+        # check cache
+        if is_concrete(index) and bv_unsigned_value(index) in self.cache[bv_unsigned_value(n)]:
+            # print(f"cache hit {bv_unsigned_value(index)}: {self.cache[bv_unsigned_value(n)][bv_unsigned_value(index)]}")
+            return self.cache[bv_unsigned_value(n)][bv_unsigned_value(index)]
+
         if bv_unsigned_value(n) == 1:
             return self[index]
         else:
@@ -173,7 +223,23 @@ class LambdaMemory:
                 vv.append(self[read_index])
 
             self.state.add_constraint(Equal(res, BV_Concat(vv)))
+            # print(f"actual readn {bv_unsigned_value(index)}:{bv_unsigned_value(n)} = {BV_Concat(vv)}")
             return res
+
+    def writen(self, index, v, n):
+        assert is_concrete(n), "writen with symbolic length not implemented"
+        assert bv_unsigned_value(n) != 0, "invalid writen with length=0"
+
+        self.invalidate_cache(start=index, end=BV_Add(index, n))
+
+        for i in range(bv_unsigned_value(n)):
+            m = BV_Extract((31 - i) * 8, (31 - i) * 8 + 7, v)
+            self.state.memory[BV_Add(index, BVV(i, 256))] = m
+
+        # update cache
+        if is_concrete(index):
+            # print(f"caching writen {bv_unsigned_value(index)}:{bv_unsigned_value(n)} = {v}")
+            self.cache[bv_unsigned_value(n)][bv_unsigned_value(index)] = v
 
     def memset(self, start, value, size):
         """
@@ -185,6 +251,9 @@ class LambdaMemory:
         """
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
+
+        # update cache
+        self.invalidate_cache(start=start, end=BV_Add(start, size))
 
         self.root_lambda_constraint = LambdaMemsetConstraint(old_base, start, value, size, self._base,
                                                              parent=self.root_lambda_constraint)
@@ -198,6 +267,9 @@ class LambdaMemory:
         """
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
+
+        # update cache
+        self.invalidate_cache(start=start)
 
         self.root_lambda_constraint = LambdaMemsetInfiniteConstraint(old_base, start, value, self._base,
                                                                      parent=self.root_lambda_constraint)
@@ -217,6 +289,9 @@ class LambdaMemory:
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
 
+        # update cache
+        self.invalidate_cache(start=start, end=BV_Add(start, size))
+
         self.root_lambda_constraint = LambdaMemcopyConstraint(old_base, start, source, source_start, size, self._base,
                                                               parent=self.root_lambda_constraint)
 
@@ -233,6 +308,9 @@ class LambdaMemory:
         assert source != self, "ERROR: memcopy source was not copied"
         old_base = self._base
         self._base = Array(f"{self.tag}_{LambdaMemory.uuid_generator.next()}_{self.layer_level}", BVSort(256), BVSort(8))
+
+        # update cache
+        self.invalidate_cache(start=start)
 
         self.root_lambda_constraint = LambdaMemcopyInfiniteConstraint(old_base, start, source, source_start, self._base,
                                                                       parent=self.root_lambda_constraint)
@@ -251,6 +329,9 @@ class LambdaMemory:
         new_memory.state = new_state
         new_memory.root_lambda_constraint = self.root_lambda_constraint.copy(new_state=new_state)
         new_memory._constraints = list(self._constraints)
+        new_memory.cache = defaultdict(dict)
+        for width in self.cache:
+            new_memory.cache[width].update(self.cache[width])
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
 

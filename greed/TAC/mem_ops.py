@@ -18,9 +18,10 @@ class TAC_Mstore(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: SymbolicEVMState):
-        for i in range(32):
-            m = BV_Extract((31 - i) * 8, (31 - i) * 8 + 7, self.value_val)
-            state.memory[BV_Add(self.offset_val, BVV(i, 256))] = m
+        # for i in range(32):
+        #     m = BV_Extract((31 - i) * 8, (31 - i) * 8 + 7, self.value_val)
+        #     state.memory[BV_Add(self.offset_val, BVV(i, 256))] = m
+        state.memory.writen(self.offset_val, self.value_val, BVV(32, 256))
 
         state.set_next_pc()
         return [state]

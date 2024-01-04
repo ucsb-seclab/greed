@@ -40,5 +40,6 @@ curr_dir=$(pwd) && cd $GREED_DIR && greed_version=$(git rev-parse HEAD) && cd $c
 cp .temp/contract/out/* .
 cp .temp/contract/contract.dasm .
 cp .temp/contract/*.csv .
-rm -rf .temp bytecode.hex Analytics_ReachableUnderContext.csv Analytics_Contexts.csv
+mv bytecode.hex contract.hex
+rm -rf .temp Analytics_ReachableUnderContext.csv Analytics_Contexts.csv
 chmod 664 *
