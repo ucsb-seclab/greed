@@ -45,20 +45,22 @@ IS_SOUFFLE_MISSING=FALSE
 for package in gcc cmake gperf libgmp-dev; do
   dpkg -l | grep -q $package || MISSING_APT_PACKAGES+=($package)
 done
-if -z $NO_GIGAHORSE; then
+if [ -z $NO_GIGAHORSE ]; then
   command -v >&- mkisofs || MISSING_APT_PACKAGES+=("mkisofs")
-  dpkg -l | grep -q libboost-all-dev || MISSING_APT_PACKAGES+=("libboost-all-dev")
+  for package in bison build-essential clang cmake doxygen flex g++ git libffi-dev libncurses5-dev libsqlite3-dev make mcpp python sqlite zlib1g-dev libboost-all-dev; do
+    dpkg -l | grep -q $package || MISSING_APT_PACKAGES+=($package)
+  done
   command -v >&- souffle || IS_SOUFFLE_MISSING=TRUE
 fi
 
 source /etc/os-release
-IS_UBUNTU=[ -f /etc/os-release ] && [ $ID = "ubuntu" ]
+IS_UBUNTU=$([ $ID = "ubuntu" ] && echo TRUE || echo FALSE)
 
 if [ ${#MISSING_APT_PACKAGES[@]} -gt 0 ]; then
   echo "${bold}${red}The following packages are missing: ${MISSING_APT_PACKAGES[*]}. Please install them before proceeding (e.g., sudo apt install ${MISSING_APT_PACKAGES[*]})${normal}"
   if [ $IS_UBUNTU = TRUE ]; then
     read -rsn1 -p "Or press any key to install them now (ctrl-c to abort)"
-    sudo apt install ${MISSING_APT_PACKAGES[*]}
+    sudo apt install ${MISSING_APT_PACKAGES[*]} || { echo "${bold}${red}Failed to install missing packages${normal}"; exit 1; }
   else
     exit 1
   fi
@@ -70,7 +72,7 @@ if [ $IS_SOUFFLE_MISSING = TRUE ]; then
     read -rsn1 -p "Or press any key to install it now (ctrl-c to abort)"
     wget https://github.com/souffle-lang/souffle/releases/download/2.4/x86_64-ubuntu-2004-souffle-2.4-Linux.deb -O /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
     sudo dpkg -i /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
-    rm /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb
+    rm /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb || { rm -f /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb; echo "${bold}${red}Failed to install souffle${normal}"; exit 1; }
   else
     exit 1
   fi
