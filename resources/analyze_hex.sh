@@ -9,11 +9,11 @@ while (( $# >= 1 )); do
 done
 
 if [[ -z $HEX_FILE ]]; then
-  echo usage: analyze_contract_hex.sh --file \<contract .hex file\> --timeout \<timeout\>
+  echo usage: analyze_hex.sh --file \<contract .hex file\> --timeout \<timeout\>
   exit 1
 elif [[ -z $TIMEOUT ]]; then
   TIMEOUT=120
-#  echo usage: analyze_contract_hex.sh --file \<contract .hex file\> --timeout \<timeout\>
+#  echo usage: analyze_hex.sh --file \<contract .hex file\> --timeout \<timeout\>
 #  exit 1
 elif [ ! -f $HEX_FILE ]; then
   echo $HEX_FILE is not a file
