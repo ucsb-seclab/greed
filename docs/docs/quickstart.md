@@ -15,6 +15,7 @@
 git clone git@github.com:ucsb-seclab/greed.git
 mkvirtualenv greed
 workon greed
+cd greed
 ./setup.sh
 ```
 
