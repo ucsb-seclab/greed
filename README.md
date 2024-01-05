@@ -1,5 +1,5 @@
 # greed
-[![python](https://img.shields.io/badge/Python-3.11+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
+[![python](https://img.shields.io/badge/Python-3.8+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
 [![License](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=flat)]([https://pypi.org/project/ethpwn/](https://raw.githubusercontent.com/ethpwn/ethpwn/main/LICENSE))
 [![Docs](https://img.shields.io/badge/Documentation-gh_pages)](https://ucsb-seclab.github.io/greed/)
 
@@ -7,7 +7,7 @@
 
 <!-- [![Tests](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml/badge.svg)](https://github.com/ucsb-seclab/greed/actions/workflows/python-app.yml) -->
 
-### Installation
+### ⚡️ Installation
 ```bash
 # Clone this repo
 git clone git@github.com:ucsb-seclab/greed.git
@@ -16,10 +16,11 @@ mkvirtualenv greed
 # Activate the virtual environment
 workon greed
 # Install greed (will setup gigahorse, yices, and `pip install -e greed`)
+cd greed
 ./setup.sh
 ```
 
-### Usage
+### 🚀 Usage
 First, the contract needs to be pre-processed with `gigahorse`. This can be done in two ways:
 ```bash
 # IMPORTANT: create a new folder. The analyses will pollute the current working directory
@@ -51,7 +52,7 @@ Or to run `greed` from the command line:
 greed /tmp/test_contract [--debug] [--find <address>]
 ```
 
-### Testing
+### 🧪 Testing
 ```bash
 cd greed/tests
 
@@ -62,7 +63,7 @@ pytest
 ./run_testcase.py test_math --debug
 ```
 
-### Architecture
+### 🧱 Architecture
 #### Offline representation
 
 * `Project`: calls the TAC_Parser to parse functions, blocks, and statements from Gigahorse
@@ -78,3 +79,24 @@ pytest
     * `Storage`: symbolic modulo 2^256 store
     * `Memory`: symbolic modulo 2^256 store
     * `Registers`: symbolic modulo 2^256 store
+
+### 🎓 Academia 
+
+If you are using greed for an academic publication, we would really appreciate a citation to the following work:
+
+```
+@inproceedings{gritti2023confusum,
+title={Confusum contractum: confused deputy vulnerabilities in ethereum smart contracts},
+author={Gritti, Fabio and Ruaro, Nicola and McLaughlin, Robert and Bose, Priyanka and Das, Dipanjan and Grishchenko, Ilya and Kruegel, Christopher and Vigna, Giovanni},
+booktitle={32nd USENIX Security Symposium (USENIX Security 23)},
+pages={1793--1810},
+year={2023}
+}
+
+@inproceedings{ruaro2024crush,
+title={Not your Type! Detecting Storage Collision Vulnerabilities in Ethereum Smart Contracts},
+author={Ruaro, Nicola and Gritti, Fabio and McLaughlin, Robert and Grishchenko, Ilya and Kruegel, Christopher and Vigna, Giovanni},
+booktitle={Network and Distributed Systems Security (NDSS) Symposium 2024},
+year={2024}
+}
+```
