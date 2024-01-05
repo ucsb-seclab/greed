@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+# set -x
 
 if [ ! $VIRTUAL_ENV ]; then
  echo "${bold}${red}Can't install outside of a Python virtualenv${normal}"; exit 1
@@ -20,6 +20,12 @@ while (( $# >= 1 )); do
     esac;
 done
 
+# confirm whether the user wants to install gigahorse
+if [ -z $NO_GIGAHORSE ]; then
+  read -rsn1 -p "This script will install gigahorse. If you don't want to install gigahorse, run $0 --no-gigahorse. Press any key to continue (ctrl-c to abort)"
+  echo
+fi
+
 # navigate to this script's directory
 GREED_DIR=`dirname "${BASH_SOURCE[0]}"`
 GREED_DIR=`readlink -f $GREED_DIR` || { echo "${bold}${red}Can't find greed absolute path ${normal}"; exit 1; }
@@ -27,6 +33,48 @@ GIGAHORSE_DIR=$GREED_DIR/gigahorse-toolchain
 
 VIRTUAL_ENV_BIN=$VIRTUAL_ENV/bin
 VIRTUAL_ENV_LIB=`echo $VIRTUAL_ENV/lib/python3.*/site-packages`
+
+########################################################################################################################
+########################################################################################################################
+# DEPENDENCIES
+########################################################################################################################
+echo "Checking for dependencies.."
+
+MISSING_APT_PACKAGES=()
+IS_SOUFFLE_MISSING=FALSE
+for package in gcc cmake gperf libgmp-dev; do
+  dpkg -l | grep -q $package || MISSING_APT_PACKAGES+=($package)
+done
+if -z $NO_GIGAHORSE; then
+  command -v >&- mkisofs || MISSING_APT_PACKAGES+=("mkisofs")
+  dpkg -l | grep -q libboost-all-dev || MISSING_APT_PACKAGES+=("libboost-all-dev")
+  command -v >&- souffle || IS_SOUFFLE_MISSING=TRUE
+fi
+
+source /etc/os-release
+IS_UBUNTU=[ -f /etc/os-release ] && [ $ID = "ubuntu" ]
+
+if [ ${#MISSING_APT_PACKAGES[@]} -gt 0 ]; then
+  echo "${bold}${red}The following packages are missing: ${MISSING_APT_PACKAGES[*]}. Please install them before proceeding (e.g., sudo apt install ${MISSING_APT_PACKAGES[*]})${normal}"
+  if [ $IS_UBUNTU = TRUE ]; then
+    read -rsn1 -p "Or press any key to install them now (ctrl-c to abort)"
+    sudo apt install ${MISSING_APT_PACKAGES[*]}
+  else
+    exit 1
+  fi
+fi
+
+if [ $IS_SOUFFLE_MISSING = TRUE ]; then
+  echo "${bold}${red}souffle is not installed. Please install it before proceeding (see https://github.com/souffle-lang/souffle/releases/tag/2.4 and https://souffle-lang.github.io/build, version 2.4 preferred)${normal}"
+  if [ $IS_UBUNTU = TRUE ]; then
+    read -rsn1 -p "Or press any key to install it now (ctrl-c to abort)"
+    wget https://github.com/souffle-lang/souffle/releases/download/2.4/x86_64-ubuntu-2004-souffle-2.4-Linux.deb -O /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
+    sudo dpkg -i /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
+    rm /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb
+  else
+    exit 1
+  fi
+fi
 
 ########################################################################################################################
 ########################################################################################################################
@@ -41,10 +89,10 @@ fi
 cd $GREED_DIR/yices2
 
 # check if all required packages are installed (cmake, cython, libgmp-dev)
-dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
-dpkg -l | grep -q cmake || { echo "${bold}${red}cmake is not installed. Please install it before proceeding (e.g., sudo apt install cmake)${normal}"; exit 1; }
-dpkg -l | grep -q gperf || { echo "${bold}${red}gperf is not installed. Please install it before proceeding (e.g., sudo apt install gperf)${normal}"; exit 1; }
-dpkg -l | grep -q libgmp-dev || { echo "${bold}${red}libgmp-dev is not installed. Please install it before proceeding (e.g., sudo apt install libgmp-dev)${normal}"; exit 1; }
+# dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
+# dpkg -l | grep -q cmake || { echo "${bold}${red}cmake is not installed. Please install it before proceeding (e.g., sudo apt install cmake)${normal}"; exit 1; }
+# dpkg -l | grep -q gperf || { echo "${bold}${red}gperf is not installed. Please install it before proceeding (e.g., sudo apt install gperf)${normal}"; exit 1; }
+# dpkg -l | grep -q libgmp-dev || { echo "${bold}${red}libgmp-dev is not installed. Please install it before proceeding (e.g., sudo apt install libgmp-dev)${normal}"; exit 1; }
 
 # install
 make clean || { echo "${bold}${red}Failed to run make clean ${normal}. Continuing..."; }
@@ -77,7 +125,7 @@ yices_python_info
 
 if [ -z $NO_GIGAHORSE ]; then
   # install solc-select
-  command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
+  # command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
   solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; }
 
   # then install gigahorse from the official repo
@@ -85,8 +133,8 @@ if [ -z $NO_GIGAHORSE ]; then
   read -rsn1 -p "Setting up gigahorse.. Press any key to continue (ctrl-c to abort)"
   echo
 
-  command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (see https://github.com/souffle-lang/souffle/releases/tag/2.4 and https://souffle-lang.github.io/build, version 2.4 preferred)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
-  dpkg -l | grep -q libboost-all-dev || { echo "${bold}${red}libboost-all-dev is not installed. Please install it before proceeding (e.g., sudo apt install libboost-all-dev)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
+  # command -v >&- souffle || { echo "${bold}${red}souffle is not installed. Please install it before proceeding (see https://github.com/souffle-lang/souffle/releases/tag/2.4 and https://souffle-lang.github.io/build, version 2.4 preferred)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
+  # dpkg -l | grep -q libboost-all-dev || { echo "${bold}${red}libboost-all-dev is not installed. Please install it before proceeding (e.g., sudo apt install libboost-all-dev)${normal}"; echo "${bold}${red}Or maybe you forgot --no-gigahorse?${normal}"; exit 1; }
 
   # clone the gigahorse-toolchain repo
   if [ ! -d $GREED_DIR/gigahorse-toolchain ]; then
@@ -98,7 +146,7 @@ if [ -z $NO_GIGAHORSE ]; then
   # copy greed client
   cp $GREED_DIR/resources/greed_client.dl $GIGAHORSE_DIR/clientlib/
 
-  # compile souffle
+  # compile souffle-addon
   echo "Compiling souffle-addon.."
   cd $GIGAHORSE_DIR/souffle-addon
   make || { echo "${bold}${red}Failed to build gigahorse's souffle-addon${normal}"; exit 1; }
@@ -139,4 +187,4 @@ pip install -e $GREED_DIR
 
 ########################################################################################################################
 
-set +x
+# set +x
