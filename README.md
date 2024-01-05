@@ -16,6 +16,7 @@ mkvirtualenv greed
 # Activate the virtual environment
 workon greed
 # Install greed (will setup gigahorse, yices, and `pip install -e greed`)
+cd greed
 ./setup.sh
 ```
 
