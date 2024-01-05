@@ -127,8 +127,9 @@ yices_python_info
 
 if [ -z $NO_GIGAHORSE ]; then
   # install solc-select
+  pip install solc-select
   # command -v >&- mkisofs || echo "${bold}${red}mkisofs is not installed. solc-select might not work correctly (e.g., sudo apt install mkisofs)${normal}"
-  solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; }
+  solc-select versions | grep -q 0.8.7 || { echo "Installing solc 0.8.7"; solc-select install 0.8.7; solc-select use 0.8.7; }
 
   # then install gigahorse from the official repo
   echo "Number of parallel datalog jobs: $j (override with $0 -j N)"
