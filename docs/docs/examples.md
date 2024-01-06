@@ -151,9 +151,31 @@ if __name__ == "__main__":
 
 ```
 
+## (2) Retrieve the slot IDs involved in access control checks
+This example shows how to fetch all the slot ids holding addresses of account involved in an access control checks.
+The script makes use of a [builtin analysis](https://github.com/ucsb-seclab/greed/blob/main/greed/analyses/access_control_slots.py) offered by greed. Specifically, this analysis employs a backward slice against the static use-def graph of the TAC opcodes to detect patterns of access control routines.
 
+As explained before, first analyze the [contract](https://library.dedaub.com/ethereum/address/0xdac17f958d2ee523a2206206994597c13d831ec7/decompiled) with Gigahorse. Then, you can use the following script:
 
-## (2) Mint a PudgyPenguin
+```python
+
+from greed import Project
+from greed.analyses.access_control_slots import get_access_control_slots
+
+p = Project(target_dir="./0xdAC17F958D2ee523a2206206994597C13D831ec7/")
+get_access_control_slots(p)
+
+```
+
+Will output:
+
+```python
+Out[4]: {0}
+```
+
+Essentially, this is saying that slot `0x0`` holds an address that is checked against msg.sender before executing some code in the contract.
+
+## (3) Mint a PudgyPenguin
 
 In this example we show how one can synthetize the `CALLDATA` and the `CALLVALUE` necessary to mint() a PudgyPenguin(🐧) in the contract at `0xBd3531dA5CF5857e7CfAA92426877b022e612cf8`.
 
@@ -266,7 +288,11 @@ def main():
             # Fix the shas!
             if len(state.sha_observed) > 0:
                 shas = state.sha_resolver.fix_shas()
-                print(f'Fixed {len(shas)} shas in the state!')
+                if shas != None:
+                    print(f'Fixed {len(shas)} shas in the state!')
+                else:
+                    print('Could not fix shas solutions, state is unsat')
+                    assert(False)
 
             # Get a solution for the CALLDATA
             calldata_sol = state.solver.eval_memory(state.calldata, length=BVV(68,256), raw=True)
