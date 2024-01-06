@@ -60,7 +60,7 @@ cd greed/tests
 pytest
 
 # Or manually run a single test using run_testcase.py
-./run_testcase.py test_math --debug
+./test_math.py --debug
 ```
 
 ### 🧱 Architecture
