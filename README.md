@@ -59,7 +59,7 @@ cd greed/tests
 # Run the full test suite with pytest
 pytest
 
-# Or manually run a single test using run_testcase.py
+# Or manually run a single test
 ./test_math.py --debug
 ```
 
