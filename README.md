@@ -33,7 +33,7 @@ analyze_source.sh contract.sol
 
 # OPTION 2: From the contract bytecode
 cp <contract_bytecode> contract.hex
-analyze_contract_hex.sh contract.hex
+analyze_hex.sh contract.hex
 ```
 
 Then, to use `greed` in your python project:
@@ -59,8 +59,8 @@ cd greed/tests
 # Run the full test suite with pytest
 pytest
 
-# Or manually run a single test using run_testcase.py
-./run_testcase.py test_math --debug
+# Or manually run a single test
+./test_math.py --debug
 ```
 
 ### 🧱 Architecture
