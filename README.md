@@ -33,7 +33,7 @@ analyze_source.sh contract.sol
 
 # OPTION 2: From the contract bytecode
 cp <contract_bytecode> contract.hex
-analyze_contract_hex.sh contract.hex
+analyze_hex.sh contract.hex
 ```
 
 Then, to use `greed` in your python project:
