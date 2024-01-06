@@ -36,10 +36,10 @@ encode_abi(['uint256', 'uint256', 'uint256', 'uint256', 'bytes32', 'bytes32[]'],
 def run_test(target_dir, debug=False):
     p = Project(target_dir=target_dir)
 
-    data = '000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000' \
-           '0000000000000000000000000000000000000c746573745f6164647265737300000000000000000000000000000' \
-           '00000000000'
-
+    data  = '0000000000000000000000000000000000000000000000000000000000000020'
+    data += '000000000000000000000000000000000000000000000000000000000000000c'
+    data += '746573745f616464726573730000000000000000000000000000000000000000'
+    
     xid = gen_exec_id()
     init_ctx = {"CALLDATA": "0x7334075f" + data}
     entry_state = p.factory.entry_state(xid=xid, init_ctx=init_ctx, max_calldatasize=200)
@@ -48,7 +48,7 @@ def run_test(target_dir, debug=False):
     common.run_test_simgr(simgr, debug=debug)
 
 
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_lambda_memory_simple():
     run_test(target_dir=f"{os.path.dirname(__file__)}/test_sha_concrete",
              debug=DEBUG)

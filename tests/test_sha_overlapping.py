@@ -12,7 +12,7 @@ DEBUG = False
 
 
 
-@pytest.mark.skip
+#@pytest.mark.skip
 def test_sha():
     common.run_test(target_dir=f"{os.path.dirname(__file__)}/test_sha_overlapping",
                     debug=DEBUG)

@@ -31,7 +31,7 @@ contract TestMemory {
         if(sha_res != test_address){
             assembly {log1(0, 0, "error:test_lamb_sha_concrete1")}
         } else {
-            assembly {log1(0, 0, "error:test_lamb_sha_concrete1")}
+            assembly {log1(0, 0, "success:test_lamb_sha_concrete1")}
         }           
     }
 }

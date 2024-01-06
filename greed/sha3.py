@@ -1,3 +1,6 @@
+
+from collections import defaultdict
+
 from greed import options
 from greed.memory import LambdaMemory
 from greed.solver.shortcuts import *
@@ -20,6 +23,8 @@ class Sha3(LambdaMemory):
             size: The size of the input buffer for the SHA3 operation
             partial_init: Whether to partially initialize the object or not
         """
+
+        self.cache = defaultdict(dict)
 
         if partial_init:
             return 
@@ -104,5 +109,8 @@ class Sha3(LambdaMemory):
         new_sha_memory.max_size = self.max_size
 
         new_sha_memory.is_concrete = self.is_concrete
-        
+
+        for width in self.cache:
+            new_sha_memory.cache[width].update(self.cache[width])
+
         return new_sha_memory
