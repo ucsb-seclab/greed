@@ -68,8 +68,16 @@ def run_test_simgr(simgr, debug=False):
     while len(simgr.active) > 0:
         simgr.run(find=lambda s: s.curr_stmt.__internal_name__ == "LOG1")
         for s in simgr.found:
-            outcome, testname = parse_log(s)
-
+            if len(s.sha_observed) > 0:
+                if s.sha_resolver.fix_shas():
+                    outcome, testname = parse_log(s)
+                else:
+                    # Prune this state, shas are unsat.
+                    simgr.stashes["found"].remove(s)
+                    simgr.stashes["pruned"].append(s)
+            else:
+                outcome, testname = parse_log(s)
+            
         simgr.move(from_stash="found", to_stash="active")
 
     assert not any([s.error for s in simgr.states]), f"Simulation Manager has errored states: {simgr}"

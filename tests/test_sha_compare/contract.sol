@@ -22,6 +22,8 @@ contract TestMemory {
             assembly {log1(0, 0, "error:test_sha_compare_eq")}
         } else {
             assembly {log1(0, 0, "success:test_sha_compare_diff")}
-        }           
+        } 
+
+        assembly {log1(0, 0, "success:")}
     }
 }
