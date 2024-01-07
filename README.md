@@ -52,7 +52,7 @@ Or to run `greed` from the command line:
 greed /tmp/test_contract [--debug] [--find <address>]
 ```
 
-### 🧪 Testing
+### 🚦 Testing
 ```bash
 cd greed/tests
 
