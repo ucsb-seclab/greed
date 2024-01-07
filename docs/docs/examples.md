@@ -152,7 +152,7 @@ if __name__ == "__main__":
 ```
 
 ## (2) Retrieve the slot IDs involved in access control checks
-This example shows how to fetch all the slot ids holding addresses of account involved in an access control checks.
+This example shows how to fetch all the slot ids holding addresses of account involved in an access control check.
 The script makes use of a [builtin analysis](https://github.com/ucsb-seclab/greed/blob/main/greed/analyses/access_control_slots.py) offered by greed. Specifically, this analysis employs a backward slice against the static use-def graph of the TAC opcodes to detect patterns of access control routines.
 
 As explained before, first analyze the [contract](https://library.dedaub.com/ethereum/address/0xdac17f958d2ee523a2206206994597c13d831ec7/decompiled) with Gigahorse. Then, you can use the following script:
@@ -173,7 +173,7 @@ Will output:
 Out[4]: {0}
 ```
 
-Essentially, this is saying that slot `0x0`` holds an address that is checked against msg.sender before executing some code in the contract.
+Essentially, this is saying that slot `0x0` holds an address that is checked against msg.sender before executing some code in the contract.
 
 ## (3) Mint a PudgyPenguin
 
@@ -317,3 +317,9 @@ if __name__ == "__main__":
     main()
 
 ```
+
+
+## More Advanced Examples
+
+You can find more advanced examples of greed by looking into the code of the following projects:
+- [Confusum Contractum: Confused Deputy Vulnerabilities in Ethereum Smart Contracts](https://github.com/ucsb-seclab/jackal/tree/master)
