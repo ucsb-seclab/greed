@@ -1,5 +1,6 @@
 # greed
 [![python](https://img.shields.io/badge/Python-3.8+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
+![Version](https://img.shields.io/badge/Release-v1.0.0-red)
 [![License](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=flat)]([https://pypi.org/project/ethpwn/](https://raw.githubusercontent.com/ethpwn/ethpwn/main/LICENSE))
 [![Docs](https://img.shields.io/badge/Documentation-gh_pages)](https://ucsb-seclab.github.io/greed/)
 
