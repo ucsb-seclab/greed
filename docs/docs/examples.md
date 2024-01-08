@@ -317,10 +317,3 @@ if __name__ == "__main__":
     main()
 
 ```
-
-
-## More Advanced Examples
-
-You can find more advanced examples of greed by looking into the code of the following projects:
-
-- [Confusum Contractum: Confused Deputy Vulnerabilities in Ethereum Smart Contracts](https://github.com/ucsb-seclab/jackal/tree/master)
