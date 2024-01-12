@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "greed"
+readme = "README.md"
+license = {file = "LICENSE"}
+version = "0.1.0"
+dependencies = [
+    'ipython>=7.16.3',
+    'networkx>=2.5.1',
+    'pytest==7.2.1',
+    'solc-select>=0.2.1',
+    'sympy>=1.9',
+    'web3>=5.31.1',
+    'aiohttp!=4.0.0a1,!=4.0.0a0',
+    'alive-progress',
+    'mkdocs',
+    'mkdocs-click',
+    'pymdown-extensions',
+    'lazydocs',
+]
+requires-python = ">=3.8"
+
+[tool.setuptools.packages.find]
+where = ["src"]
