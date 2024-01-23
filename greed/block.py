@@ -1,13 +1,21 @@
+from typing import TYPE_CHECKING, List
+
 import networkx as nx
-from typing import List
 
 from greed.TAC import TAC_Statement
 
+if TYPE_CHECKING:
+    from greed.function import TAC_Function
 
 class Block(object):
     """
     A TAC Basic Block.
     """
+    id: str
+    function: 'TAC_Function'
+    statements: List[TAC_Statement]
+    first_ins: TAC_Statement
+
     def __init__(self, statements: List[TAC_Statement], block_id: str):
         """
         Args:
@@ -37,7 +45,7 @@ class Block(object):
         self._acyclic_subgraph = None
 
     @property
-    def succ(self):
+    def succ(self) -> List['Block']:
         """
         Returns: 
             List of successors blocks
@@ -47,7 +55,7 @@ class Block(object):
         return self._succ
 
     @property
-    def pred(self):
+    def pred(self) -> List['Block']:
         """
         Returns: 
             List of predecessors blocks
@@ -57,7 +65,7 @@ class Block(object):
         return self._pred
 
     @property
-    def ancestors(self):
+    def ancestors(self) -> List['Block']:
         """
         Returns: 
             List of ancestors blocks
@@ -73,7 +81,7 @@ class Block(object):
         return self._ancestors
 
     @property
-    def descendants(self):
+    def descendants(self) -> List['Block']:
         """
         Returns: 
             List of descendants blocks
