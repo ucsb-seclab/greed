@@ -1,6 +1,6 @@
 import functools
 import logging
-from typing import List, Mapping, Callable
+from typing import List, Mapping, Callable, ClassVar
 
 from greed.solver.shortcuts import *
 from greed.state import SymbolicEVMState
@@ -36,7 +36,7 @@ class TAC_Statement(Aliased):
     """
     This class represents a TAC Statement.
     """
-    __internal_name__ = None
+    __internal_name__: ClassVar[str] = None
 
     def __init__(self, block_id: str, stmt_id: str, uses: List[str] = None, defs: List[str] = None,
                  values: Mapping[str, str] = None):

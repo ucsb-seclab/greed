@@ -149,9 +149,9 @@ class SimulationManager:
         log.debug('-' * 30)
         new_active = list()
         # Let the techniques manipulate the stashes
-        for tech in self._techniques: 
+        for tech in self._techniques:
             self.stashes = tech.check_stashes(self, self.stashes)
-        
+
         # Let's step the active!
         for state in self.active:
             try:
@@ -162,7 +162,7 @@ class SimulationManager:
                 state.halt = True
                 successors = [state]
             new_active += successors
-        
+
         self.stashes['active'] = new_active
 
         self.insns_count += 1
@@ -173,7 +173,7 @@ class SimulationManager:
         self.move(from_stash='active', to_stash='pruned', filter_func=prune)
 
         if not options.LAZY_SOLVES:
-            self.move(from_stash='active', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())        
+            self.move(from_stash='active', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
         self.move(from_stash='found', to_stash='unsat', filter_func=lambda s: not s.solver.is_sat())
 
         for s in self.stashes['pruned'] + self.stashes['unsat'] + self.stashes['errored']:
@@ -201,11 +201,11 @@ class SimulationManager:
             if state.curr_stmt.__internal_name__ in state.inspect.breakpoints_stmt.keys():
                 state.inspect.breakpoints_stmt[state.curr_stmt.__internal_name__](self, state)
         successors = list()
-        
+
         # Let exploration techniques manipulate the state
         # that is going to be handled
         state_to_step = state
-        for t in self._techniques: 
+        for t in self._techniques:
             state_to_step = t.check_state(self, state_to_step)
 
         # Finally step the state
@@ -216,33 +216,25 @@ class SimulationManager:
             state.error = e
             state.halt = True
             successors += [state]
-            #from web3 import Web3
-            #w3 = Web3()
-            #checksummed_address = w3.toChecksumAddress(hex(bv_unsigned_value(state.ctx["ADDRESS"])))
-            #for t in self._techniques:
-            #    if hasattr(t, "_target_stmt"):
-            #        target_pc = t._target_stmt.id
-            #        break
-            #send_to_hackcess_bot(f"{checksummed_address} : {state.error.args[0]} | target {target_pc}")
 
         # Let exploration techniques manipulate the successors
-        for t in self._techniques: 
+        for t in self._techniques:
             successors = t.check_successors(self, successors)
-        
+
         return successors
 
     def run(self, find: Callable[[SymbolicEVMState], bool] = lambda s: False,
             prune: Callable[[SymbolicEVMState], bool] = lambda s: False,
             find_all=False):
         """
-        Run the simulation manager, until the `find` condition is met. 
-        The analysis will stop when there are no more active states, some states met the `find` condition 
+        Run the simulation manager, until the `find` condition is met.
+        The analysis will stop when there are no more active states, some states met the `find` condition
         (these will be moved to the found stash), or the exploration techniques are done.
         If no ET are plugged, the default searching strategy is BFS.
         When techniques are plugged, their methods are executed following the same order they were plugged.
-        
+
         e.g., assuming we have T1 and T2.
-                T1(check_stashes) -> T2(check_stashes) -> T1(check_state) -> T2(check_state) 
+                T1(check_stashes) -> T2(check_stashes) -> T1(check_state) -> T2(check_state)
                     -> T1(check_successors) -> T2(check_successors)
 
         Args:
@@ -253,16 +245,16 @@ class SimulationManager:
             Exception: If something goes wrong while stepping the simulation manager
         """
         try:
-            # We iterate until we have active states, 
+            # We iterate until we have active states,
             # OR, if any of the ET is not done.
-            while len(self.active) > 0 or (self._techniques != [] and 
+            while len(self.active) > 0 or (self._techniques != [] and
                                             not(all([t.is_complete(self) for t in self._techniques]))):
-                
+
                 if len(self.found) > 0 and not find_all:
                     break
                 elif self._halt:
                     break
-                
+
                 self.step(find, prune)
 
         except Exception as e:
@@ -289,7 +281,7 @@ class SimulationManager:
             while len(self.active) > 0 or (self._techniques != [] and not(all([t.is_complete(self) for t in self._techniques]))):
                 if self._halt:
                     break
-                
+
                 self.step(find, prune)
 
                 for found in self.found:
