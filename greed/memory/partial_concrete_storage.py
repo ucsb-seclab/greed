@@ -10,7 +10,7 @@ from greed.utils.extra import UUIDGenerator
 
 log = logging.getLogger(__name__)
 
-    
+
 class PartialConcreteStorage:
     """
     This class represents a partial concrete storage.
@@ -22,7 +22,7 @@ class PartialConcreteStorage:
 
     uuid_generator = UUIDGenerator()
 
-    def __init__(self, tag=None, value_sort=None, state=None, partial_init=False):
+    def __init__(self, tag=None, value_sort=None, state=None, partial_init=False, keep_symbolic=None):
         """
         Initialize the partial concrete storage.
         Args:
@@ -30,6 +30,8 @@ class PartialConcreteStorage:
             value_sort: The sort of the values stored in the storage
             state: The SimState associated with this storage
             partial_init: If true, the storage is partially initialized (used for copy)
+            keep_symbolic: if this list is set, we are gonna force the symbolization of the specified addresses
+                           instead of pulling them from chain
         Raises:
             GreedException: If the partial concrete storage is not initialized with the contract address and block number
             AssertionError: If the partial concrete storage is not initialized with the tag and value sort
@@ -47,8 +49,12 @@ class PartialConcreteStorage:
 
         # Initialize the web3 connection
         self.w3 = state.project.w3
-        assert(self.w3 is not None), "Web3 provider not initialized. Cannot use the partial concrete storage"
-        assert(self.w3.is_connected()), "Web3 connection not connected. Cannot use the partial concrete storage"
+
+        if self.w3 is None or self.w3.is_connected() is False:
+            err_msg = "Web3 provider not initialized/connected\n"
+            err_msg += "Please provide a valid web3 provider URL and set it in options.WEB3_PROVIDER.\n"
+            err_msg += "If you don't have local provider, you can use third-party ones such as infura.io\n"
+            raise GreedException(err_msg)
 
         if "ADDRESS" not in self.state.ctx:
             raise GreedException("Cannot initialize the PartialConcreteStorage with no contract address")
@@ -62,14 +68,16 @@ class PartialConcreteStorage:
 
         self.root_lambda_constraint = LambdaConstraint()
         self._constraints = list()
-        
+
         self._base = Array(f"{self.tag}_{PartialConcreteStorage.uuid_generator.next()}_{self.layer_level}", BVSort(256), value_sort)
 
         self.write_count = 0
         self.read_count = 0
-        
+
         self.concrete_cache = dict()
-    
+
+        self.keep_symbolic = [] if not keep_symbolic else keep_symbolic
+
     def add_constraint(self, formula):
         """
         Add a constraint to the storage.
@@ -112,24 +120,25 @@ class PartialConcreteStorage:
         """
         assert not isinstance(index, slice), "slice memory read not implemented"
         self.read_count += 1
-        
+
         if is_concrete(index):
             # Grab the concrete value
             index_val = index.value
-            
-            if index_val not in self.concrete_cache.keys():
-                log.debug(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
-                storage_value = self.w3.eth.get_storage_at(self.contract_address, index_val, block_identifier=self.chain_at)
-                log.debug(f"   Value read is: {storage_value.hex()}")
-                storage_value = int(storage_value.hex(), 16)
-                storage_value_bvv = BVV(storage_value, 256)
-                
-                self.concrete_cache[index_val] = storage_value_bvv
-                return storage_value_bvv
-            else:
-                log.debug(f"Concrete read from concrete cache")
-                return self.concrete_cache[index_val]
-        
+
+            if index_val not in self.keep_symbolic:
+                if index_val not in self.concrete_cache.keys():
+                    log.debug(f"Concrete read from chain@{self.chain_at} for storage index [{hex(index_val)}]")
+                    storage_value = self.w3.eth.get_storage_at(self.contract_address, index_val, block_identifier=self.chain_at)
+                    log.debug(f"   Value read is: {storage_value.hex()}")
+                    storage_value = int(storage_value.hex(), 16)
+                    storage_value_bvv = BVV(storage_value, 256)
+
+                    self.concrete_cache[index_val] = storage_value_bvv
+                    return storage_value_bvv
+                else:
+                    log.debug(f"Concrete read from concrete cache")
+                    return self.concrete_cache[index_val]
+
         # instantiate and add lambda constraints
         new_constraints = self.root_lambda_constraint.instantiate(index)
         self.add_constraints(new_constraints)
@@ -166,13 +175,14 @@ class PartialConcreteStorage:
         new_memory._constraints = list(self._constraints)
         new_memory.write_count = self.write_count
         new_memory.read_count = self.read_count
-        
+
         # Specific attributes
         new_memory.w3 = self.w3
         new_memory.chain_at = self.chain_at
         new_memory.contract_address = self.contract_address
         new_memory.concrete_cache = dict(self.concrete_cache)
-        
+        new_memory.keep_symbolic = list(self.keep_symbolic)
+
         return new_memory
 
     def __str__(self):
