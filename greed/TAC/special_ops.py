@@ -46,8 +46,9 @@ class TAC_Sha3(TAC_Statement):
 
             size_sol = concretize(state, self.size_val)
             offset_sol = concretize(state, self.offset_val)
-            log.debug(f"    Size solution: {bv_unsigned_value(size_sol)}")
-            log.debug(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
+            if size_sol and offset_sol:
+                log.debug(f"    Size solution: {bv_unsigned_value(size_sol)}")
+                log.debug(f"    Offset solution: {bv_unsigned_value(offset_sol)}")
             
             res = None
             
