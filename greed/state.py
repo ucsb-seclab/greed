@@ -109,10 +109,13 @@ class SymbolicEVMState:
         init_ctx = init_ctx or dict()
 
         if "CALLDATASIZE" in init_ctx:
-                # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
-                self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
+            self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
+
+            # If the CALLDATASIZE is fixed, update MAX_CALLDATASIZE
+            self.MAX_CALLDATA_SIZE = init_ctx["CALLDATASIZE"]
         else:
             self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
+            self.add_constraint(BV_ULE(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE, 256)))
 
         if "CALLDATA" in init_ctx:
             # We want to give the possibility to specify interleaving of symbolic/concrete data bytes in the CALLDATA.
@@ -123,13 +126,7 @@ class SymbolicEVMState:
             calldata_raw = init_ctx['CALLDATA'].replace("0x", '')
             calldata_bytes = [calldata_raw[i:i + 2] for i in range(0, len(calldata_raw), 2)]
 
-            self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-
             if "CALLDATASIZE" in init_ctx:
-                # CALLDATASIZE is equal than size(CALLDATA), pre-constraining to this exact size
-                # self.calldatasize = BVV(init_ctx["CALLDATASIZE"], 256)
-                # self.add_constraint(Equal(self.calldatasize, BVV(init_ctx["CALLDATASIZE"], 256)))
-
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
@@ -137,14 +134,10 @@ class SymbolicEVMState:
                     # CALLDATASIZE is bigger than size(CALLDATA), we set the unspecified CALLDATA as symbolic
                     for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
                         self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
-
-                # If the CALLDATASIZE is fixed, we change the MAX_CALLDATASIZE to that value.                
-                self.MAX_CALLDATA_SIZE = self.solver.eval(self.calldatasize)
             else:
-                log.debug(f"CALLDATASIZE MIN{len(calldata_bytes)}-MAX{self.MAX_CALLDATA_SIZE + 1}")
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
-                # CALLDATASIZE < MAX_CALLDATA_SIZE
-                self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
+
+                log.debug(f"CALLDATASIZE MIN{len(calldata_bytes)}-MAX{self.MAX_CALLDATA_SIZE}")
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
                 self.add_constraint(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
 
@@ -158,10 +151,6 @@ class SymbolicEVMState:
                     self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
         else:
             self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
-            # We assume fully symbolic CALLDATA and CALLDATASIZE in this case
-            # self.calldatasize = BVS(f'CALLDATASIZE_{self.xid}', 256)
-            # CALLDATASIZE < MAX_CALLDATA_SIZE
-            self.add_constraint(BV_ULT(self.calldatasize, BVV(self.MAX_CALLDATA_SIZE + 1, 256)))
 
         if "CALLER" in init_ctx:
             assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
