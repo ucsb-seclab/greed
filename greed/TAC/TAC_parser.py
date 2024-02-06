@@ -26,7 +26,6 @@ class TAC_parser:
     factory: Factory
     target_dir: str
 
-    phimap: Mapping[str, str]
     statement_to_blocks_map: Mapping[str, List[str]]
 
 
@@ -34,7 +33,6 @@ class TAC_parser:
         self.factory = factory
         self.target_dir = target_dir
 
-        self.phimap = None
         self.statement_to_blocks_map = None
 
     @staticmethod
@@ -128,46 +126,6 @@ class TAC_parser:
         # inject a fake exit statement to simplify the handling of CALLPRIVATE without successors
         fake_exit_stmt = TAC_Stop(block_id='fake_exit', stmt_id='fake_exit')
         statements['fake_exit'] = fake_exit_stmt
-
-        # parse phi-map and re-write statements
-        # build phi-map (as in gigahorse decompiler)
-        phimap = dict()
-        for stmt in statements.values():
-            if stmt.__internal_name__ != 'PHI':
-                continue
-            #phimap[stmt.res1_var] = stmt.res1_var
-            for v in stmt.arg_vars:
-                if v in phimap:
-                    phimap[stmt.res1_var] = phimap[v]
-                    continue
-                phimap[v] = stmt.res1_var
-
-        # propagate phi map
-        fixpoint = False
-        while not fixpoint:
-            fixpoint = True
-            for v_old, v_new in phimap.items():
-                # (phimap[v_old] != phimap[v_new]) --> means "not already at local fixpoint"
-                if v_new in phimap and (phimap[v_old] != phimap[v_new]):
-                    phimap[v_old] = phimap[v_new]
-                    fixpoint = False
-
-        self.phimap = phimap
-
-        # rewrite statements according to PHI map
-        for stmt in statements.values():
-            if stmt.__internal_name__ == "PHI":
-                # remove all phi statements
-                statements[stmt.id] = TAC_Nop(block_id=stmt.block_id, stmt_id=stmt.id)
-                continue
-            # rewrite other statements according to the phi map
-            stmt.arg_vars = [phimap.get(v, v) for v in stmt.arg_vars]
-            stmt.arg_vals = {phimap.get(v, v): val for v, val in stmt.arg_vals.items()}
-            stmt.res_vars = [phimap.get(v, v) for v in stmt.res_vars]
-            stmt.res_vals = {phimap.get(v, v): val for v, val in stmt.res_vals.items()}
-
-            # re-process args
-            stmt.process_args()
 
         return statements
 
@@ -287,7 +245,7 @@ class TAC_parser:
         # rewrite aliases according to PHI map
         translate_alias = lambda alias: 'v' + alias.replace('0x', '')
         for function in functions.values():
-            function.arguments = [self.phimap.get(translate_alias(a), translate_alias(a)) for a in function.arguments]
+            function.arguments = [translate_alias(a) for a in function.arguments]
 
         return functions
     
@@ -297,7 +255,7 @@ class TAC_parser:
     
     def parse_induction_variables(self):
         induction_variables = load_csv_multimap(f"{self.target_dir}/InductionVariable.csv", reverse=True)
-        induction_variables = {x: {self.phimap.get('v' + _y.replace('0x', ''), 'v' + _y.replace('0x', '')) for _y in y}
+        induction_variables = {x: {'v' + _y.replace('0x', '') for _y in y}
                                for x, y in induction_variables.items()}
         return induction_variables
     
@@ -307,7 +265,6 @@ class TAC_parser:
         for _x, _y, _z in values:
             y = _y[1:-1].split(", ")[1]
             y = 'v' + y.replace('0x', '')
-            y = self.phimap.get(y, y)
             starts_at_const[_x][y] = literal_eval(_z) # seems to not have a consistent base (either 10 or 16)
         return starts_at_const
     
@@ -317,7 +274,6 @@ class TAC_parser:
         for _x, _y, _z in values:
             y = _y[1:-1].split(", ")[1]
             y = 'v' + y.replace('0x', '')
-            y = self.phimap.get(y, y)
             increases_by_const[_x][y] = literal_eval(_z) # seems to not have a consistent base (either 10 or 16)
         return increases_by_const
     
@@ -327,8 +283,7 @@ class TAC_parser:
         for _x, _y, _z in values:
             y = _y[1:-1].split(", ")[1]
             y = 'v' + y.replace('0x', '')
-            y = self.phimap.get(y, y)
-            upper_bounds[_x][y] = self.phimap.get('v' + _z.replace('0x', ''), 'v' + _z.replace('0x', ''))
+            upper_bounds[_x][y] = 'v' + _z.replace('0x', '')
         return upper_bounds
 
     def parse_guarding_slots(self):
