@@ -1,13 +1,14 @@
 import logging
 import os
 import sys
-from typing import Callable, List, Optional, TYPE_CHECKING
+from typing import Callable, List, Optional, TYPE_CHECKING, TypedDict
 
 from greed import options
 from greed.state import SymbolicEVMState
 
 if TYPE_CHECKING:
     from greed.exploration_techniques import ExplorationTechnique
+    from greed.project import Project
 
 log = logging.getLogger(__name__)
 
@@ -19,14 +20,26 @@ class SimulationManager:
     and for moving them between the different stashes according to the employed
     exploration techniques.
     """
-    def __init__(self, entry_state: SymbolicEVMState, project):
+    project: "Project"
+    _techniques: List["ExplorationTechnique"]
+    stashes: TypedDict('Stashes', {
+        'active': List[SymbolicEVMState],
+        'deadended': List[SymbolicEVMState],
+        'found': List[SymbolicEVMState],
+        'pruned': List[SymbolicEVMState],
+        'unsat': List[SymbolicEVMState],
+        'errored': List[SymbolicEVMState]
+    })
+    insns_count: int
+    error: List[str]
+
+    def __init__(self, entry_state: SymbolicEVMState, project: "Project"):
         """
         Args:
             entry_state: The entry state of the simulation manager
             project: The greed project
         """
         self.project = project
-        self._halt = False
         self._techniques = []
 
         # initialize empty stashes
@@ -252,8 +265,6 @@ class SimulationManager:
 
                 if len(self.found) > 0 and not find_all:
                     break
-                elif self._halt:
-                    break
 
                 self.step(find, prune)
 
@@ -279,9 +290,6 @@ class SimulationManager:
         """
         try:
             while len(self.active) > 0 or (self._techniques != [] and not(all([t.is_complete(self) for t in self._techniques]))):
-                if self._halt:
-                    break
-
                 self.step(find, prune)
 
                 for found in self.found:
