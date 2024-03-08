@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 if typing.TYPE_CHECKING:
     from greed.project import Project
+    from greed.TAC.base import TAC_Statement
 
 
 class SymbolicEVMState:
@@ -27,7 +28,7 @@ class SymbolicEVMState:
     uuid: int
     active_plugins: typing.Dict[str, SimStatePlugin]
     _pc: str
-    trace: typing.List[str]
+    trace: typing.List["TAC_Statement"]
     memory: LambdaMemory
     options: typing.Dict[str, typing.Any]
     registers: typing.Dict[str, typing.Any]
