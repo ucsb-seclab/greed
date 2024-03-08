@@ -76,6 +76,12 @@ if [ $IS_SOUFFLE_MISSING = TRUE ]; then
   else
     exit 1
   fi
+else
+  SOUFFLE_VERSION=$(souffle --version | grep -oP "Version: \K[0-9]+\.[0-9]+")
+  if [ $SOUFFLE_VERSION != "2.3" ] && [ $SOUFFLE_VERSION != "2.4" ]; then
+    echo "${bold}${red}souffle version $SOUFFLE_VERSION is not supported. Please install version 2.3 or 2.4 before proceeding${normal}"; 
+    exit 1;
+  fi
 fi
 
 ########################################################################################################################
