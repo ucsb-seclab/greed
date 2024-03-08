@@ -105,7 +105,8 @@ make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
 # finally, link yices2/build/lib/ to the virtualenv's site-packages dir
 ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
 ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
-cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
+LIBNAME=$(python -c 'from ctypes.util import find_library; print(find_library("yices") or "libyices.so")')
+cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/$LIBNAME
 
 cd $GREED_DIR
 
