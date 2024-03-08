@@ -89,9 +89,7 @@ def main(args):
 
         log.info(f'Found {found}')
         calldata_size = found.MAX_CALLDATA_SIZE
-        calldata = found.solver.eval_memory(found.calldata, BVV(calldata_size, 256))\
-            .to_bytes(calldata_size, 'big')\
-            .hex()
+        calldata = found.solver.eval_memory(found.calldata, BVV(calldata_size, 256))
         log.info(f'CALLDATA: {calldata}')
     ####################################################################################################################
     else:
