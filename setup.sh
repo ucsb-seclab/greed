@@ -143,7 +143,7 @@ if [ -z $NO_GIGAHORSE ]; then
   if [ ! -d $GREED_DIR/gigahorse-toolchain ]; then
     git clone --recursive https://github.com/nevillegrech/gigahorse-toolchain.git $GIGAHORSE_DIR
     cd $GIGAHORSE_DIR
-    git checkout c5bce4d3495fc10f503b49368504efee3c676d03
+    git checkout 10de8a71ca7b12f657e0de18e455e02d408089b8
   fi
 
   # copy greed client
