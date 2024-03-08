@@ -127,30 +127,30 @@ class SymbolicEVMState:
             calldata_bytes = [calldata_raw[i:i + 2] for i in range(0, len(calldata_raw), 2)]
 
             if "CALLDATASIZE" in init_ctx:
-                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), default=BVV(0, 8), state=self)
+                self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
 
                 assert init_ctx["CALLDATASIZE"] >= len(calldata_bytes), "CALLDATASIZE is smaller than len(CALLDATA)"
-                if init_ctx["CALLDATASIZE"] > len(calldata_bytes):
-                    # CALLDATASIZE is bigger than size(CALLDATA), we set the unspecified CALLDATA as symbolic
-                    for index in range(len(calldata_bytes), init_ctx["CALLDATASIZE"]):
-                        self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
             else:
                 self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
 
-                log.debug(f"CALLDATASIZE MIN{len(calldata_bytes)}-MAX{self.MAX_CALLDATA_SIZE}")
                 # CALLDATASIZE is >= than the length of the provided CALLDATA bytes
                 self.add_constraint(BV_UGE(self.calldatasize, BVV(len(calldata_bytes), 256)))
 
             for index, cb in enumerate(calldata_bytes):
                 if cb == 'SS':
-                    # log.debug(f"Storing symbolic byte at index {index} in CALLDATA")
                     # special sequence for symbolic bytes
+                    # log.debug(f"Storing symbolic byte at index {index} in CALLDATA")
                     self.calldata[BVV(index, 256)] = BVS(f'CALLDATA_BYTE_{index}', 8)
                 else:
                     # log.debug("Initializing CALLDATA at {}".format(index))
                     self.calldata[BVV(index, 256)] = BVV(int(cb, 16), 8)
         else:
             self.calldata = LambdaMemory(tag=f"CALLDATA_{self.xid}", value_sort=BVSort(8), state=self)
+
+        # make calldata read bvv(0) if reading past calldatasize
+        # NOTE: too slow when symbolic, for now approximate with MAX_CALLDATA_SIZE
+        # self.calldata.memsetinfinite(self.calldatasize, BVV(0, 8))
+        # self.calldata.memsetinfinite(BVV(self.MAX_CALLDATA_SIZE, 256), BVV(0, 8))
 
         if "CALLER" in init_ctx:
             assert isinstance(init_ctx['CALLER'], str), "Wrong type for CALLER initial context"
