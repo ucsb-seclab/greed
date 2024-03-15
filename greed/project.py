@@ -69,17 +69,11 @@ class Project(object):
 
     @property
     def w3(self):
-        if self._w3:
-            return self._w3
-        
-        try:
+        if self._w3 is None:
             import web3
-            w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
-            if w3.is_connected():
-                self._w3 = w3
-                return w3
-        except Exception as e:
-            log.exception(f"Failed to connect to web3 provider {opt.WEB3_PROVIDER}")
+            self._w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
+            assert self._w3.is_connected()
+        return self._w3
 
     def sanity_check(self, raise_on_failure=False) -> bool:
         """
