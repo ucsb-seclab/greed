@@ -101,7 +101,7 @@ class TAC_parser:
                 # Adding metadata for CALL statements
                 if stmt_id in fixed_calls:
                     log.debug(f"Setting {statement} as fixed call to {fixed_calls[stmt_id]}")
-                    statement.set_likeyl_known_target_func(fixed_calls[stmt_id])
+                    statement.set_likely_known_target_func(fixed_calls[stmt_id])
 
             if not tac_block_stmts[block_id]:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP statement
