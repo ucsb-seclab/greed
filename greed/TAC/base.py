@@ -4,7 +4,6 @@ from typing import List, Mapping, Callable, ClassVar
 
 from greed.solver.shortcuts import *
 from greed.state import SymbolicEVMState
-from greed.utils.exceptions import VMException
 
 log = logging.getLogger(__name__)
 

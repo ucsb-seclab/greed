@@ -1,7 +1,6 @@
 import logging
 
 from greed import options
-from greed import utils
 from greed.TAC.base import TAC_Statement
 from greed.solver.shortcuts import *
 from greed.state import SymbolicEVMState
