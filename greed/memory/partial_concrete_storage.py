@@ -1,8 +1,4 @@
 import logging
-import sys
-import web3
-from greed import options as opt
-from greed.memory import LambdaMemory
 from greed.memory.lambda_constraint import LambdaConstraint
 from greed.solver.shortcuts import *
 from greed.utils.exceptions import GreedException

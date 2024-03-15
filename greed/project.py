@@ -4,7 +4,6 @@ import time
 from collections import defaultdict
 
 import networkx as nx
-import web3
 
 from greed import options as opt
 from greed.factory import Factory
@@ -63,15 +62,24 @@ class Project(object):
                 target_function = self.factory.function(target_function_id)
                 self.callgraph.add_edge(source_function, target_function)
         
-        # trying to connect to the w3 
-        try:
-            self.w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
-            if not self.w3.is_connected():
-                self.w3 = None
-        except Exception as e:
-            self.w3 = None
+        # NOTE: connect to w3 only on-demand
+        self._w3 = None
 
         self.sanity_check()
+
+    @property
+    def w3(self):
+        if self._w3:
+            return self._w3
+        
+        try:
+            import web3
+            w3 = web3.Web3(web3.Web3.HTTPProvider(opt.WEB3_PROVIDER))
+            if w3.is_connected():
+                self._w3 = w3
+                return w3
+        except Exception as e:
+            log.exception(f"Failed to connect to web3 provider {opt.WEB3_PROVIDER}")
 
     def sanity_check(self, raise_on_failure=False) -> bool:
         """
