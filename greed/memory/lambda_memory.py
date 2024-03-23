@@ -107,11 +107,17 @@ class LambdaMemory:
             return
 
         # invalidate cache if range fully unspecified or fully symbolic
-        if (
-            (start is None and end is None) or  # range fully unspecified
-            (start is not None and not is_concrete(start) and end is not None and not is_concrete(end))  # range fully symbolic
-        ):
+        if start is None and end is None: # range fully unspecified
             self.cache = defaultdict(dict)
+            return
+        elif (
+                (start is not None and not is_concrete(start) and end is not None and not is_concrete(end)) and  # range fully symbolic
+                self.state.solver.is_formula_sat(BV_ULE(start, BVV(max(self.cache[1] or [0]), 256)))  # could overlap with any cache slot
+            ):
+            self.cache = defaultdict(dict)
+            return
+        elif start is not None and not is_concrete(start) and end is not None and not is_concrete(end):  # range fully symbolic
+            # don't invalidate if cannot overlap with any cache slot
             return
         
         # else invalidate only the impacted cache slots
