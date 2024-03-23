@@ -79,18 +79,16 @@ def main(args):
         prioritizer = Prioritizer(scoring_function=lambda s: -s.globals['directed_search_distance'])
         simgr.use_technique(prioritizer)
 
-        simgr.run(find=lambda s: s.curr_stmt.id == target_stmt_id)
-
-        if not simgr.found:
+        for found in  simgr.findall(find=lambda s: s.curr_stmt.id == target_stmt_id):
+            log.info(f'Found {found}')
+            calldata_size = found.MAX_CALLDATA_SIZE
+            calldata = found.solver.eval_memory(found.calldata, BVV(calldata_size, 256))
+            log.info(f'CALLDATA: {calldata}')
+            break
+        else:
             log.fatal('No paths found')
             exit()
 
-        found = simgr.found.pop()
-
-        log.info(f'Found {found}')
-        calldata_size = found.MAX_CALLDATA_SIZE
-        calldata = found.solver.eval_memory(found.calldata, BVV(calldata_size, 256))
-        log.info(f'CALLDATA: {calldata}')
     ####################################################################################################################
     else:
         simgr.run()
