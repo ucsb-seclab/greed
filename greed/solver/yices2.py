@@ -3,13 +3,14 @@ from typing import List
 
 import yices
 
-from greed.solver import Solver
+from greed.solver import ArrayTerm, BoolTerm, BVTerm, Solver, Sort, Term
 
 """
 Solver interface implementation for Yices2, refer to the Solver interface for documentation.
 """
 
-class YicesTerm:
+
+class YicesTerm(Term):
     def __init__(self, yices_id, operator=None, children=None, name=None, value=None):
         self.id = yices_id
         self.name = name
@@ -32,10 +33,16 @@ class YicesTerm:
             # raise Exception(f'Symbolic term has no .value')
             return None
 
+    def dump_smt2(self):
+        """
+        Dump the term to a string in SMT2 format
+        """
+        raise NotImplementedError("dump_smt2() not implemented")
+
     def dump(self, pp=False):
         _dump = yices.Terms.to_string(self.id, width=-1, height=-1, offset=0)
         if pp is True:
-            for match in re.findall(r'0b\d*', _dump):
+            for match in re.findall(r"0b\d*", _dump):
                 _dump = _dump.replace(match, str(int(match[2:], 2)))
         return _dump
 
@@ -66,18 +73,122 @@ class YicesTerm:
         return self.id
 
 
-class YicesTermBool(YicesTerm):
-    pass
+class YicesTermBool(BoolTerm, YicesTerm):
+
+    def dump_smt2(self):
+
+        if self.operator == "equal":
+            assert len(self.children) == 2
+            return f"(= {self.children[0].dump_smt2()} {self.children[1].dump_smt2()})"
+        elif self.operator == "not-equal":
+            assert len(self.children) == 2
+            # we could probably also use (distinct a b) here
+            return f"(not (= {self.children[0].dump_smt2()} {self.children[1].dump_smt2()}))"
+        elif self.operator == "if":
+            assert len(self.children) == 3
+            return f"(ite {self.children[0].dump_smt2()} {self.children[1].dump_smt2()} {self.children[2].dump_smt2()})"
+        elif self.operator in [
+            "not",
+            "and",
+            "or",
+            "bvugt",
+            "bvuge",
+            "bvult",
+            "bvule",
+            "bvsgt",
+            "bvsge",
+            "bvslt",
+            "bvsle",
+        ]:
+            # Handle these automatically
+            # (note that the number of args may vary: for example `not` takes 1 arg)
+            return f"({self.operator} {' '.join([child.dump_smt2() for child in self.children])})"
+        else:
+            raise NotImplementedError(
+                f"{type(self)}: dump_smt2() not implemented for op {self.operator}"
+            )
 
 
-class YicesTermBV(YicesTerm):
+class YicesTermBV(BVTerm, YicesTerm):
     @property
     def bitsize(self):
         return yices.Terms.bitsize(self.id)
 
+    def dump_smt2(self):
+        if self.operator == "bvv":
+            bitsize = self.bitsize
+            if bitsize % 8 == 0:
+                # output in hex, padding with zeroes
+                num_hexdigits = bitsize // 4
+                return f"#x{self.value:0{num_hexdigits}x}"
+            else:
+                # output in binary
+                return f"#b{self.value:0{bitsize}b}"
 
-class YicesTermArray(YicesTerm):
-    pass
+        elif self.operator == "bvs":
+            return self.name
+
+        elif self.operator == "bv-extract":
+            assert len(self.children) == 3
+            return f"((_ extract {self.children[0]} {self.children[1]}) {self.children[2].dump_smt2()})"
+        elif self.operator == "bv-concat":
+            assert len(self.children) > 1
+            return f"(concat {' '.join([child.dump_smt2() for child in self.children])})"
+
+        elif self.operator == "bvsign-extend":
+            assert len(self.children) == 2
+            return f"((_ sign_extend {self.children[1]}) {self.children[0].dump_smt2()})"
+        elif self.operator == "bvzero-extend":
+            assert len(self.children) == 2
+            return f"((_ zero_extend {self.children[1]}) {self.children[0].dump_smt2()})"
+
+        elif self.operator == "if":
+            assert len(self.children) == 3
+            return f"(ite {self.children[0].dump_smt2()} {self.children[1].dump_smt2()} {self.children[2].dump_smt2()})"
+
+        elif self.operator in [
+            "bvadd",
+            "bvsub",
+            "bvmul",
+            "bvudiv",
+            "bvsdiv",
+            "bvsmod",
+            "bvsrem",
+            "bvurem",
+            "bvand",
+            "bvor",
+            "bvxor",
+            "bvnot",
+            "bvshl",
+            "bvlshr",
+            "bvashr",
+        ]:
+            # binary ops
+            assert len(self.children) == 2
+            return f"({self.operator} {self.children[0].dump_smt2()} {self.children[1].dump_smt2()})"
+
+        else:
+            raise NotImplementedError(
+                f"{type(self)}: dump_smt2() not implemented for op {self.operator}"
+            )
+
+
+class YicesTermArray(ArrayTerm, YicesTerm):
+    def dump_smt2(self):
+        if self.operator == "array":
+            # NOTE: We're going to ignore arg 0 (the name) for now --
+            # as we only use arrays within expressions, not as top-level declarations (?)
+            return f"(Array {self.children[1].dump_smt2()} {self.children[2].dump_smt2()})"
+        elif self.operator == "store":
+            assert len(self.children) == 3
+            return f"(store {self.children[0].dump_smt2()} {self.children[1].dump_smt2()} {self.children[2].dump_smt2()})"
+        elif self.operator == "select":
+            assert len(self.children) == 2
+            return f"(select {self.children[0].dump_smt2()} {self.children[1].dump_smt2()})"
+        else:
+            raise NotImplementedError(
+                f"{type(self)}: dump_smt2() not implemented for op {self.operator}"
+            )
 
 
 class YicesType:
@@ -124,7 +235,7 @@ class Yices2(Solver):
 
     def __init__(self):
         cfg = yices.Config()
-        cfg.default_config_for_logic('QF_ABV')
+        cfg.default_config_for_logic("QF_ABV")
         self.solver = yices.Context(cfg)
         self.timed_out = False
 
@@ -138,7 +249,9 @@ class Yices2(Solver):
         assert isinstance(width, int), f"Expected type int, got {type(width)}"
         # IMPORTANT: bvconst_integer under the hood calls yices_bvconst_int64 and overflows so we cannot use it
         # yices_id = yices.Terms.bvconst_integer(width, value)
-        yices_id = yices.Terms.parse_bvbin(format(value % (2**width), f'#0{width+2}b')[2:])
+        yices_id = yices.Terms.parse_bvbin(
+            format(value % (2**width), f"#0{width+2}b")[2:]
+        )
         res = YicesTermBV(operator="bvv", yices_id=yices_id, value=value)
         res.is_simplified = True
         return res
@@ -147,12 +260,16 @@ class Yices2(Solver):
         assert isinstance(symbol, str), f"Expected type str, got {type(symbol)}"
         assert isinstance(width, int), f"Expected type int, got {type(width)}"
         # assert yices.Terms.get_by_name(symbol) is None
-        yices_id = yices.Terms.new_uninterpreted_term(self.BVSort(width).id, name=symbol)
+        yices_id = yices.Terms.new_uninterpreted_term(
+            self.BVSort(width).id, name=symbol
+        )
         return YicesTermBV(operator="bvs", yices_id=yices_id, name=symbol)
 
     def bv_unsigned_value(self, bv: YicesTermBV) -> int:
         assert isinstance(bv, YicesTermBV), f"Expected type YicesTermBV, got {type(bv)}"
-        assert self.is_concrete(bv), "Invalid bv_unsigned_value of non constant bitvector"
+        assert self.is_concrete(
+            bv
+        ), "Invalid bv_unsigned_value of non constant bitvector"
 
         # works, but yices.Terms.bv_const_value(bv) could be a cleaner (though slower) option
         res_str = yices.Terms.to_string(bv.id, width=-1)
@@ -185,29 +302,41 @@ class Yices2(Solver):
 
     @Solver.solver_timeout
     def is_formula_sat(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
+        assert isinstance(
+            formula, YicesTermBool
+        ), f"Expected type YicesTermBool, got {type(formula)}"
         status = self.solver.check_context_with_assumptions(None, [formula.id])
         return status == yices.Status.SAT
 
     @Solver.solver_timeout
     def are_formulas_sat(self, terms: List[YicesTermBool]) -> bool:
         for term in terms:
-            assert isinstance(term, YicesTermBool), f"Expected type YicesTermBool, got {type(term)}"
-        status = self.solver.check_context_with_assumptions(None, [term.id for term in terms])
+            assert isinstance(
+                term, YicesTermBool
+            ), f"Expected type YicesTermBool, got {type(term)}"
+        status = self.solver.check_context_with_assumptions(
+            None, [term.id for term in terms]
+        )
         return status == yices.Status.SAT
 
     @Solver.solver_timeout
     def is_formula_unsat(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
+        assert isinstance(
+            formula, YicesTermBool
+        ), f"Expected type YicesTermBool, got {type(formula)}"
         status = self.solver.check_context_with_assumptions(None, [formula.id])
         return status == yices.Status.UNSAT
 
     def is_formula_true(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
+        assert isinstance(
+            formula, YicesTermBool
+        ), f"Expected type YicesTermBool, got {type(formula)}"
         return self.is_formula_unsat(self.Not(formula))
 
     def is_formula_false(self, formula: YicesTermBool) -> bool:
-        assert isinstance(formula, YicesTermBool), f"Expected type YicesTermBool, got {type(formula)}"
+        assert isinstance(
+            formula, YicesTermBool
+        ), f"Expected type YicesTermBool, got {type(formula)}"
         return self.is_formula_unsat(formula)
 
     def push(self):
@@ -223,24 +352,47 @@ class Yices2(Solver):
         for f in formulas:
             self.add_assertion(f)
 
-    def Array(self, symbol, index_sort: YicesTypeBV, value_sort: YicesTypeBV) -> YicesTermArray:
-        assert isinstance(index_sort, YicesTypeBV), f"Expected type YicesTypeBV, got {type(index_sort)}"
-        assert isinstance(value_sort, YicesTypeBV), f"Expected type YicesTypeBV, got {type(value_sort)}"
+    def Array(
+        self, symbol, index_sort: YicesTypeBV, value_sort: YicesTypeBV
+    ) -> YicesTermArray:
+        assert isinstance(
+            index_sort, YicesTypeBV
+        ), f"Expected type YicesTypeBV, got {type(index_sort)}"
+        assert isinstance(
+            value_sort, YicesTypeBV
+        ), f"Expected type YicesTypeBV, got {type(value_sort)}"
         # WARNING: in yices apparently arrays are functions
         array_type = yices.Types.new_function_type([index_sort.id], value_sort.id)
         yices_id = yices.Terms.new_uninterpreted_term(array_type, name=symbol)
-        return YicesTermArray(operator="array", children=[symbol, index_sort, value_sort], yices_id=yices_id, name=symbol)
+        return YicesTermArray(
+            operator="array",
+            children=[symbol, index_sort, value_sort],
+            yices_id=yices_id,
+            name=symbol,
+        )
 
     # CONDITIONAL OPERATIONS
 
-    def If(self, cond: YicesTermBool, value_if_true: YicesTerm, value_if_false: YicesTerm) -> YicesTerm:
-        assert isinstance(cond, YicesTermBool), f"Expected type YicesTermBool, got {type(cond)}"
-        assert isinstance(value_if_true, YicesTerm), f"Expected type YicesTerm, got {type(value_if_true)}"
-        assert isinstance(value_if_false, YicesTerm), f"Expected type YicesTerm, got {type(value_if_false)}"
+    def If(
+        self, cond: YicesTermBool, value_if_true: YicesTerm, value_if_false: YicesTerm
+    ) -> YicesTerm:
+        assert isinstance(
+            cond, YicesTermBool
+        ), f"Expected type YicesTermBool, got {type(cond)}"
+        assert isinstance(
+            value_if_true, YicesTerm
+        ), f"Expected type YicesTerm, got {type(value_if_true)}"
+        assert isinstance(
+            value_if_false, YicesTerm
+        ), f"Expected type YicesTerm, got {type(value_if_false)}"
         assert type(value_if_true) == type(value_if_false)
         _returntype = value_if_true.__class__
         yices_id = yices.Terms.ite(cond.id, value_if_true.id, value_if_false.id)
-        return _returntype(operator="if", children=[cond, value_if_true, value_if_false], yices_id=yices_id)
+        return _returntype(
+            operator="if",
+            children=[cond, value_if_true, value_if_false],
+            yices_id=yices_id,
+        )
 
     # BOOLEAN OPERATIONS
 
@@ -258,18 +410,28 @@ class Yices2(Solver):
 
     def And(self, *terms: YicesTermBool) -> YicesTermBool:
         for term in terms:
-            assert isinstance(term, YicesTermBool), f"Expected type YicesTermBool, got {type(term)}"
+            assert isinstance(
+                term, YicesTermBool
+            ), f"Expected type YicesTermBool, got {type(term)}"
         yices_id = yices.Terms.yand([term.id for term in terms])
-        return YicesTermBool(operator="and", children=[term for term in terms], yices_id=yices_id)
+        return YicesTermBool(
+            operator="and", children=[term for term in terms], yices_id=yices_id
+        )
 
     def Or(self, *terms: YicesTermBool) -> YicesTermBool:
         for term in terms:
-            assert isinstance(term, YicesTermBool), f"Expected type YicesTermBool, got {type(term)}"
+            assert isinstance(
+                term, YicesTermBool
+            ), f"Expected type YicesTermBool, got {type(term)}"
         yices_id = yices.Terms.yor([term.id for term in terms])
-        return YicesTermBool(operator="or", children=[term for term in terms], yices_id=yices_id)
+        return YicesTermBool(
+            operator="or", children=[term for term in terms], yices_id=yices_id
+        )
 
     def Not(self, a: YicesTermBool) -> YicesTermBool:
-        assert isinstance(a, YicesTermBool), f"Expected type YicesTermBool, got {type(a)}"
+        assert isinstance(
+            a, YicesTermBool
+        ), f"Expected type YicesTermBool, got {type(a)}"
         yices_id = yices.Terms.ynot(a.id)
         return YicesTermBool(operator="not", children=[a], yices_id=yices_id)
 
@@ -280,13 +442,19 @@ class Yices2(Solver):
         assert isinstance(end, int), f"Expected type int, got {type(end)}"
         assert isinstance(bv, YicesTermBV), f"Expected type YicesTermBV, got {type(bv)}"
         yices_id = yices.Terms.bvextract(bv.id, start, end)
-        return YicesTermBV(operator="bv-extract", children=[start, end, bv], yices_id=yices_id)
+        return YicesTermBV(
+            operator="bv-extract", children=[start, end, bv], yices_id=yices_id
+        )
 
     def BV_Concat(self, terms: List[YicesTermBV]) -> YicesTermBV:
         for term in terms:
-            assert isinstance(term, YicesTermBV), f"Expected type YicesTermBV, got {type(term)}"
+            assert isinstance(
+                term, YicesTermBV
+            ), f"Expected type YicesTermBV, got {type(term)}"
         yices_id = yices.Terms.bvconcat([term.id for term in terms])
-        return YicesTermBV(operator="bv-concat", children=[term for term in terms], yices_id=yices_id)
+        return YicesTermBV(
+            operator="bv-concat", children=[term for term in terms], yices_id=yices_id
+        )
 
     def BV_Add(self, a: YicesTermBV, b: YicesTermBV) -> YicesTermBV:
         assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
@@ -439,17 +607,31 @@ class Yices2(Solver):
 
     # ARRAY OPERATIONS
 
-    def Array_Store(self, arr: YicesTermArray, index: YicesTermBV, elem: YicesTermBV) -> YicesTermArray:
-        assert isinstance(arr, YicesTermArray), f"Expected type YicesTermArray, got {type(arr)}"
-        assert isinstance(index, YicesTermBV), f"Expected type YicesTermBV, got {type(index)}"
-        assert isinstance(elem, YicesTermBV), f"Expected type YicesTermBV, got {type(elem)}"
+    def Array_Store(
+        self, arr: YicesTermArray, index: YicesTermBV, elem: YicesTermBV
+    ) -> YicesTermArray:
+        assert isinstance(
+            arr, YicesTermArray
+        ), f"Expected type YicesTermArray, got {type(arr)}"
+        assert isinstance(
+            index, YicesTermBV
+        ), f"Expected type YicesTermBV, got {type(index)}"
+        assert isinstance(
+            elem, YicesTermBV
+        ), f"Expected type YicesTermBV, got {type(elem)}"
         # WARNING: in yices apparently arrays are functions
         yices_id = yices.Terms.update(arr.id, [index.id], elem.id)
-        return YicesTermArray(operator="store", children=[arr, index, elem], yices_id=yices_id)
+        return YicesTermArray(
+            operator="store", children=[arr, index, elem], yices_id=yices_id
+        )
 
     def Array_Select(self, arr: YicesTermArray, index: YicesTermBV) -> YicesTermBV:
-        assert isinstance(arr, YicesTermArray), f"Expected type YicesTermArray, got {type(arr)}"
-        assert isinstance(index, YicesTermBV), f"Expected type YicesTermBV, got {type(index)}"
+        assert isinstance(
+            arr, YicesTermArray
+        ), f"Expected type YicesTermArray, got {type(arr)}"
+        assert isinstance(
+            index, YicesTermBV
+        ), f"Expected type YicesTermBV, got {type(index)}"
         yices_id = yices.Terms.application(arr.id, [index.id])
         return YicesTermBV(operator="select", children=[arr, index], yices_id=yices_id)
 
