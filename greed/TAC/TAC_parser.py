@@ -48,14 +48,7 @@ class TAC_parser:
         - 0x12345_0x456
         - 0x12345S0x456
         """
-        if '_' in stmt_id:
-            assert 'S' not in stmt_id
-            return int(stmt_id.split('_')[1], base=16)
-        elif 'S' in stmt_id:
-            assert '_' not in stmt_id
-            return int(stmt_id.split('0x')[1].split('S')[0], base=16)
-        else:
-            return int(stmt_id.split('0x')[1], base=16)
+        return int(stmt_id.split('0x')[1].split('_')[0].split('S')[0], base=16)
         
 
     def parse_statements(self) -> Dict[str, TAC_Statement]:
