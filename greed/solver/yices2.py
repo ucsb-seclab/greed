@@ -28,6 +28,7 @@ class Yices2(Solver):
 
     cfg.set_config("arith-solver", 'simplex')
     """
+
     _assertions_by_frame: List[List["YicesTermBool"]]
 
     def __init__(self):
@@ -247,7 +248,6 @@ class Yices2(Solver):
 
         return YicesTermBVConcat(*terms)
 
-
     def BV_Add(self, a: "YicesTermBV", b: "YicesTermBV") -> "YicesTermBV":
         assert isinstance(a, YicesTermBV), f"Expected type YicesTermBV, got {type(a)}"
         assert isinstance(b, YicesTermBV), f"Expected type YicesTermBV, got {type(b)}"
@@ -446,22 +446,23 @@ class Yices2(Solver):
 
     def __getstate__(self):
         return {
-            '_assertions_by_frame': self._assertions_by_frame,
+            "_assertions_by_frame": self._assertions_by_frame,
         }
 
     def __setstate__(self, state):
         self.__init__()
-        
-        for i, frame in enumerate(state['_assertions_by_frame']):
+
+        for i, frame in enumerate(state["_assertions_by_frame"]):
             self.add_assertions(frame)
 
-            if i < len(state['_assertions_by_frame']) - 1:
+            if i < len(state["_assertions_by_frame"]) - 1:
                 self.push()
 
     def __repr__(self):
         n_assertions = sum([len(frame) for frame in self._assertions_by_frame])
         n_frames = len(self._assertions_by_frame)
         return f"<Yices2 solver; {n_assertions} assertions in {n_frames} frames>"
+
 
 class YicesTerm(Term):
     id: int
@@ -707,6 +708,7 @@ class YicesTermBVS(YicesTermBV):
     def __setstate__(self, state):
         self.__init__(**state)
 
+
 class YicesTermBVExtract(YicesTermBV):
     term: "YicesTermBV"
     start: int
@@ -714,21 +716,20 @@ class YicesTermBVExtract(YicesTermBV):
 
     def __init__(self, term: "YicesTermBV", start: int, end: int):
         yices_id = yices.Terms.bvextract(term.id, start, end)
-        super().__init__(
-            operator="bv-extract", children=[term], yices_id=yices_id
-        )
+        super().__init__(operator="bv-extract", children=[term], yices_id=yices_id)
         self.term = term
         self.start = start
         self.end = end
 
     def dump_smt2(self):
         return f"((_ extract {self.start} {self.end}) {self.term.dump_smt2()})"
-    
+
     def __getstate__(self):
         return {"term": self.term, "start": self.start, "end": self.end}
-    
+
     def __setstate__(self, state):
         self.__init__(**state)
+
 
 class YicesTermBVConcat(YicesTermBV):
     args: List["YicesTermBV"]
@@ -740,12 +741,13 @@ class YicesTermBVConcat(YicesTermBV):
 
     def dump_smt2(self):
         return f"(concat {' '.join([arg.dump_smt2() for arg in self.args])})"
-    
+
     def __getstate__(self):
         return {"args": self.args}
-    
+
     def __setstate__(self, state):
         self.__init__(*state["args"])
+
 
 class YicesTermIf(YicesTermBV):
     condition: "YicesTermBool"
