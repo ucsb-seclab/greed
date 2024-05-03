@@ -646,3 +646,12 @@ class Yices2(Solver):
     def copy(self):
         new_solver = Yices2()
         return new_solver
+
+    def dispose(self):
+        if self.solver.context:
+            self.solver.dispose()
+
+    def __del__(self):
+        # garbage collect the solver context
+        self.dispose()
+        super().__del__()

@@ -546,3 +546,9 @@ class Solver:
         Implement the cloning of the solver when forking.
         """
         raise Exception("Not implemented")
+
+    def dispose(self):
+        """
+        Dispose the solver. Does any cleanup needed.
+        """
+        raise Exception("Not implemented")
