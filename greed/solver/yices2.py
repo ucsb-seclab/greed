@@ -482,7 +482,7 @@ class YicesTerm(Term):
 
     @property
     def value(self):
-        if self._value is not None:
+        if hasattr(self, '_value'):
             return self._value
         elif yices.Terms.constructor(self.id) == yices.Constructor.BV_CONSTANT:
             res_str = yices.Terms.to_string(self.id, width=-1)
