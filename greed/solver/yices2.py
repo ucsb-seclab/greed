@@ -447,7 +447,6 @@ class Yices2(Solver):
     def __del__(self):
         # garbage collect the solver context
         self.dispose()
-        super().__del__()
 
     def __getstate__(self):
         return {
