@@ -440,9 +440,14 @@ class Yices2(Solver):
         new_solver = Yices2()
         return new_solver
 
+    def dispose(self):
+        if self.solver.context:
+            self.solver.dispose()
+
     def __del__(self):
         # garbage collect the solver context
-        self.solver.dispose()
+        self.dispose()
+        super().__del__()
 
     def __getstate__(self):
         return {
@@ -1388,3 +1393,4 @@ class YicesTypeBV(YicesType):
 
     def __setstate__(self, state):
         self.__init__(**state)
+

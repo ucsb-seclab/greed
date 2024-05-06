@@ -219,8 +219,7 @@ class SimStateSolver(SimStatePlugin):
         """
         Dispose the solver context.
         """
-        if self._solver.solver.context:
-            self._solver.solver.dispose()
+        self._solver.dispose()
 
     def is_concrete(self, term: Term) -> bool:
         """
