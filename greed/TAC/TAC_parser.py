@@ -5,6 +5,7 @@ import os
 from ast import literal_eval
 from collections import defaultdict
 from typing import Dict, List, Mapping, Tuple
+import networkx as nx
 
 from eth_utils import keccak
 
@@ -17,7 +18,6 @@ from greed.TAC.special_ops import TAC_Stop
 from greed.utils.files import load_csv, load_csv_map, load_csv_multimap
 
 log = logging.getLogger(__name__)
-
 
 class TAC_parser:
     """
@@ -104,7 +104,7 @@ class TAC_parser:
         # parse all statements block after block
         statements: Dict[str, TAC_Statement] = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
-            for stmt_id in sorted(tac_block_stmts[block_id], key=TAC_parser.stmt_sort_key):
+            for stmt_id in tac_block_stmts[block_id]:
                 opcode = tac_op[stmt_id]
                 raw_uses = [var for var, _ in sorted(tac_uses[stmt_id], key=lambda x: x[1])]
                 raw_defs = [var for var, _ in sorted(tac_defs[stmt_id], key=lambda x: x[1])]
@@ -176,19 +176,59 @@ class TAC_parser:
         tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_fallthrough_edge = load_csv_map(f"{self.target_dir}/IRFallthroughEdge.csv")
-
+        tac_statement_nexts = load_csv_multimap(f"{self.target_dir}/TAC_Statement_Next.csv")
+        tac_statement_ops = load_csv_map(f"{self.target_dir}/TAC_Op.csv")
 
         # parse all blocks
         blocks: Dict[str, Block] = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
-            statements = list()
-            for stmt_id in sorted(tac_block_stmts[block_id], key=TAC_parser.stmt_sort_key):
+            statements: List[TAC_Statement] = list()
+            
+            g = nx.DiGraph() # for next-statement edges
+
+            for stmt_id in tac_block_stmts[block_id]:
                 statement = self.factory.statement(stmt_id)
+
+                if tac_statement_ops[stmt_id] == 'PHI':
+                    # PHI statements should have been translated to NOPs by now, by the `parse_statements` method
+                    # We just drop them.
+                    assert statement.__internal_name__ == 'NOP', f"PHI statement {stmt_id} is not a NOP: {statement.__internal_name__}"
+                    continue
+
                 statements.append(statement)
-            if not statements:
+
+                next_stmt_ids = tac_statement_nexts.get(stmt_id, [])
+
+                g.add_node(stmt_id)
+                if len(next_stmt_ids) == 1:
+                    # if more than one next statement, ignore (probably end-of-block jumpi)
+                    next_stmt_id = next_stmt_ids[0]
+                    g.add_edge(stmt_id, next_stmt_id)
+
+
+            if len(statements) == 0:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP
                 fake_stmt = self.factory.statement(block_id + '_fake_stmt')
                 statements.append(fake_stmt)
+            else:
+                # There exist some statements
+
+                #
+                # Walk backward to the root of the block, i.e., the first statement
+                root = statements[0].id
+                while len(list(g.predecessors(root))) > 0:
+                    root = list(g.predecessors(root))[0]
+
+                # Ensure that all statements in the block are reachable from the root
+                reachable = set(nx.descendants(g, root))
+                reachable.add(root)
+                block_stmt_ids = set([s.id for s in statements])
+                assert block_stmt_ids.issubset(reachable), f"Block {block_id} has unreachable statements"
+
+                # Order statements by topological order
+                topo_sort = list(nx.topological_sort(g))
+                statements = sorted(statements, key=lambda s: topo_sort.index(s.id))
+
             blocks[block_id] = Block(block_id=block_id, statements=statements)
 
         # set fallthrough edge
@@ -204,6 +244,7 @@ class TAC_parser:
         blocks['fake_exit'] = fake_exit_block
 
         return blocks
+
 
     def parse_functions(self) -> Dict[str, TAC_Function]:
         # Load facts
