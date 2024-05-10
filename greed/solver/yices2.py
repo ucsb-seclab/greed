@@ -182,17 +182,19 @@ class Yices2(Solver):
         if isinstance(value_if_true, YicesTermBV) and isinstance(
             value_if_false, YicesTermBV
         ):
+            term_cls = YicesTermBVIf
             assert (
                 value_if_true.bitsize == value_if_false.bitsize
             ), "Expected same bit size"
         elif isinstance(value_if_true, YicesTermBool) and isinstance(
             value_if_false, YicesTermBool
         ):
+            term_cls = YicesTermBoolIf
             pass
         else:
             raise ValueError("Expected same type")
 
-        return YicesTermIf(cond, value_if_true, value_if_false)
+        return term_cls(cond, value_if_true, value_if_false)
 
     # BOOLEAN OPERATIONS
 
@@ -752,8 +754,7 @@ class YicesTermBVConcat(YicesTermBV):
     def __setstate__(self, state):
         self.__init__(*state["args"])
 
-
-class YicesTermIf(YicesTermBV):
+class YicesTermBVIf(YicesTermBV):
     condition: "YicesTermBool"
     value_if_true: "YicesTermBV"
     value_if_false: "YicesTermBV"
@@ -763,6 +764,40 @@ class YicesTermIf(YicesTermBV):
         condition: "YicesTermBool",
         value_if_true: "YicesTermBV",
         value_if_false: "YicesTermBV",
+    ):
+        yices_id = yices.Terms.ite(condition.id, value_if_true.id, value_if_false.id)
+        super().__init__(
+            operator="if",
+            children=[condition, value_if_true, value_if_false],
+            yices_id=yices_id,
+        )
+        self.condition = condition
+        self.value_if_true = value_if_true
+        self.value_if_false = value_if_false
+
+    def dump_smt2(self):
+        return f"(ite {self.condition.dump_smt2()} {self.value_if_true.dump_smt2()} {self.value_if_false.dump_smt2()})"
+
+    def __getstate__(self):
+        return {
+            "condition": self.condition,
+            "value_if_true": self.value_if_true,
+            "value_if_false": self.value_if_false,
+        }
+
+    def __setstate__(self, state):
+        self.__init__(**state)
+
+class YicesTermBoolIf(YicesTermBool):
+    condition: "YicesTermBool"
+    value_if_true: "YicesTermBool"
+    value_if_false: "YicesTermBool"
+
+    def __init__(
+        self,
+        condition: "YicesTermBool",
+        value_if_true: "YicesTermBool",
+        value_if_false: "YicesTermBool",
     ):
         yices_id = yices.Terms.ite(condition.id, value_if_true.id, value_if_false.id)
         super().__init__(
