@@ -1,5 +1,6 @@
 import logging
 import threading
+import queue
 from typing import List, TypeVar
 
 from greed import options
@@ -55,27 +56,50 @@ class Solver:
     """
     @staticmethod
     def solver_timeout(func):
-        def raise_solver_timeout(self):
+        # Simple flag so that we can suppress the generic Yices error and raise a relevant
+        # SolverTimeout whenever the solver takes too long.
+
+        def raise_solver_timeout(self: 'Solver'):
+            # Callback function on timeout
             self.timed_out = True
             self.solver.stop_search()
             log.warning("Solver timeout, stopping search")
 
         def wrap(self, *args, **kwargs):
-            # start a timer to stop solving if the solver takes too long
+            # Start a timer to stop solving if the solver takes too long
             timer = threading.Timer(options.SOLVER_TIMEOUT, raise_solver_timeout, [self])
             timer.start()
+
+            # Create a method to communicate the result of a function back to the main thread
+            func_result = queue.Queue()
+            func_exc = queue.Queue()
+            def wrapped_func():
+                try:
+                    func_result.put(func(self, *args, **kwargs))
+                except Exception as e:
+                    func_exc.put(e)
+
+            # Launch the solving as a side thread
+            func_thread = threading.Thread(target=wrapped_func, daemon=True)
+            func_thread.start()
+
+            # Wait for the function to finish, or for the timer to expire
             try:
-                result = func(self, *args, **kwargs)
-                if self.timed_out:
-                    raise SolverTimeout
-                return result
-            except YicesException:
-                if self.timed_out:
-                    raise SolverTimeout
+                func_thread.join()
+            except KeyboardInterrupt:
+                self.solver.stop_search()
                 raise
             finally:
                 timer.cancel()
-                self.timed_out = False
+
+            # Handle the result of the function
+            if self.timed_out:
+                raise SolverTimeout()
+
+            if not func_exc.empty():
+                raise func_exc.get()
+
+            return func_result.get()
 
         return wrap
 
