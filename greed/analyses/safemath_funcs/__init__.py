@@ -49,7 +49,13 @@ def find_safemath_funcs(project: 'Project') -> List[SafeMathFuncReport]:
             # Skip, already known
             continue
 
-        maybe_safemath_func_report = identify_library_safemath_func(project, func)
+        try:
+            maybe_safemath_func_report = identify_library_safemath_func(project, func)
+        except KeyboardInterrupt:
+            raise
+        except:
+            log.warning(f'Error while identifying library SAFEMATH function in {func_name}, assuming this is not SAFEMATH...', exc_info=True)
+            continue
         if maybe_safemath_func_report is not None:
             log.debug(f"Function {func_name} identified as SAFEMATH ({maybe_safemath_func})")
             library_funcs.append(maybe_safemath_func_report)

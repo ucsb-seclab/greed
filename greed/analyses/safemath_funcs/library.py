@@ -4,7 +4,7 @@ This module attempts to discover library-based safemath functions
 """
 
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Set, TYPE_CHECKING
 
 import networkx as nx
 
@@ -47,7 +47,7 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
     return_stmt: 'TAC_Returnprivate'
 
     # Ensure that the subgraph of the callgraph starting at this function is acyclic
-    reachable_funcs = nx.descendants(project.callgraph, function)
+    reachable_funcs: Set['TAC_Function'] = nx.descendants(project.callgraph, function)
     reachable_funcs.add(function)
     if not nx.is_directed_acyclic_graph(project.callgraph.subgraph(reachable_funcs)):
         log.debug(f'Function {function.name} has loops in its callgraph')
@@ -104,244 +104,243 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
     entry_state.registers[function.arguments[1]] = operand_1
     entry_state.registers[function.arguments[2]] = return_pc
 
-    with _enable_lazy_solves():
-        simgr = project.factory.simgr(entry_state)
+    with _with_timeout(10.0):
+        with _enable_lazy_solves():
+            simgr = project.factory.simgr(entry_state)
 
-        directed_search = DirectedSearch(target_stmt=return_stmt)
-        simgr.use_technique(directed_search)
+            directed_search = DirectedSearch(target_stmt=return_stmt)
+            simgr.use_technique(directed_search)
 
-        dfs = DFS()
-        simgr.use_technique(dfs)
+            dfs = DFS()
+            simgr.use_technique(dfs)
 
-        while True:
-            simgr.run(find=lambda s: s.curr_stmt.id == return_stmt.id)
-            if len(simgr.stashes['errored']) > 0:
-                raise Exception(f'Error in symbolic execution: {simgr.stashes["errored"][0].error}')
+            while True:
+                simgr.run(find=lambda s: s.curr_stmt.id == return_stmt.id)
 
-            if len(simgr.found) == 0:
-                break
+                if len(simgr.found) == 0:
+                    break
 
-            simgr.move(from_stash='found', to_stash='pruned', filter_func=lambda s: s.solver.is_unsat())
-            if len(simgr.found) >= 1:
-                # found a sat state
-                break
+                simgr.move(from_stash='found', to_stash='pruned', filter_func=lambda s: s.solver.is_unsat())
+                if len(simgr.found) >= 1:
+                    # found a sat state
+                    break
 
-    if len(simgr.found) == 0:
-        log.debug(f'Function {function.name} did not reach the return statement')
-        return None
-
-    # We have reached the return statement.
-
-    found_state = simgr.found[0]
-    log.debug(f'Function {function.name} reached the return statement at state {found_state}')
-
-    return_var = return_stmt.arg_vars[1]
-    sym_return_var = found_state.registers[return_var]
-    
-    # Guess what type of math op it is by just trying a few
-
-    # Addition: 50 + 10 == 60
-    guess_assumptions = [
-        Equal(operand_0, BVV(50, 256)),
-        Equal(operand_1, BVV(10, 256)),
-        Equal(sym_return_var, BVV(60, 256)),
-    ]
-    if found_state.solver.are_formulas_sat(guess_assumptions):
-        # Ensure that this is generically true
-        generic_assumption = Equal(BV_Add(operand_0, operand_1), sym_return_var)
-        is_generic = found_state.solver.is_formula_true(generic_assumption)
-        
-        if not is_generic:
-            log.debug(f'Function {function.name} addition is not generic')
+        if len(simgr.found) == 0:
+            log.debug(f'Function {function.name} did not reach the return statement')
             return None
 
-        # Setting of vars to create overflow should be unsat
-        overflow_assumption = [
-            Equal(operand_0, BVV(2**256 - 1, 256)),
-            Equal(operand_1, BVV(2**256 - 1, 256)),
+        # We have reached the return statement.
+
+        found_state = simgr.found[0]
+        log.debug(f'Function {function.name} reached the return statement at state {found_state}')
+
+        return_var = return_stmt.arg_vars[1]
+        sym_return_var = found_state.registers[return_var]
+        
+        # Guess what type of math op it is by just trying a few
+
+        # Addition: 50 + 10 == 60
+        guess_assumptions = [
+            Equal(operand_0, BVV(50, 256)),
+            Equal(operand_1, BVV(10, 256)),
+            Equal(sym_return_var, BVV(60, 256)),
         ]
-        overflow_possible = found_state.solver.are_formulas_sat(overflow_assumption)
-        
-        if overflow_possible:
-            log.debug(f'Function {function.name} addition can overflow without revert')
-            return None
-        
-        return SafeMathFuncReport(
-            func_kind=SafeMathFunc.ADD,
-            func=function,
-            first_arg_at_start=True,
-        )
-    
-    # Subtraction: 50 - 10 == 40
-    sym_sub_forward = BVS(f'safemath_check_{function.name}_sub_is_forward', 256)
-    guess_assumptions = [
-        Or(
-            And(
-                Equal(operand_0, BVV(50, 256)),
-                Equal(operand_1, BVV(10, 256)),
-                Equal(sym_return_var, BVV(40, 256)),
-                Equal(sym_sub_forward, BVV(1, 256)),
-            ),
-            And(
-                Equal(operand_1, BVV(50, 256)),
-                Equal(operand_0, BVV(10, 256)),
-                Equal(sym_return_var, BVV(40, 256)),
-                Equal(sym_sub_forward, BVV(2, 256)),
-            ),
-        ),
-    ]
-    if found_state.solver.are_formulas_sat(guess_assumptions):
-        sub_forward_val = found_state.solver.eval(sym_sub_forward)
-        if sub_forward_val == 1:
-            sub_forward = True
-        elif sub_forward_val == 2:
-            sub_forward = False
-        else:
-            log.debug(f'Function {function.name} subtraction direction is unknown')
-            return None
-        
-        minuend, subtrahend = (operand_0, operand_1) if sub_forward else (operand_1, operand_0)
+        if found_state.solver.are_formulas_sat(guess_assumptions):
+            # Ensure that this is generically true
+            generic_assumption = Equal(BV_Add(operand_0, operand_1), sym_return_var)
+            is_generic = found_state.solver.is_formula_true(generic_assumption)
+            
+            if not is_generic:
+                log.debug(f'Function {function.name} addition is not generic')
+                return None
 
-        # Ensure that this is generically true
-        generic_assumption = Equal(BV_Sub(minuend, subtrahend), sym_return_var)
-        is_generic = found_state.solver.is_formula_true(generic_assumption)
-
-        # Ensure that sub underflow is unsat
-        sub_underflow_assumption = [
-            Equal(subtrahend, BVV(2**256 - 1, 256)),
-            Equal(minuend, BVV(0, 256)),
-        ]
-        sub_underflow_possible = found_state.solver.are_formulas_sat(sub_underflow_assumption)
-
-        if is_generic and not sub_underflow_possible:
+            # Setting of vars to create overflow should be unsat
+            overflow_assumption = [
+                Equal(operand_0, BVV(2**256 - 1, 256)),
+                Equal(operand_1, BVV(2**256 - 1, 256)),
+            ]
+            overflow_possible = found_state.solver.are_formulas_sat(overflow_assumption)
+            
+            if overflow_possible:
+                log.debug(f'Function {function.name} addition can overflow without revert')
+                return None
+            
             return SafeMathFuncReport(
-                func_kind=SafeMathFunc.SUB,
-                func=function,
-                first_arg_at_start=sub_forward,
-            )
-
-    # Multiplication: 50 * 10 == 500
-    guess_assumptions = [
-        Equal(operand_0, BVV(50, 256)),
-        Equal(operand_1, BVV(10, 256)),
-        Equal(sym_return_var, BVV(500, 256)),
-    ]
-    if found_state.solver.are_formulas_sat(guess_assumptions):
-        # Ensure that this is generically true
-        generic_assumption = Equal(BV_Mul(operand_0, operand_1), sym_return_var)
-        is_generic = found_state.solver.is_formula_true(generic_assumption)
-
-        # Ensure that mul with overflow is unsat
-        overflow_assumption = [
-            Equal(operand_0, BVV(2**128, 256)),
-            Equal(operand_1, BVV(2**128, 256)),
-        ]
-        overflow_possible = found_state.solver.are_formulas_sat(overflow_assumption)
-
-        if is_generic and not overflow_possible:
-            return SafeMathFuncReport(
-                func_kind=SafeMathFunc.MUL,
+                func_kind=SafeMathFunc.ADD,
                 func=function,
                 first_arg_at_start=True,
             )
-
-    # Division: 50 / 10 == 5
-    sym_div_forward = BVS(f'safemath_check_{function.name}_div_is_forward', 256)
-    guess_assumptions = [
-        Or(
-            And(
-                Equal(operand_0, BVV(50, 256)),
-                Equal(operand_1, BVV(10, 256)),
-                Equal(sym_return_var, BVV(5, 256)),
-                Equal(sym_div_forward, BVV(1, 256)),
+        
+        # Subtraction: 50 - 10 == 40
+        sym_sub_forward = BVS(f'safemath_check_{function.name}_sub_is_forward', 256)
+        guess_assumptions = [
+            Or(
+                And(
+                    Equal(operand_0, BVV(50, 256)),
+                    Equal(operand_1, BVV(10, 256)),
+                    Equal(sym_return_var, BVV(40, 256)),
+                    Equal(sym_sub_forward, BVV(1, 256)),
+                ),
+                And(
+                    Equal(operand_1, BVV(50, 256)),
+                    Equal(operand_0, BVV(10, 256)),
+                    Equal(sym_return_var, BVV(40, 256)),
+                    Equal(sym_sub_forward, BVV(2, 256)),
+                ),
             ),
-            And(
-                Equal(operand_1, BVV(50, 256)),
-                Equal(operand_0, BVV(10, 256)),
-                Equal(sym_return_var, BVV(5, 256)),
-                Equal(sym_div_forward, BVV(2, 256)),
+        ]
+        if found_state.solver.are_formulas_sat(guess_assumptions):
+            sub_forward_val = found_state.solver.eval(sym_sub_forward)
+            if sub_forward_val == 1:
+                sub_forward = True
+            elif sub_forward_val == 2:
+                sub_forward = False
+            else:
+                log.debug(f'Function {function.name} subtraction direction is unknown')
+                return None
+            
+            minuend, subtrahend = (operand_0, operand_1) if sub_forward else (operand_1, operand_0)
+
+            # Ensure that this is generically true
+            generic_assumption = Equal(BV_Sub(minuend, subtrahend), sym_return_var)
+            is_generic = found_state.solver.is_formula_true(generic_assumption)
+
+            # Ensure that sub underflow is unsat
+            sub_underflow_assumption = [
+                Equal(subtrahend, BVV(2**256 - 1, 256)),
+                Equal(minuend, BVV(0, 256)),
+            ]
+            sub_underflow_possible = found_state.solver.are_formulas_sat(sub_underflow_assumption)
+
+            if is_generic and not sub_underflow_possible:
+                return SafeMathFuncReport(
+                    func_kind=SafeMathFunc.SUB,
+                    func=function,
+                    first_arg_at_start=sub_forward,
+                )
+
+        # Multiplication: 50 * 10 == 500
+        guess_assumptions = [
+            Equal(operand_0, BVV(50, 256)),
+            Equal(operand_1, BVV(10, 256)),
+            Equal(sym_return_var, BVV(500, 256)),
+        ]
+        if found_state.solver.are_formulas_sat(guess_assumptions):
+            # Ensure that this is generically true
+            generic_assumption = Equal(BV_Mul(operand_0, operand_1), sym_return_var)
+            is_generic = found_state.solver.is_formula_true(generic_assumption)
+
+            # Ensure that mul with overflow is unsat
+            overflow_assumption = [
+                Equal(operand_0, BVV(2**128, 256)),
+                Equal(operand_1, BVV(2**128, 256)),
+            ]
+            overflow_possible = found_state.solver.are_formulas_sat(overflow_assumption)
+
+            if is_generic and not overflow_possible:
+                return SafeMathFuncReport(
+                    func_kind=SafeMathFunc.MUL,
+                    func=function,
+                    first_arg_at_start=True,
+                )
+
+        # Division: 50 / 10 == 5
+        sym_div_forward = BVS(f'safemath_check_{function.name}_div_is_forward', 256)
+        guess_assumptions = [
+            Or(
+                And(
+                    Equal(operand_0, BVV(50, 256)),
+                    Equal(operand_1, BVV(10, 256)),
+                    Equal(sym_return_var, BVV(5, 256)),
+                    Equal(sym_div_forward, BVV(1, 256)),
+                ),
+                And(
+                    Equal(operand_1, BVV(50, 256)),
+                    Equal(operand_0, BVV(10, 256)),
+                    Equal(sym_return_var, BVV(5, 256)),
+                    Equal(sym_div_forward, BVV(2, 256)),
+                ),
             ),
-        ),
-    ]
-    if found_state.solver.are_formulas_sat(guess_assumptions):
-        # Query the model to find out if arguments go forward or backward
-        div_forward_val = found_state.solver.eval(sym_div_forward)
-        if div_forward_val == 1:
-            div_forward = True
-        elif div_forward_val == 2:
-            div_forward = False
-        else:
-            log.debug(f'Function {function.name} division direction is unknown')
-            return None
+        ]
+        if found_state.solver.are_formulas_sat(guess_assumptions):
+            # Query the model to find out if arguments go forward or backward
+            div_forward_val = found_state.solver.eval(sym_div_forward)
+            if div_forward_val == 1:
+                div_forward = True
+            elif div_forward_val == 2:
+                div_forward = False
+            else:
+                log.debug(f'Function {function.name} division direction is unknown')
+                return None
 
-        dividend, divisor = (operand_0, operand_1) if div_forward else (operand_1, operand_0)
+            dividend, divisor = (operand_0, operand_1) if div_forward else (operand_1, operand_0)
 
-        # Ensure that this is generically true
-        generic_assumption = Equal(BV_UDiv(dividend, divisor), sym_return_var)
-        is_generic = found_state.solver.is_formula_true(generic_assumption)
+            # Ensure that this is generically true
+            generic_assumption = Equal(BV_UDiv(dividend, divisor), sym_return_var)
+            is_generic = found_state.solver.is_formula_true(generic_assumption)
 
-        # Ensure that div by zero is unsat
-        div_by_zero_assumption = Equal(divisor, BVV(0, 256))
-        div_by_zero_possible = found_state.solver.is_formula_sat(div_by_zero_assumption)
+            # Ensure that div by zero is unsat
+            div_by_zero_assumption = Equal(divisor, BVV(0, 256))
+            div_by_zero_possible = found_state.solver.is_formula_sat(div_by_zero_assumption)
 
-        if is_generic and not div_by_zero_possible:
-            return SafeMathFuncReport(
-                func_kind=SafeMathFunc.DIV,
-                func=function,
-                first_arg_at_start=div_forward,
-            )
-    
-    # Modulo: 52 % 10 == 2
-    sym_mod_forward = BVS(f'safemath_check_{function.name}_mod_is_forward', 256)
-    guess_assumptions = [
-        Or(
-            And(
-                Equal(operand_0, BVV(52, 256)),
-                Equal(operand_1, BVV(10, 256)),
-                Equal(sym_return_var, BVV(2, 256)),
-                Equal(sym_mod_forward, BVV(1, 256)),
+            if is_generic and not div_by_zero_possible:
+                return SafeMathFuncReport(
+                    func_kind=SafeMathFunc.DIV,
+                    func=function,
+                    first_arg_at_start=div_forward,
+                )
+        
+        # Modulo: 52 % 10 == 2
+        sym_mod_forward = BVS(f'safemath_check_{function.name}_mod_is_forward', 256)
+        guess_assumptions = [
+            Or(
+                And(
+                    Equal(operand_0, BVV(52, 256)),
+                    Equal(operand_1, BVV(10, 256)),
+                    Equal(sym_return_var, BVV(2, 256)),
+                    Equal(sym_mod_forward, BVV(1, 256)),
+                ),
+                And(
+                    Equal(operand_1, BVV(52, 256)),
+                    Equal(operand_0, BVV(10, 256)),
+                    Equal(sym_return_var, BVV(2, 256)),
+                    Equal(sym_mod_forward, BVV(2, 256)),
+                ),
             ),
-            And(
-                Equal(operand_1, BVV(52, 256)),
-                Equal(operand_0, BVV(10, 256)),
-                Equal(sym_return_var, BVV(2, 256)),
-                Equal(sym_mod_forward, BVV(2, 256)),
-            ),
-        ),
-    ]
-    if found_state.solver.are_formulas_sat(guess_assumptions):
-        # Query the model to find out if arguments go forward or backward
-        mod_forward_val = found_state.solver.eval(sym_mod_forward)
-        if mod_forward_val == 1:
-            mod_forward = True
-        elif mod_forward_val == 2:
-            mod_forward = False
-        else:
-            log.debug(f'Function {function.name} modulo direction is unknown')
-            return None
+        ]
+        if found_state.solver.are_formulas_sat(guess_assumptions):
+            # Query the model to find out if arguments go forward or backward
+            mod_forward_val = found_state.solver.eval(sym_mod_forward)
+            if mod_forward_val == 1:
+                mod_forward = True
+            elif mod_forward_val == 2:
+                mod_forward = False
+            else:
+                log.debug(f'Function {function.name} modulo direction is unknown')
+                return None
 
-        dividend, divisor = (operand_0, operand_1) if mod_forward else (operand_1, operand_0)
+            dividend, divisor = (operand_0, operand_1) if mod_forward else (operand_1, operand_0)
 
-        # Ensure that this is generically true
-        generic_assumption = Equal(BV_URem(dividend, divisor), sym_return_var)
-        is_generic = found_state.solver.is_formula_true(generic_assumption)
+            # Ensure that this is generically true
+            generic_assumption = Equal(BV_URem(dividend, divisor), sym_return_var)
+            is_generic = found_state.solver.is_formula_true(generic_assumption)
 
-        # Ensure that div by zero is unsat
-        div_by_zero_assumption = Equal(divisor, BVV(0, 256))
-        div_by_zero_possible = found_state.solver.is_formula_sat(div_by_zero_assumption)
+            # Ensure that div by zero is unsat
+            div_by_zero_assumption = Equal(divisor, BVV(0, 256))
+            div_by_zero_possible = found_state.solver.is_formula_sat(div_by_zero_assumption)
 
-        if is_generic and not div_by_zero_possible:
-            return SafeMathFuncReport(
-                func_kind=SafeMathFunc.MOD,
-                func=function,
-                first_arg_at_start=mod_forward,
-            )
+            if is_generic and not div_by_zero_possible:
+                return SafeMathFuncReport(
+                    func_kind=SafeMathFunc.MOD,
+                    func=function,
+                    first_arg_at_start=mod_forward,
+                )
 
 
-    # If we reach here, we couldn't guess the operation
-    log.debug(f'Function {function.name} could not guess the operation')
+        # If we reach here, we couldn't guess the operation
+        log.debug(f'Function {function.name} could not guess the operation')
 
-    return None
+        return None
 
 @contextlib.contextmanager
 def _enable_lazy_solves():
@@ -353,3 +352,11 @@ def _enable_lazy_solves():
         options.LAZY_SOLVES = old_lazy_solves
 
 
+@contextlib.contextmanager
+def _with_timeout(timeout: float):
+    old_timeout = options.SOLVER_TIMEOUT
+    options.SOLVER_TIMEOUT = timeout
+    try:
+        yield
+    finally:
+        options.SOLVER_TIMEOUT = old_timeout
