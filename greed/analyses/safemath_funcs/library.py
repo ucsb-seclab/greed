@@ -8,6 +8,8 @@ from typing import Optional, TYPE_CHECKING
 
 import networkx as nx
 
+import contextlib
+import greed.options as options
 from greed.solver.shortcuts import *
 from greed.exploration_techniques import DirectedSearch, DFS
 from greed.utils.extra import gen_exec_id
@@ -44,6 +46,20 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
     (return_stmt, return_var) = return_stmts_and_vars_no_constant_returns[0]
     return_stmt: 'TAC_Returnprivate'
 
+    # Ensure that the subgraph of the callgraph starting at this function is acyclic
+    reachable_funcs = nx.descendants(project.callgraph, function)
+    reachable_funcs.add(function)
+    if not nx.is_directed_acyclic_graph(project.callgraph.subgraph(reachable_funcs)):
+        log.debug(f'Function {function.name} has loops in its callgraph')
+        return None
+    
+    # Ensure each reachable func is also acyclic
+    for reachable_func in reachable_funcs:
+        func_cfg = reachable_func.cfg.graph
+        if not nx.is_directed_acyclic_graph(func_cfg):
+            log.debug(f'Function {function.name} has loops in a reachable func\'s CFG')
+            return None
+
     # Find all instructions used in this function, so we can return early if it uses any banned
     # instructions which indicate not-safemath.
     banned_instructions = {
@@ -62,32 +78,20 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
         'RETURN', 'STOP', 'INVALID',
     }
 
-    for block in function.blocks:
-        for stmt in block.statements:
-            if stmt.__internal_name__ in banned_instructions:
-                log.debug(f'Function {function.name} uses banned instruction {stmt.__internal_name__}; ignoring')
-                return None
+    for func in reachable_funcs:
+        for block in func.blocks:
+            for stmt in block.statements:
+                if stmt.__internal_name__ in banned_instructions:
+                    log.debug(f'Function {function.name} uses banned instruction {stmt.__internal_name__}; ignoring')
+                    return None
 
-    # Ensure that the subgraph of the callgraph starting at this function is acyclic
-    reachable_funcs = nx.descendants(project.callgraph, function)
-    reachable_funcs.add(function)
-    if not nx.is_directed_acyclic_graph(project.callgraph.subgraph(reachable_funcs)):
-        log.debug(f'Function {function.name} has loops in its callgraph')
-        return None
-    
-    # Ensure each reachable func is also acyclic
-    for reachable_func in reachable_funcs:
-        func_cfg = reachable_func.cfg.graph
-        if not nx.is_directed_acyclic_graph(func_cfg):
-            log.debug(f'Function {function.name} has loops in a reachable func\'s CFG')
-            return None
 
     # Start a directed symbolic execution at this function entry
     entry_state = project.factory.entry_state(
         xid=gen_exec_id(),
     )
-    entry_state.pc = function.blocks[0].first_ins.id
-
+    entry_state.pc = project.block_at[function.id].first_ins.id
+    log.debug(f'Function entry: {entry_state.pc}')
 
     # Set up the function arguments. There should be 3:
     # 0, 1: the two operands
@@ -100,15 +104,27 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
     entry_state.registers[function.arguments[1]] = operand_1
     entry_state.registers[function.arguments[2]] = return_pc
 
-    simgr = project.factory.simgr(entry_state)
+    with _enable_lazy_solves():
+        simgr = project.factory.simgr(entry_state)
 
-    directed_search = DirectedSearch(target_stmt=return_stmt)
-    simgr.use_technique(directed_search)
+        directed_search = DirectedSearch(target_stmt=return_stmt)
+        simgr.use_technique(directed_search)
 
-    dfs = DFS()
-    simgr.use_technique(dfs)
+        dfs = DFS()
+        simgr.use_technique(dfs)
 
-    simgr.run(find=lambda s: s.curr_stmt.id == return_stmt.id)
+        while True:
+            simgr.run(find=lambda s: s.curr_stmt.id == return_stmt.id)
+            if len(simgr.stashes['errored']) > 0:
+                raise Exception(f'Error in symbolic execution: {simgr.stashes["errored"][0].error}')
+
+            if len(simgr.found) == 0:
+                break
+
+            simgr.move(from_stash='found', to_stash='pruned', filter_func=lambda s: s.solver.is_unsat())
+            if len(simgr.found) >= 1:
+                # found a sat state
+                break
 
     if len(simgr.found) == 0:
         log.debug(f'Function {function.name} did not reach the return statement')
@@ -326,4 +342,14 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
     log.debug(f'Function {function.name} could not guess the operation')
 
     return None
+
+@contextlib.contextmanager
+def _enable_lazy_solves():
+    old_lazy_solves = options.LAZY_SOLVES
+    options.LAZY_SOLVES = True
+    try:
+        yield
+    finally:
+        options.LAZY_SOLVES = old_lazy_solves
+
 

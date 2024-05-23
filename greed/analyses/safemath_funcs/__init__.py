@@ -57,4 +57,4 @@ def find_safemath_funcs(project: 'Project') -> List[SafeMathFuncReport]:
     for func in library_funcs:
         log.debug(f'Identified library SAFEMATH function {func.func_kind} @ {func.func.name}')
 
-    return safemath_funcs
+    return safemath_funcs + library_funcs
