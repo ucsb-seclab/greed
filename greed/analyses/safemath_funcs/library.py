@@ -19,10 +19,14 @@ from .common import basic_safemath_checks_pass
 
 if TYPE_CHECKING:
     from greed import Project
+    from greed.state import SymbolicEVMState
     from greed.function import TAC_Function
     from greed.TAC.gigahorse_ops import TAC_Returnprivate
 
 log = logging.getLogger(__name__)
+
+MAX_UNSIGNED_WORD = 2**256 - 1
+MAX_SIGNED_WORD = 2**255 - 1
 
 def identify_library_safemath_func(project: 'Project', function: 'TAC_Function') -> Optional[SafeMathFuncReport]:
     log.debug(f'Examining function {function.name} for library SAFEMATH operations')
@@ -120,7 +124,16 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
                 if len(simgr.found) == 0:
                     break
 
+                # remove unsat
                 simgr.move(from_stash='found', to_stash='pruned', filter_func=lambda s: s.solver.is_unsat())
+
+                # remove any states that are returning a constant
+                def is_returning_constant(s: 'SymbolicEVMState'):
+                    return_var = return_stmt.arg_vars[1]
+                    return_val = s.registers[return_var]
+                    return s.solver.is_concrete(return_val)
+                simgr.move(from_stash='found', to_stash='pruned', filter_func=is_returning_constant)
+
                 if len(simgr.found) >= 1:
                     # found a sat state
                     break
@@ -237,7 +250,20 @@ def identify_library_safemath_func(project: 'Project', function: 'TAC_Function')
             ]
             overflow_possible = found_state.solver.are_formulas_sat(overflow_assumption)
 
-            if is_generic and not overflow_possible:
+            # Ensure that you can receive a value greater than max signed word
+            a = (MAX_SIGNED_WORD // 100) + 1
+            b = 100
+            assert MAX_SIGNED_WORD < a * b <= MAX_UNSIGNED_WORD, 'Product should be above max signed word'
+            assert int.from_bytes(a.to_bytes(32, 'big', signed=False), 'big', signed=True) > 0, 'a should be positive (in signed view)'
+            assert int.from_bytes(b.to_bytes(32, 'big', signed=False), 'big', signed=True) > 0, 'b should be positive (in signed view)'
+            assert int.from_bytes((a * b).to_bytes(32, 'big', signed=False), 'big', signed=True) < 0, 'product should be negative (in signed view)'
+            signed_overflow_assumption = [
+                Equal(operand_0, BVV(a, 256)),
+                Equal(operand_1, BVV(b, 256)),
+            ]
+            signed_overflow_possible = found_state.solver.are_formulas_sat(signed_overflow_assumption)
+
+            if is_generic and signed_overflow_possible and not overflow_possible:
                 return SafeMathFuncReport(
                     func_kind=SafeMathFunc.MUL,
                     func=function,

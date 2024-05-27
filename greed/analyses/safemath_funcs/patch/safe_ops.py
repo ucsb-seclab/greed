@@ -2,12 +2,14 @@ import logging
 from typing import TYPE_CHECKING, List
 
 import greed.options as options
+from greed.block import Block
 from greed.solver.shortcuts import *
 from greed.TAC import TAC_Returnprivate, TAC_Statement
 
+from greed.analyses.safemath_funcs.types import SafeMathFunc, SafeMathFuncReport
+
 if TYPE_CHECKING:
     from greed import Project
-    from greed.analyses.safemath_funcs.types import SafeMathFunc, SafeMathFuncReport
     from greed.state import SymbolicEVMState
 
 log = logging.getLogger(__name__)
@@ -25,31 +27,58 @@ def patch_function(project: "Project", report: "SafeMathFuncReport"):
     old_block_id = report.func.id
     old_block = project.block_at[old_block_id]
 
+    return_pc_var = report.func.arguments[-1]
     return_var_id = _gen_var_id()
 
-    if report.func_kind == SafeMathFunc.ADD:
-        op = construct_safe_add(report, old_block_id, return_var_id)
+    klass = None
+    match report.func_kind:
+        case SafeMathFunc.ADD:
+            klass = SymProcedureSafeAdd
+        case SafeMathFunc.ADD_SIGNED:
+            klass = SymProcedureSafeAddSigned
+        case SafeMathFunc.SUB:
+            klass = SymProcedureSafeSub
+        case SafeMathFunc.SUB_SIGNED:
+            klass = SymProcedureSafeSubSigned
+        case SafeMathFunc.MUL:
+            klass = SymProcedureSafeMul
+        case SafeMathFunc.MUL_SIGNED:
+            klass = SymProcedureSafeMulSigned
+        case SafeMathFunc.DIV:
+            klass = SymProcedureSafeDiv
+        case SafeMathFunc.SDIV:
+            klass = SymProcedureSafeDivSigned
+        case SafeMathFunc.MOD:
+            klass = SymProcedureSafeMod
+        case SafeMathFunc.SMOD:
+            klass = SymProcedureSafeModSigned
+        case _:
+            raise NotImplementedError(f"Unsupported safemath function {report.func.func_kind}")
+
+    if report.first_arg_at_start:
+        uses = (report.func.arguments[0], report.func.arguments[1])
+    else:
+        uses = (report.func.arguments[1], report.func.arguments[0])
+
+    defs = (return_var_id,)
+    op = klass(old_block_id, _gen_statement_id(), uses, defs)
 
     new_return_stmt = TAC_Returnprivate(
-        old_block_id, _gen_statement_id(), [return_var_id]
+        old_block_id, _gen_statement_id(), (return_pc_var, return_var_id)
     )
 
     new_stmts: List[TAC_Statement] = [op, new_return_stmt]
-    old_block.statements = new_stmts
-    old_block._statement_at = {stmt.id: stmt for stmt in new_stmts}
+    new_block = Block(
+        new_stmts,
+        old_block.id,
+    )
+    new_block.function = old_block.function
 
     for new_stmt in new_stmts:
         project.statement_at[new_stmt.id] = new_stmt
+    project.block_at[new_block.id] = new_block
 
     log.debug(f"Patched function {report.func.name} to use safemath symprocedure")
-
-
-def construct_safe_add(
-    report: "SafeMathFuncReport", block_id: str, return_into_var: str
-) -> "SymProcedureSafeAdd":
-    uses = (report.func.arguments[0], report.func.arguments[1])
-    defs = (return_into_var,)
-    return SymProcedureSafeAdd(block_id, _gen_statement_id(), uses, defs)
 
 
 class SymProcedureSafeAdd(TAC_Statement):
@@ -118,6 +147,7 @@ class SymProcedureSafeAdd(TAC_Statement):
 
         # store the result
         state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
 
@@ -207,6 +237,7 @@ class SymProcedureSafeAddSigned(TAC_Statement):
 
         # store the result
         state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
 
@@ -253,6 +284,7 @@ class SymProcedureSafeSub(TAC_Statement):
 
         # store the result
         state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
 
@@ -309,6 +341,7 @@ class SymProcedureSafeSubSigned(TAC_Statement):
 
         # store the result
         state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
 
@@ -374,6 +407,7 @@ class SymProcedureSafeMul(TAC_Statement):
             result = BV_Mul(a, b)
 
         state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
 
@@ -421,10 +455,10 @@ class SymProcedureSafeMulSigned(TAC_Statement):
             else:
                 # we can simply constrain the sym value to be such that min_signed <= (conc_val * sym) <= max_signed
                 # or, equivalently, min_signed // conc_val <= sym <= max_signed // conc_val
-                if b > 0:
+                if conc_val > 0:
                     limit_lo = _div_rounding_to_zero(MIN_SIGNED_WORD, conc_val)
                     limit_hi = _div_rounding_to_zero(MAX_SIGNED_WORD, conc_val)
-                if b < 0:
+                if conc_val < 0:
                     limit_lo = _div_rounding_to_zero(MAX_SIGNED_WORD, conc_val)
                     limit_hi = _div_rounding_to_zero(MIN_SIGNED_WORD, conc_val)
 
@@ -459,6 +493,7 @@ class SymProcedureSafeMulSigned(TAC_Statement):
             result = BV_Mul(a, b)
 
         state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
 
@@ -510,8 +545,10 @@ class SymProcedureSafeDiv(TAC_Statement):
 
         # store the result
         state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
+
 
 class SymProcedureSafeDivSigned(TAC_Statement):
     __internal_name__ = "SYMPROCEDURE_SAFEDIV_SIGNED"
@@ -543,7 +580,7 @@ class SymProcedureSafeDivSigned(TAC_Statement):
 
         if a_concrete and b_concrete:
             # if both are concrete, we can do the division directly
-            result_i = a_val // b_val
+            result_i = _div_rounding_to_zero(a_val, b_val)
             if MIN_SIGNED_WORD <= result_i <= MAX_SIGNED_WORD:
                 result = BVV(_signed_word_to_unsigned(result_i), 256)
             else:
@@ -562,7 +599,7 @@ class SymProcedureSafeDivSigned(TAC_Statement):
                         BV_SGE(b, BVV(_signed_word_to_unsigned(-1), 256)),
                         BV_SLT(b, BVV(1, 256)),
                     )
-                )
+                ),
             )
 
             setattr(new_constraint, "safemath", True)
@@ -570,6 +607,123 @@ class SymProcedureSafeDivSigned(TAC_Statement):
 
         # store the result
         state.registers[self.res1_var] = result
+        state.set_next_pc()
+
+        return [state]
+
+
+class SymProcedureSafeMod(TAC_Statement):
+    __internal_name__ = "SYMPROCEDURE_SAFEMOD"
+    __aliases__ = {}
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: "SymbolicEVMState"):
+        a = self.arg1_val
+        b = self.arg2_val
+
+        # check if the arguments are concrete
+        if options.LAZY_SOLVES:
+            a_concrete = False
+            b_concrete = False
+        else:
+            a_concrete = state.solver.is_concrete(a)
+            b_concrete = state.solver.is_concrete(b)
+
+        if a_concrete:
+            a_val = state.solver.eval(a)
+        if b_concrete:
+            b_val = state.solver.eval(b)
+
+        if b_concrete and b_val == 0:
+            # division by zero, revert
+            return []
+
+        if a_concrete and b_concrete:
+            # if both are concrete, we can do the computation directly
+            result_i = a_val % b_val
+            result = BVV(result_i, 256)
+        elif b_concrete:
+            # We know b != 0, no need to add any more constraints
+            result = BV_URem(a, b)
+        else:
+            # do the mod
+            result = BV_URem(a, b)
+
+            # Assert no divide by zero.
+
+            # We use GT instead of NEQ for no reason in particular
+            # (it might help the 'hybrid' solver in development) - Robert
+            new_constraint = BV_UGT(b, BVV(0, 256))
+            setattr(new_constraint, "safemath", True)
+            state.solver.add_path_constraint(new_constraint)
+
+        # store the result
+        state.registers[self.res1_var] = result
+        state.set_next_pc()
+
+        return [state]
+
+
+class SymProcedureSafeModSigned(TAC_Statement):
+    __internal_name__ = "SYMPROCEDURE_SAFEMOD_SIGNED"
+    __aliases__ = {}
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: "SymbolicEVMState"):
+        a = self.arg1_val
+        b = self.arg2_val
+
+        # check if the arguments are concrete
+        if options.LAZY_SOLVES:
+            a_concrete = False
+            b_concrete = False
+        else:
+            a_concrete = state.solver.is_concrete(a)
+            b_concrete = state.solver.is_concrete(b)
+
+        if a_concrete:
+            a_val_unsigned = state.solver.eval(a)
+            a_val = _unsigned_word_to_signed(a_val_unsigned)
+        if b_concrete:
+            b_val_unsigned = state.solver.eval(b)
+            b_val = _unsigned_word_to_signed(b_val_unsigned)
+
+        if b_concrete and b_val == 0:
+            # division by zero, revert
+            return []
+
+        if a_concrete and b_concrete:
+            # NOTE: we need to handle negatives differently than Python does natively
+            if a_val >= 0 and b_val >= 0:
+                result_i = a_val % b_val
+            elif a_val < 0 and b_val >= 0:
+                result_i = (a_val % b_val) - b_val
+            elif a_val >= 0 and b_val < 0:
+                result_i = (a_val % b_val) + b_val
+            else:
+                result_i = a_val % b_val
+
+            result = BVV(_signed_word_to_unsigned(result_i), 256)
+        elif b_concrete:
+            # We know b != 0, no need to add any more constraints
+            result = BV_SRem(a, b)
+        else:
+            # do the mod
+            result = BV_SRem(a, b)
+
+            # Assert no divide by zero.
+            new_constraint = Not(
+                And(
+                    BV_SGT(b, BVV(_signed_word_to_unsigned(-1), 256)),
+                    BV_SLT(b, BVV(1, 256)),
+                )
+            )
+            setattr(new_constraint, "safemath", True)
+            state.solver.add_path_constraint(new_constraint)
+
+        # store the result
+        state.registers[self.res1_var] = result
+        state.set_next_pc()
 
         return [state]
 
