@@ -8,6 +8,7 @@ from greed.analyses.safemath_funcs.patch.safe_ops import (
     SymProcedureSafeMul,
     SymProcedureSafeMulSigned,
     SymProcedureSafeDiv,
+    SymProcedureSafeDivSigned,
     SymProcedureSafeSub,
     SymProcedureSafeSubSigned,
 )
@@ -572,6 +573,70 @@ def test_safemath_div():
         assert state.solver.is_formula_sat(
             assumption
         ), f"Failed for {a_val}, {c_val}"
+
+def test_safemath_div_signed():
+    symproc = SymProcedureSafeDivSigned("block_id", "stmt_id", ("a", "b"), ("c",))
+    project = MockProject()
+    state = SymbolicEVMState(gen_exec_id(), project)
+
+    a = BVS("a", 256)
+    b = BVS("b", 256)
+
+    state.registers["a"] = a
+    state.registers["b"] = b
+
+    # Fully symbolic a, b
+    (state,) = symproc.handle(state)
+    state: SymbolicEVMState
+
+    c = state.registers["c"]
+
+    assert state.solver.is_sat()
+
+    # Test a few different cases
+    positive_cases = [
+        (0, 1, 0),
+        (1, 1, 1),
+        (2, 1, 2),
+        (-1, 1, -1),
+        (-1, 2, 0),
+        (-4, -2, 2),
+        (MAX_SIGNED_WORD, 1, MAX_SIGNED_WORD),
+        (MAX_SIGNED_WORD, MAX_SIGNED_WORD, 1),
+        (MIN_SIGNED_WORD, 1, MIN_SIGNED_WORD),
+        (MAX_SIGNED_WORD, -1, -MAX_SIGNED_WORD),
+    ]
+    for a_val, b_val, c_val in positive_cases:
+        a_uval = int.from_bytes(a_val.to_bytes(32, "big", signed=True), "big")
+        b_uval = int.from_bytes(b_val.to_bytes(32, "big", signed=True), "big")
+        c_uval = int.from_bytes(c_val.to_bytes(32, "big", signed=True), "big")
+
+        assumption = And(
+            Equal(a, BVV(a_uval, 256)),
+            Equal(b, BVV(b_uval, 256)),
+            Equal(c, BVV(c_uval, 256)),
+        )
+
+        assert state.solver.is_formula_sat(
+            assumption
+        ), f"Failed for {a_val}, {b_val}, {c_val}"
+
+    # Test the generic assumption
+    assumption = Equal(c, BV_SDiv(a, b))
+    assert state.solver.is_formula_true(assumption), "Failed for generic case"
+
+    # Test the division by zero case
+    div_by_zero_assumption = Equal(b, BVV(0, 256))
+    assert not state.solver.is_formula_sat(
+        div_by_zero_assumption
+    ), "Failed for division by zero case"
+
+    # Test the overflow case (div min int by -1)
+    assumption = And(
+        Equal(a, BVV(int.from_bytes(MIN_SIGNED_WORD.to_bytes(32, "big", signed=True), "big"), 256)),
+        Equal(b, BVV(int.from_bytes((-1).to_bytes(32, "big", signed=True), "big"), 256)),
+    )
+    assert not state.solver.is_formula_sat(assumption), "Failed for overflow case"
 
 
 

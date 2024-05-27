@@ -464,7 +464,7 @@ class SymProcedureSafeMulSigned(TAC_Statement):
 
 
 class SymProcedureSafeDiv(TAC_Statement):
-    __internal_name__ = "SYMPROCEDURE_SAFEDIV"
+    __internal_name__ = "SYMPROCEDURE_DIV_SIGNED"
     __aliases__ = {}
 
     @TAC_Statement.handler_with_side_effects
@@ -505,6 +505,66 @@ class SymProcedureSafeDiv(TAC_Statement):
             # We use GT instead of NEQ for no reason in particular
             # (it might help the 'hybrid' solver in development) - Robert
             new_constraint = BV_UGT(b, BVV(0, 256))
+            setattr(new_constraint, "safemath", True)
+            state.solver.add_path_constraint(new_constraint)
+
+        # store the result
+        state.registers[self.res1_var] = result
+
+        return [state]
+
+class SymProcedureSafeDivSigned(TAC_Statement):
+    __internal_name__ = "SYMPROCEDURE_SAFEDIV_SIGNED"
+    __aliases__ = {}
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: "SymbolicEVMState"):
+        a = self.arg1_val
+        b = self.arg2_val
+
+        # check if the arguments are concrete
+        if options.LAZY_SOLVES:
+            a_concrete = False
+            b_concrete = False
+        else:
+            a_concrete = state.solver.is_concrete(a)
+            b_concrete = state.solver.is_concrete(b)
+
+        if a_concrete:
+            a_val_unsigned = state.solver.eval(a)
+            a_val = _unsigned_word_to_signed(a_val_unsigned)
+        if b_concrete:
+            b_val_unsigned = state.solver.eval(b)
+            b_val = _unsigned_word_to_signed(b_val_unsigned)
+
+        if b_concrete and b_val == 0:
+            # division by zero, revert
+            return []
+
+        if a_concrete and b_concrete:
+            # if both are concrete, we can do the division directly
+            result_i = a_val // b_val
+            if MIN_SIGNED_WORD <= result_i <= MAX_SIGNED_WORD:
+                result = BVV(_signed_word_to_unsigned(result_i), 256)
+            else:
+                return []
+        else:
+            # do the division
+            result = BV_SDiv(a, b)
+
+            # Assert no divide by zero and no divide min_int by -1 (overflow)
+            new_constraint = And(
+                NotEqual(b, BVV(0, 256)),
+                Not(
+                    And(
+                        # I write this funny, again, to help the hybrid solver
+                        BV_SLE(a, BVV(_signed_word_to_unsigned(MIN_SIGNED_WORD), 256)),
+                        BV_SGE(b, BVV(_signed_word_to_unsigned(-1), 256)),
+                        BV_SLT(b, BVV(1, 256)),
+                    )
+                )
+            )
+
             setattr(new_constraint, "safemath", True)
             state.solver.add_path_constraint(new_constraint)
 
