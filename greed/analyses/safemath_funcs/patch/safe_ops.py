@@ -1,3 +1,8 @@
+"""
+This module contains the symprocedures for the safe math functions,
+and small function to patch a target TAC_Function to use them.
+"""
+
 import logging
 from typing import TYPE_CHECKING, List
 
@@ -53,7 +58,9 @@ def patch_function(project: "Project", report: "SafeMathFuncReport"):
         case SafeMathFunc.SMOD:
             klass = SymProcedureSafeModSigned
         case _:
-            raise NotImplementedError(f"Unsupported safemath function {report.func.func_kind}")
+            raise NotImplementedError(
+                f"Unsupported safemath function {report.func.func_kind}"
+            )
 
     if report.first_arg_at_start:
         uses = (report.func.arguments[0], report.func.arguments[1])

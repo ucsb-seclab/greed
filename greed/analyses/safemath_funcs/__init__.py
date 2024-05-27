@@ -4,13 +4,26 @@ import logging
 from .builtin import identify_builtin_safemath_func
 from .library import identify_library_safemath_func
 from .types import SafeMathFuncReport, SafeMathFunc
+from .patch import patch_function
 
 if TYPE_CHECKING:
     from greed import Project
 
 log = logging.getLogger(__name__)
 
-def find_safemath_funcs(project: 'Project') -> List[SafeMathFuncReport]:
+
+def patch_safemath(project: "Project"):
+    """
+    Detect and automatically replace all SAFEMATH functions
+    with symbolic procedures.
+    """
+    safemath_funcs = find_safemath_funcs(project)
+
+    for func in safemath_funcs:
+        patch_function(project, func)
+
+
+def find_safemath_funcs(project: "Project") -> List[SafeMathFuncReport]:
     """
     Find all functions that are doing SAFEMATH operations.
     """
@@ -26,11 +39,16 @@ def find_safemath_funcs(project: 'Project') -> List[SafeMathFuncReport]:
         except KeyboardInterrupt:
             raise
         except:
-            log.warning(f'Error while identifying SAFEMATH function in {func_name}, assuming this is not SAFEMATH...', exc_info=True)
+            log.warning(
+                f"Error while identifying SAFEMATH function in {func_name}, assuming this is not SAFEMATH...",
+                exc_info=True,
+            )
             continue
 
         if maybe_safemath_func is not None:
-            log.debug(f"Function {func_name} identified as SAFEMATH ({maybe_safemath_func})")
+            log.debug(
+                f"Function {func_name} identified as SAFEMATH ({maybe_safemath_func})"
+            )
             safemath_funcs.append(
                 SafeMathFuncReport(
                     func_kind=maybe_safemath_func,
@@ -41,7 +59,7 @@ def find_safemath_funcs(project: 'Project') -> List[SafeMathFuncReport]:
             known_safemath_funcs.add(func_name)
 
     for func in safemath_funcs:
-        log.debug(f'Identified SAFEMATH function {func.func_kind} @ {func.func.name}')
+        log.debug(f"Identified SAFEMATH function {func.func_kind} @ {func.func.name}")
 
     library_funcs: List[SafeMathFuncReport] = []
     for func_name, func in project.function_at.items():
@@ -54,13 +72,20 @@ def find_safemath_funcs(project: 'Project') -> List[SafeMathFuncReport]:
         except KeyboardInterrupt:
             raise
         except:
-            log.warning(f'Error while identifying library SAFEMATH function in {func_name}, assuming this is not SAFEMATH...', exc_info=True)
+            log.warning(
+                f"Error while identifying library SAFEMATH function in {func_name}, assuming this is not SAFEMATH...",
+                exc_info=True,
+            )
             continue
         if maybe_safemath_func_report is not None:
-            log.debug(f"Function {func_name} identified as SAFEMATH ({maybe_safemath_func})")
+            log.debug(
+                f"Function {func_name} identified as SAFEMATH ({maybe_safemath_func})"
+            )
             library_funcs.append(maybe_safemath_func_report)
 
     for func in library_funcs:
-        log.debug(f'Identified library SAFEMATH function {func.func_kind} @ {func.func.name}')
+        log.debug(
+            f"Identified library SAFEMATH function {func.func_kind} @ {func.func.name}"
+        )
 
     return safemath_funcs + library_funcs

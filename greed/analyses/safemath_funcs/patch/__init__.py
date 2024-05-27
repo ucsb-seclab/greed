@@ -27,3 +27,5 @@ func add(a, b):
 ```
 """
 
+from .safe_ops import patch_function
+
