@@ -1,14 +1,14 @@
 import logging
-from typing import List, TYPE_CHECKING
-from greed.TAC import TAC_Statement, TAC_Returnprivate
+from typing import TYPE_CHECKING, List
 
 import greed.options as options
 from greed.solver.shortcuts import *
+from greed.TAC import TAC_Returnprivate, TAC_Statement
 
 if TYPE_CHECKING:
     from greed import Project
+    from greed.analyses.safemath_funcs.types import SafeMathFunc, SafeMathFuncReport
     from greed.state import SymbolicEVMState
-    from greed.analyses.safemath_funcs.types import SafeMathFuncReport, SafeMathFunc
 
 log = logging.getLogger(__name__)
 
@@ -58,8 +58,6 @@ class SymProcedureSafeAdd(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: "SymbolicEVMState"):
-        log.debug(f"Handling SAFEADD")
-
         a = self.arg1_val
         b = self.arg2_val
 
@@ -130,8 +128,6 @@ class SymProcedureSafeAddSigned(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: "SymbolicEVMState"):
-        log.debug(f"Handling SAFEADD")
-
         a = self.arg1_val
         b = self.arg2_val
 
@@ -220,9 +216,7 @@ class SymProcedureSafeSub(TAC_Statement):
     __aliases__ = {}
 
     @TAC_Statement.handler_with_side_effects
-    def handle(self, state: 'SymbolicEVMState'):
-        log.debug(f"Handling SAFESUB")
-
+    def handle(self, state: "SymbolicEVMState"):
         a = self.arg1_val
         b = self.arg2_val
 
@@ -269,8 +263,6 @@ class SymProcedureSafeSubSigned(TAC_Statement):
 
     @TAC_Statement.handler_with_side_effects
     def handle(self, state: "SymbolicEVMState"):
-        log.debug(f"Handling SAFESUB")
-
         a = self.arg1_val
         b = self.arg2_val
 
@@ -321,6 +313,207 @@ class SymProcedureSafeSubSigned(TAC_Statement):
         return [state]
 
 
+class SymProcedureSafeMul(TAC_Statement):
+    __internal_name__ = "SYMPROCEDURE_SAFEMUL"
+    __aliases__ = {}
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: "SymbolicEVMState"):
+        a = self.arg1_val
+        b = self.arg2_val
+        if options.LAZY_SOLVES:
+            a_concrete = False
+            b_concrete = False
+        else:
+            a_concrete = state.solver.is_concrete(a)
+            b_concrete = state.solver.is_concrete(b)
+
+        if a_concrete:
+            a_val = state.solver.eval(a)
+        if b_concrete:
+            b_val = state.solver.eval(b)
+
+        if a_concrete and b_concrete:
+            result_i = a_val * b_val
+            # if result fits within 1 word, use it as return value
+            if result_i < 2**256:
+                result = BVV(a_val * b_val, 256)
+            else:
+                # no non-revert states
+                return []
+        # if one of the arguments is concrete, we can do some simplification
+        elif a_concrete or b_concrete:
+            conc_val, sym = (a_val, b) if a_concrete else (b_val, a)
+
+            if conc_val == 0:
+                # if either is zero, the result is zero
+                result = BVV(0, 256)
+            if conc_val == 1:
+                # if either is one, the result is the other
+                result = sym
+            else:
+                # we can simply constrain the sym value to be such that (conc_val * sym) < 2**256
+                limit = 2**256 // conc_val
+                new_constraint = BV_ULT(sym, BVV(limit, 256))
+                setattr(new_constraint, "safemath", True)
+                state.solver.add_path_constraint(new_constraint)
+                result = BV_Mul(a, b)
+        else:
+            # do the multiplication
+            a_extended = BV_Zero_Extend(a, 256)
+            b_extended = BV_Zero_Extend(b, 256)
+            result_extended = BV_Mul(a_extended, b_extended)
+
+            # assert no overflow
+            limit = BVV((1 << 256), 256 * 2)
+            new_constraint = BV_ULT(result_extended, limit)
+            setattr(new_constraint, "safemath", True)
+            state.solver.add_path_constraint(new_constraint)
+
+            # extract the result
+            result = BV_Mul(a, b)
+
+        state.registers[self.res1_var] = result
+
+        return [state]
+
+
+class SymProcedureSafeMulSigned(TAC_Statement):
+    __internal_name__ = "SYMPROCEDURE_SAFEMUL_SIGNED"
+    __aliases__ = {}
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: "SymbolicEVMState"):
+        a = self.arg1_val
+        b = self.arg2_val
+        if options.LAZY_SOLVES:
+            a_concrete = False
+            b_concrete = False
+        else:
+            a_concrete = state.solver.is_concrete(a)
+            b_concrete = state.solver.is_concrete(b)
+
+        if a_concrete:
+            a_val_unsigned = state.solver.eval(a)
+            a_val = _unsigned_word_to_signed(a_val_unsigned)
+        if b_concrete:
+            b_val_unsigned = state.solver.eval(b)
+            b_val = _unsigned_word_to_signed(b_val_unsigned)
+
+        if a_concrete and b_concrete:
+            result_i = a_val * b_val
+            # if result fits within 1 word, use it as return value
+            if MIN_SIGNED_WORD <= result_i <= MAX_SIGNED_WORD:
+                result = BVV(a_val * b_val, 256)
+            else:
+                # no non-revert states
+                return []
+        # if one of the arguments is concrete, we can do some simplification
+        elif a_concrete or b_concrete:
+            conc_val, sym = (a_val, b) if a_concrete else (b_val, a)
+
+            if conc_val == 0:
+                # if either is zero, the result is zero
+                result = BVV(0, 256)
+            if conc_val == 1:
+                # if either is one, the result is the other
+                result = sym
+            else:
+                # we can simply constrain the sym value to be such that min_signed <= (conc_val * sym) <= max_signed
+                # or, equivalently, min_signed // conc_val <= sym <= max_signed // conc_val
+                if b > 0:
+                    limit_lo = _div_rounding_to_zero(MIN_SIGNED_WORD, conc_val)
+                    limit_hi = _div_rounding_to_zero(MAX_SIGNED_WORD, conc_val)
+                if b < 0:
+                    limit_lo = _div_rounding_to_zero(MAX_SIGNED_WORD, conc_val)
+                    limit_hi = _div_rounding_to_zero(MIN_SIGNED_WORD, conc_val)
+
+                new_constraint = And(
+                    BV_SLE(BVV(_signed_word_to_unsigned(limit_lo), 256), sym),
+                    BV_SLE(sym, BVV(_signed_word_to_unsigned(limit_hi), 256)),
+                )
+                setattr(new_constraint, "safemath", True)
+                state.solver.add_path_constraint(new_constraint)
+                result = BV_Mul(a, b)
+        else:
+            # do the multiplication
+            a_extended = BV_Sign_Extend(a, 256)
+            b_extended = BV_Sign_Extend(b, 256)
+            result_extended = BV_Mul(a_extended, b_extended)
+
+            # assert no overflow
+            new_constraint = And(
+                BV_SLE(
+                    BVV(_signed_word_to_unsigned(MIN_SIGNED_WORD, 512), 512),
+                    result_extended,
+                ),
+                BV_SLE(
+                    result_extended,
+                    BVV(_signed_word_to_unsigned(MAX_SIGNED_WORD, 512), 512),
+                ),
+            )
+            setattr(new_constraint, "safemath", True)
+            state.solver.add_path_constraint(new_constraint)
+
+            # extract the result
+            result = BV_Mul(a, b)
+
+        state.registers[self.res1_var] = result
+
+        return [state]
+
+
+class SymProcedureSafeDiv(TAC_Statement):
+    __internal_name__ = "SYMPROCEDURE_SAFEDIV"
+    __aliases__ = {}
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: "SymbolicEVMState"):
+        a = self.arg1_val
+        b = self.arg2_val
+
+        # check if the arguments are concrete
+        if options.LAZY_SOLVES:
+            a_concrete = False
+            b_concrete = False
+        else:
+            a_concrete = state.solver.is_concrete(a)
+            b_concrete = state.solver.is_concrete(b)
+
+        if a_concrete:
+            a_val = state.solver.eval(a)
+        if b_concrete:
+            b_val = state.solver.eval(b)
+
+        if b_concrete and b_val == 0:
+            # division by zero, revert
+            return []
+
+        if a_concrete and b_concrete:
+            # if both are concrete, we can do the division directly
+            result_i = a_val // b_val
+            result = BVV(result_i, 256)
+        elif b_concrete:
+            # We know b != 0, no need to add any more constraints
+            result = BV_UDiv(a, b)
+        else:
+            # do the division
+            result = BV_UDiv(a, b)
+
+            # Assert no divide by zero.
+
+            # We use GT instead of NEQ for no reason in particular
+            # (it might help the 'hybrid' solver in development) - Robert
+            new_constraint = BV_UGT(b, BVV(0, 256))
+            setattr(new_constraint, "safemath", True)
+            state.solver.add_path_constraint(new_constraint)
+
+        # store the result
+        state.registers[self.res1_var] = result
+
+        return [state]
+
+
 _next_statement_id = 0
 
 
@@ -349,3 +542,17 @@ def _signed_word_to_unsigned(i: int, bitsize=256) -> int:
     if i >= 0:
         return i
     return i + 2**bitsize
+
+
+def _div_rounding_to_zero(a, b):
+    # Perform integer division
+    result = a // b
+
+    # Calculate the product of result and divisor
+    product = result * b
+
+    # Check if we need to adjust the result
+    if (a < 0) != (b < 0) and a != product:
+        result += 1
+
+    return result
