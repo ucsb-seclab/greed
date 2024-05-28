@@ -9,6 +9,15 @@ from greed.state import SymbolicEVMState
 if TYPE_CHECKING:
     from greed.exploration_techniques import ExplorationTechnique
     from greed.project import Project
+    _STASHES_TYPE = TypedDict('Stashes', {
+        'active': List[SymbolicEVMState],
+        'deadended': List[SymbolicEVMState],
+        'found': List[SymbolicEVMState],
+        'pruned': List[SymbolicEVMState],
+        'unsat': List[SymbolicEVMState],
+        'errored': List[SymbolicEVMState]
+    })
+
 
 log = logging.getLogger(__name__)
 
@@ -22,14 +31,7 @@ class SimulationManager:
     """
     project: "Project"
     _techniques: List["ExplorationTechnique"]
-    stashes: TypedDict('Stashes', {
-        'active': List[SymbolicEVMState],
-        'deadended': List[SymbolicEVMState],
-        'found': List[SymbolicEVMState],
-        'pruned': List[SymbolicEVMState],
-        'unsat': List[SymbolicEVMState],
-        'errored': List[SymbolicEVMState]
-    })
+    stashes: "_STASHES_TYPE"
     insns_count: int
     error: List[str]
 
