@@ -572,7 +572,8 @@ class YicesTermAnd(YicesTermBool):
         self.args = list(args)
 
     def dump_smt2(self):
-        return f"(and {self.lhs.dump_smt2()} {self.rhs.dump_smt2()})"
+        and_args = ' '.join([arg.dump_smt2() for arg in self.args])
+        return f"(and {and_args})"
 
     def __getstate__(self):
         return {"args": self.args}
@@ -590,7 +591,8 @@ class YicesTermOr(YicesTermBool):
         self.args = list(args)
 
     def dump_smt2(self):
-        return f"(or {self.lhs.dump_smt2()} {self.rhs.dump_smt2()})"
+        or_args = ' '.join([arg.dump_smt2() for arg in self.args])
+        return f"(or {or_args})"
 
     def __getstate__(self):
         return {"args": self.args}
