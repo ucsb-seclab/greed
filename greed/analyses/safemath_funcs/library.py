@@ -58,16 +58,24 @@ def identify_library_safemath_func(
     # Ensure that the subgraph of the callgraph starting at this function is acyclic
     reachable_funcs: Set["TAC_Function"] = nx.descendants(project.callgraph, function)
     reachable_funcs.add(function)
-    if not nx.is_directed_acyclic_graph(project.callgraph.subgraph(reachable_funcs)):
-        log.debug(f"Function {function.name} has loops in its callgraph")
-        return None
 
-    # Ensure each reachable func is also acyclic
-    for reachable_func in reachable_funcs:
-        func_cfg = reachable_func.cfg.graph
-        if not nx.is_directed_acyclic_graph(func_cfg):
-            log.debug(f"Function {function.name} has loops in a reachable func's CFG")
-            return None
+
+    # #################################
+    ## NOTE: The below is too aggressive, as sometimes you need a loop to copy a revert
+    ## string into memory before doing the revert.
+
+    # if not nx.is_directed_acyclic_graph(project.callgraph.subgraph(reachable_funcs)):
+    #     log.debug(f"Function {function.name} has loops in its callgraph")
+    #     return None
+
+    # # Ensure each reachable func is also acyclic
+    # for reachable_func in reachable_funcs:
+    #     func_cfg = reachable_func.cfg.graph
+    #     if not nx.is_directed_acyclic_graph(func_cfg):
+    #         log.debug(f"Function {function.name} has loops in a reachable func's CFG ({reachable_func.name})")
+    #         return None
+    # #################################
+
 
     # Find all instructions used in this function, so we can return early if it uses any banned
     # instructions which indicate not-safemath.
