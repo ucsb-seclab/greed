@@ -388,7 +388,7 @@ class SymProcedureSafeMul(TAC_Statement):
             if conc_val == 0:
                 # if either is zero, the result is zero
                 result = BVV(0, 256)
-            if conc_val == 1:
+            elif conc_val == 1:
                 # if either is one, the result is the other
                 result = sym
             else:
@@ -456,7 +456,7 @@ class SymProcedureSafeMulSigned(TAC_Statement):
             if conc_val == 0:
                 # if either is zero, the result is zero
                 result = BVV(0, 256)
-            if conc_val == 1:
+            elif conc_val == 1:
                 # if either is one, the result is the other
                 result = sym
             else:
