@@ -47,7 +47,7 @@ for package in gcc cmake gperf libgmp-dev; do
 done
 if [ -z $NO_GIGAHORSE ]; then
   command -v >&- mkisofs || MISSING_APT_PACKAGES+=("mkisofs")
-  for package in bison build-essential clang cmake doxygen flex g++ git libffi-dev libncurses5-dev libsqlite3-dev make mcpp python sqlite zlib1g-dev libboost-all-dev; do
+  for package in bison build-essential clang cmake doxygen flex g++ git libffi7 libffi-dev libncurses5-dev libsqlite3-dev make mcpp python sqlite zlib1g-dev libboost-all-dev; do
     dpkg -l | grep -q $package || MISSING_APT_PACKAGES+=($package)
   done
   command -v >&- souffle || IS_SOUFFLE_MISSING=TRUE
@@ -71,7 +71,6 @@ if [ $IS_SOUFFLE_MISSING = TRUE ]; then
   if [ $IS_UBUNTU = TRUE ]; then
     read -rsn1 -p "Or press any key to install it now (ctrl-c to abort)"
     wget https://github.com/souffle-lang/souffle/releases/download/2.4/x86_64-ubuntu-2004-souffle-2.4-Linux.deb -O /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
-    sudo apt install mcpp libffi-dev libffi7 libncurses5-dev libsqlite3-dev -y &&    
     sudo dpkg -i /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
     rm /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb || { rm -f /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb; echo "${bold}${red}Failed to install souffle${normal}"; exit 1; }
   else
