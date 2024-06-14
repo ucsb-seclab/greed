@@ -71,6 +71,7 @@ if [ $IS_SOUFFLE_MISSING = TRUE ]; then
   if [ $IS_UBUNTU = TRUE ]; then
     read -rsn1 -p "Or press any key to install it now (ctrl-c to abort)"
     wget https://github.com/souffle-lang/souffle/releases/download/2.4/x86_64-ubuntu-2004-souffle-2.4-Linux.deb -O /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
+    sudo apt install mcpp libffi-dev libffi7 libncurses5-dev libsqlite3-dev -y &&    
     sudo dpkg -i /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb &&
     rm /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb || { rm -f /tmp/x86_64-ubuntu-2004-souffle-2.4-Linux.deb; echo "${bold}${red}Failed to install souffle${normal}"; exit 1; }
   else
