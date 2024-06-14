@@ -60,7 +60,7 @@ if [ ${#MISSING_APT_PACKAGES[@]} -gt 0 ]; then
   echo "${bold}${red}The following packages are missing: ${MISSING_APT_PACKAGES[*]}. Please install them before proceeding (e.g., sudo apt install ${MISSING_APT_PACKAGES[*]})${normal}"
   if [ $IS_UBUNTU = TRUE ]; then
     read -rsn1 -p "Or press any key to install them now (ctrl-c to abort)"
-    sudo apt install ${MISSING_APT_PACKAGES[*]} || { echo "${bold}${red}Failed to install missing packages${normal}"; exit 1; }
+    sudo apt update && sudo apt install ${MISSING_APT_PACKAGES[*]} || { echo "${bold}${red}Failed to install missing packages${normal}"; exit 1; }
   else
     exit 1
   fi
