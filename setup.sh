@@ -47,7 +47,7 @@ for package in gcc cmake gperf libgmp-dev; do
 done
 if [ -z $NO_GIGAHORSE ]; then
   command -v >&- mkisofs || MISSING_APT_PACKAGES+=("mkisofs")
-  for package in bison build-essential clang cmake doxygen flex g++ git libffi-dev libncurses5-dev libsqlite3-dev make mcpp python sqlite zlib1g-dev libboost-all-dev; do
+  for package in bison build-essential clang cmake doxygen flex g++ git libffi7 libffi-dev libncurses5-dev libsqlite3-dev make mcpp python sqlite zlib1g-dev libboost-all-dev; do
     dpkg -l | grep -q $package || MISSING_APT_PACKAGES+=($package)
   done
   command -v >&- souffle || IS_SOUFFLE_MISSING=TRUE
@@ -60,7 +60,7 @@ if [ ${#MISSING_APT_PACKAGES[@]} -gt 0 ]; then
   echo "${bold}${red}The following packages are missing: ${MISSING_APT_PACKAGES[*]}. Please install them before proceeding (e.g., sudo apt install ${MISSING_APT_PACKAGES[*]})${normal}"
   if [ $IS_UBUNTU = TRUE ]; then
     read -rsn1 -p "Or press any key to install them now (ctrl-c to abort)"
-    sudo apt install ${MISSING_APT_PACKAGES[*]} || { echo "${bold}${red}Failed to install missing packages${normal}"; exit 1; }
+    sudo apt update && sudo apt install ${MISSING_APT_PACKAGES[*]} || { echo "${bold}${red}Failed to install missing packages${normal}"; exit 1; }
   else
     exit 1
   fi
