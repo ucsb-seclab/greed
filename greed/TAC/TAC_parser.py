@@ -59,20 +59,35 @@ class TAC_parser:
         
 
     def parse_statements(self) -> Dict[str, TAC_Statement]:
-        # Load facts
-        tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
+
+        # It contains a mapping of TAC functions (key) and the TAC blocks (value) it contains 
+        # tac_function_blocks: Mapping[str, List[str]]
+        tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True) 
+        
+        # Statement IDs (value) that each TAC blocks (keys) contains
+        # tac_block_stmts: Mapping[str, List[str]]
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
+        
+        # A mapping of statement ids (key) and the TAC Operations (value) the statement used produced by Gigahorse
+        # tac_op: Mapping[str, str]
         tac_op = load_csv_map(f"{self.target_dir}/TAC_Op.csv")
 
+        # A mapping of statement ids (key) to its associated TAC blocks (value)
+        # statement_to_blocks_map: Mapping[str, List[str]] 
+        # Each statement ids should be unique so not sure why the value is a list
         self.statement_to_blocks_map = load_csv_multimap(f"{self.target_dir}/TAC_OriginalStatement_Block.csv")
 
+        # A mapping of statment ids (key) to a value assigned to it (value)
+        # tac_variable_value: Mapping[str, str]
         tac_variable_value = load_csv_map(f"{self.target_dir}/TAC_Variable_Value.csv")
-        tac_variable_value = {'v' + v.replace('0x', ''): val for v, val in tac_variable_value.items()}
+        tac_variable_value = {'v' + v.replace('0x', ''): val for v, val in tac_variable_value.items()} # Replacing it to the actual register name :O
 
+        # A mapping of the statement ids (key) to a pairing of CALLPRIVATE return variables and its position (value)
         tac_defs: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
         for stmt_id, var, pos in load_csv(f"{self.target_dir}/TAC_Def.csv"):
             tac_defs[stmt_id].append((var, int(pos)))
 
+        # A mapping of statement ids that contains a TAC Operation (key) to a pairing of the variables and its positional argument within the TAC Operation (value)
         tac_uses: Mapping[str, List[Tuple[str, int]]] = defaultdict(list)
         for stmt_id, var, pos in load_csv(f"{self.target_dir}/TAC_Use.csv"):
             tac_uses[stmt_id].append((var, int(pos)))
@@ -82,8 +97,8 @@ class TAC_parser:
         # Entries with a signature longer than 10 characters are most likely false positives of the analysis, not safe to import.
         func_name_to_sig = {name:"0x"+signature[2:].zfill(8) for signature, name in func_name_to_sig.items() if len(signature) <= 10}
 
+        # The bottom two for loops literally gives nothing when creating a new project for WETH
         fixed_calls : Mapping[str, List[Tuple[str, str]]] = defaultdict(list)
-
         for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignature.csv"):
             # We want to skip the "LOCKXXX" target and keep only the one
             # that Gigahorse successfully resolved
@@ -93,7 +108,6 @@ class TAC_parser:
             else:
                 fixed_calls[stmt_id] = "0x"
 
-        
         for stmt_id, func_target in load_csv(f"{self.target_dir}/CallToSignatureFromSHA3.csv"):
             if "LOCK" in func_target: continue
             if func_target in func_name_to_sig:
@@ -103,13 +117,16 @@ class TAC_parser:
         
         # parse all statements block after block
         statements: Dict[str, TAC_Statement] = dict()
-        for block_id in itertools.chain(*tac_function_blocks.values()):
+        # itertools.chain(*tac_function_blocks.values()) transforms from dict -> [[x1, y1], [x2], [y2] ...] -> [x1, y1], [x2], [y2] ... -> [x1, y1, x2, y2, ...]
+        for block_id in itertools.chain(*tac_function_blocks.values()): # Gives a list of block ids 
             for stmt_id in tac_block_stmts[block_id]:
                 opcode = tac_op[stmt_id]
-                raw_uses = [var for var, _ in sorted(tac_uses[stmt_id], key=lambda x: x[1])]
-                raw_defs = [var for var, _ in sorted(tac_defs[stmt_id], key=lambda x: x[1])]
+                raw_uses = [var for var, _ in sorted(tac_uses[stmt_id], key=lambda x: x[1])] # [(v1, 2), (v0, 1), (v2, 0)] -> [(v2, 0), (v0, 1), (v1, 2)] -> [v2, v0, v1]
+                raw_defs = [var for var, _ in sorted(tac_defs[stmt_id], key=lambda x: x[1])] 
                 uses = ['v' + v.replace('0x', '') for v in raw_uses]
                 defs = ['v' + v.replace('0x', '') for v in raw_defs]
+
+                # Gets the value at key v. If v does not exist, return 'None'
                 values = {v: tac_variable_value.get(v, None) for v in uses + defs}
                 OpcodeClass = tac_opcode_to_class_map[opcode]
                 statement = OpcodeClass(block_id=block_id, stmt_id=stmt_id, uses=uses, defs=defs, values=values)

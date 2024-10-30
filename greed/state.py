@@ -262,7 +262,7 @@ class SymbolicEVMState:
             raise VMSymbolicError(f'Unable to find jump destination. ({candidate_destination_vals=}, {curr_bb.succ=})')
         elif len(candidate_bbs) > 1:
             raise VMSymbolicError(f'Multiple jump destinations. ({candidate_destination_vals=}, {curr_bb.succ=})')
-
+        
         non_fallthrough_bb = candidate_bbs[0]
 
         log.debug("Next stmt is {}".format(non_fallthrough_bb.first_ins.id))

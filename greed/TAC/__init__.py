@@ -17,7 +17,7 @@ def get_all_subclasses(cls: Type) -> List[Type[TAC_Statement]]:
 
     return all_subclasses
 
-
+# Maps the internal name of the class (e.g. SSTORE, MSTORE etc...) to the class type itself
 tac_opcode_to_class_map: Dict[str, Type[TAC_Statement]] = {
     c.__internal_name__: c for c in get_all_subclasses(TAC_Statement)
 }

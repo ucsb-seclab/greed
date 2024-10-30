@@ -62,12 +62,13 @@ class TAC_Statement(Aliased):
         self.raw_arg_vals = None
 
         # parse defs
-        self.res_vars = [v for v in defs]
+        self.res_vars = [v for v in defs] # result variables?
         self.res_vals = {v: values.get(v, None) for v in defs}
         self.num_ress = len(self.res_vars)
 
         # cast arg_vals to bvv
         for x, v in self.arg_vals.items():
+            # If statement avoids assigning 'None' values
             if v:
                 self.arg_vals[x] = BVV(int(v, 16), 256)
 
@@ -82,8 +83,8 @@ class TAC_Statement(Aliased):
         # create arg vars/vals aliases
         for i in range(self.num_args):
             var = self.arg_vars[i]
-            object.__setattr__(self, "arg{}_var".format(i + 1), var)
-            object.__setattr__(self, "arg{}_val".format(i + 1), self.arg_vals[var])
+            object.__setattr__(self, "arg{}_var".format(i + 1), var) # arg1_var = v4, arg2_var = v3 etc...
+            object.__setattr__(self, "arg{}_val".format(i + 1), self.arg_vals[var]) # arg1_val = None, arg2_val = '0x0' etc... Both val would probably be None for SSTORE initally
 
         # create res vars/vals aliases
         for i in range(self.num_ress):
@@ -94,6 +95,7 @@ class TAC_Statement(Aliased):
         # keep a copy of the arg_vals (for set_arg_val)
         self.raw_arg_vals = dict(self.arg_vals)
 
+    # TODO: Not sure what this do
     def reset_arg_val(self):
         # IMPORTANT: we need to reset this every time we re-execute this statement or we'll have the old registers
         # values in self.arg_vals (as set by this function)
@@ -119,8 +121,8 @@ class TAC_Statement(Aliased):
                 else:
                     # raise VMException(f"Uninitialized var {var}")
                     log.warning(f"Uninitialized var {var} - VERY LIKELY TO CAUSE PROBLEMS")
-            val = state.registers.get(var, None) if arg_val is None else arg_val
-            state.registers[var] = val
+            val = state.registers.get(var, None) if arg_val is None else arg_val # val = SHA3 symbol in SSTORE case
+            state.registers[var] = val 
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)
 

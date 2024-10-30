@@ -278,11 +278,12 @@ class LambdaMemory:
     def writen(self, index, v, n):
         assert is_concrete(n), "writen with symbolic length not implemented"
         assert bv_unsigned_value(n) != 0, "invalid writen with length=0"
+        n_val = bv_unsigned_value(n)
 
         self.invalidate_cache(start=index, end=BV_Add(index, n))
 
-        for i in range(bv_unsigned_value(n)):
-            m = BV_Extract((31 - i) * 8, (31 - i) * 8 + 7, v)
+        for i in range(n_val):
+            m = BV_Extract((n_val - 1 - i) * 8, (n_val - 1 - i) * 8 + 7, v)
             self[BV_Add(index, BVV(i, 256))] = m
 
         # update cache
