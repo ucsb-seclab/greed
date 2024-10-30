@@ -113,7 +113,7 @@ A state offers many API for its inspection:
 
 ```python
 >>> entry_state.curr_stmt # print the current statement ready for execution
->>> entry_state.revert # weather the state reverted or not
+>>> entry_state.revert # whether the state reverted or not
 >>> entry_state.instruction_count # how many instructions have been executed up to this point
 >>> entry_state.pc # current program counter 
 >>> entry_state.registers # overview of all the virtual registers defined during the execution up to this point
