@@ -5,6 +5,7 @@ from typing import Callable, List, Optional, TYPE_CHECKING, TypedDict
 
 from greed import options
 from greed.state import SymbolicEVMState
+from greed.state_plugins import hook
 
 if TYPE_CHECKING:
     from greed.exploration_techniques import ExplorationTechnique
@@ -215,26 +216,69 @@ class SimulationManager:
             # Trigger breakpoints on all the stmt with that name
             if state.curr_stmt.__internal_name__ in state.inspect.breakpoints_stmt.keys():
                 state.inspect.breakpoints_stmt[state.curr_stmt.__internal_name__](self, state)
+
         successors = list()
 
+        old_pc = state.pc
+        old_stmt_name = state.curr_stmt.__internal_name__
+
+        if hasattr(state, "hook"):
+
+            # OP_BEFORE hooks
+            stmt_ids_before = state.hook.hook_stmt_ids.get(hook.OP_BEFORE, {})
+            stmt_before = state.hook.hook_stmt.get(hook.OP_BEFORE, {})
+            
+            # Trigger hook on specific stmt_id
+            if old_pc in stmt_ids_before:
+                func, replace = stmt_ids_before[old_pc]
+                if replace:
+                    successors = func(self, state)
+                else:
+                    func(self, state)
+
+            # Trigger hook on all the stmt with that name
+            if old_stmt_name in stmt_before:
+                func, replace = stmt_before[old_stmt_name]
+
+                if replace:
+                    successors = func(self, state)
+                else:
+                    func(self, state)
+                
+            
         # Let exploration techniques manipulate the state
         # that is going to be handled
         state_to_step = state
         for t in self._techniques:
             state_to_step = t.check_state(self, state_to_step)
 
-        # Finally step the state
-        try:
-            successors += state.curr_stmt.handle(state)
-        except Exception as e:
-            log.exception(f"Something went wrong while generating successor for {state}")
-            state.error = e
-            state.halt = True
-            successors += [state]
+        if not successors:
+            # Finally step the state
+            try:
+                successors += state.curr_stmt.handle(state)
+            except Exception as e:
+                log.exception(f"Something went wrong while generating successor for {state}")
+                state.error = e
+                state.halt = True
+                successors += [state]
 
         # Let exploration techniques manipulate the successors
         for t in self._techniques:
             successors = t.check_successors(self, successors)
+
+        if hasattr(state, "hook"):
+
+            # OP_AFTER hooks
+            stmt_ids_after = state.hook.hook_stmt_ids.get(hook.OP_AFTER, {})
+            stmt_after = state.hook.hook_stmt.get(hook.OP_AFTER, {})
+
+            # Trigger hook on specific stmt_id
+            if old_pc in stmt_ids_after:
+                successors = stmt_ids_after[old_pc][0](self, successors)
+
+            # Trigger hook on all the stmt with that name
+            if old_stmt_name in stmt_after:
+                successors = stmt_after[old_stmt_name][0](self, successors)
 
         return successors
 
