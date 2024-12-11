@@ -95,6 +95,7 @@ if [ ! -d $GREED_DIR/yices2 ]; then
 fi
 
 cd $GREED_DIR/yices2
+git checkout 8e6297e
 
 # check if all required packages are installed (cmake, cython, libgmp-dev)
 # dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
