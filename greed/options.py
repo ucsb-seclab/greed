@@ -71,6 +71,12 @@ DEFAULT_CREATE_RESULT_ADDRESS = False
 # using the CREATE2 opcode.
 DEFAULT_CREATE2_RESULT_ADDRESS = False
 
+# PLUGIN OPTIONS
+# ============================================
+# Options used by plugins and sim_manager
+# ============================================
+OP_BEFORE = 0
+OP_AFTER = 1
 
 # STATE OPTIONS
 # =============================================

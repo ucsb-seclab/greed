@@ -1,12 +1,9 @@
 import logging
 
 from greed.state_plugins import SimStatePlugin
+import greed.options as opt
 
 log = logging.getLogger(__name__)
-
-OP_BEFORE = 0
-OP_AFTER = 1
-
 
 class SimStateInspect(SimStatePlugin):
     """
@@ -19,7 +16,7 @@ class SimStateInspect(SimStatePlugin):
         self.breakpoints_stmt = breakpoints_stmt if breakpoints_stmt is not None else {}
         return
 
-    def stop_at_stmt_id(self, stmt_id=None, func=None, when=OP_BEFORE):
+    def stop_at_stmt_id(self, stmt_id=None, func=None, when=opt.OP_BEFORE):
         """
         Stop at a statement with a given ID (i.e., PC)
         Args:
@@ -39,9 +36,13 @@ class SimStateInspect(SimStatePlugin):
                 log.warning("💥 Triggered breakpoint at {}".format(state.pc))
                 import ipdb; ipdb.set_trace()
             func = justStop
-        self.breakpoints_stmt_ids[stmt_id] = func
 
-    def stop_at_stmt(self, stmt_name=None, func=None, when=OP_BEFORE):
+        if when not in self.breakpoints_stmt_ids:
+            self.breakpoints_stmt_ids[when] = {}
+            
+        self.breakpoints_stmt_ids[when][stmt_id] = func
+
+    def stop_at_stmt(self, stmt_name=None, func=None, when=opt.OP_BEFORE):
         """
         Stop at a statement with a given name (e.g., CALL)
         Args:
@@ -54,7 +55,11 @@ class SimStateInspect(SimStatePlugin):
                 import ipdb
                 ipdb.set_trace()
             func = justStop
-        self.breakpoints_stmt[stmt_name] = func
+
+        if when not in self.breakpoints_stmt:
+            self.breakpoints_stmt[when] = {}
+
+        self.breakpoints_stmt[when][stmt_name] = func
 
     def copy(self):
         """
