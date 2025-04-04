@@ -5,6 +5,7 @@ from collections import defaultdict
 from greed.solver.shortcuts import is_concrete, BVV, BVS, BV_ULT, BV_UGT, Equal
 from greed.exploration_techniques import ExplorationTechnique
 from greed.analyses.slicing import forward_slice
+from greed.TAC.gigahorse_ops import TAC_Nop
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +34,38 @@ class Whitelist(ExplorationTechnique):
             state.set_next_pc()
         return state
 
+class Blacklist(ExplorationTechnique):
+    """
+    This technique skips all statements that are in the blacklist.
+    The result variables of the skipped statements are set to a fresh symbolic variable.
+    Args:
+        blacklist: the list of statements' names or PCs in the blacklist (e.g., ["MSTORE", "MLOAD", '0x1234'])
+    """
+    def __init__(self, blacklist):
+        super().__init__()
+        self.blacklist = blacklist
+
+    def check_state(self, simgr, state):
+        """
+        Check if the current statement is in the blacklist.
+        If not, skip to the next statement.
+        """
+        if state.curr_stmt.__internal_name__ in self.blacklist or state.curr_stmt.id in self.blacklist:
+
+            # stub res vars
+            for res_var in state.curr_stmt.res_vars:
+                state.registers[res_var] = BVS(res_var, 256)
+
+            # Set the statemet to Nop statement
+            prev_stmt = state.curr_stmt
+            nop_stmt = TAC_Nop(block_id=state.curr_stmt.block_id, stmt_id=state.curr_stmt.id)
+            curr_bb = state.project.factory.block(prev_stmt.block_id)
+            stmt_list_idx = curr_bb.statements.index(prev_stmt)
+            curr_bb.statements[stmt_list_idx] = nop_stmt
+
+            state.project.statement_at[state.curr_stmt.id] = nop_stmt
+
+        return state
 
 class LoopLimiter(ExplorationTechnique):
     """

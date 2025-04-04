@@ -279,6 +279,15 @@ class SimStateSolver(SimStatePlugin):
         """
         return self._solver.is_formula_false(formula)
 
+    def has_single_sol(self, term: BVTerm) -> bool:
+        """
+        Check if a term has a single solution.
+        Args:
+            term: The term to check.
+        """
+        raw_sol = self.eval(term, raw=True)
+        return not self.is_formula_sat(NotEqual(term, raw_sol))
+
     def eval(self, term, raw=False):
         """
         Evaluate a term.

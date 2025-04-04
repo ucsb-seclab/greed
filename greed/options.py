@@ -77,6 +77,12 @@ DEFAULT_CREATE2_RESULT_ADDRESS = False
 # expense of some time spent in project loading.
 AUTO_PATCH_SAFEMATH = False
 
+# PLUGIN OPTIONS
+# ============================================
+# Options used by plugins and sim_manager
+# ============================================
+OP_BEFORE = 0
+OP_AFTER = 1
 
 # STATE OPTIONS
 # =============================================

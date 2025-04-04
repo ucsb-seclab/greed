@@ -2,7 +2,7 @@ from greed.solver.shortcuts import *
 from greed.TAC.base import TAC_Statement
 from greed.state import SymbolicEVMState
 
-__all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize']
+__all__ = ['TAC_Mstore', 'TAC_Mstore8', 'TAC_Mload', 'TAC_Sload', 'TAC_Sstore', 'TAC_Msize', 'TAC_Mcopy', 'TAC_Tstore', 'TAC_Tload']
 
 
 """
@@ -87,6 +87,36 @@ class TAC_Sstore(TAC_Statement):
         state.set_next_pc()
         return [state]
 
+class TAC_Tload(TAC_Statement):
+    __internal_name__ = "TLOAD"
+    __aliases__ = {
+        'key_var': 'arg1_var', 'key_val': 'arg1_val',
+        'value_var': 'res1_var', 'value_val': 'res1_val'
+    }
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: SymbolicEVMState):
+        v = state.storage[self.key_val]
+        state.registers[self.res1_var] = v
+
+        state.set_next_pc()
+        return [state]
+
+
+class TAC_Tstore(TAC_Statement):
+    __internal_name__ = "TSTORE"
+    __aliases__ = {
+        'key_var': 'arg1_var', 'key_val': 'arg1_val',
+        'value_var': 'arg2_var', 'value_val': 'arg2_val'
+    }
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: SymbolicEVMState):
+        state.storage[self.key_val] = self.value_val
+
+        state.set_next_pc()
+        return [state]
+
 
 class TAC_Msize(TAC_Statement):
     __internal_name__ = "MSIZE"
@@ -99,5 +129,21 @@ class TAC_Msize(TAC_Statement):
         # TODO: properly implement MSIZE
         state.registers[self.res1_var] = BVS("MSIZE", 256)
         
+        state.set_next_pc()
+        return [state]
+
+
+class TAC_Mcopy(TAC_Statement):
+    __internal_name__ = "MCOPY"
+    __aliases__ = {
+        'destOffset_var': 'arg1_var', 'destOffset_val': 'arg1_val',
+        'offset_var': 'arg2_var', 'offset_val': 'arg2_val',
+        'size_var': 'arg3_var', 'size_val': 'arg3_val',
+    }
+
+    @TAC_Statement.handler_with_side_effects
+    def handle(self, state: SymbolicEVMState):
+        state.memory.memcopy(self.destOffset_val, state.memory.copy(state), self.offset_val, self.size_val)
+
         state.set_next_pc()
         return [state]

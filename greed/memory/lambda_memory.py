@@ -234,44 +234,64 @@ class LambdaMemory:
             AssertionError: if the length is 0
         """
         assert is_concrete(n), "readn with symbolic length not implemented"
-        assert bv_unsigned_value(n) != 0, "invalid readn with length=0"
+        n_val = bv_unsigned_value(n)
+        assert n_val != 0, "invalid readn with length=0"
 
         # check cache
         if (
             is_concrete(index)
-            and bv_unsigned_value(index) in self.cache[bv_unsigned_value(n)]
+            and bv_unsigned_value(index) in self.cache[n_val]
         ):
-            # print(f"cache hit {bv_unsigned_value(index)}: {self.cache[bv_unsigned_value(n)][bv_unsigned_value(index)]}")
-            return self.cache[bv_unsigned_value(n)][bv_unsigned_value(index)]
+            # print(f"cache hit {bv_unsigned_value(index)}: {self.cache[n_val][bv_unsigned_value(index)]}")
+            return self.cache[n_val][bv_unsigned_value(index)]
 
-        if bv_unsigned_value(n) == 1:
+        if n_val == 1:
             return self[index]
         else:
+            vv = []
             if is_concrete(index):
-                tag = f"READN_{self.tag}_BASE{self._base.id}_{bv_unsigned_value(index)}_{bv_unsigned_value(n)}"
+                tag = f"READN_{self.tag}_BASE{self._base.id}_{bv_unsigned_value(index)}_{n_val}"
+
+                # Optimization: attempt to read in word-size chunks, which is more cache-friendly
+                index_val = bv_unsigned_value(index)
+                for idx in range(index_val, index_val + n_val, 32):
+                    # If we can read a whole chunk, try the cache
+                    if idx + 32 <= index_val + n_val and idx in self.cache[32]:
+                        vv.append(self.cache[32][idx])
+                    else:
+                        # We cannot read a chunk, just do it the normal way
+                        for pos in range(idx, min(idx + 32, index_val + n_val)):
+                            vv.append(self[BVV(pos, 256)])
             else:
-                tag = f"READN_{self.tag}_BASE{self._base.id}_sym{index.id}_{bv_unsigned_value(n)}"
+                tag = f"READN_{self.tag}_BASE{self._base.id}_sym{index.id}_{n_val}"
+                vv = list()
+                for i in range(n_val):
+                    read_index = BV_Add(index, BVV(i, 256))
+                    vv.append(self[read_index])
 
-            res = BVS(tag, bv_unsigned_value(n) * 8)
-
-            vv = list()
-            for i in range(bv_unsigned_value(n)):
-                read_index = BV_Add(index, BVV(i, 256))
-                vv.append(self[read_index])
+            res = BVS(tag, n_val * 8)
 
             self.add_constraint(Equal(res, BV_Concat(vv)))
-            # print(f"actual readn {bv_unsigned_value(index)}:{bv_unsigned_value(n)} = {BV_Concat(vv)}")
+            # print(f"actual readn {bv_unsigned_value(index)}:{n_val} = {BV_Concat(vv)}")
             return res
-
+ 
     def writen(self, index, v, n):
+        """Writes n bytes of a value (v) at a offset in memory (index). 
+        
+        Args:
+            index: A YicesTermBV representing the offset in memory to write to.
+            v: A YicesTermBV representing the value to write to memory.
+            n: A YicesTermBVV representing the number of bytes to write to in memory.
+        """
         assert is_concrete(n), "writen with symbolic length not implemented"
         assert bv_unsigned_value(n) != 0, "invalid writen with length=0"
+        n_val = bv_unsigned_value(n)
 
         self.invalidate_cache(start=index, end=BV_Add(index, n))
 
-        for i in range(bv_unsigned_value(n)):
-            m = BV_Extract((31 - i) * 8, (31 - i) * 8 + 7, v)
-            self.state.memory[BV_Add(index, BVV(i, 256))] = m
+        for i in range(n_val):
+            m = BV_Extract((n_val - 1 - i) * 8, (n_val - 1 - i) * 8 + 7, v)
+            self[BV_Add(index, BVV(i, 256))] = m
 
         # update cache
         if is_concrete(index):

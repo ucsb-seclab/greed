@@ -9,6 +9,15 @@ from greed.state import SymbolicEVMState
 if TYPE_CHECKING:
     from greed.exploration_techniques import ExplorationTechnique
     from greed.project import Project
+    _STASHES_TYPE = TypedDict('Stashes', {
+        'active': List[SymbolicEVMState],
+        'deadended': List[SymbolicEVMState],
+        'found': List[SymbolicEVMState],
+        'pruned': List[SymbolicEVMState],
+        'unsat': List[SymbolicEVMState],
+        'errored': List[SymbolicEVMState]
+    })
+
 
 log = logging.getLogger(__name__)
 
@@ -22,14 +31,7 @@ class SimulationManager:
     """
     project: "Project"
     _techniques: List["ExplorationTechnique"]
-    stashes: TypedDict('Stashes', {
-        'active': List[SymbolicEVMState],
-        'deadended': List[SymbolicEVMState],
-        'found': List[SymbolicEVMState],
-        'pruned': List[SymbolicEVMState],
-        'unsat': List[SymbolicEVMState],
-        'errored': List[SymbolicEVMState]
-    })
+    stashes: "_STASHES_TYPE"
     insns_count: int
     error: List[str]
 
@@ -205,14 +207,23 @@ class SimulationManager:
         log.debug(f"Stepping {state}")
         log.debug(state.curr_stmt)
 
+        old_pc = state.pc
+        old_stmt_name = state.curr_stmt.__internal_name__
+
         # Some inspect capabilities, uses the plugin.
         if hasattr(state, "inspect"):
+            # OP_BEFORE inspects
+            stmt_ids_before = state.inspect.breakpoints_stmt_ids.get(options.OP_BEFORE, {})
+            stmt_before = state.inspect.breakpoints_stmt.get(options.OP_BEFORE, {})
+            
             # Trigger breakpoints on specific stmt_id
-            if state.pc in state.inspect.breakpoints_stmt_ids.keys():
-                state.inspect.breakpoints_stmt_ids[state.pc](self, state)
+            if old_pc in stmt_ids_before:
+                stmt_ids_before[old_pc](self, state)
+
             # Trigger breakpoints on all the stmt with that name
-            if state.curr_stmt.__internal_name__ in state.inspect.breakpoints_stmt.keys():
-                state.inspect.breakpoints_stmt[state.curr_stmt.__internal_name__](self, state)
+            if old_stmt_name in stmt_before:
+                stmt_before[old_stmt_name](self, state)
+
         successors = list()
 
         # Let exploration techniques manipulate the state
@@ -229,6 +240,22 @@ class SimulationManager:
             state.error = e
             state.halt = True
             successors += [state]
+
+        if hasattr(state, "inspect"):
+            # OP_BEFORE inspects
+            stmt_ids_after = state.inspect.breakpoints_stmt_ids.get(options.OP_AFTER, {})
+            stmt_after = state.inspect.breakpoints_stmt.get(options.OP_AFTER, {})
+            
+            # Trigger breakpoints on specific stmt_id
+            if old_pc in stmt_ids_after:
+                for successor in successors:
+                    stmt_ids_after[old_pc](self, successor)
+
+            # Trigger breakpoints on all the stmt with that name
+            if old_stmt_name in stmt_after:
+                for successor in successors:
+                    stmt_after[old_stmt_name](self, successor)
+            
 
         # Let exploration techniques manipulate the successors
         for t in self._techniques:
