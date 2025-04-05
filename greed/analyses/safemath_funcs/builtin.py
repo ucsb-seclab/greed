@@ -179,39 +179,38 @@ def identify_builtin_safemath_func(
 
     # Do specialized analysis for each math operator
     # (add, sub, mul, div, mod)
-    match def_stmt.__internal_name__:
-        case "ADD":
-            if _is_safemath_add(project, function, revert_conditions):
-                return SafeMathFunc.ADD
-            if _is_safemath_add_signed(project, function, revert_conditions):
-                return SafeMathFunc.ADD_SIGNED
-        case "SUB":
-            if _is_safemath_sub(project, function, revert_conditions):
-                return SafeMathFunc.SUB
-            if _is_safemath_sub_signed(project, function, revert_conditions):
-                return SafeMathFunc.SUB_SIGNED
-        case "MUL":
-            if _is_safemath_mul(project, function, revert_conditions):
-                return SafeMathFunc.MUL
-            if _is_safemath_mul_signed(project, function, revert_conditions):
-                return SafeMathFunc.MUL_SIGNED
-        case "DIV":
-            if _is_safemath_div(project, function, revert_conditions):
-                return SafeMathFunc.DIV
-        case "SDIV":
-            if _is_safemath_sdiv(project, function, revert_conditions):
-                return SafeMathFunc.SDIV
-        case "MOD":
-            if _is_safemath_mod(project, function, revert_conditions):
-                return SafeMathFunc.MOD
-        case "SMOD":
-            if _is_safemath_smod(project, function, revert_conditions):
-                return SafeMathFunc.SMOD
-        case _:
-            log.debug(
-                f"Function {function.name} uses operator {def_stmt.__internal_name__} which doesn't look like SAFEMATH"
-            )
-            return None
+    if def_stmt.__internal_name__ == "ADD":
+        if _is_safemath_add(project, function, revert_conditions):
+            return SafeMathFunc.ADD
+        if _is_safemath_add_signed(project, function, revert_conditions):
+            return SafeMathFunc.ADD_SIGNED
+    elif def_stmt.__internal_name__ == "SUB":
+        if _is_safemath_sub(project, function, revert_conditions):
+            return SafeMathFunc.SUB
+        if _is_safemath_sub_signed(project, function, revert_conditions):
+            return SafeMathFunc.SUB_SIGNED
+    elif def_stmt.__internal_name__ == "MUL":
+        if _is_safemath_mul(project, function, revert_conditions):
+            return SafeMathFunc.MUL
+        if _is_safemath_mul_signed(project, function, revert_conditions):
+            return SafeMathFunc.MUL_SIGNED
+    elif def_stmt.__internal_name__ == "DIV":
+        if _is_safemath_div(project, function, revert_conditions):
+            return SafeMathFunc.DIV
+    elif def_stmt.__internal_name__ == "SDIV":
+        if _is_safemath_sdiv(project, function, revert_conditions):
+            return SafeMathFunc.SDIV
+    elif def_stmt.__internal_name__ == "MOD":
+        if _is_safemath_mod(project, function, revert_conditions):
+            return SafeMathFunc.MOD
+    elif def_stmt.__internal_name__ == "SMOD":
+        if _is_safemath_smod(project, function, revert_conditions):
+            return SafeMathFunc.SMOD
+    else:
+        log.debug(
+            f"Function {function.name} uses operator {def_stmt.__internal_name__} which doesn't look like SAFEMATH"
+        )
+        return None
 
 
 def _is_safemath_add(project: "Project", function: "TAC_Function", conditions) -> bool:
@@ -978,25 +977,25 @@ def _flip_inequality(inequality: tuple) -> tuple:
     """
     Flip the argument order and the inequality in an inequality.
     """
-    match _get_op(inequality):
-        case "GT":
-            return ("LT", *reversed(inequality[1:]))
-        case "GE":
-            return ("LE", *reversed(inequality[1:]))
-        case "LT":
-            return ("GT", *reversed(inequality[1:]))
-        case "LE":
-            return ("GE", *reversed(inequality[1:]))
-        case "SGT":
-            return ("SLT", *reversed(inequality[1:]))
-        case "SGE":
-            return ("SLE", *reversed(inequality[1:]))
-        case "SLT":
-            return ("SGT", *reversed(inequality[1:]))
-        case "SLE":
-            return ("SGE", *reversed(inequality[1:]))
-        case _:
-            raise ValueError(f"Cannot flip inequality {inequality}")
+    op = _get_op(inequality)
+    if op == "GT":
+        return ("LT", *reversed(inequality[1:]))
+    elif op == "GE":
+        return ("LE", *reversed(inequality[1:]))
+    elif op == "LT":
+        return ("GT", *reversed(inequality[1:]))
+    elif op == "LE":
+        return ("GE", *reversed(inequality[1:]))
+    elif op == "SGT":
+        return ("SLT", *reversed(inequality[1:]))
+    elif op == "SGE":
+        return ("SLE", *reversed(inequality[1:]))
+    elif op == "SLT":
+        return ("SGT", *reversed(inequality[1:]))
+    elif op == "SLE":
+        return ("SGE", *reversed(inequality[1:]))
+    else:
+        raise ValueError(f"Cannot flip inequality {inequality}")
 
 
 def _is_op(tup: Tuple, op: str) -> bool:

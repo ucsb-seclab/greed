@@ -36,31 +36,30 @@ def patch_function(project: "Project", report: "SafeMathFuncReport"):
     return_var_id = _gen_var_id()
 
     klass = None
-    match report.func_kind:
-        case SafeMathFunc.ADD:
-            klass = SymProcedureSafeAdd
-        case SafeMathFunc.ADD_SIGNED:
-            klass = SymProcedureSafeAddSigned
-        case SafeMathFunc.SUB:
-            klass = SymProcedureSafeSub
-        case SafeMathFunc.SUB_SIGNED:
-            klass = SymProcedureSafeSubSigned
-        case SafeMathFunc.MUL:
-            klass = SymProcedureSafeMul
-        case SafeMathFunc.MUL_SIGNED:
-            klass = SymProcedureSafeMulSigned
-        case SafeMathFunc.DIV:
-            klass = SymProcedureSafeDiv
-        case SafeMathFunc.SDIV:
-            klass = SymProcedureSafeDivSigned
-        case SafeMathFunc.MOD:
-            klass = SymProcedureSafeMod
-        case SafeMathFunc.SMOD:
-            klass = SymProcedureSafeModSigned
-        case _:
-            raise NotImplementedError(
-                f"Unsupported safemath function {report.func.func_kind}"
-            )
+    if report.func_kind == SafeMathFunc.ADD:
+        klass = SymProcedureSafeAdd
+    elif report.func_kind == SafeMathFunc.ADD_SIGNED:
+        klass = SymProcedureSafeAddSigned
+    elif report.func_kind == SafeMathFunc.SUB:
+        klass = SymProcedureSafeSub
+    elif report.func_kind == SafeMathFunc.SUB_SIGNED:
+        klass = SymProcedureSafeSubSigned
+    elif report.func_kind == SafeMathFunc.MUL:
+        klass = SymProcedureSafeMul
+    elif report.func_kind == SafeMathFunc.MUL_SIGNED:
+        klass = SymProcedureSafeMulSigned
+    elif report.func_kind == SafeMathFunc.DIV:
+        klass = SymProcedureSafeDiv
+    elif report.func_kind == SafeMathFunc.SDIV:
+        klass = SymProcedureSafeDivSigned
+    elif report.func_kind == SafeMathFunc.MOD:
+        klass = SymProcedureSafeMod
+    elif report.func_kind == SafeMathFunc.SMOD:
+        klass = SymProcedureSafeModSigned
+    else:
+        raise NotImplementedError(
+            f"Unsupported safemath function {report.func.func_kind}"
+        )
 
     if report.first_arg_at_start:
         uses = (report.func.arguments[0], report.func.arguments[1])
