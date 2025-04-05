@@ -71,6 +71,12 @@ DEFAULT_CREATE_RESULT_ADDRESS = False
 # using the CREATE2 opcode.
 DEFAULT_CREATE2_RESULT_ADDRESS = False
 
+# Whether we will attempt to automatically detect SAFEMATH
+# functions and replace them with our own symbolic procedure.
+# This typically results in faster analysis times at the
+# expense of some time spent in project loading.
+AUTO_PATCH_SAFEMATH = False
+
 # PLUGIN OPTIONS
 # ============================================
 # Options used by plugins and sim_manager
