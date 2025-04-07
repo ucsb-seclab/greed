@@ -65,6 +65,10 @@ class Project(object):
         # NOTE: connect to w3 only on-demand
         self._w3 = None
 
+        if opt.AUTO_PATCH_SAFEMATH:
+            from greed.analyses.safemath_funcs import patch_safemath
+            patch_safemath(self)
+
         self.sanity_check()
 
     @property

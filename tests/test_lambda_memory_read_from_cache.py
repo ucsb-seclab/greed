@@ -120,12 +120,14 @@ _n_mems = 0
 def _get_dummy_memory() -> LambdaMemory:
     global _n_mems
 
+    st = DummyState()
     ret = LambdaMemory(
         f'test_{_n_mems}',
         value_sort=BVSort(8),
         default=BVV(0, 8),
-        state=DummyState()
+        state=st
     )
+    st.memory = ret
 
     _n_mems += 1
 
