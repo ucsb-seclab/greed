@@ -4,7 +4,6 @@ from typing import List, Mapping, Callable, ClassVar
 
 from greed.solver.shortcuts import *
 from greed.state import SymbolicEVMState
-from greed.utils.exceptions import VMException
 
 log = logging.getLogger(__name__)
 
@@ -118,7 +117,8 @@ class TAC_Statement(Aliased):
                 if arg_val is not None:
                     log.warning(f"Uninitialized var {var} RECOVERED WITH CACHED CONSTANT VALUE")
                 else:
-                    raise VMException(f"Uninitialized var {var}")
+                    # raise VMException(f"Uninitialized var {var}")
+                    log.warning(f"Uninitialized var {var} - VERY LIKELY TO CAUSE PROBLEMS")
             val = state.registers.get(var, None) if arg_val is None else arg_val
             state.registers[var] = val
             self.arg_vals[var] = val

@@ -32,24 +32,28 @@ class TAC_Callprivate(TAC_Statement):
         target_bb_id = hex(bv_unsigned_value(self.arg1_val))
         target_bb = state.project.factory.block(target_bb_id)
 
-        # read arg-alias map
-        args = self.arg_vars[1:]
-        args_alias = target_bb.function.arguments
-        assert len(args) == len(args_alias), "Invalid CALLPRIVATE arguments"
-        alias_arg_map = dict(zip(args_alias, args))
-
-        for alias, arg in alias_arg_map.items():
-            state.registers[alias] = state.registers[arg]
-
-        # read destination
-        dest = target_bb.first_ins.id
-
         try:
             saved_return_pc = state.get_fallthrough_pc()
         except VMNoSuccessors:
             fake_exit_bb = state.project.factory.block('fake_exit')
             saved_return_pc = fake_exit_bb.statements[0].id
 
+        # read arg-alias map
+        args = self.arg_vars[1:]
+        args_alias = target_bb.function.arguments
+        if len(args) != len(args_alias):
+            # NOTE: if just the saved return pc is missing, we can handle that since we keep the callstack
+            log.warning("Invalid CALLPRIVATE arguments")
+
+        # NOTE: this assumes that the arguments are in the same order and cardinality, ignoring extra arguments
+        # If the registers that remain unset are never used, the execution will succeed
+        # Otherwise, the execution will fail with "uninitialized variable"
+        alias_arg_map = dict(zip(args_alias, args))
+        for alias, arg in alias_arg_map.items():
+            state.registers[alias] = state.registers[arg]
+
+        # read destination
+        dest = target_bb.first_ins.id
         state.callstack.append((state.pc, saved_return_pc, self.res_vars))
 
         # jump to target

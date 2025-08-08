@@ -16,18 +16,9 @@
 #
 
 
-import web3
-import os
-import sys
-import datetime
-import json
 import logging
-import time
-import shutil
 import networkx as nx
 
-from greed import Project
-from greed import options
 
 log = logging.getLogger(__name__)
 
