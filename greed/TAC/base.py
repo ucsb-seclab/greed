@@ -120,7 +120,9 @@ class TAC_Statement(Aliased):
                     # raise VMException(f"Uninitialized var {var}")
                     log.warning(f"Uninitialized var {var} - VERY LIKELY TO CAUSE PROBLEMS")
             val = state.registers.get(var, None) if arg_val is None else arg_val
-            state.registers[var] = val
+            # avoid assigning the same value to the register
+            if arg_val is not None:
+                state.registers[var] = val
             self.arg_vals[var] = val
             object.__setattr__(self, "arg{}_val".format(i + 1), val)
 
