@@ -135,7 +135,6 @@ class TAC_parser:
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_fallthrough_edge = load_csv_map(f"{self.target_dir}/IRFallthroughEdge.csv")
         tac_statement_nexts = load_csv_multimap(f"{self.target_dir}/TAC_Statement_Next.csv")
-        tac_statement_ops = load_csv_map(f"{self.target_dir}/TAC_Op.csv")
 
         # parse all blocks
         blocks: Dict[str, Block] = dict()
@@ -147,12 +146,7 @@ class TAC_parser:
             for stmt_id in tac_block_stmts[block_id]:
                 statement = self.factory.statement(stmt_id)
 
-                if tac_statement_ops[stmt_id] == 'PHI':
-                    # PHI statements should have been translated to NOPs by now, by the `parse_statements` method
-                    # We just drop them.
-                    assert statement.__internal_name__ == 'NOP', f"PHI statement {stmt_id} is not a NOP: {statement.__internal_name__}"
-                    continue
-
+                # remove assertions for PHI statements
                 statements.append(statement)
 
                 next_stmt_ids = tac_statement_nexts.get(stmt_id, [])

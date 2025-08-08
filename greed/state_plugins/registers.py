@@ -61,12 +61,14 @@ class Register:
     def __init__(self, name):
         self.name = name
         self.value = None
-        self.last_written_instruction_count = None
-        self.last_read_instruction_count = None
+        self.last_written_instruction_count = 0
+        self.last_read_instruction_count = 0
+        self.phi_block_id = None
 
     def copy(self) -> "Register":
         ret = Register(self.name)
         ret.value = self.value
         ret.last_written_instruction_count = self.last_written_instruction_count
         ret.last_read_instruction_count = self.last_read_instruction_count
+        ret.phi_block_id = self.phi_block_id
         return ret
