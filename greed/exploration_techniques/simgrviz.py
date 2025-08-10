@@ -63,8 +63,10 @@ class SimgrViz(ExplorationTechnique):
         self._simgGraph.add_node(state_id)
         self._simgGraph.nodes[state_id]['timestamp'] = str(self.timestamp)
         self._simgGraph.nodes[state_id]['pc'] = state.pc
-        # if state.curr_stmt.__internal_name__ == "LOG1":
-        #    self._simgGraph.nodes[state_id]['log'] = state.curr_stmt.arg2_val
+        if state.curr_stmt.__internal_name__ == "STOP" or state.curr_stmt.__internal_name__ == "RETURN":
+            self._simgGraph.nodes[state_id]['done'] = state.curr_stmt
+        if state.curr_stmt.__internal_name__ == "REVERT":
+            self._simgGraph.nodes[state_id]['fail'] = state.curr_stmt
         # self._simgGraph.nodes[state_id]['csts'] = '\n'.join([str(x.dump()) for x in state.constraints])
         self.timestamp += 1
         return state_id
@@ -88,12 +90,20 @@ class SimgrViz(ExplorationTechnique):
         for node_id in self._simgGraph.nodes:
             node = self._simgGraph.nodes[node_id]
 
-            shape = 'box'
+            shape = '<SHAPE>'
             s += '\t\"{}\" [shape={},label='.format(node_id[:10], shape)
             s += '<ts:{}<br align="left"/>'.format(node["timestamp"])
             s += '<br align="left"/>pc:{}'.format(node["pc"])
-            if node.get("log", None):
-                s += '<br align="left"/>log:{}'.format(node["log"])
+            
+            if node.get("done", None):
+                s += '<br align="left"/>{}'.format(node["done"])
+                s = s.replace("<SHAPE>", "star")
+            elif node.get("fail", None):
+                s += '<br align="left"/>{}'.format(node["fail"])
+                s = s.replace("<SHAPE>", "invtriangle")
+            else:
+                s = s.replace("<SHAPE>", "box")
+                #import ipdb; ipdb.set_trace()
             # s += '<br align="left"/>csts:{}'.format(node["csts"])
             s += '<br align="left"/>>];\n'
 

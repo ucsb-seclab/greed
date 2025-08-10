@@ -5,6 +5,7 @@ import os
 from ast import literal_eval
 from collections import defaultdict
 from typing import Dict, List, Mapping, Tuple
+import networkx as nx
 
 from eth_utils import keccak
 
@@ -17,7 +18,6 @@ from greed.TAC.special_ops import TAC_Stop
 from greed.utils.files import load_csv, load_csv_map, load_csv_multimap
 
 log = logging.getLogger(__name__)
-
 
 class TAC_parser:
     """
@@ -37,7 +37,24 @@ class TAC_parser:
 
     @staticmethod
     def stmt_sort_key(stmt_id: str) -> int:
-        return int(stmt_id.split('0x')[1].split('_')[0], base=16)
+        """
+        Statements may be identified by a number of different formats. This function
+        returns a key that can be used to sort them in a consistent way.
+
+        Possible formats:
+        - 0x12345
+        - 0x12345_0x456
+        - 0x12345S0x456
+        """
+        if '_' in stmt_id:
+            assert 'S' not in stmt_id
+            return int(stmt_id.split('_')[1], base=16)
+        elif 'S' in stmt_id:
+            assert '_' not in stmt_id
+            return int(stmt_id.split('0x')[1].split('S')[0], base=16)
+        else:
+            return int(stmt_id.split('0x')[1], base=16)
+        
 
     def parse_statements(self) -> Dict[str, TAC_Statement]:
         # Load facts
@@ -85,7 +102,7 @@ class TAC_parser:
         # parse all statements block after block
         statements: Dict[str, TAC_Statement] = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
-            for stmt_id in sorted(tac_block_stmts[block_id], key=TAC_parser.stmt_sort_key):
+            for stmt_id in tac_block_stmts[block_id]:
                 opcode = tac_op[stmt_id]
                 raw_uses = [var for var, _ in sorted(tac_uses[stmt_id], key=lambda x: x[1])]
                 raw_defs = [var for var, _ in sorted(tac_defs[stmt_id], key=lambda x: x[1])]
@@ -99,7 +116,7 @@ class TAC_parser:
                 # Adding metadata for CALL statements
                 if stmt_id in fixed_calls:
                     log.debug(f"Setting {statement} as fixed call to {fixed_calls[stmt_id]}")
-                    statement.set_likeyl_known_target_func(fixed_calls[stmt_id])
+                    statement.set_likely_known_target_func(fixed_calls[stmt_id])
 
             if not tac_block_stmts[block_id]:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP statement
@@ -145,6 +162,7 @@ class TAC_parser:
         blocks['fake_exit'] = fake_exit_block
 
         return blocks
+
 
     def parse_functions(self) -> Dict[str, TAC_Function]:
         # Load facts

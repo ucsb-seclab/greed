@@ -32,24 +32,28 @@ class TAC_Callprivate(TAC_Statement):
         target_bb_id = hex(bv_unsigned_value(self.arg1_val))
         target_bb = state.project.factory.block(target_bb_id)
 
-        # read arg-alias map
-        args = self.arg_vars[1:]
-        args_alias = target_bb.function.arguments
-        assert len(args) == len(args_alias), "Invalid CALLPRIVATE arguments"
-        alias_arg_map = dict(zip(args_alias, args))
-
-        for alias, arg in alias_arg_map.items():
-            state.registers[alias] = state.registers[arg]
-
-        # read destination
-        dest = target_bb.first_ins.id
-
         try:
             saved_return_pc = state.get_fallthrough_pc()
         except VMNoSuccessors:
             fake_exit_bb = state.project.factory.block('fake_exit')
             saved_return_pc = fake_exit_bb.statements[0].id
 
+        # read arg-alias map
+        args = self.arg_vars[1:]
+        args_alias = target_bb.function.arguments
+        if len(args) != len(args_alias):
+            # NOTE: if just the saved return pc is missing, we can handle that since we keep the callstack
+            log.warning("Invalid CALLPRIVATE arguments")
+
+        # NOTE: this assumes that the arguments are in the same order and cardinality, ignoring extra arguments
+        # If the registers that remain unset are never used, the execution will succeed
+        # Otherwise, the execution will fail with "uninitialized variable"
+        alias_arg_map = dict(zip(args_alias, args))
+        for alias, arg in alias_arg_map.items():
+            state.registers[alias] = state.registers[arg]
+
+        # read destination
+        dest = target_bb.first_ins.id
         state.callstack.append((state.pc, saved_return_pc, self.res_vars))
 
         # jump to target
@@ -87,23 +91,32 @@ class TAC_Phi(TAC_Statement):
         # we need to iterate over the arguments and find the register that was most recently written
         most_recent_write_instruction_count = -1
         most_recent_write_register_name: str = None
-        for arg_var in self.arg_vars:
-            if self.id == '0x15_0x0':
-                log.debug(f"chekcing {self.id} arg_var: {arg_var}")
-            if arg_var not in state.registers:
-                if self.id == '0x15_0x0':
-                    log.debug(f"{self.id} arg_var: {arg_var} not in state.registers")
-                continue
+        current_block_id = state.curr_stmt.block_id
+        
+        # count the times the current block id appears in the trace
+        current_block_count = 0
+        in_segment = False
+        historical_block_ids = [i.block_id for i in state.trace] + [state.curr_stmt.block_id]
+        for block_id in historical_block_ids:
+            if block_id == current_block_id:
+                if not in_segment:
+                    current_block_count += 1
+                    in_segment = True
+            else:
+                in_segment = False
 
+        for arg_var in self.arg_vars:
             reg = state.registers.register(arg_var)
-            if reg.last_written_instruction_count > most_recent_write_instruction_count:
+            # find the most recent write that is not from the current block
+            if reg.last_written_instruction_count > most_recent_write_instruction_count and reg.phi_block_id != (current_block_id, current_block_count):
                 most_recent_write_instruction_count = reg.last_written_instruction_count
                 most_recent_write_register_name = arg_var
-
+        
         assert most_recent_write_register_name is not None, f"PHI statement {self.id} has no valid arguments"
 
         # transfer value from most recent write to result
         state.registers[self.res1_var] = state.registers[most_recent_write_register_name]
+        state.registers.register(most_recent_write_register_name).phi_block_id = (current_block_id, current_block_count)
 
         state.set_next_pc()
         return [state]

@@ -47,7 +47,7 @@ for package in gcc cmake gperf libgmp-dev; do
 done
 if [ -z $NO_GIGAHORSE ]; then
   command -v >&- mkisofs || MISSING_APT_PACKAGES+=("mkisofs")
-  for package in bison build-essential clang cmake doxygen flex g++ git libffi-dev libncurses5-dev libsqlite3-dev make mcpp python sqlite zlib1g-dev libboost-all-dev; do
+  for package in bison build-essential clang cmake doxygen flex g++ git libffi7 libffi-dev libncurses5-dev libsqlite3-dev make mcpp python sqlite zlib1g-dev libboost-all-dev; do
     dpkg -l | grep -q $package || MISSING_APT_PACKAGES+=($package)
   done
   command -v >&- souffle || IS_SOUFFLE_MISSING=TRUE
@@ -60,7 +60,7 @@ if [ ${#MISSING_APT_PACKAGES[@]} -gt 0 ]; then
   echo "${bold}${red}The following packages are missing: ${MISSING_APT_PACKAGES[*]}. Please install them before proceeding (e.g., sudo apt install ${MISSING_APT_PACKAGES[*]})${normal}"
   if [ $IS_UBUNTU = TRUE ]; then
     read -rsn1 -p "Or press any key to install them now (ctrl-c to abort)"
-    sudo apt install ${MISSING_APT_PACKAGES[*]} || { echo "${bold}${red}Failed to install missing packages${normal}"; exit 1; }
+    sudo apt update && sudo apt install ${MISSING_APT_PACKAGES[*]} || { echo "${bold}${red}Failed to install missing packages${normal}"; exit 1; }
   else
     exit 1
   fi
@@ -76,6 +76,12 @@ if [ $IS_SOUFFLE_MISSING = TRUE ]; then
   else
     exit 1
   fi
+else
+  SOUFFLE_VERSION=$(souffle --version | grep -oP "Version: \K[0-9]+\.[0-9]+")
+  if [ $SOUFFLE_VERSION != "2.3" ] && [ $SOUFFLE_VERSION != "2.4" ]; then
+    echo "${bold}${red}souffle version $SOUFFLE_VERSION is not supported. Please install version 2.3 or 2.4 before proceeding${normal}"; 
+    exit 1;
+  fi
 fi
 
 ########################################################################################################################
@@ -89,6 +95,7 @@ if [ ! -d $GREED_DIR/yices2 ]; then
 fi
 
 cd $GREED_DIR/yices2
+git checkout 8e6297e
 
 # check if all required packages are installed (cmake, cython, libgmp-dev)
 # dpkg -l | grep -q gcc || { echo "${bold}${red}gcc is not installed. Please install it before proceeding (e.g., sudo apt install gcc)${normal}"; exit 1; }
@@ -105,7 +112,8 @@ make || { echo "${bold}${red}Failed to run make${normal}"; exit 1; }
 # finally, link yices2/build/lib/ to the virtualenv's site-packages dir
 ln -sf $GREED_DIR/yices2/build/*-release/bin/* $VIRTUAL_ENV_BIN/
 ln -sf $GREED_DIR/yices2/build/*-release/lib/* $VIRTUAL_ENV_LIB/
-cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/libyices.so
+LIBNAME=$(python -c 'from ctypes.util import find_library; print(find_library("yices") or "libyices.so")')
+cp $VIRTUAL_ENV/lib/python3.*/site-packages/libyices.so.* $VIRTUAL_ENV_LIB/$LIBNAME
 
 cd $GREED_DIR
 
@@ -143,7 +151,7 @@ if [ -z $NO_GIGAHORSE ]; then
   if [ ! -d $GREED_DIR/gigahorse-toolchain ]; then
     git clone --recursive https://github.com/nevillegrech/gigahorse-toolchain.git $GIGAHORSE_DIR
     cd $GIGAHORSE_DIR
-    git checkout c5bce4d3495fc10f503b49368504efee3c676d03
+    git checkout 10de8a71ca7b12f657e0de18e455e02d408089b8
   fi
 
   # copy greed client
