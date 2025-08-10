@@ -134,53 +134,19 @@ class TAC_parser:
         tac_function_blocks = load_csv_multimap(f"{self.target_dir}/InFunction.csv", reverse=True)
         tac_block_stmts = load_csv_multimap(f"{self.target_dir}/TAC_Block.csv", reverse=True)
         tac_fallthrough_edge = load_csv_map(f"{self.target_dir}/IRFallthroughEdge.csv")
-        tac_statement_nexts = load_csv_multimap(f"{self.target_dir}/TAC_Statement_Next.csv")
+
 
         # parse all blocks
         blocks: Dict[str, Block] = dict()
         for block_id in itertools.chain(*tac_function_blocks.values()):
-            statements: List[TAC_Statement] = list()
-            
-            g = nx.DiGraph() # for next-statement edges
-
-            for stmt_id in tac_block_stmts[block_id]:
+            statements = list()
+            for stmt_id in sorted(tac_block_stmts[block_id], key=TAC_parser.stmt_sort_key):
                 statement = self.factory.statement(stmt_id)
-
-                # remove assertions for PHI statements
                 statements.append(statement)
-
-                next_stmt_ids = tac_statement_nexts.get(stmt_id, [])
-
-                g.add_node(stmt_id)
-                if len(next_stmt_ids) == 1:
-                    # if more than one next statement, ignore (probably end-of-block jumpi)
-                    next_stmt_id = next_stmt_ids[0]
-                    g.add_edge(stmt_id, next_stmt_id)
-
-
-            if len(statements) == 0:
+            if not statements:
                 # Gigahorse sometimes creates empty basic blocks. If so, inject a NOP
                 fake_stmt = self.factory.statement(block_id + '_fake_stmt')
                 statements.append(fake_stmt)
-            else:
-                # There exist some statements
-
-                #
-                # Walk backward to the root of the block, i.e., the first statement
-                root = statements[0].id
-                while len(list(g.predecessors(root))) > 0:
-                    root = list(g.predecessors(root))[0]
-
-                # Ensure that all statements in the block are reachable from the root
-                reachable = set(nx.descendants(g, root))
-                reachable.add(root)
-                block_stmt_ids = set([s.id for s in statements])
-                assert block_stmt_ids.issubset(reachable), f"Block {block_id} has unreachable statements"
-
-                # Order statements by topological order
-                topo_sort = list(nx.topological_sort(g))
-                statements = sorted(statements, key=lambda s: topo_sort.index(s.id))
-
             blocks[block_id] = Block(block_id=block_id, statements=statements)
 
         # set fallthrough edge

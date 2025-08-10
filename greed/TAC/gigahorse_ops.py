@@ -107,6 +107,7 @@ class TAC_Phi(TAC_Statement):
 
         for arg_var in self.arg_vars:
             reg = state.registers.register(arg_var)
+            # find the most recent write that is not from the current block
             if reg.last_written_instruction_count > most_recent_write_instruction_count and reg.phi_block_id != (current_block_id, current_block_count):
                 most_recent_write_instruction_count = reg.last_written_instruction_count
                 most_recent_write_register_name = arg_var
