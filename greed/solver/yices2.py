@@ -1012,7 +1012,7 @@ class YicesTermBVZeroExtend(YicesTermBV):
     def __init__(self, arg: "YicesTermBV", extend_by: int):
         yices_id = yices.Terms.zero_extend(arg.id, extend_by)
         super().__init__(
-            operator="bvzero-extend", children=[arg, extend_by], yices_id=yices_id
+            operator="bvzero-extend", children=[arg], yices_id=yices_id
         )
         self.arg = arg
         self.extend_by = extend_by
