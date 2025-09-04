@@ -4,6 +4,7 @@ import sys
 from typing import Callable, List, Optional, TYPE_CHECKING, TypedDict
 
 from greed import options
+from greed.utils.exceptions import SolverTimeout
 from greed.state import SymbolicEVMState
 
 if TYPE_CHECKING:
@@ -295,6 +296,13 @@ class SimulationManager:
 
                 self.step(find, prune)
 
+        except SolverTimeout as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+            log.exception(f'Solver timeout while stepping the Simulation Manager')
+            self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
+
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
@@ -322,6 +330,13 @@ class SimulationManager:
                 for found in self.found:
                     yield found
                 self.stashes["found"] = list()
+
+        except SolverTimeout as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+
+            log.exception(f'Solver timeout while stepping the Simulation Manager')
+            self.set_error(f'{exc_type.__name__} at {fname}:{exc_tb.tb_lineno}')
 
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
